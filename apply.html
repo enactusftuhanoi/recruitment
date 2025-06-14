@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đơn ứng tuyển | Enactus FTU Hanoi</title>
+  <link rel="icon" href="/assets/icon.png" type="image/png">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>📝 Đơn ứng tuyển</h1>
+    <form id="applyForm">
+      <label>Họ và tên</label>
+      <input type="text" id="fullname" required />
+
+      <label>Lý do bạn muốn gia nhập Enactus</label>
+      <textarea id="reason" required></textarea>
+
+      <label>Kỹ năng nổi bật của bạn</label>
+      <textarea id="skills" required></textarea>
+
+      <button type="submit">Gửi đơn</button>
+    </form>
+
+    <button id="logoutBtn" style="background:#ef4444; margin-top:1rem;">Đăng xuất</button>
+  </main>
+
+  <script type="module" src="./script/apply.js"></script>
+</body>
+</html>
