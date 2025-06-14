@@ -33,6 +33,46 @@ button {
   transition: background 0.3s;
 }
 
+.subtext {
+  font-size: 14px;
+  color: gray;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.admin-table th, .admin-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.admin-table th {
+  background-color: #f3f4f6;
+}
+
+.admin-table input {
+  width: 100%;
+  padding: 6px;
+  font-size: 14px;
+}
+
+.admin-table button {
+  padding: 6px 12px;
+  background-color: #1d4ed8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.admin-table button:hover {
+  background-color: #2563eb;
+}
+
 button:hover {
   background-color: #059669;
 }
