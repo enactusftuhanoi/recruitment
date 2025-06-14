@@ -88,8 +88,8 @@ onAuthStateChanged(auth, async (user) => {
         }
 
         const colorMap = {
-          "Đạt": "#22c55e",
-          "Trượt": "#ef4444",
+          "Pass": "#22c55e",
+          "Fail": "#ef4444",
           "Phỏng vấn": "#f59e0b"
         };
 
