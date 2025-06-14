@@ -78,7 +78,15 @@ onAuthStateChanged(auth, async (user) => {
       const fullname = row.children[1].textContent;
       const result = updates.result;
 
-      if (result && email.includes("@")) {
+      if (result) {
+        const email = row.children[0].textContent.trim();
+        const fullname = row.children[1].textContent.trim();
+
+        if (!email || !email.includes("@")) {
+          console.warn("⚠️ Email không hợp lệ:", email);
+          return;
+        }
+
         const colorMap = {
           "Đạt": "#22c55e",
           "Trượt": "#ef4444",
