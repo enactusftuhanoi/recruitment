@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel | Enactus FTU Hanoi</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>🛠️ Quản lý hồ sơ ứng viên</h1>
+    <p id="adminEmail" style="font-size: 0.9rem; color: gray;"></p>
+    <table border="1" cellpadding="8" cellspacing="0" style="margin-top: 1rem; width: 100%;">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Họ tên</th>
+          <th>Status</th>
+          <th>Interview</th>
+          <th>Result</th>
+          <th>Cập nhật</th>
+        </tr>
+      </thead>
+      <tbody id="userTable">
+        <tr><td colspan="6">Đang tải dữ liệu...</td></tr>
+      </tbody>
+    </table>
+  </main>
+
+  <script type="module" src="../script/admin/admin.js"></script>
+</body>
+</html>
