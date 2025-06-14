@@ -103,7 +103,7 @@ onAuthStateChanged(auth, async (user) => {
           year: new Date().getFullYear()
         };
 
-        emailjs.send("default_service", "enactusftuhn_recruitment", emailParams)
+        emailjs.send("service_kfg02yb", "enactusftuhn_recruitment", emailParams)
           .then(() => console.log("📨 Email đã gửi tới", email))
           .catch(err => {
             console.error("❌ Lỗi gửi email:", err);
