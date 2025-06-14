@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile | Enactus FTU Hanoi</title>
+  <link rel="icon" href="/assets/icon.png" type="image/png">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>👤 Hồ sơ cá nhân</h1>
+    <div id="user-info">
+      <p><strong>Tên:</strong> <span id="displayName"></span></p>
+      <p><strong>Email:</strong> <span id="email"></span></p>
+      <p><strong>Trạng thái hồ sơ:</strong> <span id="status">Đang tải...</span></p>
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+      <a href="apply.html"><button>Nộp đơn ứng tuyển</button></a>
+      <a href="status.html"><button>Xem tiến trình</button></a>
+      <button id="logoutBtn" style="background: #ef4444;">Đăng xuất</button>
+    </div>
+  </main>
+
+  <!-- Firebase script -->
+  <script type="module" src="./script/profile.js"></script>
+</body>
+</html>
