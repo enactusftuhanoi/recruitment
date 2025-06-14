@@ -98,11 +98,13 @@ onAuthStateChanged(auth, async (user) => {
           fullname: fullname || "Ứng viên",
           result: result,
           result_color: colorMap[result] || "#1d4ed8",
-          zalo_link: result === "Đạt" ? "https://zalo.me/g/enactus2025" : "",
           interview_link: result === "Phỏng vấn" ? (updates.interview || "Sẽ cập nhật sau") : "",
           year: new Date().getFullYear()
         };
 
+        console.log("Email Params:", emailParams);
+
+    
         emailjs.send("service_kfg02yb", "enactusftuhn_recruitment", emailParams)
           .then(() => console.log("📨 Email đã gửi tới", email))
           .catch(err => {
