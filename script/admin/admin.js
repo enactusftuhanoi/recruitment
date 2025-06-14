@@ -14,9 +14,8 @@ import {
 
 // ✅ Chỉ cho phép các email sau được vào admin
 const adminEmails = [
-  "quangbm.enactusftu@gmail.com",
-  "habn.enactusftu@gmail.com",
-  "minhbn.enactusftu@gmail.com"
+  "tuhm.enactusftu@gmail.com",
+  "tuhm2567@gmail.com",
 ];
 
 const firebaseConfig = {
