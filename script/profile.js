@@ -13,10 +13,10 @@ import {
 
 // 🔧 Firebase config
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-};
+      apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
+      authDomain: "enactusftuhanoi-tracuu.firebaseapp.com",
+      projectId: "enactusftuhanoi-tracuu",
+    };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
