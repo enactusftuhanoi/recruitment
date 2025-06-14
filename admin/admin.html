@@ -2,31 +2,32 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Admin | Enactus FTU Hanoi</title>
-  <style>
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ddd; padding: 8px; }
-    th { background: #f3f4f6; }
-    input, select { padding: 4px; margin: 2px 0; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel | Enactus FTU Hanoi</title>
+  <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
-  <h2>Admin Gửi Kết Quả</h2>
-  <div id="adminEmail"></div>
-  <table>
-    <thead>
-      <tr>
-        <th>Email</th>
-        <th>Họ tên</th>
-        <th>Status</th>
-        <th>Lịch phỏng vấn</th>
-        <th>Kết quả</th>
-        <th>Hành động</th>
-      </tr>
-    </thead>
-    <tbody id="userTable"></tbody>
-  </table>
+  <main class="container">
+    <h1>🛠️ Quản lý hồ sơ ứng viên</h1>
+    <p id="adminEmail" class="subtext">Đang xác thực...</p>
 
-  <script type="module" src="./admin.js"></script>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Họ tên</th>
+          <th>Trạng thái</th>
+          <th>Phỏng vấn</th>
+          <th>Kết quả</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody id="userTable">
+        <tr><td colspan="6">⏳ Đang tải dữ liệu...</td></tr>
+      </tbody>
+    </table>
+  </main>
+
+  <script type="module" src="../script/admin/admin.js"></script>
 </body>
 </html>
