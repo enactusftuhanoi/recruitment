@@ -94,7 +94,7 @@ onAuthStateChanged(auth, async (user) => {
         };
 
         const emailParams = {
-          to_email: email,
+          email: email,
           fullname: fullname || "Ứng viên",
           result: result,
           result_color: colorMap[result] || "#1d4ed8",
