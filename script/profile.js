@@ -2,11 +2,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getAuth,
   onAuthStateChanged,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore,
   doc,
   getDoc,
+  setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // 🔐 Firebase config
@@ -91,4 +93,10 @@ onAuthStateChanged(auth, async (user) => {
     <p><strong>Thời gian:</strong> ${roundInfo.time || "Đang cập nhật"}</p>
     <p><strong>Ghi chú:</strong> ${roundInfo.note || "Không có ghi chú"}</p>
   `;
+  
+  window.addEventListener("beforeunload", () => {
+  signOut(auth);
+  window.location.href = "../login.html"; // hoặc "index.html" tùy bạn
+  });
+
 });
