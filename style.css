@@ -89,3 +89,80 @@ button:hover {
 .info-item .label {
   font-weight: 600;
 }
+.profile-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+.status-section {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  gap: 8px;
+}
+
+.round-status {
+  flex: 1;
+  background-color: #f2f2f2;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.round-index {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.round-label {
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.round-status-text {
+  margin-top: 4px;
+  font-style: italic;
+  color: #555;
+}
+
+.profile-section {
+  background: #fff;
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
