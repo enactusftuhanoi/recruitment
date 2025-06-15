@@ -3,27 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hồ sơ ứng viên | Enactus FTU Hanoi</title>
+  <title>Profile | Enactus FTU Hanoi</title>
+  <link rel="icon" href="/icon.png" type="image/png" />
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
   <main class="container">
-    <section id="statusSection">
-      <h2>📍 Tiến trình ứng tuyển</h2>
-      <div id="statusTimeline" class="timeline"></div>
+    <h1>📄 Hồ sơ tuyển thành viên</h1>
+
+    <!-- 🔹 Vùng trạng thái tuyển -->
+    <section id="statusSection" class="status-steps">
+      <!-- Các bước sẽ được thêm bằng JS -->
     </section>
 
-    <section id="profileSection" style="margin-top: 2rem;">
+    <!-- 🔹 Thông tin cá nhân -->
+    <section class="profile-box">
       <h2>👤 Thông tin cá nhân</h2>
-      <div class="profile-box" id="profileBox">
-        <p><strong>Họ và Tên:</strong> <span id="fullname">...</span></p>
-        <p><strong>MSSV:</strong> <span id="studentId">...</span></p>
-        <p><strong>Lớp, Khoa, Trường:</strong> <span id="classInfo">...</span></p>
-        <p><strong>Ngày sinh:</strong> <span id="dob">...</span></p>
-        <p><strong>Giới tính:</strong> <span id="gender">...</span></p>
-        <p><strong>Số điện thoại:</strong> <span id="phone">...</span></p>
-        <p><strong>Email:</strong> <span id="email">...</span></p>
-        <p><strong>Facebook:</strong> <a id="facebook" href="#" target="_blank">Link</a></p>
+      <div class="info-grid" id="profileInfo">
+        <!-- Dữ liệu sẽ render bằng JS -->
+      </div>
+    </section>
+
+    <!-- 🔹 Thông tin vòng hiện tại -->
+    <section class="round-box">
+      <h2>🕐 Chi tiết vòng hiện tại</h2>
+      <div id="currentRoundDetails">
+        <!-- Nội dung sẽ được JS chèn -->
       </div>
     </section>
   </main>
