@@ -6,8 +6,7 @@ import {
 import {
   getFirestore,
   doc,
-  getDoc,
-  updateDoc
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -20,81 +19,60 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const ROUND_INFO = [
-  { name: "Vòng 1", label: "Đơn", field: "status1" },
-  { name: "Vòng 2", label: "Phỏng vấn nhóm", field: "status2" },
-  { name: "Vòng 3", label: "Thử thách", field: "status3" },
-  { name: "Vòng 4", label: "Phỏng vấn cá nhân", field: "status4" },
-];
+const statusTimeline = document.getElementById("statusTimeline");
+const profileBox = document.getElementById("profileBox");
 
-function renderStatusBar(data) {
-  const container = document.getElementById("statusBar");
-  container.innerHTML = "";
+const renderTimeline = (statusMap) => {
+  const rounds = [
+    { id: 1, name: "Vòng đơn" },
+    { id: 2, name: "Phỏng vấn nhóm" },
+    { id: 3, name: "Thử thách" },
+    { id: 4, name: "Phỏng vấn cá nhân" }
+  ];
 
-  ROUND_INFO.forEach((round, i) => {
-    const status = data[round.field]?.toLowerCase() || "chưa bắt đầu";
-    const step = document.createElement("div");
-    step.className = "step";
+  statusTimeline.innerHTML = rounds.map(round => {
+    const s = statusMap[`round${round.id}`] || {};
+    const state = s.status || "Chưa bắt đầu";
+    const time = s.time || "-";
+    const info = s.info || "";
 
-    if (status.includes("đạt") || status.includes("hoàn thành")) {
-      step.classList.add("done");
-    } else if (status.includes("đang") || status.includes("đang diễn ra")) {
-      step.classList.add("current");
-    }
-
-    step.innerHTML = `
-      <div class="circle">${i + 1}</div>
-      <div class="label">${round.name}<br><small>${round.label}</small></div>
+    return `
+      <div class="round-step">
+        <div class="step-title">${round.name}</div>
+        <div class="step-status">${state}</div>
+        <div class="step-time">${time}</div>
+        <div class="step-info">${info}</div>
+      </div>
     `;
-    container.appendChild(step);
-  });
-}
+  }).join("");
+};
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    alert("Vui lòng đăng nhập!");
+    alert("Vui lòng đăng nhập để xem hồ sơ.");
     window.location.href = "../login.html";
     return;
   }
 
-  const docRef = doc(db, "users", user.uid);
-  const snap = await getDoc(docRef);
-  if (!snap.exists()) {
+  const uid = user.uid;
+  const userDoc = await getDoc(doc(db, "users", uid));
+
+  if (!userDoc.exists()) {
     alert("Không tìm thấy hồ sơ.");
     return;
   }
 
-  const data = snap.data();
-  renderStatusBar(data);
+  const data = userDoc.data();
 
-  const form = document.getElementById("profileForm");
-  for (const field of form.elements) {
-    if (field.name && data[field.name]) {
-      field.value = data[field.name];
-    }
-  }
+  document.getElementById("fullname").textContent = data.fullname || "-";
+  document.getElementById("studentId").textContent = data.mssv || "-";
+  document.getElementById("classInfo").textContent = data.class || "-";
+  document.getElementById("dob").textContent = data.dob || "-";
+  document.getElementById("gender").textContent = data.gender || "-";
+  document.getElementById("phone").textContent = data.phone || "-";
+  document.getElementById("email").textContent = data.email || "-";
+  document.getElementById("facebook").href = data.facebook || "#";
 
-  const editBtn = document.getElementById("editBtn");
-  const saveBtn = document.getElementById("saveBtn");
-
-  editBtn.onclick = () => {
-    [...form.elements].forEach(f => f.disabled = false);
-    editBtn.style.display = "none";
-    saveBtn.style.display = "inline-block";
-  };
-
-  form.onsubmit = async (e) => {
-    e.preventDefault();
-    const updates = {};
-    for (const field of form.elements) {
-      if (field.name) updates[field.name] = field.value.trim();
-    }
-
-    await updateDoc(docRef, updates);
-    alert("✅ Đã cập nhật hồ sơ!");
-
-    [...form.elements].forEach(f => f.disabled = true);
-    editBtn.style.display = "inline-block";
-    saveBtn.style.display = "none";
-  };
+  // Gọi render trạng thái
+  renderTimeline(data.status || {});
 });

@@ -3,64 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Profile| Enactus FTU Hanoi</title>
+  <title>Hồ sơ ứng viên | Enactus FTU Hanoi</title>
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>📄 Hồ sơ ứng viên & Tiến độ tuyển</h1>
+  <main class="container">
+    <section id="statusSection">
+      <h2>📍 Tiến trình ứng tuyển</h2>
+      <div id="statusTimeline" class="timeline"></div>
+    </section>
 
-    <!-- VÙNG TIẾN ĐỘ CÁC VÒNG -->
-    <div class="status-steps" id="statusBar">
-      <!-- Các vòng sẽ được thêm bằng JS -->
-    </div>
+    <section id="profileSection" style="margin-top: 2rem;">
+      <h2>👤 Thông tin cá nhân</h2>
+      <div class="profile-box" id="profileBox">
+        <p><strong>Họ và Tên:</strong> <span id="fullname">...</span></p>
+        <p><strong>MSSV:</strong> <span id="studentId">...</span></p>
+        <p><strong>Lớp, Khoa, Trường:</strong> <span id="classInfo">...</span></p>
+        <p><strong>Ngày sinh:</strong> <span id="dob">...</span></p>
+        <p><strong>Giới tính:</strong> <span id="gender">...</span></p>
+        <p><strong>Số điện thoại:</strong> <span id="phone">...</span></p>
+        <p><strong>Email:</strong> <span id="email">...</span></p>
+        <p><strong>Facebook:</strong> <a id="facebook" href="#" target="_blank">Link</a></p>
+      </div>
+    </section>
+  </main>
 
-    <!-- VÙNG HIỂN THỊ THÔNG TIN CÁ NHÂN -->
-    <div class="profile-box">
-      <form id="profileForm">
-        <div class="info-grid">
-          <div class="info-item">
-            <label class="label">Họ và Tên</label>
-            <input type="text" name="fullname" disabled />
-          </div>
-          <div class="info-item">
-            <label class="label">MSSV</label>
-            <input type="text" name="mssv" disabled />
-          </div>
-          <div class="info-item">
-            <label class="label">Lớp / Khoa / Trường</label>
-            <input type="text" name="class_info" disabled />
-          </div>
-          <div class="info-item">
-            <label class="label">Ngày sinh</label>
-            <input type="date" name="dob" disabled />
-          </div>
-          <div class="info-item">
-            <label class="label">Giới tính</label>
-            <input type="text" name="gender" disabled />
-          </div>
-          <div class="info-item">
-            <label class="label">Số điện thoại</label>
-            <input type="tel" name="phone" disabled />
-          </div>
-          <div class="info-item">
-            <label class="label">Email</label>
-            <input type="email" name="email" disabled />
-          </div>
-          <div class="info-item">
-            <label class="label">Link Facebook</label>
-            <input type="url" name="facebook" disabled />
-          </div>
-        </div>
-
-        <div style="margin-top: 24px;">
-          <button type="button" id="editBtn">✏️ Chỉnh sửa</button>
-          <button type="submit" id="saveBtn" style="display: none;">💾 Lưu</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script type="module" src="../script/member/profile.js"></script>
+  <script type="module" src="../script/profile.js"></script>
 </body>
 </html>
