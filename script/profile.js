@@ -36,21 +36,46 @@ const currentRoundDetails = document.getElementById("currentRoundDetails");
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     alert("Bạn cần đăng nhập để xem hồ sơ.");
-    window.location.href = "../login.html";
+    window.location.href = "../login.html"; // hoặc "index.html" tùy bạn
     return;
   }
 
-  const docRef = doc(db, "users", user.uid);
-  const docSnap = await getDoc(docRef);
+  const userRef = doc(db, "users", user.uid);
+  const userSnap = await getDoc(userRef);
 
-  if (!docSnap.exists()) {
-    alert("Không tìm thấy thông tin của bạn.");
-    return;
+  if (!userSnap.exists()) {
+    // Nếu chưa có, tạo mới
+    await setDoc(userRef, {
+      email: user.email,
+      fullname: user.displayName || "Chưa cập nhật",
+      status: "Chưa nộp đơn",
+      current_round: 1,
+      createdAt: new Date()
+    });
   }
 
+  // Lấy lại dữ liệu đã có/tạo
+  const docSnap = await getDoc(userRef);
   const data = docSnap.data();
 
-  // 🔷 1. Hiển thị trạng thái các vòng
+  // 🔷 Hiển thị status (nếu bạn muốn thêm)
+  if (document.getElementById("status")) {
+    document.getElementById("status").textContent = data.status || "Chưa nộp đơn";
+  }
+
+  // 🔷 Hiển thị thông tin cá nhân
+  const fields = [
+    { label: "Họ và Tên", value: data.fullname },
+    { label: "Email", value: data.email },
+  ];
+  profileInfo.innerHTML = fields.map(field => `
+    <div class="info-item">
+      <span class="label">${field.label}:</span>
+      <span class="value">${field.value || "-"}</span>
+    </div>
+  `).join("");
+
+  // 🔷 Hiển thị trạng thái các vòng
   const currentRound = parseInt(data.current_round || "1");
   statusSection.innerHTML = steps.map(step => `
     <div class="step ${step.id < currentRound ? 'done' : step.id === currentRound ? 'current' : ''}">
@@ -59,26 +84,7 @@ onAuthStateChanged(auth, async (user) => {
     </div>
   `).join("");
 
-  // 🔷 2. Hiển thị thông tin cá nhân
-  const fields = [
-    { label: "Họ và Tên", value: data.fullname },
-    { label: "MSSV", value: data.student_id },
-    { label: "Lớp, Khoa, Trường", value: data.class_info },
-    { label: "Ngày sinh", value: data.dob },
-    { label: "Giới tính", value: data.gender },
-    { label: "Số điện thoại", value: data.phone },
-    { label: "Email", value: data.email },
-    { label: "Link Facebook", value: data.facebook },
-  ];
-
-  profileInfo.innerHTML = fields.map(field => `
-    <div class="info-item">
-      <span class="label">${field.label}:</span>
-      <span class="value">${field.value || "-"}</span>
-    </div>
-  `).join("");
-
-  // 🔷 3. Chi tiết vòng hiện tại
+  // 🔷 Chi tiết vòng hiện tại
   const roundInfo = data[`round_${currentRound}`] || {};
   currentRoundDetails.innerHTML = `
     <p><strong>Vòng:</strong> ${steps[currentRound - 1].title}</p>
