@@ -36,3 +36,56 @@ button {
 button:hover {
   background-color: #059669;
 }
+.status-steps {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+}
+.step {
+  text-align: center;
+  flex: 1;
+  position: relative;
+}
+.step::after {
+  content: '';
+  position: absolute;
+  top: 20px;
+  right: -50%;
+  height: 4px;
+  width: 100%;
+  background: #ddd;
+  z-index: -1;
+}
+.step:last-child::after {
+  display: none;
+}
+.step.done .circle {
+  background: #22c55e;
+}
+.step.current .circle {
+  background: #f59e0b;
+}
+.circle {
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  border-radius: 50%;
+  background: #ddd;
+  color: white;
+  margin: 0 auto 8px;
+  font-weight: bold;
+}
+.label {
+  font-size: 0.9rem;
+}
+.profile-box, .round-box {
+  margin-top: 30px;
+}
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 24px;
+}
+.info-item .label {
+  font-weight: 600;
+}
