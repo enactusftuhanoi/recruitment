@@ -3,38 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel | Enactus FTU Hanoi</title>
-  <link rel="icon" href="/assets/icon.png" type="image/png">
-  <link rel="stylesheet" href="../style.css" />
-  <style>Add commentMore actions
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ddd; padding: 8px; }
-    th { background: #f3f4f6; }
-    input, select { padding: 4px; margin: 2px 0; }
-  </style>
+  <title>Admin | Enactus FTU Hanoi</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="container">
-    <h1>🛠️ Quản lý hồ sơ ứng viên</h1>
-    <p id="adminEmail" class="subtext">Đang xác thực...</p>
+  <main class="admin-container">
+    <h1>🛠️ Quản trị tuyển thành viên</h1>
+    <nav class="tab-nav">
+      <button data-tab="candidates" class="active">📋 Thí sinh</button>
+      <button data-tab="rounds">🔄 Vòng</button>
+      <button data-tab="details">🔎 Chi tiết vòng</button>
+    </nav>
 
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Email</th>
-          <th>Họ tên</th>
-          <th>Trạng thái</th>
-          <th>Phỏng vấn</th>
-          <th>Kết quả</th>
-          <th>Hành động</th>
-        </tr>
-      </thead>
-      <tbody id="userTable">
-        <tr><td colspan="6">⏳ Đang tải dữ liệu...</td></tr>
-      </tbody>
-    </table>
+    <section id="candidates" class="tab-content">
+      <h2>📋 Danh sách thí sinh</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Họ tên</th>
+            <th>Email</th>
+            <th>MSSV</th>
+            <th>Vòng hiện tại</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody id="candidatesTable"></tbody>
+      </table>
+    </section>
+
+    <section id="rounds" class="tab-content hidden">
+      <h2>🔄 Cập nhật thông tin từng vòng</h2>
+      <div id="roundsContent"></div>
+    </section>
+
+    <section id="details" class="tab-content hidden">
+      <h2>🔎 Chi tiết từng vòng của thí sinh</h2>
+      <select id="userSelect"></select>
+      <div id="roundDetails"></div>
+    </section>
   </main>
-
-  <script type="module" src="../script/admin/admin.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>

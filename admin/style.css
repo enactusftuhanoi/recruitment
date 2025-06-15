@@ -1,0 +1,58 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f9fafb;
+}
+
+.admin-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+}
+
+.tab-nav {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.tab-nav button {
+  padding: 10px 16px;
+  background: #e2e8f0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.tab-nav button.active {
+  background: #3b82f6;
+  color: white;
+}
+
+.tab-content {
+  display: block;
+}
+
+.tab-content.hidden {
+  display: none;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+th {
+  background: #f3f4f6;
+}
