@@ -1,58 +1,71 @@
 body {
-  margin: 0;
   font-family: 'Segoe UI', sans-serif;
   background: #f9fafb;
-}
-
-.admin-container {
-  max-width: 1200px;
-  margin: 40px auto;
+  margin: 0;
   padding: 20px;
-  background: white;
+}
+
+.container {
+  background: #fff;
+  padding: 24px;
+  max-width: 960px;
+  margin: auto;
   border-radius: 12px;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
 }
 
-.tab-nav {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
+h1 {
+  color: #0f766e;
+  margin-bottom: 16px;
 }
 
-.tab-nav button {
+.tabs button {
   padding: 10px 16px;
-  background: #e2e8f0;
+  margin-right: 8px;
   border: none;
-  border-radius: 6px;
+  background: #e2e8f0;
   cursor: pointer;
-  font-weight: 600;
+  border-radius: 6px;
 }
 
-.tab-nav button.active {
-  background: #3b82f6;
-  color: white;
+.tabs button:hover {
+  background: #cbd5e1;
 }
 
 .tab-content {
-  display: block;
+  margin-top: 24px;
 }
 
-.tab-content.hidden {
+.hidden {
   display: none;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
-th, td {
-  padding: 10px;
+table th, table td {
+  padding: 12px;
   border: 1px solid #e5e7eb;
-  text-align: left;
 }
 
-th {
-  background: #f3f4f6;
+input, select {
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+button.save {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button.save:hover {
+  background: #16a34a;
 }

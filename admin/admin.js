@@ -1,6 +1,7 @@
-// Firebase + Admin Script
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getFirestore, collection, getDocs, doc, updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
@@ -11,103 +12,97 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// TAB CHUYỂN
-const tabs = document.querySelectorAll('.tab-nav button');
-const contents = document.querySelectorAll('.tab-content');
-tabs.forEach(btn => {
-  btn.onclick = () => {
-    tabs.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    contents.forEach(tab => tab.classList.add('hidden'));
-    document.getElementById(btn.dataset.tab).classList.remove('hidden');
+const userList = document.getElementById("userList");
+const roundsContainer = document.getElementById("roundsContainer");
+const roundDetailContainer = document.getElementById("roundDetailContainer");
+
+const steps = [
+  "Vòng đơn", "Phỏng vấn nhóm", "Thử thách", "Phỏng vấn cá nhân"
+];
+
+let usersData = [];
+
+async function loadUsers() {
+  const snapshot = await getDocs(collection(db, "users"));
+  usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  renderUsers();
+  renderRounds();
+  renderRoundDetails();
+}
+
+function renderUsers() {
+  userList.innerHTML = usersData.map(user => `
+    <tr>
+      <td>${user.fullname}</td>
+      <td>${user.email}</td>
+      <td>
+        <button onclick="editUser('${user.id}')">Chỉnh sửa</button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+window.editUser = async function (uid) {
+  const user = usersData.find(u => u.id === uid);
+  const name = prompt("Họ tên:", user.fullname);
+  const email = prompt("Email:", user.email);
+  if (name && email) {
+    await updateDoc(doc(db, "users", uid), { fullname: name, email });
+    loadUsers();
   }
-});
-
-// LOAD THÍ SINH
-async function loadCandidates() {
-  const snapshot = await getDocs(collection(db, 'users'));
-  const table = document.getElementById('candidatesTable');
-  table.innerHTML = '';
-  snapshot.forEach(doc => {
-    const d = doc.data();
-    table.innerHTML += `
-      <tr>
-        <td>${d.fullname || '-'}</td>
-        <td>${d.email || '-'}</td>
-        <td>${d.student_id || '-'}</td>
-        <td>Vòng ${d.current_round || '1'}</td>
-        <td><button onclick="selectUser('${doc.id}')">Chi tiết</button></td>
-      </tr>
-    `;
-  });
 }
 
-// LOAD ROUNDS
-const steps = ["Vòng đơn", "Phỏng vấn nhóm", "Thử thách", "Phỏng vấn cá nhân"];
-function loadRounds() {
-  const container = document.getElementById("roundsContent");
-  container.innerHTML = steps.map((title, i) => `
-    <div class="form-group">
-      <label><strong>${title}</strong></label>
-      <input id="round_${i+1}_time" placeholder="Thời gian">
-      <input id="round_${i+1}_note" placeholder="Ghi chú">
-      <button onclick="updateRoundInfo(${i+1})">Lưu</button>
-    </div>`).join("");
+function renderRounds() {
+  roundsContainer.innerHTML = usersData.map(user => `
+    <div class="user-round-box">
+      <h3>${user.fullname}</h3>
+      <label>Vòng hiện tại: 
+        <select onchange="changeRound('${user.id}', this.value)">
+          ${[1, 2, 3, 4, 5].map(i => `
+            <option value="${i}" ${i == user.current_round ? "selected" : ""}>
+              ${i <= 4 ? `Vòng ${i}` : "✅ Đã hoàn thành"}
+            </option>
+          `).join("")}
+        </select>
+      </label>
+    </div>
+  `).join("");
 }
 
-async function updateRoundInfo(round) {
-  const time = document.getElementById(`round_${round}_time`).value;
-  const note = document.getElementById(`round_${round}_note`).value;
-
-  const snapshot = await getDocs(collection(db, "users"));
-  snapshot.forEach(async userDoc => {
-    const ref = doc(db, "users", userDoc.id);
-    await updateDoc(ref, { [`round_${round}.time`]: time, [`round_${round}.note`]: note });
-  });
-  alert("Đã lưu thông tin cho tất cả thí sinh!");
+window.changeRound = async function(uid, value) {
+  await updateDoc(doc(db, "users", uid), { current_round: parseInt(value) });
+  loadUsers();
 }
 
-// CHI TIẾT VÒNG THEO USER
-async function loadUserList() {
-  const select = document.getElementById("userSelect");
-  const snapshot = await getDocs(collection(db, "users"));
-  select.innerHTML = "";
-  snapshot.forEach(doc => {
-    const d = doc.data();
-    const option = document.createElement("option");
-    option.value = doc.id;
-    option.textContent = d.fullname || "Không tên";
-    select.appendChild(option);
-  });
-  select.onchange = () => selectUser(select.value);
-  selectUser(select.value);
-}
-
-async function selectUser(userId) {
-  const ref = doc(db, "users", userId);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return;
-  const data = snap.data();
-  const container = document.getElementById("roundDetails");
-  container.innerHTML = steps.map((title, i) => {
-    const round = data[`round_${i + 1}`] || {};
-    return `
-      <div class="form-group">
-        <h4>${title}</h4>
-        <label>Thời gian</label>
-        <input value="${round.time || ''}" onchange="saveDetail('${userId}', ${i+1}, 'time', this.value)">
-        <label>Ghi chú</label>
-        <input value="${round.note || ''}" onchange="saveDetail('${userId}', ${i+1}, 'note', this.value)">
-      </div>`;
+function renderRoundDetails() {
+  roundDetailContainer.innerHTML = usersData.map(user => {
+    const roundsHTML = [1, 2, 3, 4].map(i => {
+      const info = user[`round_${i}`] || {};
+      return `
+        <div style="border: 1px solid #ccc; margin: 8px 0; padding: 8px;">
+          <h4>Vòng ${i}: ${steps[i - 1]}</h4>
+          <label>Thời gian: <input type="text" value="${info.time || ''}" id="time-${user.id}-${i}"/></label><br/>
+          <label>Ghi chú: <input type="text" value="${info.note || ''}" id="note-${user.id}-${i}"/></label><br/>
+          <button class="save" onclick="saveRound('${user.id}', ${i})">Lưu</button>
+        </div>
+      `;
+    }).join("");
+    return `<div><h3>${user.fullname}</h3>${roundsHTML}</div>`;
   }).join("");
 }
 
-window.saveDetail = async (userId, round, field, value) => {
-  const ref = doc(db, "users", userId);
-  await updateDoc(ref, { [`round_${round}.${field}`]: value });
-  console.log("Đã cập nhật");
-};
+window.saveRound = async function(uid, round) {
+  const time = document.getElementById(`time-${uid}-${round}`).value;
+  const note = document.getElementById(`note-${uid}-${round}`).value;
+  await updateDoc(doc(db, "users", uid), {
+    [`round_${round}`]: { time, note }
+  });
+  alert("Đã lưu thành công!");
+}
 
-loadCandidates();
-loadRounds();
-loadUserList();
+window.showTab = function(tabId) {
+  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add("hidden"));
+  document.getElementById(tabId).classList.remove("hidden");
+}
+
+loadUsers();

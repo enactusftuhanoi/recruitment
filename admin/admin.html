@@ -3,45 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin | Enactus FTU Hanoi</title>
+  <title>Admin | Quản lý tuyển Enactus</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="admin-container">
-    <h1>🛠️ Quản trị tuyển thành viên</h1>
-    <nav class="tab-nav">
-      <button data-tab="candidates" class="active">📋 Thí sinh</button>
-      <button data-tab="rounds">🔄 Vòng</button>
-      <button data-tab="details">🔎 Chi tiết vòng</button>
-    </nav>
+  <main class="container">
+    <h1>📋 Quản lý thí sinh</h1>
+    <div class="tabs">
+      <button onclick="showTab('usersTab')">👤 Thí sinh</button>
+      <button onclick="showTab('roundsTab')">🔄 Trạng thái vòng</button>
+      <button onclick="showTab('detailTab')">📝 Chi tiết vòng</button>
+    </div>
 
-    <section id="candidates" class="tab-content">
-      <h2>📋 Danh sách thí sinh</h2>
+    <section id="usersTab" class="tab-content">
+      <h2>👤 Danh sách thí sinh</h2>
       <table>
         <thead>
-          <tr>
-            <th>Họ tên</th>
-            <th>Email</th>
-            <th>MSSV</th>
-            <th>Vòng hiện tại</th>
-            <th>Thao tác</th>
-          </tr>
+          <tr><th>Họ tên</th><th>Email</th><th>Hành động</th></tr>
         </thead>
-        <tbody id="candidatesTable"></tbody>
+        <tbody id="userList"></tbody>
       </table>
     </section>
 
-    <section id="rounds" class="tab-content hidden">
-      <h2>🔄 Cập nhật thông tin từng vòng</h2>
-      <div id="roundsContent"></div>
+    <section id="roundsTab" class="tab-content hidden">
+      <h2>🔄 Trạng thái các vòng</h2>
+      <div id="roundsContainer"></div>
     </section>
 
-    <section id="details" class="tab-content hidden">
-      <h2>🔎 Chi tiết từng vòng của thí sinh</h2>
-      <select id="userSelect"></select>
-      <div id="roundDetails"></div>
+    <section id="detailTab" class="tab-content hidden">
+      <h2>📝 Chi tiết từng vòng</h2>
+      <div id="roundDetailContainer"></div>
     </section>
   </main>
-  <script type="module" src="script.js"></script>
+
+  <script type="module" src="admin.js"></script>
 </body>
 </html>
