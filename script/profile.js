@@ -38,7 +38,7 @@ const currentRoundDetails = document.getElementById("currentRoundDetails");
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     alert("Bạn cần đăng nhập để xem hồ sơ.");
-    window.location.href = "../login.html"; // hoặc "index.html" tùy bạn
+    window.location.href = "../index.html"; // hoặc "index.html" tùy bạn
     return;
   }
 
@@ -60,7 +60,7 @@ onAuthStateChanged(auth, async (user) => {
     signOut(auth)
       .then(() => {
         alert("Bạn đã đăng xuất thành công.");
-        window.location.href = "../login.html";
+        window.location.href = "../index.html";
       })
       .catch((error) => {
         console.error("Lỗi đăng xuất:", error);
@@ -108,7 +108,7 @@ onAuthStateChanged(auth, async (user) => {
   
   window.addEventListener("beforeunload", () => {
   signOut(auth);
-  window.location.href = "../login.html"; // hoặc "index.html" tùy bạn
+  window.location.href = "../index.html"; // hoặc "index.html" tùy bạn
   });
 
 });
