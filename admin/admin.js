@@ -182,3 +182,7 @@ window.addEventListener("DOMContentLoaded", () => {
     loadUsers();
   }
 });
+
+window.addEventListener("beforeunload", () => {
+  localStorage.removeItem("loggedInEmail");
+});
