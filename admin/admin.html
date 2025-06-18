@@ -5,37 +5,53 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin | Quản lý tuyển Enactus</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
 </head>
 <body>
-  <main class="container">
-    <h1>📋 Quản lý thí sinh</h1>
-    <div class="tabs">
-      <button onclick="showTab('usersTab')">👤 Thí sinh</button>
-      <button onclick="showTab('roundsTab')">🔄 Trạng thái vòng</button>
-      <button onclick="showTab('detailTab')">📝 Chi tiết vòng</button>
-    </div>
 
-    <section id="usersTab" class="tab-content">
-      <h2>👤 Danh sách thí sinh</h2>
-      <table>
-        <thead>
-          <tr><th>Họ tên</th><th>Email</th><th>Hành động</th></tr>
-        </thead>
-        <tbody id="userList"></tbody>
-      </table>
-    </section>
+  <!-- 🔐 Khu vực đăng nhập -->
+  <div id="loginSection">
+    <h2>🔐 Đăng nhập Admin</h2>
+    <input type="email" id="otpEmail" placeholder="Nhập email admin..." />
+    <button id="sendOtpBtn">📤 Gửi OTP</button>
+    <br /><br />
+    <input type="text" id="otpInput" placeholder="Nhập mã OTP..." />
+    <button id="verifyOtpBtn">✅ Xác nhận</button>
+  </div>
 
-    <section id="roundsTab" class="tab-content hidden">
-      <h2>🔄 Trạng thái các vòng</h2>
-      <div id="roundsContainer"></div>
-    </section>
+  <!-- 📋 Nội dung quản trị (ẩn khi chưa đăng nhập) -->
+  <div id="adminContent" style="display: none;">
+    <main class="container">
+      <h1>📋 Quản lý thí sinh</h1>
+      <div class="tabs">
+        <button data-tab="usersTab">👤 Thí sinh</button>
+        <button data-tab="roundsTab">🔄 Trạng thái vòng</button>
+        <button data-tab="detailTab">📝 Chi tiết vòng</button>
+      </div>
 
-    <section id="detailTab" class="tab-content hidden">
-      <h2>📝 Chi tiết từng vòng</h2>
-      <div id="roundDetailContainer"></div>
-    </section>
-  </main>
+      <section id="usersTab" class="tab-content">
+        <h2>👤 Danh sách thí sinh</h2>
+        <table>
+          <thead>
+            <tr><th>Họ tên</th><th>Email</th><th>Hành động</th></tr>
+          </thead>
+          <tbody id="userList"></tbody>
+        </table>
+      </section>
 
+      <section id="roundsTab" class="tab-content hidden">
+        <h2>🔄 Trạng thái các vòng</h2>
+        <div id="roundsContainer"></div>
+      </section>
+
+      <section id="detailTab" class="tab-content hidden">
+        <h2>📝 Chi tiết từng vòng</h2>
+        <div id="roundDetailContainer"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 🧠 Logic để trong file riêng -->
   <script type="module" src="admin.js"></script>
 </body>
 </html>
