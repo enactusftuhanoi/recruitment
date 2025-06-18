@@ -71,49 +71,51 @@ button.save:hover {
 }
 
 #loginBox {
-  max-width: 400px;
+  max-width: 360px;
   margin: 80px auto;
   padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: 'Montserrat', sans-serif;
   text-align: center;
 }
 
-#loginBox input[type="email"],
-#loginBox input[type="text"] {
-  width: 100%;
+#loginBox input {
   padding: 12px 16px;
-  margin: 10px 0;
+  font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 0.3s;
+  outline: none;
+  transition: border-color 0.3s ease;
 }
 
 #loginBox input:focus {
-  border-color: #007bff;
-  outline: none;
+  border-color: #0d6efd;
 }
 
 #loginBox button {
-  margin-top: 12px;
-  padding: 12px 20px;
-  width: 100%;
-  background-color: #007bff;
-  color: #fff;
-  font-weight: bold;
+  padding: 12px;
+  font-size: 16px;
+  background-color: #0d6efd;
+  color: white;
   border: none;
   border-radius: 8px;
-  font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.25s;
+  transition: background-color 0.3s ease;
 }
 
 #loginBox button:hover {
-  background-color: #0056b3;
+  background-color: #094dc2;
 }
+
+.hidden {
+  display: none;
+}
+
 
 .hidden {
   display: none;
