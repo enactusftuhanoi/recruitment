@@ -137,7 +137,7 @@ window.sendOTP = async function () {
 
   try {
     await emailjs.send("service_1gnlqvu", "recruitment_otp", {
-      to_email: loginEmail,
+      email: loginEmail,
       otp_code: generatedOTP
     });
     alert("Đã gửi mã OTP tới email của bạn.");
