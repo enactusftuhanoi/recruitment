@@ -162,7 +162,7 @@ window.verifyOTP = function () {
     localStorage.setItem("loggedInEmail", loginEmail);
     alert("Đăng nhập thành công!");
     document.getElementById("loginBox").style.display = "none";
-    document.getElementById("mainApp").classList.remove("hidden");
+    document.getElementById("adminContent").style.display = "block";
     loadUsers();
   } else {
     alert("Sai mã OTP. Vui lòng thử lại.");
@@ -178,7 +178,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const savedEmail = localStorage.getItem("loggedInEmail");
   if (savedEmail) {
     document.getElementById("loginBox").style.display = "none";
-    document.getElementById("mainApp").classList.remove("hidden");
+    document.getElementById("adminContent").style.display = "block";
     loadUsers();
   }
 });
