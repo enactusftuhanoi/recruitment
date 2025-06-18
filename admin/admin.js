@@ -1,5 +1,7 @@
-import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@3.11.0/es/index.js";
-emailjs.init("oZoiyPZ9LMydFbId3"); 
+import "https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js";
+
+emailjs.init("oZoiyPZ9LMydFbId3");
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, collection, getDocs, doc, updateDoc
