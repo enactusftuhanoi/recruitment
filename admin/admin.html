@@ -9,14 +9,12 @@
 <body>
 
   <!-- 🔐 Khu vực đăng nhập -->
-  <div id="loginSection">
-    <h2>🔐 Đăng nhập Admin</h2>
-    <input type="email" id="otpEmail" placeholder="Nhập email admin..." />
-    <button id="sendOtpBtn">📤 Gửi OTP</button>
-    <br /><br />
-    <input type="text" id="otpInput" placeholder="Nhập mã OTP..." />
-    <button id="verifyOtpBtn">✅ Xác nhận</button>
-  </div>
+  <div id="loginBox">
+  <input type="email" id="loginEmail" placeholder="Nhập email" />
+  <button onclick="sendOTP()">Gửi OTP</button>
+  <input type="text" id="otpInput" placeholder="Nhập mã OTP" class="hidden" />
+  <button id="verifyBtn" onclick="verifyOTP()" class="hidden">Xác nhận</button>
+</div>
 
   <!-- 📋 Nội dung quản trị (ẩn khi chưa đăng nhập) -->
   <div id="adminContent" style="display: none;">
