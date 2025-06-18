@@ -31,7 +31,7 @@ let usersData = [];
 // ==== AUTH CHECK ====
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    window.location.href = "https://member.enactusftuhanoi.id.vn/login.html?redirect=" + encodeURIComponent(window.location.pathname);
+    window.location.href = "https://member.enactusftuhanoi.id.vn/login.html?redirect=https://recruitment.enactusftuhanoi.id.vn/admin/admin.html";
     return;
   }
 
@@ -39,7 +39,7 @@ onAuthStateChanged(auth, async (user) => {
   if (!empDoc.exists() || empDoc.data().role !== "admin") {
     alert("Bạn không có quyền truy cập trang này.");
     await signOut(auth);
-    window.location.href = "https://member.enactusftuhanoi.id.vn/login.html?redirect=" + encodeURIComponent(window.location.pathname);
+    window.location.href = "https://member.enactusftuhanoi.id.vn/login.html?redirect=https://recruitment.enactusftuhanoi.id.vn/admin/admin.html";
     return;
   }
 
@@ -48,7 +48,7 @@ onAuthStateChanged(auth, async (user) => {
 
 window.logout = async function() {
   await signOut(auth);
-  window.location.href = "https://member.enactusftuhanoi.id.vn/login.html?redirect=" + encodeURIComponent(window.location.pathname);
+  window.location.href = "https://member.enactusftuhanoi.id.vn/login.html?redirect=https://recruitment.enactusftuhanoi.id.vn/admin/admin.html";
 };
 
 // ==== LOAD USERS ====
