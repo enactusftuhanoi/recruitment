@@ -105,4 +105,76 @@ window.showTab = function(tabId) {
   document.getElementById(tabId).classList.remove("hidden");
 }
 
-loadUsers();
+let generatedOTP = "";
+let otpTimestamp = null;
+let loginEmail = "";
+
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+window.sendOTP = async function () {
+  loginEmail = document.getElementById("loginEmail").value.trim().toLowerCase();
+  if (!loginEmail) return alert("Vui lòng nhập email.");
+
+  const snapshot = await getDocs(collection(db, "employees"));
+  const matched = snapshot.docs.find(doc =>
+    doc.data().email?.toLowerCase() === loginEmail &&
+    doc.data().process === "Active"
+  );
+
+  if (!matched) {
+    alert("Email không tồn tại hoặc chưa được kích hoạt.");
+    return;
+  }
+
+  generatedOTP = generateOTP();
+  otpTimestamp = Date.now();
+
+  try {
+    await emailjs.send("service_1gnlqvu", "recruitment_otp", {
+      to_email: loginEmail,
+      otp_code: generatedOTP
+    });
+    alert("Đã gửi mã OTP tới email của bạn.");
+    document.getElementById("otpInput").classList.remove("hidden");
+    document.getElementById("verifyBtn").classList.remove("hidden");
+  } catch (error) {
+    console.error("Lỗi gửi email:", error);
+    alert("Không thể gửi OTP. Vui lòng thử lại.");
+  }
+};
+
+window.verifyOTP = function () {
+  const entered = document.getElementById("otpInput").value.trim();
+  const now = Date.now();
+
+  if (!generatedOTP || !otpTimestamp || (now - otpTimestamp > 5 * 60 * 1000)) {
+    alert("Mã OTP đã hết hạn. Vui lòng gửi lại.");
+    return;
+  }
+
+  if (entered === generatedOTP) {
+    localStorage.setItem("loggedInEmail", loginEmail);
+    alert("Đăng nhập thành công!");
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("mainApp").classList.remove("hidden");
+    loadUsers();
+  } else {
+    alert("Sai mã OTP. Vui lòng thử lại.");
+  }
+};
+
+window.logout = function () {
+  localStorage.removeItem("loggedInEmail");
+  location.reload();
+};
+
+window.addEventListener("DOMContentLoaded", () => {
+  const savedEmail = localStorage.getItem("loggedInEmail");
+  if (savedEmail) {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("mainApp").classList.remove("hidden");
+    loadUsers();
+  }
+});
