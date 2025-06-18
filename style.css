@@ -168,7 +168,8 @@ button:hover {
 }
  /* Nút Đăng xuất */
  .logout-container {
-  display: flex;
+  top: 20px;
+  right: 20px;
   justify-content: flex-end;
   padding: 1rem 2rem 0 0;
 }
