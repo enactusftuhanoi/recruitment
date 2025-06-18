@@ -167,20 +167,22 @@ button:hover {
   border-radius: 6px;
 }
  /* Nút Đăng xuất */
- .logout-container {
+/* Nút Đăng xuất */
+.logout-container {
+  position: fixed; /* Giúp nút nổi ở góc trên cùng bên phải */
   top: 20px;
   right: 20px;
-  justify-content: flex-end;
-  padding: 1rem 2rem 0 0;
+  z-index: 1000;
 }
 
 .logout-btn {
-  background-color: #f44336;
-  color: white;
+  background-color: #f44336; /* Đỏ tươi */
+  color: #ffffff;
   border: none;
-  padding: 0.6rem 1.2rem;
+  padding: 0.75rem 1.5rem; /* Đồng bộ với các nút khác */
   font-size: 1rem;
-  border-radius: 8px;
+  border-radius: 0.5rem; /* 8px tương đương với 0.5rem */
+  font-weight: 500;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
