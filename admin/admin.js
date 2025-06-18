@@ -1,12 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getFirestore, collection, getDocs, doc, getDoc, updateDoc
+  getFirestore, collection, getDocs, doc, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
@@ -16,7 +11,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
 
 const userList = document.getElementById("userList");
 const roundsContainer = document.getElementById("roundsContainer");
@@ -28,30 +22,6 @@ const steps = [
 
 let usersData = [];
 
-// ==== AUTH CHECK ====
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = "https://member.enactusftuhanoi.id.vn/login.html?redirect=https://recruitment.enactusftuhanoi.id.vn/admin/admin.html";
-    return;
-  }
-
-  const empDoc = await getDoc(doc(db, "employee", user.email));
-  if (!empDoc.exists() || empDoc.data().role !== "admin") {
-    alert("Bạn không có quyền truy cập trang này.");
-    await signOut(auth);
-    window.location.href = "https://member.enactusftuhanoi.id.vn/login.html?redirect=https://recruitment.enactusftuhanoi.id.vn/admin/admin.html";
-    return;
-  }
-
-  loadUsers();
-});
-
-window.logout = async function() {
-  await signOut(auth);
-  window.location.href = "https://member.enactusftuhanoi.id.vn/login.html?redirect=https://recruitment.enactusftuhanoi.id.vn/admin/admin.html";
-};
-
-// ==== LOAD USERS ====
 async function loadUsers() {
   const snapshot = await getDocs(collection(db, "users"));
   usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -60,7 +30,6 @@ async function loadUsers() {
   renderRoundDetails();
 }
 
-// ==== RENDER USER TABLE ====
 function renderUsers() {
   userList.innerHTML = usersData.map(user => `
     <tr>
@@ -83,7 +52,6 @@ window.editUser = async function (uid) {
   }
 }
 
-// ==== RENDER ROUND STATUS ====
 function renderRounds() {
   roundsContainer.innerHTML = usersData.map(user => `
     <div class="user-round-box">
@@ -106,7 +74,6 @@ window.changeRound = async function(uid, value) {
   loadUsers();
 }
 
-// ==== RENDER ROUND DETAILS ====
 function renderRoundDetails() {
   roundDetailContainer.innerHTML = usersData.map(user => {
     const roundsHTML = [1, 2, 3, 4].map(i => {
@@ -133,8 +100,9 @@ window.saveRound = async function(uid, round) {
   alert("Đã lưu thành công!");
 }
 
-// ==== TAB SWITCHING ====
 window.showTab = function(tabId) {
   document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add("hidden"));
   document.getElementById(tabId).classList.remove("hidden");
 }
+
+loadUsers();
