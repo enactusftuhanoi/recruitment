@@ -55,6 +55,18 @@ onAuthStateChanged(auth, async (user) => {
       createdAt: new Date()
     });
   }
+  // 🔓 Xử lý nút Đăng xuất
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    signOut(auth)
+      .then(() => {
+        alert("Bạn đã đăng xuất thành công.");
+        window.location.href = "../login.html";
+      })
+      .catch((error) => {
+        console.error("Lỗi đăng xuất:", error);
+        alert("Đăng xuất thất bại. Vui lòng thử lại.");
+      });
+  });
 
   // Lấy lại dữ liệu đã có/tạo
   const docSnap = await getDoc(userRef);
