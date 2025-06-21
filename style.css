@@ -1,122 +1,208 @@
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: #f9fafb;
   margin: 0;
-  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f4f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
 .container {
-  background: #fff;
-  padding: 24px;
-  max-width: 960px;
-  margin: auto;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-}
-
-h1 {
-  color: #0f766e;
-  margin-bottom: 16px;
-}
-
-.tabs button {
-  padding: 10px 16px;
-  margin-right: 8px;
-  border: none;
-  background: #e2e8f0;
-  cursor: pointer;
-  border-radius: 6px;
-}
-
-.tabs button:hover {
-  background: #cbd5e1;
-}
-
-.tab-content {
-  margin-top: 24px;
-}
-
-.hidden {
-  display: none;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 16px;
-}
-
-table th, table td {
-  padding: 12px;
-  border: 1px solid #e5e7eb;
-}
-
-input, select {
-  padding: 6px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-}
-
-button.save {
-  background: #22c55e;
-  color: white;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button.save:hover {
-  background: #16a34a;
-}
-
-#loginBox {
-  max-width: 360px;
-  margin: 80px auto;
-  padding: 32px;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  background-color: #ffffff;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  font-family: 'Montserrat', sans-serif;
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
   text-align: center;
 }
 
-#loginBox input {
-  padding: 12px 16px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  outline: none;
-  transition: border-color 0.3s ease;
+h1 {
+  font-size: 1.8rem;
+  color: #065f46;
 }
 
-#loginBox input:focus {
-  border-color: #0d6efd;
-}
-
-#loginBox button {
-  padding: 12px;
-  font-size: 16px;
-  background-color: #0d6efd;
+button {
+  background-color: #10b981;
   color: white;
   border: none;
-  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  margin-top: 1rem;
+  transition: background 0.3s;
 }
 
-#loginBox button:hover {
-  background-color: #094dc2;
+button:hover {
+  background-color: #059669;
 }
-
-.hidden {
+.status-steps {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+}
+.step {
+  text-align: center;
+  flex: 1;
+  position: relative;
+}
+.step::after {
+  content: '';
+  position: absolute;
+  top: 20px;
+  right: -50%;
+  height: 4px;
+  width: 100%;
+  background: #ddd;
+  z-index: -1;
+}
+.step:last-child::after {
   display: none;
 }
+.step.done .circle {
+  background: #22c55e;
+}
+.step.current .circle {
+  background: #f59e0b;
+}
+.circle {
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  border-radius: 50%;
+  background: #ddd;
+  color: white;
+  margin: 0 auto 8px;
+  font-weight: bold;
+}
+.label {
+  font-size: 0.9rem;
+}
+.profile-box, .round-box {
+  margin-top: 30px;
+}
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 24px;
+}
+.info-item .label {
+  font-weight: 600;
+}
+.profile-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
 
+.status-section {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  gap: 8px;
+}
 
-.hidden {
-  display: none;
+.round-status {
+  flex: 1;
+  background-color: #f2f2f2;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.round-index {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.round-label {
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.round-status-text {
+  margin-top: 4px;
+  font-style: italic;
+  color: #555;
+}
+
+.profile-section {
+  background: #fff;
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+ /* Nút Đăng xuất */
+/* Import font Poppins nếu chưa có */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+body {
+  margin: 0;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+  background: #f0f4f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Nút Đăng xuất */
+.logout-container {
+  position: fixed;
+  top: 12px;       /* dịch lên trên */
+  right: 16px;
+  z-index: 1000;
+}
+
+.logout-btn {
+  background-color: #facc15; /* Màu vàng nổi bật */
+  color: #333;
+  border: none;
+  padding: 0.5rem 1rem;       /* nhỏ lại */
+  font-size: 0.9rem;          /* nhỏ lại */
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.logout-btn:hover {
+  background-color: #eab308;  /* vàng đậm khi hover */
+  transform: translateY(-1px);
 }
