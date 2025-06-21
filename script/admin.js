@@ -29,9 +29,18 @@ let usersData = [];
 async function loadUsers() {
   const snapshot = await getDocs(collection(db, "users"));
   usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  populateUserDropdown();
   renderUsers();
   renderRounds();
   renderRoundDetails();
+}
+
+function populateUserDropdown() {
+  const select = document.getElementById("selectedUserId");
+  select.innerHTML = `<option value="">-- Chọn người dùng --</option>`;
+  usersData.forEach(user => {
+    select.innerHTML += `<option value="${user.id}">${user.fullname}</option>`;
+  });
 }
 
 function renderUsers() {
@@ -56,8 +65,20 @@ window.editUser = async function (uid) {
   }
 }
 
-function renderRounds() {
-  roundsContainer.innerHTML = usersData.map(user => `
+window.renderSelectedUser = function () {
+  const uid = document.getElementById("selectedUserId").value;
+  renderRounds(uid);
+  renderRoundDetails(uid);
+}
+
+function renderRounds(uid) {
+  const user = usersData.find(u => u.id === uid);
+  if (!user) {
+    roundsContainer.innerHTML = "";
+    return;
+  }
+
+  roundsContainer.innerHTML = `
     <div class="user-round-box">
       <h3>${user.fullname}</h3>
       <label>Vòng hiện tại: 
@@ -70,29 +91,28 @@ function renderRounds() {
         </select>
       </label>
     </div>
-  `).join("");
+  `;
 }
 
-window.changeRound = async function(uid, value) {
-  await updateDoc(doc(db, "users", uid), { current_round: parseInt(value) });
-  loadUsers();
-}
+function renderRoundDetails(uid) {
+  const user = usersData.find(u => u.id === uid);
+  if (!user) {
+    roundDetailContainer.innerHTML = "";
+    return;
+  }
 
-function renderRoundDetails() {
-  roundDetailContainer.innerHTML = usersData.map(user => {
-    const roundsHTML = [1, 2, 3, 4].map(i => {
-      const info = user[`round_${i}`] || {};
-      return `
-        <div style="border: 1px solid #ccc; margin: 8px 0; padding: 8px;">
-          <h4>Vòng ${i}: ${steps[i - 1]}</h4>
-          <label>Thời gian: <input type="text" value="${info.time || ''}" id="time-${user.id}-${i}"/></label><br/>
-          <label>Ghi chú: <input type="text" value="${info.note || ''}" id="note-${user.id}-${i}"/></label><br/>
-          <button class="save" onclick="saveRound('${user.id}', ${i})">Lưu</button>
-        </div>
-      `;
-    }).join("");
-    return `<div><h3>${user.fullname}</h3>${roundsHTML}</div>`;
+  const roundsHTML = [1, 2, 3, 4].map(i => {
+    const info = user[`round_${i}`] || {};
+    return `
+      <div style="border: 1px solid #ccc; margin: 8px 0; padding: 8px;">
+        <h4>Vòng ${i}: ${steps[i - 1]}</h4>
+        <label>Thời gian: <input type="text" value="${info.time || ''}" id="time-${user.id}-${i}"/></label><br/>
+        <label>Ghi chú: <input type="text" value="${info.note || ''}" id="note-${user.id}-${i}"/></label><br/>
+        <button class="save" onclick="saveRound('${user.id}', ${i})">Lưu</button>
+      </div>
+    `;
   }).join("");
+  roundDetailContainer.innerHTML = `<div><h3>${user.fullname}</h3>${roundsHTML}</div>`;
 }
 
 window.saveRound = async function(uid, round) {

@@ -6,16 +6,21 @@
   <title>Admin | Quản lý tuyển Enactus</title>
   <link rel="icon" href="/assets/icon.png" type="image/png">
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
 
   <!-- 🔐 Khu vực đăng nhập -->
   <div id="loginBox">
-  <input type="email" id="loginEmail" placeholder="Nhập email" />
-  <button onclick="sendOTP()">Gửi OTP</button>
-  <input type="text" id="otpInput" placeholder="Nhập mã OTP" class="hidden" />
-  <button id="verifyBtn" onclick="verifyOTP()" class="hidden">Xác nhận</button>
-</div>
+    <input type="email" id="loginEmail" placeholder="Nhập email" />
+    <button onclick="sendOTP()">Gửi OTP</button>
+    <input type="text" id="otpInput" placeholder="Nhập mã OTP" class="hidden" />
+    <button id="verifyBtn" onclick="verifyOTP()" class="hidden">Xác nhận</button>
+  </div>
 
   <!-- 📋 Nội dung quản trị (ẩn khi chưa đăng nhập) -->
   <div id="adminContent" style="display: none;">
@@ -27,6 +32,7 @@
         <button onclick="showTab('detailTab')">📝 Chi tiết vòng</button>
       </div>
 
+      <!-- Danh sách thí sinh -->
       <section id="usersTab" class="tab-content">
         <h2>👤 Danh sách thí sinh</h2>
         <table>
@@ -37,14 +43,26 @@
         </table>
       </section>
 
+      <!-- Trạng thái vòng -->
       <section id="roundsTab" class="tab-content hidden">
         <h2>🔄 Trạng thái các vòng</h2>
-        <div id="roundsContainer"></div>
+        <label>Chọn thí sinh:
+          <select id="selectedUserId" onchange="renderSelectedUser()">
+            <option value="">-- Chọn người dùng --</option>
+          </select>
+        </label>
+        <div id="roundsContainer" style="margin-top: 16px;"></div>
       </section>
 
+      <!-- Chi tiết vòng -->
       <section id="detailTab" class="tab-content hidden">
         <h2>📝 Chi tiết từng vòng</h2>
-        <div id="roundDetailContainer"></div>
+        <label>Chọn thí sinh:
+          <select id="selectedUserId" onchange="renderSelectedUser()">
+            <option value="">-- Chọn người dùng --</option>
+          </select>
+        </label>
+        <div id="roundDetailContainer" style="margin-top: 16px;"></div>
       </section>
     </main>
   </div>
