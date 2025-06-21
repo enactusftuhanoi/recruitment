@@ -212,14 +212,25 @@ window.logout = function () {
 };
 
 window.addEventListener("DOMContentLoaded", () => {
+  // Lúc này DOM chắc chắn sẵn sàng
   const savedEmail = localStorage.getItem("loggedInEmail");
   if (savedEmail) {
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("adminContent").style.display = "block";
     loadUsers();
   }
+
+  // Gán lại DOM sau khi DOM đã sẵn sàng
+  window.userList = document.getElementById("userList");
+  window.roundsContainer = document.getElementById("roundsContainer");
+  window.roundDetailContainer = document.getElementById("roundDetailContainer");
 });
+
 
 window.addEventListener("beforeunload", () => {
   localStorage.removeItem("loggedInEmail");
 });
+
+// Fix export cho onchange dùng trong HTML
+window.renderSelectedRoundUser = renderSelectedRoundUser;
+window.renderSelectedDetailUser = renderSelectedDetailUser;
