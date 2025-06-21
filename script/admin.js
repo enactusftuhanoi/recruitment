@@ -1,5 +1,4 @@
 import "https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js";
-
 emailjs.init("oZoiyPZ9LMydFbId3");
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -31,16 +30,25 @@ async function loadUsers() {
   usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   populateUserDropdown();
   renderUsers();
-  renderRounds();
-  renderRoundDetails();
 }
 
 function populateUserDropdown() {
-  const select = document.getElementById("selectedUserId");
-  select.innerHTML = `<option value="">-- Chọn người dùng --</option>`;
-  usersData.forEach(user => {
-    select.innerHTML += `<option value="${user.id}">${user.fullname}</option>`;
-  });
+  const selectRounds = document.getElementById("selectedUserIdRounds");
+  const selectDetails = document.getElementById("selectedUserIdDetails");
+
+  if (selectRounds) {
+    selectRounds.innerHTML = `<option value="">-- Chọn người dùng --</option>`;
+    usersData.forEach(user => {
+      selectRounds.innerHTML += `<option value="${user.id}">${user.fullname}</option>`;
+    });
+  }
+
+  if (selectDetails) {
+    selectDetails.innerHTML = `<option value="">-- Chọn người dùng --</option>`;
+    usersData.forEach(user => {
+      selectDetails.innerHTML += `<option value="${user.id}">${user.fullname}</option>`;
+    });
+  }
 }
 
 function renderUsers() {
@@ -63,13 +71,17 @@ window.editUser = async function (uid) {
     await updateDoc(doc(db, "users", uid), { fullname: name, email });
     loadUsers();
   }
-}
+};
 
-window.renderSelectedUser = function () {
-  const uid = document.getElementById("selectedUserId").value;
+window.renderSelectedRoundUser = function () {
+  const uid = document.getElementById("selectedUserIdRounds").value;
   renderRounds(uid);
+};
+
+window.renderSelectedDetailUser = function () {
+  const uid = document.getElementById("selectedUserIdDetails").value;
   renderRoundDetails(uid);
-}
+};
 
 function renderRounds(uid) {
   const user = usersData.find(u => u.id === uid);
@@ -115,6 +127,11 @@ function renderRoundDetails(uid) {
   roundDetailContainer.innerHTML = `<div><h3>${user.fullname}</h3>${roundsHTML}</div>`;
 }
 
+window.changeRound = async function(uid, value) {
+  await updateDoc(doc(db, "users", uid), { current_round: parseInt(value) });
+  loadUsers();
+};
+
 window.saveRound = async function(uid, round) {
   const time = document.getElementById(`time-${uid}-${round}`).value;
   const note = document.getElementById(`note-${uid}-${round}`).value;
@@ -122,12 +139,12 @@ window.saveRound = async function(uid, round) {
     [`round_${round}`]: { time, note }
   });
   alert("Đã lưu thành công!");
-}
+};
 
 window.showTab = function(tabId) {
   document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add("hidden"));
   document.getElementById(tabId).classList.remove("hidden");
-}
+};
 
 let generatedOTP = "";
 let otpTimestamp = null;
