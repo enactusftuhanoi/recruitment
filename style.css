@@ -61,6 +61,10 @@ input.hidden {
   display: none;
 }
 
+.hidden {
+  display: none;
+}
+
 /* ==== Thông tin cá nhân ==== */
 .profile-box {
   margin-top: 2rem;
