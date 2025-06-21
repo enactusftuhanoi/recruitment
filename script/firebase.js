@@ -37,6 +37,6 @@ if (loginBtn) {
 // Nếu đã đăng nhập → chuyển hướng tới profile.html
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    window.location.href = "profile.html";
+    window.location.href = "/user/profile.html";
   }
 });
