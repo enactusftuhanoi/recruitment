@@ -502,6 +502,30 @@
         justify-content: center;
       }
     }
+    
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+      font-size: 24px;
+      color: var(--text-light);
+    }
+    
+    .loading-spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid var(--primary);
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-right: 15px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -514,11 +538,7 @@
         <div class="logo-text">ENACTUS FTU HANOI</div>
       </div>
       <div class="user-actions">
-        <button class="action-btn status-btn">
-          <i class="fas fa-sync-alt"></i>
-          Cập nhật trạng thái
-        </button>
-        <button id="logoutBtn" class="action-btn logout-btn">
+        <button class="action-btn logout-btn" id="logoutBtn">
           <i class="fas fa-sign-out-alt"></i>
           Đăng xuất
         </button>
@@ -537,7 +557,10 @@
           <h2>Tiến trình ứng tuyển</h2>
         </div>
         <div id="statusSection" class="status-steps">
-          <!-- Các bước sẽ được thêm bằng JS -->
+          <div class="loading">
+            <div class="loading-spinner"></div>
+            Đang tải dữ liệu...
+          </div>
         </div>
       </div>
 
@@ -550,7 +573,10 @@
           <h2>Thông tin cá nhân</h2>
         </div>
         <div class="info-grid" id="profileInfo">
-          <!-- Dữ liệu sẽ render bằng JS -->
+          <div class="loading">
+            <div class="loading-spinner"></div>
+            Đang tải dữ liệu...
+          </div>
         </div>
       </div>
     </div>
@@ -564,7 +590,10 @@
         <h2>Chi tiết vòng hiện tại</h2>
       </div>
       <div class="round-grid" id="currentRoundDetails">
-        <!-- Nội dung sẽ được JS chèn -->
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          Đang tải dữ liệu...
+        </div>
       </div>
       
       <div class="action-buttons">
@@ -584,64 +613,103 @@
     </section>
 
     <div class="footer">
-      <p>© 2023 Enactus FTU Hanoi - Hệ thống quản lý ứng viên</p>
-      <p>Liên hệ: enactus.ftuhanoi@gmail.com | Hotline: 0123 456 789</p>
+      <p>© 2025 Recruitment | Enactus FTU Hanoi</p>
+      <p>Liên hệ: tuhm@vief.edu.vn | Phone: 0362977206</p>
     </div>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Dữ liệu mẫu - Trong thực tế sẽ kết nối với Firebase
-      const userData = {
-        fullname: "Nguyễn Văn A",
-        email: "nguyenvana@example.com",
-        phone: "0987.654.321",
-        studentId: "FTU20201234",
-        faculty: "Quản trị Kinh doanh",
-        status: "Đang tham gia",
-        current_round: 3,
-        round_3: {
-          time: "15:00 - 17:00, Thứ 7 ngày 15/07/2023",
-          location: "Phòng 301, Tòa nhà A1, Trường Đại học Ngoại thương Hà Nội",
-          note: "Mang theo laptop và chuẩn bị trước ý tưởng dự án. Thời lượng trình bày 10 phút.",
-          interviewer: "Trần Thị B - Trưởng ban Tuyển thành viên",
-          status: "Đã xác nhận"
+  <!-- Thêm Firebase SDKs -->
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+      getAuth, 
+      onAuthStateChanged, 
+      signOut 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { 
+      getFirestore, 
+      doc, 
+      getDoc 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
+      authDomain: "enactusftuhanoi-tracuu.firebaseapp.com",
+      projectId: "enactusftuhanoi-tracuu",
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Các bước tuyển dụng (giống trong admin)
+    const steps = [
+      { id: 1, title: "Vòng đơn" },
+      { id: 2, title: "Phỏng vấn nhóm" },
+      { id: 3, title: "Thử thách" },
+      { id: 4, title: "Phỏng vấn cá nhân" }
+    ];
+
+    // DOM Elements
+    const statusSection = document.getElementById('statusSection');
+    const profileInfo = document.getElementById('profileInfo');
+    const currentRoundDetails = document.getElementById('currentRoundDetails');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // Theo dõi trạng thái đăng nhập
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        alert("Bạn cần đăng nhập để xem hồ sơ.");
+        window.location.href = "index.html"; // Chuyển hướng về trang đăng nhập
+        return;
+      }
+
+      try {
+        // Lấy dữ liệu người dùng từ Firestore
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        
+        if (!userSnap.exists()) {
+          alert("Không tìm thấy hồ sơ của bạn. Vui lòng liên hệ ban tổ chức.");
+          return;
         }
-      };
+        
+        const userData = userSnap.data();
+        renderProfile(userData);
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu:", error);
+        alert("Đã xảy ra lỗi khi tải hồ sơ. Vui lòng thử lại sau.");
+      }
+    });
 
-      // Các bước tuyển dụng
-      const steps = [
-        { id: 1, title: "Vòng đơn", date: "01/06/2023 - 15/06/2023" },
-        { id: 2, title: "Phỏng vấn nhóm", date: "20/06/2023 - 25/06/2023" },
-        { id: 3, title: "Thử thách", date: "01/07/2023 - 10/07/2023" },
-        { id: 4, title: "Phỏng vấn cá nhân", date: "15/07/2023 - 20/07/2023" }
-      ];
-
+    // Hàm render profile
+    function renderProfile(userData) {
       // Render trạng thái các vòng
-      const statusSection = document.getElementById('statusSection');
+      const currentRound = parseInt(userData.current_round || "1");
       statusSection.innerHTML = steps.map(step => {
-        const isDone = step.id < userData.current_round;
-        const isCurrent = step.id === userData.current_round;
+        const isDone = step.id < currentRound;
+        const isCurrent = step.id === currentRound;
         const statusClass = isDone ? 'done' : isCurrent ? 'current' : '';
         
         return `
           <div class="step ${statusClass}">
             <div class="circle">${step.id}</div>
             <div class="label">${step.title}</div>
-            <div class="date">${step.date}</div>
           </div>
         `;
       }).join('');
 
       // Render thông tin cá nhân
-      const profileInfo = document.getElementById('profileInfo');
       const profileFields = [
-        { icon: 'id-card', label: 'Họ và Tên', value: userData.fullname },
-        { icon: 'envelope', label: 'Email', value: userData.email },
-        { icon: 'phone', label: 'Số điện thoại', value: userData.phone },
-        { icon: 'graduation-cap', label: 'Mã sinh viên', value: userData.studentId },
-        { icon: 'building', label: 'Khoa', value: userData.faculty },
-        { icon: 'check-circle', label: 'Trạng thái', value: userData.status }
+        { label: 'Họ và Tên', value: userData.fullname || 'Chưa cập nhật' },
+        { label: 'Email', value: userData.email || 'Chưa cập nhật' },
+        { label: 'Số điện thoại', value: userData.phone || 'Chưa cập nhật' },
+        { label: 'Mã sinh viên', value: userData.studentId || 'Chưa cập nhật' },
+        { label: 'Khoa', value: userData.faculty || 'Chưa cập nhật' },
+        { label: 'Trạng thái', value: userData.status || 'Chưa cập nhật' }
       ];
       
       profileInfo.innerHTML = profileFields.map(field => `
@@ -652,8 +720,7 @@
       `).join('');
 
       // Render chi tiết vòng hiện tại
-      const currentRoundDetails = document.getElementById('currentRoundDetails');
-      const roundData = userData[`round_${userData.current_round}`] || {};
+      const roundData = userData[`round_${currentRound}`] || {};
       
       const roundDetails = [
         { icon: 'clock', title: 'Thời gian', value: roundData.time || 'Đang cập nhật' },
@@ -672,13 +739,16 @@
           <div class="detail-content">${detail.value}</div>
         </div>
       `).join('');
+    }
 
-      // Xử lý đăng xuất
-      document.getElementById('logoutBtn').addEventListener('click', function() {
-        if(confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-          alert('Bạn đã đăng xuất thành công!');
-          // Trong thực tế: window.location.href = "../index.html";
-        }
+    // Xử lý đăng xuất
+    logoutBtn.addEventListener('click', function() {
+      signOut(auth).then(() => {
+        alert('Bạn đã đăng xuất thành công!');
+        window.location.href = "index.html";
+      }).catch((error) => {
+        console.error('Lỗi đăng xuất:', error);
+        alert('Đăng xuất thất bại. Vui lòng thử lại.');
       });
     });
   </script>
