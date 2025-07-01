@@ -628,7 +628,6 @@
       if (roundInfo.time || roundInfo.note) {
         roundDetails = `
           <div><strong>Thời gian:</strong> ${roundInfo.time || "Chưa cập nhật"}</div>
-          <div><strong>Status:</strong> ${roundInfo.status || "Chưa cập nhật"}</div>
           <div><strong>Ghi chú:</strong> ${roundInfo.note || "Không có ghi chú"}</div>
         `;
       }
@@ -780,12 +779,6 @@
               <label class="form-label">Ghi chú:</label>
               <input type="text" class="input-box" value="${info.note || ''}" 
                      placeholder="Ghi chú cho ứng viên" 
-                     id="note-${user.id}-${i}">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Status</label>
-              <input type="text" class="input-box" value="${info.status || ''}" 
-                     placeholder="Tình trạng của ứng viên" 
                      id="note-${user.id}-${i}">
             </div>
             <button class="save-btn" onclick="saveRound('${user.id}', ${i})">
