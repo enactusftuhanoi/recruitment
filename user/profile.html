@@ -3,41 +3,529 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Profile | Enactus FTU Hanoi</title>
-  <link rel="icon" href="/assets/icon.png" type="image/png" />
-  <link rel="stylesheet" href="/style.css" />
+  <title>Hồ sơ thành viên | Enactus FTU Hanoi</title>
+  <link rel="icon" href="/assets/icon.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1a73e8;
+      --primary-dark: #0d62cb;
+      --secondary: #f5f7fa;
+      --accent: #ff6b6b;
+      --text: #333;
+      --text-light: #666;
+      --success: #4caf50;
+      --border: #e0e0e0;
+      --card-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .header {
+      max-width: 1200px;
+      margin: 0 auto 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 50px;
+      height: 50px;
+      background: var(--primary);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+    }
+
+    .logo-text {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .logout-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+      box-shadow: 0 4px 12px rgba(26, 115, 232, 0.25);
+    }
+
+    .logout-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(26, 115, 232, 0.35);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .page-title {
+      text-align: center;
+      margin-bottom: 40px;
+      color: var(--primary);
+      font-size: 36px;
+      position: relative;
+      padding-bottom: 20px;
+    }
+
+    .page-title:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    .section {
+      background: white;
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
+      padding: 30px;
+      margin-bottom: 30px;
+      transition: var(--transition);
+      overflow: hidden;
+    }
+
+    .section:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--primary);
+      margin-bottom: 25px;
+      font-size: 24px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(26, 115, 232, 0.1);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 18px;
+    }
+
+    /* Status Timeline */
+    .status-steps {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin: 40px 0;
+    }
+
+    .status-steps::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: #e0e0e0;
+      z-index: 1;
+      border-radius: 2px;
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+      flex: 1;
+    }
+
+    .step .circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: white;
+      border: 4px solid #e0e0e0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      margin-bottom: 12px;
+      transition: var(--transition);
+    }
+
+    .step.done .circle {
+      border-color: var(--success);
+      background: var(--success);
+      color: white;
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    }
+
+    .step.current .circle {
+      border-color: var(--primary);
+      background: white;
+      color: var(--primary);
+      transform: scale(1.1);
+      box-shadow: 0 4px 15px rgba(26, 115, 232, 0.3);
+    }
+
+    .step .label {
+      font-size: 15px;
+      text-align: center;
+      font-weight: 600;
+      color: var(--text-light);
+      padding: 0 5px;
+    }
+
+    .step.done .label,
+    .step.current .label {
+      color: var(--text);
+    }
+
+    /* Profile Info */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 25px;
+    }
+
+    .info-card {
+      background: #f9fbfd;
+      border-radius: 12px;
+      padding: 20px;
+      border-left: 4px solid var(--primary);
+      transition: var(--transition);
+    }
+
+    .info-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .info-label {
+      font-size: 14px;
+      color: var(--text-light);
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .info-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* Round Details */
+    .round-details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .detail-card {
+      background: #f9fbfd;
+      border-radius: 12px;
+      padding: 25px;
+      text-align: center;
+      transition: var(--transition);
+    }
+
+    .detail-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .detail-icon {
+      font-size: 32px;
+      color: var(--primary);
+      margin-bottom: 15px;
+    }
+
+    .detail-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 8px;
+    }
+
+    .detail-content {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 30px 0;
+      color: var(--text-light);
+      font-size: 14px;
+      margin-top: 40px;
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animated {
+      animation: fadeIn 0.6s ease forwards;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .status-steps {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 30px;
+      }
+
+      .status-steps::before {
+        width: 4px;
+        height: 100%;
+        top: 0;
+        left: 20px;
+      }
+
+      .step {
+        flex-direction: row;
+        align-items: center;
+        gap: 20px;
+        width: 100%;
+      }
+
+      .step .circle {
+        margin-bottom: 0;
+      }
+
+      .page-title {
+        font-size: 28px;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+      }
+
+      .logo {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .section {
+        padding: 20px;
+      }
+      
+      .section-title {
+        font-size: 20px;
+      }
+      
+      .info-grid,
+      .round-details-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-  <!-- 🔸 Nút Đăng xuất -->
-<div class="logout-container">
-  <button id="logoutBtn" class="logout-btn">🔓 Đăng xuất</button>
-</div>
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="logo-text">ENACTUS FTU HANOI</div>
+    </div>
+    <button id="logoutBtn" class="logout-btn">
+      <i class="fas fa-sign-out-alt"></i>
+      Đăng xuất
+    </button>
+  </div>
 
-  <main class="container">
-    <h1>📄 Hồ sơ tuyển thành viên</h1>
+  <div class="container">
+    <h1 class="page-title animated">📄 Hồ sơ tuyển thành viên</h1>
 
-    <!-- 🔹 Vùng trạng thái tuyển -->
-    <section id="statusSection" class="status-steps">
-      <!-- Các bước sẽ được thêm bằng JS -->
+    <!-- Trạng thái tuyển dụng -->
+    <section class="section animated" style="animation-delay: 0.2s;">
+      <div class="section-title">
+        <div class="section-icon">
+          <i class="fas fa-tasks"></i>
+        </div>
+        <h2>Tiến trình ứng tuyển</h2>
+      </div>
+      <div id="statusSection" class="status-steps">
+        <!-- Các bước sẽ được thêm bằng JS -->
+      </div>
     </section>
 
-    <!-- 🔹 Thông tin cá nhân -->
-    <section class="profile-box">
-      <h2>👤 Thông tin cá nhân</h2>
+    <!-- Thông tin cá nhân -->
+    <section class="section animated" style="animation-delay: 0.4s;">
+      <div class="section-title">
+        <div class="section-icon">
+          <i class="fas fa-user"></i>
+        </div>
+        <h2>Thông tin cá nhân</h2>
+      </div>
       <div class="info-grid" id="profileInfo">
         <!-- Dữ liệu sẽ render bằng JS -->
       </div>
     </section>
 
-    <!-- 🔹 Thông tin vòng hiện tại -->
-    <section class="round-box">
-      <h2>🕐 Chi tiết vòng hiện tại</h2>
-      <div id="currentRoundDetails">
+    <!-- Thông tin vòng hiện tại -->
+    <section class="section animated" style="animation-delay: 0.6s;">
+      <div class="section-title">
+        <div class="section-icon">
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+        <h2>Chi tiết vòng hiện tại</h2>
+      </div>
+      <div class="round-details-grid" id="currentRoundDetails">
         <!-- Nội dung sẽ được JS chèn -->
       </div>
     </section>
-  </main>
+  </div>
 
-  <script type="module" src="/script/profile.js"></script>
+  <div class="footer">
+    <p>© 2023 Enactus FTU Hanoi - Hệ thống quản lý ứng viên</p>
+  </div>
+
+  <script>
+    // Dữ liệu mẫu - Trong thực tế sẽ kết nối với Firebase
+    document.addEventListener('DOMContentLoaded', function() {
+      // Giả lập dữ liệu người dùng
+      const userData = {
+        fullname: "Nguyễn Văn A",
+        email: "nguyenvana@example.com",
+        phone: "0987.654.321",
+        studentId: "FTU20201234",
+        status: "Đã nộp đơn",
+        current_round: 3,
+        round_3: {
+          time: "15:00 - 17:00, Thứ 7 ngày 15/07/2023",
+          location: "Phòng 301, Tòa nhà A1",
+          note: "Mang theo laptop và chuẩn bị trước ý tưởng dự án",
+          interviewer: "Trần Thị B - Trưởng ban Tuyển thành viên"
+        }
+      };
+
+      // Các bước tuyển dụng
+      const steps = [
+        { id: 1, title: "Vòng đơn" },
+        { id: 2, title: "Phỏng vấn nhóm" },
+        { id: 3, title: "Thử thách" },
+        { id: 4, title: "Phỏng vấn cá nhân" }
+      ];
+
+      // Render trạng thái các vòng
+      const statusSection = document.getElementById('statusSection');
+      statusSection.innerHTML = steps.map(step => {
+        const isDone = step.id < userData.current_round;
+        const isCurrent = step.id === userData.current_round;
+        const statusClass = isDone ? 'done' : isCurrent ? 'current' : '';
+        
+        return `
+          <div class="step ${statusClass}">
+            <div class="circle">${step.id}</div>
+            <div class="label">${step.title}</div>
+          </div>
+        `;
+      }).join('');
+
+      // Render thông tin cá nhân
+      const profileInfo = document.getElementById('profileInfo');
+      const profileFields = [
+        { icon: 'id-card', label: 'Họ và Tên', value: userData.fullname },
+        { icon: 'envelope', label: 'Email', value: userData.email },
+        { icon: 'phone', label: 'Số điện thoại', value: userData.phone || 'Chưa cập nhật' },
+        { icon: 'graduation-cap', label: 'Mã sinh viên', value: userData.studentId || 'Chưa cập nhật' },
+        { icon: 'check-circle', label: 'Trạng thái', value: userData.status },
+        { icon: 'sync-alt', label: 'Vòng hiện tại', value: steps[userData.current_round - 1]?.title || 'Chưa xác định' }
+      ];
+      
+      profileInfo.innerHTML = profileFields.map(field => `
+        <div class="info-card">
+          <div class="info-label">${field.label}</div>
+          <div class="info-value">${field.value}</div>
+        </div>
+      `).join('');
+
+      // Render chi tiết vòng hiện tại
+      const currentRoundDetails = document.getElementById('currentRoundDetails');
+      const roundData = userData[`round_${userData.current_round}`] || {};
+      
+      const roundDetails = [
+        { icon: 'clock', title: 'Thời gian', value: roundData.time || 'Đang cập nhật' },
+        { icon: 'map-marker-alt', title: 'Địa điểm', value: roundData.location || 'Đang cập nhật' },
+        { icon: 'sticky-note', title: 'Ghi chú', value: roundData.note || 'Không có ghi chú' },
+        { icon: 'user-tie', title: 'Người phỏng vấn', value: roundData.interviewer || 'Chưa xác định' }
+      ];
+      
+      currentRoundDetails.innerHTML = roundDetails.map(detail => `
+        <div class="detail-card">
+          <div class="detail-icon">
+            <i class="fas fa-${detail.icon}"></i>
+          </div>
+          <div class="detail-title">${detail.title}</div>
+          <div class="detail-content">${detail.value}</div>
+        </div>
+      `).join('');
+
+      // Xử lý đăng xuất
+      document.getElementById('logoutBtn').addEventListener('click', function() {
+        // Giả lập đăng xuất
+        if(confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+          alert('Bạn đã đăng xuất thành công!');
+          // Trong thực tế: window.location.href = "../index.html";
+        }
+      });
+    });
+  </script>
 </body>
 </html>
