@@ -1007,6 +1007,8 @@
     let currentUser = null;
     let currentUserId = null;
 
+    // ========== CÁC HÀM CHỨC NĂNG ==========
+
     // Load user data
     async function loadUserData(userId, email) {
       try {
@@ -1030,7 +1032,9 @@
           document.getElementById('roundSection').style.display = 'none';
           document.getElementById('onboardingSection').style.display = 'block';
           
-          // Auto-fill email if available
+          // Initialize currentUserId for new users
+          currentUserId = userId;
+          
           if (email) {
             document.getElementById('onboardEmail').value = email;
           }
@@ -1246,63 +1250,63 @@
 
     // Save onboarding data
     async function saveOnboardingData(e) {
-  e.preventDefault();
-  
-  if (!currentUserId) {
-    toastr.error('Không tìm thấy ID người dùng');
-    return;
-  }
-  
-  try {
-    const gender = document.querySelector('input[name="onboardGender"]:checked').value;
-    const department = document.getElementById('onboardDepartment').value;
-    
-    const userData = {
-      fullname: document.getElementById('onboardFullName').value,
-      email: document.getElementById('onboardEmail').value,
-      phone: document.getElementById('onboardPhone').value,
-      gender: gender,
-      dob: document.getElementById('onboardDob').value,
-      school: document.getElementById('onboardSchool').value,
-      faculty: document.getElementById('onboardFaculty').value,
-      studentId: document.getElementById('onboardStudentId').value,
-      department: department,
-      status: "Chờ xử lý",
-      current_round: 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      round_1: {
-        status: "Chưa bắt đầu",
-        deadline: "15/07/2025",
-        guide: "Hoàn thành form đăng ký"
+      e.preventDefault();
+      
+      const auth = getAuth();
+      const user = auth.currentUser;
+      
+      if (!user) {
+        toastr.error('Người dùng chưa đăng nhập');
+        return;
       }
-    };
-    
-    console.log('Đang lưu dữ liệu:', userData); // Thêm log để kiểm tra
-    
-    // Sửa lỗi cú pháp ở đây
-    await setDoc(doc(db, "users", currentUserId), userData);
-    
-    console.log('Lưu dữ liệu thành công'); // Thêm log để kiểm tra
-    
-    // Update UI
-    currentUser = userData;
-    updateProfileUI(currentUser);
-    updateRoundProgress(1);
-    showRoundDetails(1);
-    
-    // Hide onboarding and show profile
-    document.getElementById('profileSection').style.display = 'block';
-    document.getElementById('roundSection').style.display = 'block';
-    document.getElementById('onboardingSection').style.display = 'none';
-    onboardingModal.style.display = 'none';
-    
-    toastr.success('Đăng ký hồ sơ thành công!');
-  } catch (error) {
-    console.error('Lỗi khi lưu dữ liệu:', error);
-    toastr.error('Đăng ký hồ sơ thất bại: ' + error.message);
-  }
-}
+      
+      try {
+        const gender = document.querySelector('input[name="onboardGender"]:checked').value;
+        const department = document.getElementById('onboardDepartment').value;
+        
+        const userData = {
+          fullname: document.getElementById('onboardFullName').value,
+          email: document.getElementById('onboardEmail').value,
+          phone: document.getElementById('onboardPhone').value,
+          gender: gender,
+          dob: document.getElementById('onboardDob').value,
+          school: document.getElementById('onboardSchool').value,
+          faculty: document.getElementById('onboardFaculty').value,
+          studentId: document.getElementById('onboardStudentId').value,
+          department: department,
+          status: "Chờ xử lý",
+          current_round: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          round_1: {
+            status: "Chưa bắt đầu",
+            deadline: "15/07/2025",
+            guide: "Hoàn thành form đăng ký"
+          }
+        };
+        
+        // Sử dụng UID của người dùng đã đăng nhập
+        await setDoc(doc(db, "users", user.uid), userData);
+        
+        // Cập nhật UI
+        currentUser = userData;
+        currentUserId = user.uid;
+        updateProfileUI(currentUser);
+        updateRoundProgress(1);
+        showRoundDetails(1);
+        
+        // Ẩn onboarding và hiển thị profile
+        document.getElementById('profileSection').style.display = 'block';
+        document.getElementById('roundSection').style.display = 'block';
+        document.getElementById('onboardingSection').style.display = 'none';
+        onboardingModal.style.display = 'none';
+        
+        toastr.success('Đăng ký hồ sơ thành công!');
+      } catch (error) {
+        console.error('Lỗi khi lưu dữ liệu:', error);
+        toastr.error('Đăng ký hồ sơ thất bại: ' + error.message);
+      }
+    }
 
     // Logout function
     async function logout() {
@@ -1355,15 +1359,16 @@
       });
       
       // Edit form submission
-      editForm.addEventListener('submit', saveProfile);
+      editForm.addEventListener('submit', (e) => saveProfile(e));
       
       // Onboarding form submission
-      onboardingForm.addEventListener('submit', saveOnboardingData);
+      onboardingForm.addEventListener('submit', (e) => saveOnboardingData(e));
     }
 
     // Check auth state and load data
     onAuthStateChanged(auth, (user) => {
       if (user) {
+        currentUserId = user.uid;
         loadUserData(user.uid, user.email);
       } else {
         window.location.href = '/index.html'; // Redirect if not logged in
