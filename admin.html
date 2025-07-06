@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin | Enactus FTU Hanoi</title>
-  <link rel="icon" href="/assets/icon.png" type="image/png">
+  <link rel="icon" href="assets/icon.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
   <style>
@@ -46,6 +46,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
     .logo {
@@ -361,6 +364,12 @@
       object-fit: cover;
       border: 3px solid var(--primary-light);
       margin-bottom: 20px;
+      background-color: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ccc;
+      font-size: 40px;
     }
 
     .candidate-status {
@@ -439,6 +448,71 @@
       font-weight: 600;
     }
 
+    /* Round management tabs */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 15px;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      border-radius: 6px;
+      background: white;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .tab-btn:hover, .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.4s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Form elements */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 15px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 15px;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    }
+
     /* Responsive */
     @media (max-width: 992px) {
       .candidate-detail {
@@ -474,6 +548,14 @@
       .admin-actions {
         width: 100%;
         justify-content: space-between;
+      }
+      
+      .tabs {
+        flex-direction: column;
+      }
+      
+      .tab-btn {
+        width: 100%;
       }
     }
   </style>
@@ -646,8 +728,10 @@
       
       <div class="candidate-detail">
         <div class="candidate-avatar">
-          <img src="https://via.placeholder.com/150" alt="Avatar" class="avatar-img" id="modalAvatar">
-          <button class="btn btn-primary">
+          <div class="avatar-img" id="modalAvatar">
+            <i class="fas fa-user"></i>
+          </div>
+          <button class="btn btn-primary" id="editCandidateBtn">
             <i class="fas fa-edit"></i> Chỉnh sửa
           </button>
         </div>
@@ -703,29 +787,148 @@
             </div>
           </div>
           
-          <!-- Round Details -->
+          <!-- Round Management Tabs -->
           <div class="round-section">
-            <h3 class="round-title">
-              <i class="fas fa-calendar-alt"></i> Thông tin các vòng
-            </h3>
+            <div class="tabs">
+              <button class="tab-btn active" data-tab="round1">Vòng đơn</button>
+              <button class="tab-btn" data-tab="round2">Phỏng vấn nhóm</button>
+              <button class="tab-btn" data-tab="round3">Thử thách</button>
+              <button class="tab-btn" data-tab="round4">Phỏng vấn cá nhân</button>
+            </div>
             
-            <div class="round-grid">
-              <div class="detail-card">
-                <div class="detail-title">Vòng đơn</div>
-                <div class="detail-content" id="round1Status">Đã nộp</div>
+            <!-- Round 1 Content -->
+            <div id="round1" class="tab-content active">
+              <div class="form-group">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-control" id="round1StatusSelect">
+                  <option value="Chưa bắt đầu">Chưa bắt đầu</option>
+                  <option value="Đã nộp">Đã nộp</option>
+                  <option value="Đã duyệt">Đã duyệt</option>
+                  <option value="Từ chối">Từ chối</option>
+                </select>
               </div>
-              <div class="detail-card">
-                <div class="detail-title">Phỏng vấn nhóm</div>
-                <div class="detail-content" id="round2Status">Chưa bắt đầu</div>
+              <button class="btn btn-primary" id="saveRound1Btn">
+                <i class="fas fa-save"></i> Lưu thông tin
+              </button>
+            </div>
+            
+            <!-- Round 2 Content -->
+            <div id="round2" class="tab-content">
+              <div class="form-group">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-control" id="round2StatusSelect">
+                  <option value="Chưa bắt đầu">Chưa bắt đầu</option>
+                  <option value="Đang chờ">Đang chờ</option>
+                  <option value="Đã hoàn thành">Đã hoàn thành</option>
+                  <option value="Đã duyệt">Đã duyệt</option>
+                  <option value="Từ chối">Từ chối</option>
+                </select>
               </div>
-              <div class="detail-card">
-                <div class="detail-title">Thử thách</div>
-                <div class="detail-content" id="round3Status">Chưa bắt đầu</div>
+              
+              <div class="form-group">
+                <label class="form-label">Thời gian</label>
+                <input type="text" class="form-control" id="round2Time" placeholder="VD: 14:00 - 16:00, Thứ 7 ngày 15/07">
               </div>
-              <div class="detail-card">
-                <div class="detail-title">Phỏng vấn cá nhân</div>
-                <div class="detail-content" id="round4Status">Chưa bắt đầu</div>
+              
+              <div class="form-group">
+                <label class="form-label">Địa điểm</label>
+                <input type="text" class="form-control" id="round2Location" placeholder="Nhập địa điểm">
               </div>
+              
+              <div class="form-group">
+                <label class="form-label">Thành viên nhóm</label>
+                <input type="text" class="form-control" id="round2Members" placeholder="Nhập tên thành viên, cách nhau bằng dấu phẩy">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Ghi chú</label>
+                <textarea class="form-control" id="round2Note" rows="3" placeholder="Nhập ghi chú"></textarea>
+              </div>
+              
+              <button class="btn btn-primary" id="saveRound2Btn">
+                <i class="fas fa-save"></i> Lưu thông tin
+              </button>
+            </div>
+            
+            <!-- Round 3 Content -->
+            <div id="round3" class="tab-content">
+              <div class="form-group">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-control" id="round3StatusSelect">
+                  <option value="Chưa bắt đầu">Chưa bắt đầu</option>
+                  <option value="Đang thực hiện">Đang thực hiện</option>
+                  <option value="Đã nộp bài">Đã nộp bài</option>
+                  <option value="Đã duyệt">Đã duyệt</option>
+                  <option value="Từ chối">Từ chối</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Đề bài</label>
+                <textarea class="form-control" id="round3Challenge" rows="3" placeholder="Nhập đề bài thử thách"></textarea>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Tài liệu hướng dẫn</label>
+                <input type="text" class="form-control" id="round3Materials" placeholder="Link tài liệu">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Hạn nộp bài</label>
+                <input type="text" class="form-control" id="round3Deadline" placeholder="DD/MM/YYYY HH:MM">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Thông tin pitching</label>
+                <input type="text" class="form-control" id="round3Pitching" placeholder="Thời gian và địa điểm">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Advisor</label>
+                <input type="text" class="form-control" id="round3Advisor" placeholder="Tên advisor">
+              </div>
+              
+              <button class="btn btn-primary" id="saveRound3Btn">
+                <i class="fas fa-save"></i> Lưu thông tin
+              </button>
+            </div>
+            
+            <!-- Round 4 Content -->
+            <div id="round4" class="tab-content">
+              <div class="form-group">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-control" id="round4StatusSelect">
+                  <option value="Chưa bắt đầu">Chưa bắt đầu</option>
+                  <option value="Đang chờ">Đang chờ</option>
+                  <option value="Đã hoàn thành">Đã hoàn thành</option>
+                  <option value="Đã duyệt">Đã duyệt</option>
+                  <option value="Từ chối">Từ chối</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Thời gian</label>
+                <input type="text" class="form-control" id="round4Time" placeholder="VD: 14:00 - 15:00, Thứ 3 ngày 20/07">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Địa điểm</label>
+                <input type="text" class="form-control" id="round4Location" placeholder="Nhập địa điểm">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Người phỏng vấn</label>
+                <input type="text" class="form-control" id="round4Interviewer" placeholder="Nhập tên người phỏng vấn">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Ghi chú</label>
+                <textarea class="form-control" id="round4Note" rows="3" placeholder="Nhập ghi chú"></textarea>
+              </div>
+              
+              <button class="btn btn-primary" id="saveRound4Btn">
+                <i class="fas fa-save"></i> Lưu thông tin
+              </button>
             </div>
           </div>
         </div>
@@ -733,9 +936,73 @@
     </div>
   </div>
 
+  <!-- Edit Candidate Modal -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <i class="fas fa-edit"></i> 
+          <span id="editModalTitle">Chỉnh sửa thông tin ứng viên</span>
+        </h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Họ và tên</label>
+        <input type="text" class="form-control" id="editFullName">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-control" id="editEmail">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Số điện thoại</label>
+        <input type="tel" class="form-control" id="editPhone">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Ban ứng tuyển</label>
+        <select class="form-control" id="editDepartment">
+          <option value="Nhân sự">Nhân sự</option>
+          <option value="Truyền thông">Truyền thông</option>
+          <option value="Đối ngoại">Đối ngoại</option>
+          <option value="Dự án">Dự án</option>
+          <option value="Sáng tạo">Sáng tạo</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Vòng hiện tại</label>
+        <select class="form-control" id="editCurrentRound">
+          <option value="1">Vòng 1: Vòng đơn</option>
+          <option value="2">Vòng 2: Phỏng vấn nhóm</option>
+          <option value="3">Vòng 3: Thử thách</option>
+          <option value="4">Vòng 4: Phỏng vấn cá nhân</option>
+          <option value="5">Hoàn thành</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Trạng thái</label>
+        <select class="form-control" id="editStatus">
+          <option value="Chờ xử lý">Chờ xử lý</option>
+          <option value="Đã duyệt">Đã duyệt</option>
+          <option value="Từ chối">Từ chối</option>
+        </select>
+      </div>
+      
+      <button class="btn btn-primary" id="saveEditBtn" style="width: 100%; padding: 12px; margin-top: 20px;">
+        <i class="fas fa-save"></i> Lưu thay đổi
+      </button>
+    </div>
+  </div>
+
   <!-- Firebase and other scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
   <script type="module">
+    // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { 
       getAuth, 
@@ -763,6 +1030,14 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    // Toastr configuration
+    toastr.options = {
+      closeButton: true,
+      progressBar: true,
+      positionClass: 'toast-bottom-right',
+      timeOut: 3000
+    };
+
     // DOM elements
     const loginBox = document.getElementById('loginBox');
     const adminContent = document.getElementById('adminContent');
@@ -779,7 +1054,8 @@
     
     // Modal elements
     const candidateModal = document.getElementById('candidateModal');
-    const closeModal = document.querySelector('.close-modal');
+    const editModal = document.getElementById('editModal');
+    const closeModalButtons = document.querySelectorAll('.close-modal');
     
     // Stats elements
     const totalCandidates = document.getElementById('totalCandidates');
@@ -787,14 +1063,11 @@
     const inProgressCandidates = document.getElementById('inProgressCandidates');
     const pendingCandidates = document.getElementById('pendingCandidates');
     
-    // Toastr configuration
-    toastr.options = {
-      closeButton: true,
-      progressBar: true,
-      positionClass: 'toast-bottom-right',
-      timeOut: 3000
-    };
-
+    // Tab management
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    
+    // Current selected candidate
+    let currentCandidateId = null;
     let candidatesData = [];
     let filteredCandidates = [];
     let currentSortField = null;
@@ -899,6 +1172,14 @@
           showCandidateDetail(candidateId);
         });
       });
+      
+      // Add event listeners to edit buttons
+      document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const candidateId = this.getAttribute('data-id');
+          showEditModal(candidateId);
+        });
+      });
     }
 
     // Get round badge HTML
@@ -939,9 +1220,10 @@
       const candidate = candidatesData.find(c => c.id === candidateId);
       if (!candidate) return;
       
+      currentCandidateId = candidateId;
+      
       // Update modal content
       document.getElementById('modalCandidateName').textContent = candidate.fullname || 'Ứng viên';
-      document.getElementById('modalAvatar').src = candidate.photoURL || 'https://via.placeholder.com/150';
       document.getElementById('modalDepartment').textContent = candidate.department || 'Chưa chọn';
       document.getElementById('modalCurrentRound').textContent = getRoundText(candidate.current_round);
       document.getElementById('modalStatus').textContent = candidate.status || 'Chưa xác định';
@@ -956,14 +1238,39 @@
       document.getElementById('modalFaculty').textContent = candidate.faculty || 'Chưa cập nhật';
       document.getElementById('modalStudentId').textContent = candidate.studentId || 'Chưa cập nhật';
       
-      // Round status
-      document.getElementById('round1Status').textContent = candidate.round_1?.status || 'Chưa bắt đầu';
-      document.getElementById('round2Status').textContent = candidate.round_2?.status || 'Chưa bắt đầu';
-      document.getElementById('round3Status').textContent = candidate.round_3?.status || 'Chưa bắt đầu';
-      document.getElementById('round4Status').textContent = candidate.round_4?.status || 'Chưa bắt đầu';
+      // Load round data
+      loadRoundData(candidate);
       
       // Show modal
       candidateModal.style.display = 'block';
+    }
+
+    // Load round data into modal
+    function loadRoundData(candidate) {
+      // Round 1
+      document.getElementById('round1StatusSelect').value = candidate.round_1?.status || 'Chưa bắt đầu';
+      
+      // Round 2
+      document.getElementById('round2StatusSelect').value = candidate.round_2?.status || 'Chưa bắt đầu';
+      document.getElementById('round2Time').value = candidate.round_2?.time || '';
+      document.getElementById('round2Location').value = candidate.round_2?.location || '';
+      document.getElementById('round2Members').value = candidate.round_2?.members || '';
+      document.getElementById('round2Note').value = candidate.round_2?.note || '';
+      
+      // Round 3
+      document.getElementById('round3StatusSelect').value = candidate.round_3?.status || 'Chưa bắt đầu';
+      document.getElementById('round3Challenge').value = candidate.round_3?.challenge || '';
+      document.getElementById('round3Materials').value = candidate.round_3?.materials || '';
+      document.getElementById('round3Deadline').value = candidate.round_3?.deadline || '';
+      document.getElementById('round3Pitching').value = candidate.round_3?.pitching || '';
+      document.getElementById('round3Advisor').value = candidate.round_3?.advisor || '';
+      
+      // Round 4
+      document.getElementById('round4StatusSelect').value = candidate.round_4?.status || 'Chưa bắt đầu';
+      document.getElementById('round4Time').value = candidate.round_4?.time || '';
+      document.getElementById('round4Location').value = candidate.round_4?.location || '';
+      document.getElementById('round4Interviewer').value = candidate.round_4?.interviewer || '';
+      document.getElementById('round4Note').value = candidate.round_4?.note || '';
     }
 
     // Get round text
@@ -982,6 +1289,146 @@
         return `Vòng ${round}: ${rounds[round-1]}`;
       } else {
         return rounds[4];
+      }
+    }
+
+    // Show edit modal
+    function showEditModal(candidateId) {
+      const candidate = candidatesData.find(c => c.id === candidateId);
+      if (!candidate) return;
+      
+      currentCandidateId = candidateId;
+      
+      // Fill form with candidate data
+      document.getElementById('editFullName').value = candidate.fullname || '';
+      document.getElementById('editEmail').value = candidate.email || '';
+      document.getElementById('editPhone').value = candidate.phone || '';
+      document.getElementById('editDepartment').value = candidate.department || 'Nhân sự';
+      document.getElementById('editCurrentRound').value = candidate.current_round || '1';
+      document.getElementById('editStatus').value = candidate.status || 'Chờ xử lý';
+      
+      // Show modal
+      editModal.style.display = 'block';
+    }
+
+    // Save edited candidate
+    async function saveEditedCandidate() {
+      if (!currentCandidateId) return;
+      
+      try {
+        const candidateRef = doc(db, "users", currentCandidateId);
+        
+        await updateDoc(candidateRef, {
+          fullname: document.getElementById('editFullName').value,
+          email: document.getElementById('editEmail').value,
+          phone: document.getElementById('editPhone').value,
+          department: document.getElementById('editDepartment').value,
+          current_round: parseInt(document.getElementById('editCurrentRound').value),
+          status: document.getElementById('editStatus').value,
+          updatedAt: new Date()
+        });
+        
+        // Update local data
+        const candidateIndex = candidatesData.findIndex(c => c.id === currentCandidateId);
+        if (candidateIndex !== -1) {
+          candidatesData[candidateIndex] = {
+            ...candidatesData[candidateIndex],
+            fullname: document.getElementById('editFullName').value,
+            email: document.getElementById('editEmail').value,
+            phone: document.getElementById('editPhone').value,
+            department: document.getElementById('editDepartment').value,
+            current_round: parseInt(document.getElementById('editCurrentRound').value),
+            status: document.getElementById('editStatus').value
+          };
+        }
+        
+        // Update filtered data
+        const filteredIndex = filteredCandidates.findIndex(c => c.id === currentCandidateId);
+        if (filteredIndex !== -1) {
+          filteredCandidates[filteredIndex] = {
+            ...filteredCandidates[filteredIndex],
+            fullname: document.getElementById('editFullName').value,
+            email: document.getElementById('editEmail').value,
+            phone: document.getElementById('editPhone').value,
+            department: document.getElementById('editDepartment').value,
+            current_round: parseInt(document.getElementById('editCurrentRound').value),
+            status: document.getElementById('editStatus').value
+          };
+        }
+        
+        // Update UI
+        renderCandidates();
+        updateStats();
+        
+        // Close modal
+        editModal.style.display = 'none';
+        
+        toastr.success('Cập nhật thông tin ứng viên thành công');
+      } catch (error) {
+        console.error('Error updating candidate:', error);
+        toastr.error('Cập nhật thông tin thất bại');
+      }
+    }
+
+    // Save round data
+    async function saveRoundData(roundNumber) {
+      if (!currentCandidateId) return;
+      
+      try {
+        const candidateRef = doc(db, "users", currentCandidateId);
+        const roundData = {};
+        const roundField = `round_${roundNumber}`;
+        
+        // Get data based on round number
+        switch(roundNumber) {
+          case 1:
+            roundData.status = document.getElementById('round1StatusSelect').value;
+            break;
+          case 2:
+            roundData.status = document.getElementById('round2StatusSelect').value;
+            roundData.time = document.getElementById('round2Time').value;
+            roundData.location = document.getElementById('round2Location').value;
+            roundData.members = document.getElementById('round2Members').value;
+            roundData.note = document.getElementById('round2Note').value;
+            break;
+          case 3:
+            roundData.status = document.getElementById('round3StatusSelect').value;
+            roundData.challenge = document.getElementById('round3Challenge').value;
+            roundData.materials = document.getElementById('round3Materials').value;
+            roundData.deadline = document.getElementById('round3Deadline').value;
+            roundData.pitching = document.getElementById('round3Pitching').value;
+            roundData.advisor = document.getElementById('round3Advisor').value;
+            break;
+          case 4:
+            roundData.status = document.getElementById('round4StatusSelect').value;
+            roundData.time = document.getElementById('round4Time').value;
+            roundData.location = document.getElementById('round4Location').value;
+            roundData.interviewer = document.getElementById('round4Interviewer').value;
+            roundData.note = document.getElementById('round4Note').value;
+            break;
+        }
+        
+        await updateDoc(candidateRef, {
+          [roundField]: roundData,
+          updatedAt: new Date()
+        });
+        
+        // Update local data
+        const candidateIndex = candidatesData.findIndex(c => c.id === currentCandidateId);
+        if (candidateIndex !== -1) {
+          candidatesData[candidateIndex][roundField] = roundData;
+        }
+        
+        // Update filtered data
+        const filteredIndex = filteredCandidates.findIndex(c => c.id === currentCandidateId);
+        if (filteredIndex !== -1) {
+          filteredCandidates[filteredIndex][roundField] = roundData;
+        }
+        
+        toastr.success(`Cập nhật thông tin vòng ${roundNumber} thành công`);
+      } catch (error) {
+        console.error(`Error updating round ${roundNumber}:`, error);
+        toastr.error(`Cập nhật thông tin vòng ${roundNumber} thất bại`);
       }
     }
 
@@ -1104,9 +1551,12 @@
         });
       });
       
-      // Modal close button
-      closeModal.addEventListener('click', function() {
-        candidateModal.style.display = 'none';
+      // Modal close buttons
+      closeModalButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          candidateModal.style.display = 'none';
+          editModal.style.display = 'none';
+        });
       });
       
       // Close modal when clicking outside
@@ -1114,7 +1564,34 @@
         if (event.target === candidateModal) {
           candidateModal.style.display = 'none';
         }
+        if (event.target === editModal) {
+          editModal.style.display = 'none';
+        }
       });
+      
+      // Tab switching
+      tabButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const tabId = this.getAttribute('data-tab');
+          
+          // Update active tab button
+          tabButtons.forEach(tab => tab.classList.remove('active'));
+          this.classList.add('active');
+          
+          // Update active tab content
+          document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+          });
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
+      
+      // Save buttons
+      document.getElementById('saveEditBtn').addEventListener('click', saveEditedCandidate);
+      document.getElementById('saveRound1Btn').addEventListener('click', () => saveRoundData(1));
+      document.getElementById('saveRound2Btn').addEventListener('click', () => saveRoundData(2));
+      document.getElementById('saveRound3Btn').addEventListener('click', () => saveRoundData(3));
+      document.getElementById('saveRound4Btn').addEventListener('click', () => saveRoundData(4));
     }
 
     // Check auth state
