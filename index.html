@@ -1,52 +1,421 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đăng nhập | Enactus FTU</title>
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-  <!-- CSS -->
-  <link rel="stylesheet" href="css/auth.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>18th Recruitment | Enactus FTU Hanoi</title>
+  <link rel="icon" href="/assets/icon.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    :root {
+      --primary: #1a56db;
+      --primary-dark: #0e3eaa;
+      --secondary: #f59e0b;
+      --light: #f9fafb;
+      --dark: #1f2937;
+      --gray: #6b7280;
+      --success: #10b981;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0f172a, #1e40af);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Background animation */
+    .background-shapes {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .shape {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .shape:nth-child(1) {
+      width: 300px;
+      height: 300px;
+      top: -150px;
+      right: -150px;
+    }
+
+    .shape:nth-child(2) {
+      width: 200px;
+      height: 200px;
+      bottom: -100px;
+      left: -100px;
+    }
+
+    .shape:nth-child(3) {
+      width: 150px;
+      height: 150px;
+      top: 40%;
+      left: 20%;
+    }
+
+    .shape:nth-child(4) {
+      width: 100px;
+      height: 100px;
+      bottom: 30%;
+      right: 25%;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+      padding: 40px 30px;
+      width: 100%;
+      max-width: 450px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+      z-index: -1;
+    }
+
+    .logo-container {
+      margin-bottom: 25px;
+    }
+
+    .logo {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .logo i {
+      font-size: 48px;
+      color: white;
+    }
+
+    h1 {
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .tagline {
+      color: var(--secondary);
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 5px;
+      letter-spacing: 1px;
+    }
+
+    .description {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 15px;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .feature {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 12px;
+      flex: 1;
+      min-width: 120px;
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+
+    .feature:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .feature i {
+      font-size: 24px;
+      color: var(--secondary);
+      margin-bottom: 10px;
+    }
+
+    .feature p {
+      color: white;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    #loginBtn {
+      background: linear-gradient(to right, var(--primary), var(--primary-dark));
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 50px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      box-shadow: 0 10px 20px rgba(26, 86, 219, 0.3);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #loginBtn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 25px rgba(26, 86, 219, 0.4);
+    }
+
+    #loginBtn:active {
+      transform: translateY(0);
+    }
+
+    #loginBtn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: 0.5s;
+    }
+
+    #loginBtn:hover::before {
+      left: 100%;
+    }
+
+    #loginBtn i {
+      font-size: 20px;
+    }
+
+    .footer {
+      margin-top: 30px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 13px;
+    }
+
+    /* Animation for the rocket */
+    .rocket-container {
+      position: relative;
+      height: 60px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .rocket {
+      position: absolute;
+      font-size: 40px;
+      left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      color: var(--secondary);
+      animation: rocketLaunch 3s infinite ease-in-out;
+    }
+
+    @keyframes rocketLaunch {
+      0%, 100% {
+        bottom: 0;
+        transform: translateX(-50%) rotate(45deg);
+      }
+      50% {
+        bottom: 100%;
+        transform: translateX(-50%) rotate(45deg) translateY(20px);
+      }
+    }
+
+    .particles {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 20px;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--secondary);
+      border-radius: 50%;
+      opacity: 0;
+    }
+
+    .particle:nth-child(1) {
+      animation: particle 1.5s infinite;
+      bottom: 0;
+      left: 50%;
+    }
+    .particle:nth-child(2) {
+      animation: particle 1.5s infinite 0.2s;
+      bottom: 0;
+      left: 40%;
+    }
+    .particle:nth-child(3) {
+      animation: particle 1.5s infinite 0.4s;
+      bottom: 0;
+      left: 60%;
+    }
+
+    @keyframes particle {
+      0% {
+        transform: translateY(0) scale(0.5);
+        opacity: 0;
+      }
+      20% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-30px) scale(1.2);
+        opacity: 0;
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 576px) {
+      .container {
+        padding: 30px 20px;
+      }
+      
+      h1 {
+        font-size: 24px;
+      }
+      
+      .feature {
+        min-width: 100px;
+        padding: 10px;
+      }
+      
+      .logo {
+        width: 80px;
+        height: 80px;
+      }
+      
+      .logo i {
+        font-size: 36px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="login-container">
-    <div class="login-card">
-      <div class="logo">
-        <img src="assets/enactus-logo.png" alt="Enactus Logo">
-        <h1>HỆ THỐNG TUYỂN THÀNH VIÊN</h1>
-      </div>
-
-      <form id="loginForm">
-        <div class="input-group">
-          <i class="fas fa-envelope"></i>
-          <input type="email" id="email" placeholder="Email FTU" required>
-        </div>
-
-        <div class="input-group">
-          <i class="fas fa-lock"></i>
-          <input type="password" id="password" placeholder="Mật khẩu" required>
-        </div>
-
-        <button type="submit" class="login-btn" id="loginBtn">
-          <span id="btnText">Đăng nhập</span>
-          <div class="spinner hidden" id="spinner"></div>
-        </button>
-
-        <div class="links">
-          <a href="#" id="forgotPassword">Quên mật khẩu?</a>
-        </div>
-      </form>
-
-      <div id="loginError" class="error-message hidden"></div>
-    </div>
+  <div class="background-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
   </div>
 
-  <!-- JS -->
-  <script src="js/firebase.js"></script>
-  <script src="js/auth.js"></script>
+  <main class="container">
+    <div class="rocket-container">
+      <div class="rocket">🚀</div>
+      <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+      </div>
+    </div>
+    
+    <div class="logo-container">
+      <div class="logo">
+        <i class="fas fa-users"></i>
+      </div>
+    </div>
+    
+    <h1>TUYỂN THÀNH VIÊN ENACTUS FTU HANOI 2025</h1>
+    
+    <p class="tagline">KHỞI ĐẦU HÀNH TRÌNH THAY ĐỔI</p>
+    
+    <p class="description">
+      Gia nhập đội ngũ Enactus FTU Hanoi để cùng tạo ra những dự án kinh doanh xã hội 
+      mang tác động tích cực đến cộng đồng và phát triển bản thân.
+    </p>
+    
+    <div class="features">
+      <div class="feature">
+        <i class="fas fa-lightbulb"></i>
+        <p>Sáng tạo</p>
+      </div>
+      <div class="feature">
+        <i class="fas fa-hands-helping"></i>
+        <p>Cộng đồng</p>
+      </div>
+      <div class="feature">
+        <i class="fas fa-chart-line"></i>
+        <p>Phát triển</p>
+      </div>
+      <div class="feature">
+        <i class="fas fa-globe-asia"></i>
+        <p>Tác động</p>
+      </div>
+    </div>
+    
+    <button id="loginBtn">
+      <i class="fab fa-google"></i> Đăng nhập bằng Google
+    </button>
+    
+    <p class="footer">© 2025 Enactus FTU Hanoi. All rights reserved.</p>
+  </main>
+
+  <!-- Firebase SDK -->
+  <script type="module" src="./script/firebase.js"></script>
+  
+  <script>
+    // Thêm hiệu ứng cho các hình nền
+    document.addEventListener('DOMContentLoaded', function() {
+      const shapes = document.querySelectorAll('.shape');
+      
+      shapes.forEach(shape => {
+        const size = Math.random() * 100 + 100;
+        shape.style.width = `${size}px`;
+        shape.style.height = `${size}px`;
+      });
+    });
+  </script>
 </body>
 </html>
