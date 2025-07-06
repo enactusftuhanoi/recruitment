@@ -1245,10 +1245,13 @@
     }
 
     // Save onboarding data
-async function saveOnboardingData(e) {
+    async function saveOnboardingData(e) {
   e.preventDefault();
   
-  if (!currentUserId) return;
+  if (!currentUserId) {
+    toastr.error('Không tìm thấy ID người dùng');
+    return;
+  }
   
   try {
     const gender = document.querySelector('input[name="onboardGender"]:checked').value;
@@ -1275,8 +1278,12 @@ async function saveOnboardingData(e) {
       }
     };
     
+    console.log('Đang lưu dữ liệu:', userData); // Thêm log để kiểm tra
+    
     // Sửa lỗi cú pháp ở đây
-    await setDoc(doc(db, "users", currentUserId)), userData;
+    await setDoc(doc(db, "users", currentUserId), userData);
+    
+    console.log('Lưu dữ liệu thành công'); // Thêm log để kiểm tra
     
     // Update UI
     currentUser = userData;
@@ -1292,8 +1299,8 @@ async function saveOnboardingData(e) {
     
     toastr.success('Đăng ký hồ sơ thành công!');
   } catch (error) {
-    console.error('Error saving onboarding data:', error);
-    toastr.error('Đăng ký hồ sơ thất bại. Vui lòng thử lại.');
+    console.error('Lỗi khi lưu dữ liệu:', error);
+    toastr.error('Đăng ký hồ sơ thất bại: ' + error.message);
   }
 }
 
