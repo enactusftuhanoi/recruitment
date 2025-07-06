@@ -120,6 +120,22 @@
       padding: 20px;
     }
 
+    /* Onboarding section */
+    .onboarding-section {
+      background: white;
+      border-radius: 12px;
+      padding: 50px 30px;
+      box-shadow: var(--card-shadow);
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .onboarding-icon {
+      font-size: 48px;
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
+
     /* Profile section */
     .profile-section {
       background: white;
@@ -127,6 +143,7 @@
       padding: 30px;
       box-shadow: var(--card-shadow);
       margin-top: 30px;
+      display: none;
     }
 
     .profile-header {
@@ -253,6 +270,7 @@
     /* Round progress */
     .round-section {
       margin-top: 40px;
+      display: none;
     }
 
     .round-title {
@@ -412,6 +430,12 @@
       color: var(--text-light);
     }
 
+    .form-label.required::after {
+      content: '*';
+      color: var(--accent);
+      margin-left: 4px;
+    }
+
     .form-control {
       width: 100%;
       padding: 10px 15px;
@@ -436,9 +460,14 @@
       display: flex;
       align-items: center;
       gap: 5px;
+      cursor: pointer;
     }
 
-    /* Edit modal */
+    .radio-option input {
+      cursor: pointer;
+    }
+
+    /* Modal styles */
     .modal {
       display: none;
       position: fixed;
@@ -501,6 +530,11 @@
         width: 100%;
         justify-content: space-between;
       }
+      
+      .modal-content {
+        width: 95%;
+        padding: 20px;
+      }
     }
   </style>
 </head>
@@ -525,7 +559,20 @@
 
   <!-- Main Content -->
   <div class="app-container">
-    <div class="profile-section">
+    <!-- Onboarding Section (for new users) -->
+    <div id="onboardingSection" class="onboarding-section">
+      <div class="onboarding-icon">
+        <i class="fas fa-user-plus"></i>
+      </div>
+      <h2>Chào mừng bạn đến với Enactus FTU Hanoi!</h2>
+      <p style="margin: 20px 0 30px; color: var(--text-light);">Vui lòng điền thông tin cá nhân để bắt đầu quá trình ứng tuyển</p>
+      <button id="startOnboardingBtn" class="btn btn-primary">
+        <i class="fas fa-pencil-alt"></i> Điền thông tin
+      </button>
+    </div>
+
+    <!-- Profile Section (for existing users) -->
+    <div id="profileSection" class="profile-section">
       <div class="profile-header">
         <h1 class="profile-title">
           <i class="fas fa-user-circle"></i> Hồ sơ ứng viên
@@ -549,7 +596,7 @@
           <div class="status-card">
             <div class="status-item">
               <span>Ban ứng tuyển:</span>
-              <span class="badge badge-primary" id="userDepartment">Nhân sự</span>
+              <span class="badge badge-primary" id="userDepartment">Chưa có dữ liệu</span>
             </div>
             <div class="status-item">
               <span>Vòng hiện tại:</span>
@@ -580,27 +627,27 @@
             </div>
             <div class="info-card">
               <div class="info-label">Ngày sinh</div>
-              <div class="info-value" id="userDob">01/01/2000</div>
+              <div class="info-value" id="userDob">01/01/2007</div>
             </div>
             <div class="info-card">
               <div class="info-label">Trường</div>
-              <div class="info-value" id="userSchool">FTU Hanoi</div>
+              <div class="info-value" id="userSchool">Trường Đại học Ngoại Thương</div>
             </div>
             <div class="info-card">
-              <div class="info-label">Khoa/Ngành</div>
-              <div class="info-value" id="userFaculty">Kinh tế quốc tế</div>
+              <div class="info-label">Khóa/Lớp/Khoa</div>
+              <div class="info-value" id="userFaculty">K64 - Anh 05 - TC KTQT</div>
             </div>
             <div class="info-card">
               <div class="info-label">MSSV</div>
-              <div class="info-value" id="userStudentId">20201234</div>
+              <div class="info-value" id="userStudentId">2415410000</div>
             </div>
           </div>
         </div>
       </div>
     </div>
     
-    <!-- Round Progress -->
-    <div class="round-section">
+    <!-- Round Section (for existing users) -->
+    <div id="roundSection" class="round-section">
       <h2 class="round-title">
         <i class="fas fa-tasks"></i> Tiến trình ứng tuyển
       </h2>
@@ -761,22 +808,22 @@
       
       <form id="editForm">
         <div class="form-group">
-          <label class="form-label">Họ và tên</label>
+          <label class="form-label required">Họ và tên</label>
           <input type="text" class="form-control" id="editFullName" required>
         </div>
         
         <div class="form-group">
-          <label class="form-label">Email</label>
+          <label class="form-label required">Email</label>
           <input type="email" class="form-control" id="editEmail" required>
         </div>
         
         <div class="form-group">
-          <label class="form-label">Số điện thoại</label>
+          <label class="form-label required">Số điện thoại</label>
           <input type="tel" class="form-control" id="editPhone" required>
         </div>
         
         <div class="form-group">
-          <label class="form-label">Giới tính</label>
+          <label class="form-label required">Giới tính</label>
           <div class="radio-group">
             <label class="radio-option">
               <input type="radio" name="gender" value="Nam" checked> Nam
@@ -796,22 +843,101 @@
         </div>
         
         <div class="form-group">
-          <label class="form-label">Trường</label>
-          <input type="text" class="form-control" id="editSchool">
+          <label class="form-label required">Trường</label>
+          <input type="text" class="form-control" id="editSchool" required>
         </div>
         
         <div class="form-group">
-          <label class="form-label">Khoa/Ngành</label>
-          <input type="text" class="form-control" id="editFaculty">
+          <label class="form-label required">Khoa/Ngành</label>
+          <input type="text" class="form-control" id="editFaculty" required>
         </div>
         
         <div class="form-group">
-          <label class="form-label">MSSV</label>
-          <input type="text" class="form-control" id="editStudentId">
+          <label class="form-label required">MSSV</label>
+          <input type="text" class="form-control" id="editStudentId" required>
         </div>
         
         <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 20px;">
           <i class="fas fa-save"></i> Lưu thay đổi
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Onboarding Modal -->
+  <div id="onboardingModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <i class="fas fa-user-plus"></i> Điền thông tin ứng tuyển
+        </h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      
+      <form id="onboardingForm">
+        <div class="form-group">
+          <label class="form-label required">Họ và tên</label>
+          <input type="text" class="form-control" id="onboardFullName" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Email</label>
+          <input type="email" class="form-control" id="onboardEmail" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Số điện thoại</label>
+          <input type="tel" class="form-control" id="onboardPhone" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Giới tính</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="onboardGender" value="Nam" checked> Nam
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="onboardGender" value="Nữ"> Nữ
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="onboardGender" value="Khác"> Khác
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Ngày sinh</label>
+          <input type="text" class="form-control" id="onboardDob" placeholder="DD/MM/YYYY">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Trường</label>
+          <input type="text" class="form-control" id="onboardSchool" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Khoa/Ngành</label>
+          <input type="text" class="form-control" id="onboardFaculty" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">MSSV</label>
+          <input type="text" class="form-control" id="onboardStudentId" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Ban ứng tuyển</label>
+          <select class="form-control" id="onboardDepartment" required>
+            <option value="">-- Chọn ban --</option>
+            <option value="Nhân sự">Nhân sự</option>
+            <option value="Truyền thông">Truyền thông</option>
+            <option value="Đối ngoại">Đối ngoại</option>
+            <option value="Dự án">Dự án</option>
+          </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 20px;">
+          <i class="fas fa-check"></i> Hoàn thành đăng ký
         </button>
       </form>
     </div>
@@ -831,6 +957,7 @@
       getFirestore, 
       doc, 
       getDoc,
+      setDoc,
       updateDoc
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -865,49 +992,52 @@
       hideMethod: 'fadeOut'
     };
 
-    // Safe toastr function with fallback
-    function showToast(type, message) {
-      try {
-        if (toastr && toastr[type]) {
-          toastr[type](message);
-        } else {
-          console[type === 'error' ? 'error' : 'log'](message);
-          alert(message);
-        }
-      } catch (e) {
-        console.log(message);
-        alert(message);
-      }
-    }
-
     // DOM elements
     const logoutBtn = document.getElementById('logoutBtn');
     const refreshBtn = document.getElementById('refreshBtn');
     const editProfileBtn = document.getElementById('editProfileBtn');
+    const startOnboardingBtn = document.getElementById('startOnboardingBtn');
     const editModal = document.getElementById('editModal');
+    const onboardingModal = document.getElementById('onboardingModal');
     const closeModalButtons = document.querySelectorAll('.close-modal');
     const editForm = document.getElementById('editForm');
+    const onboardingForm = document.getElementById('onboardingForm');
 
     // Current user data
     let currentUser = null;
     let currentUserId = null;
 
     // Load user data
-    async function loadUserData(userId) {
+    async function loadUserData(userId, email) {
       try {
         const userDoc = await getDoc(doc(db, "users", userId));
+        
         if (userDoc.exists()) {
+          // Existing user - show profile
           currentUser = userDoc.data();
           currentUserId = userId;
+          
+          document.getElementById('profileSection').style.display = 'block';
+          document.getElementById('roundSection').style.display = 'block';
+          document.getElementById('onboardingSection').style.display = 'none';
+          
           updateProfileUI(currentUser);
           updateRoundProgress(currentUser.current_round || 1);
           showRoundDetails(currentUser.current_round || 1);
         } else {
-          showToast('error', 'Không tìm thấy thông tin ứng viên');
+          // New user - show onboarding
+          document.getElementById('profileSection').style.display = 'none';
+          document.getElementById('roundSection').style.display = 'none';
+          document.getElementById('onboardingSection').style.display = 'block';
+          
+          // Auto-fill email if available
+          if (email) {
+            document.getElementById('onboardEmail').value = email;
+          }
         }
       } catch (error) {
         console.error('Error loading user data:', error);
-        showToast('error', 'Lỗi khi tải dữ liệu người dùng');
+        toastr.error('Lỗi khi tải dữ liệu người dùng');
       }
     }
 
@@ -1107,10 +1237,62 @@
         // Close modal
         editModal.style.display = 'none';
         
-        showToast('success', 'Cập nhật hồ sơ thành công');
+        toastr.success('Cập nhật hồ sơ thành công');
       } catch (error) {
         console.error('Error updating profile:', error);
-        showToast('error', 'Cập nhật hồ sơ thất bại');
+        toastr.error('Cập nhật hồ sơ thất bại');
+      }
+    }
+
+    // Save onboarding data
+    async function saveOnboardingData(e) {
+      e.preventDefault();
+      
+      if (!currentUserId) return;
+      
+      try {
+        const gender = document.querySelector('input[name="onboardGender"]:checked').value;
+        const department = document.getElementById('onboardDepartment').value;
+        
+        const userData = {
+          fullname: document.getElementById('onboardFullName').value,
+          email: document.getElementById('onboardEmail').value,
+          phone: document.getElementById('onboardPhone').value,
+          gender: gender,
+          dob: document.getElementById('onboardDob').value,
+          school: document.getElementById('onboardSchool').value,
+          faculty: document.getElementById('onboardFaculty').value,
+          studentId: document.getElementById('onboardStudentId').value,
+          department: department,
+          status: "Chờ xử lý",
+          current_round: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          round_1: {
+            status: "Chưa bắt đầu",
+            deadline: "15/07/2025",
+            guide: "Hoàn thành form đăng ký"
+          }
+        };
+        
+        await setDoc(doc(db, "users", currentUserId), userData);
+        
+        // Update UI
+        currentUser = userData;
+        updateProfileUI(currentUser);
+        updateRoundProgress(1);
+        showRoundDetails(1);
+        
+        // Hide onboarding and show profile
+        document.getElementById('profileSection').style.display = 'block';
+        document.getElementById('roundSection').style.display = 'block';
+        document.getElementById('onboardingSection').style.display = 'none';
+        onboardingModal.style.display = 'none';
+        
+        toastr.success('Đăng ký hồ sơ thành công!');
+      } catch (error) {
+        console.error('Error saving onboarding data:', error);
+        toastr.error('Đăng ký hồ sơ thất bại. Vui lòng thử lại.');
       }
     }
 
@@ -1121,7 +1303,7 @@
         window.location.href = '/index.html'; // Redirect to login page
       } catch (error) {
         console.error('Logout error:', error);
-        showToast('error', 'Đăng xuất thất bại');
+        toastr.error('Đăng xuất thất bại');
       }
     }
 
@@ -1134,17 +1316,23 @@
       refreshBtn.addEventListener('click', () => {
         if (currentUserId) {
           loadUserData(currentUserId);
-          showToast('info', 'Đang làm mới dữ liệu...');
+          toastr.info('Đang làm mới dữ liệu...');
         }
       });
       
       // Edit profile button
       editProfileBtn.addEventListener('click', showEditModal);
       
+      // Start onboarding button
+      startOnboardingBtn.addEventListener('click', () => {
+        onboardingModal.style.display = 'block';
+      });
+      
       // Close modal buttons
       closeModalButtons.forEach(btn => {
         btn.addEventListener('click', function() {
           editModal.style.display = 'none';
+          onboardingModal.style.display = 'none';
         });
       });
       
@@ -1153,16 +1341,22 @@
         if (event.target === editModal) {
           editModal.style.display = 'none';
         }
+        if (event.target === onboardingModal) {
+          onboardingModal.style.display = 'none';
+        }
       });
       
       // Edit form submission
       editForm.addEventListener('submit', saveProfile);
+      
+      // Onboarding form submission
+      onboardingForm.addEventListener('submit', saveOnboardingData);
     }
 
     // Check auth state and load data
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        loadUserData(user.uid);
+        loadUserData(user.uid, user.email);
       } else {
         window.location.href = '/index.html'; // Redirect if not logged in
       }
