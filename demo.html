@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TUYỂN THÀNH VIÊN ENACTUS FTU HANOI | 17 SDGs</title>
+  <link rel="icon" href="/assets/icon.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka+One&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    :root {
+      /* SDG Colors */
+      --sdg1: #E5243B; --sdg2: #DDA63A; --sdg3: #4C9F38; --sdg4: #C5192D; --sdg5: #FF3A21;
+      --sdg6: #26BDE2; --sdg7: #FCC30B; --sdg8: #A21942; --sdg9: #FD6925; --sdg10: #DD1367;
+      --sdg11: #FD9D24; --sdg12: #BF8B2E; --sdg13: #3F7E44; --sdg14: #0A97D9; --sdg15: #56C02B;
+      --sdg16: #00689D; --sdg17: #19486A;
+      /* Theme Colors */
+      --primary: #4CAF50;
+      --primary-light: #81C784;
+      --accent: #00BCD4;
+      --light: #f9fafb;
+      --dark: #263238;
+      --gray: #607D8B;
+      --success: #8BC34A;
+    }
+
+    body {
+      background-color: #f5fdf6;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(76, 175, 80, 0.1) 0%, transparent 20%),
+        radial-gradient(circle at 80% 70%, rgba(0, 188, 212, 0.1) 0%, transparent 20%);
+    }
+
+    /* Animated SDG Background */
+    .sdg-particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      opacity: 0.1;
+      animation: float 15s infinite linear;
+      z-index: 0;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0) translateX(0);
+        opacity: 0;
+      }
+      50% {
+        opacity: 0.2;
+      }
+      100% {
+        transform: translateY(-100vh) translateX(20px);
+        opacity: 0;
+      }
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      padding: 40px 30px;
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(5px);
+      transition: all 0.5s ease;
+    }
+
+    .container:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 10px;
+      background: linear-gradient(90deg, 
+        var(--sdg1), var(--sdg2), var(--sdg3), var(--sdg4), var(--sdg5), 
+        var(--sdg6), var(--sdg7), var(--sdg8), var(--sdg9), var(--sdg10),
+        var(--sdg11), var(--sdg12), var(--sdg13), var(--sdg14), var(--sdg15), 
+        var(--sdg16), var(--sdg17));
+      animation: rainbow 8s linear infinite;
+      background-size: 1000% 100%;
+    }
+
+    @keyframes rainbow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+
+    .logo-container {
+      margin-bottom: 20px;
+      perspective: 1000px;
+    }
+
+    .logo {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      box-shadow: 0 8px 16px rgba(76, 175, 80, 0.3);
+      transform: rotate(15deg);
+      transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .logo:hover {
+      transform: rotate(0deg) scale(1.1);
+      box-shadow: 0 15px 30px rgba(76, 175, 80, 0.4);
+    }
+
+    .logo::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        to bottom right,
+        rgba(255, 255, 255, 0.3) 0%,
+        rgba(255, 255, 255, 0) 60%
+      );
+      transform: rotate(30deg);
+      transition: all 0.5s ease;
+    }
+
+    .logo:hover::before {
+      transform: rotate(30deg) translate(20%, 20%);
+    }
+
+    .logo i {
+      font-size: 48px;
+      color: white;
+      transform: rotate(-15deg);
+      transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .logo:hover i {
+      transform: rotate(0deg) scale(1.1);
+    }
+
+    h1 {
+      color: var(--dark);
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      font-family: 'Fredoka One', cursive;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      position: relative;
+      display: inline-block;
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.3s ease;
+    }
+
+    .container:hover h1::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+
+    .tagline {
+      color: var(--sdg5);
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 5px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      position: relative;
+      display: inline-block;
+    }
+
+    .tagline::before,
+    .tagline::after {
+      content: '✦';
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--primary);
+      opacity: 0.5;
+    }
+
+    .tagline::before {
+      left: -25px;
+    }
+
+    .tagline::after {
+      right: -25px;
+    }
+
+    .description {
+      color: var(--gray);
+      font-size: 15px;
+      margin-bottom: 30px;
+      line-height: 1.6;
+      position: relative;
+    }
+
+    .sdg-highlight {
+      display: inline-block;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 600;
+      position: relative;
+    }
+
+    .sdg-highlight::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .container:hover .sdg-highlight::after {
+      transform: scaleX(1);
+    }
+
+    /* SDG Interactive Grid - Now showing all 17 */
+    .sdg-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    @media (max-width: 768px) {
+      .sdg-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .sdg-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .sdg-item {
+      background: white;
+      border-radius: 12px;
+      padding: 12px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+    }
+
+    .sdg-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--color);
+    }
+
+    .sdg-item::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.3), rgba(255,255,255,0));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .sdg-item:hover::after {
+      opacity: 1;
+    }
+
+    .sdg-item i {
+      font-size: 20px;
+      margin-bottom: 8px;
+      color: var(--color);
+      transition: transform 0.3s ease;
+    }
+
+    .sdg-item:hover i {
+      transform: scale(1.2) translateY(-5px);
+    }
+
+    .sdg-item p {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--dark);
+      transition: transform 0.3s ease;
+    }
+
+    .sdg-item:hover p {
+      transform: translateY(5px);
+    }
+
+    .sdg-item:hover {
+      transform: translateY(-5px) rotateX(10deg);
+      box-shadow: 0 15px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* SDG Modal */
+    .sdg-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+    }
+
+    .sdg-modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 500px;
+      padding: 30px;
+      position: relative;
+      transform: scale(0.8);
+      transition: all 0.3s ease;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .sdg-modal.active .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      background: var(--color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+    }
+
+    .modal-icon i {
+      color: white;
+      font-size: 24px;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    .modal-number {
+      font-size: 14px;
+      color: var(--color);
+      font-weight: 600;
+      margin-top: 3px;
+    }
+
+    .modal-description {
+      color: var(--gray);
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .close-modal:hover {
+      background: rgba(0, 0, 0, 0.1);
+      transform: rotate(90deg);
+    }
+
+    /* Button */
+    #loginBtn {
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      color: white;
+      border: none;
+      padding: 16px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 50px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 300px;
+      margin: 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+      transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #loginBtn:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 15px 30px rgba(76, 175, 80, 0.4);
+    }
+
+    #loginBtn:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    #loginBtn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: 0.5s;
+    }
+
+    #loginBtn:hover::before {
+      left: 100%;
+    }
+
+    #loginBtn i {
+      font-size: 20px;
+      transition: transform 0.3s ease;
+    }
+
+    #loginBtn:hover i {
+      transform: scale(1.2);
+    }
+
+    .footer {
+      margin-top: 30px;
+      color: var(--gray);
+      font-size: 13px;
+      position: relative;
+    }
+
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gray), transparent);
+    }
+
+    /* Confetti */
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: var(--color);
+      opacity: 0;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 576px) {
+      .container {
+        padding: 30px 20px;
+      }
+      
+      h1 {
+        font-size: 24px;
+      }
+      
+      .logo {
+        width: 80px;
+        height: 80px;
+      }
+      
+      .logo i {
+        font-size: 36px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated SDG Background Particles -->
+  <div id="sdgParticles"></div>
+
+  <main class="container">
+    <div class="logo-container">
+      <div class="logo">
+        <i class="fas fa-globe-asia"></i>
+      </div>
+    </div>
+    
+    <h1>ENACTUS FTU HANOI 18TH RECRUITMENT</h1>
+    
+    <p class="tagline">Innovate for the Global Goals</p>
+    
+    <p class="description">
+      Join us in creating <span class="sdg-highlight">social business projects</span> that tackle all  
+      <span class="sdg-highlight">17 Sustainable Development Goals</span> (SDGs) by the United Nations!
+      Together we can build a better future through entrepreneurship and innovation.
+    </p>
+    
+    <!-- SDG Interactive Grid - Now showing ALL 17 SDGs -->
+    <div class="sdg-grid">
+      <div class="sdg-item" style="--color: var(--sdg1)" data-sdg="1" data-title="No Poverty" data-icon="fa-ban" data-desc="End poverty in all its forms everywhere">
+        <i class="fas fa-ban"></i>
+        <p>No Poverty</p>
+      </div>
+      <div class="sdg-item" style="--color: var(--sdg2)" data-sdg="2" data-title="Zero Hunger" data-icon="fa-apple-alt" data-desc="End hunger, achieve food security and improved nutrition">
+        <i class="fas fa-apple-alt"></i>
+        <p>Zero Hunger</p>
+      </div>
+      <div class="sdg-item" style="--color: var(--sdg3)" data-sdg="3" data-title="Good Health" data-icon="fa-heartbeat" data-desc="Ensure healthy lives and promote well-being for all">
+        <i class="fas fa-heartbeat"></i>
+        <p>Good Health</p>
+      </div>
+      <div class="sdg-item" style="--color: var(--sdg4)" data-sdg="4" data-title="Quality Education" data-icon="fa-graduation-cap" data-desc="Ensure inclusive and equitable quality education">
+        <i class="fas fa-graduation-cap"></i>
+        <p>Quality Education</p>
+      </div>
+      <div class="sdg-item" style="--color: var(--sdg5)" data-sdg="5" data-title="Gender Equality" data-icon="fa-venus" data-desc="Achieve gender equality and empower all women">
+        <i class="fas fa-venus"></i>
+        <p>Gender Equality</p>
+      </div>
+      <div class="sdg-item" style="--color: var(--sdg6)" data-sdg="6" data-title="Clean Water" data-icon="fa-tint" data-desc="Ensure availability of clean water for all">
+        <i class="fas fa-tint"></i>
+        <p>Clean Water</p>
+      </div>
+      <div class="sdg-item" style="--color: var(--sdg7)" data-sdg="7" data-title="Clean Energy" data-icon="fa-bolt" data-desc="Ensure access to affordable, reliable energy">
+        <i class="fas fa-bolt"></i>
+        <p>Clean Energy</p>
+      </div>
+      <div class="sdg-item" style="--color: var(--sdg8)" data-sdg="8" data-title="Decent Work" data-icon="fa-briefcase" data-desc="Promote sustained economic growth and decent work">
+        <i class="fas fa-briefcase"></i>
+        <p>Decent Work</p>
+      </div>
+      <div class="sdg-item" style="--color: var(--sdg9)" data-sdg="9" data-title="Innovation" data-icon="fa-industry" data-desc="Build resilient infrastructure and foster innovation">
+        <i class="fas fa-industry"></i>
+        <p>Innovation</p>
+      </div>
+      <div class="sdg-item" style="--color: var(--sdg10)" data-sdg="10" data-title="Reduced Inequalities" data-icon="fa-equals" data-desc="Reduce inequality within and among countries">
+        <i class="fas fa-equals"></i>
+        <p>Reduced Inequalities</p>
+      </div>
+      <div class="sdg-item" style="--color: var(--sdg11)" data-sdg="11" data-title="Sustainable Cities" data-icon="fa-city" data-desc="Make cities inclusive, safe, resilient and sustainable">
+        <i class="fas fa-city"></i>
+        <p>Sustainable Cities</p>
+      </div>
+      <div class="sdg-item" style="--color: var(--sdg12)" data-sdg="12" data-title="Responsible Consumption" data-icon="fa-recycle" data-desc="Ensure sustainable consumption and production patterns">
+        <i class="fas fa-recycle"></i>
+        <p>Responsible Consumption</p>
+      </div>
+      <div class="sdg-item" style="--color: var(--sdg13)" data-sdg="13" data-title="Climate Action" data-icon="fa-snowflake" data-desc="Take urgent action to combat climate change">
+        <i class="fas fa-snowflake"></i>
+        <p>Climate Action</p>
+      </div>
+      <div class="sdg-item" style="--color: var(--sdg14)" data-sdg="14" data-title="Life Below Water" data-icon="fa-water" data-desc="Conserve and sustainably use marine resources">
+        <i class="fas fa-water"></i>
+        <p>Life Below Water</p>
+      </div>
+      <div class="sdg-item" style="--color: var(--sdg15)" data-sdg="15" data-title="Life on Land" data-icon="fa-tree" data-desc="Sustainably manage forests and halt biodiversity loss">
+        <i class="fas fa-tree"></i>
+        <p>Life on Land</p>
+      </div>
+      <div class="sdg-item" style="--color: var(--sdg16)" data-sdg="16" data-title="Peace & Justice" data-icon="fa-balance-scale" data-desc="Promote peaceful and inclusive societies">
+        <i class="fas fa-balance-scale"></i>
+        <p>Peace & Justice</p>
+      </div>
+      <div class="sdg-item" style="--color: var(--sdg17)" data-sdg="17" data-title="Partnerships" data-icon="fa-handshake" data-desc="Strengthen global partnerships for sustainable development">
+        <i class="fas fa-handshake"></i>
+        <p>Partnerships</p>
+      </div>
+    </div>
+    
+    <button id="loginBtn">
+      <i class="fab fa-google"></i> Đăng nhập bằng Google
+    </button>
+    
+    <p class="footer">© 2025 Enactus FTU Hanoi. Together for the Global Goals.</p>
+  </main>
+
+  <!-- SDG Modal -->
+  <div class="sdg-modal">
+    <div class="modal-content">
+      <div class="close-modal">
+        <i class="fas fa-times"></i>
+      </div>
+      <div class="modal-header">
+        <div class="modal-icon">
+          <i class="fas" id="modal-icon"></i>
+        </div>
+        <div>
+          <div class="modal-title" id="modal-title">SDG Title</div>
+          <div class="modal-number" id="modal-number">SDG 1</div>
+        </div>
+      </div>
+      <div class="modal-description" id="modal-description">
+        SDG description goes here...
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module" src="./script/firebase.js"></script>
+  
+  <script>
+    // Create animated SDG background particles
+    function createSdgParticles() {
+      const colors = [
+        '#E5243B', '#DDA63A', '#4C9F38', '#C5192D', '#FF3A21',
+        '#26BDE2', '#FCC30B', '#A21942', '#FD6925', '#DD1367',
+        '#FD9D24', '#BF8B2E', '#3F7E44', '#0A97D9', '#56C02B', '#00689D'
+      ];
+      
+      const container = document.getElementById('sdgParticles');
+      
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'sdg-particle';
+        particle.style.left = Math.random() * 100 + 'vw';
+        particle.style.top = Math.random() * 100 + 'vh';
+        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        particle.style.width = Math.random() * 10 + 5 + 'px';
+        particle.style.height = particle.style.width;
+        particle.style.animationDuration = Math.random() * 10 + 10 + 's';
+        particle.style.animationDelay = Math.random() * 5 + 's';
+        container.appendChild(particle);
+      }
+    }
+
+    // Confetti on button hover
+    document.getElementById('loginBtn').addEventListener('mouseenter', () => {
+      createConfetti();
+    });
+
+    function createConfetti() {
+      const colors = [
+        '#E5243B', '#DDA63A', '#4C9F38', '#C5192D', '#FF3A21',
+        '#26BDE2', '#FCC30B', '#A21942', '#FD6925', '#DD1367',
+        '#FD9D24', '#BF8B2E', '#3F7E44', '#0A97D9', '#56C02B', '#00689D'
+      ];
+      
+      for (let i = 0; i < 30; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.top = '-10px';
+        confetti.style.width = Math.random() * 10 + 5 + 'px';
+        confetti.style.height = Math.random() * 10 + 5 + 'px';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+        
+        document.body.appendChild(confetti);
+        
+        const animationDuration = Math.random() * 3 + 2;
+        
+        confetti.style.animation = `fall ${animationDuration}s linear forwards`;
+        
+        setTimeout(() => {
+          confetti.remove();
+        }, animationDuration * 1000);
+      }
+    }
+
+    // Add keyframes dynamically
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes fall {
+        0% {
+          transform: translateY(0) rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // SDG Modal functionality
+    const sdgItems = document.querySelectorAll('.sdg-item');
+    const modal = document.querySelector('.sdg-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalNumber = document.getElementById('modal-number');
+    const modalIcon = document.getElementById('modal-icon');
+    const modalDesc = document.getElementById('modal-description');
+    const closeModal = document.querySelector('.close-modal');
+    const modalContent = document.querySelector('.modal-content');
+    const modalHeaderIcon = document.querySelector('.modal-icon');
+
+    sdgItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const sdg = item.dataset.sdg;
+        const title = item.dataset.title;
+        const icon = item.dataset.icon;
+        const desc = item.dataset.desc;
+        const color = item.style.getPropertyValue('--color');
+
+        modalTitle.textContent = title;
+        modalNumber.textContent = `SDG ${sdg}`;
+        modalIcon.className = `fas ${icon}`;
+        modalDesc.textContent = desc;
+        modalHeaderIcon.style.backgroundColor = color;
+        modalContent.style.borderTop = `5px solid ${color}`;
+
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    closeModal.addEventListener('click', () => {
+      modal.classList.remove('active');
+      document.body.style.overflow = 'auto';
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+      }
+    });
+
+    // Create background particles
+    createSdgParticles();
+
+    // Container hover effect
+    const container = document.querySelector('.container');
+    container.addEventListener('mousemove', (e) => {
+      const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+      const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+      container.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+    });
+
+    container.addEventListener('mouseenter', () => {
+      container.style.transition = 'all 0.5s ease';
+    });
+
+    container.addEventListener('mouseleave', () => {
+      container.style.transform = 'rotateY(0deg) rotateX(0deg)';
+    });
+  </script>
+</body>
+</html>
