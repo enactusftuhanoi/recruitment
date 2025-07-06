@@ -1,53 +1,47 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập - Enactus FTU Hanoi</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="css/auth.css">
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập | Enactus FTU</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="css/auth.css">
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-card">
-            <div class="logo">
-                <img src="assets/enactus-logo.png" alt="Enactus FTU Hanoi">
-                <h1>Hệ thống Tuyển thành viên</h1>
-            </div>
-            
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="email">Email FTU</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" id="email" placeholder="your-email@ftu.edu.vn" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Mật khẩu</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="password" placeholder="Nhập mật khẩu" required>
-                    </div>
-                </div>
-                
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-sign-in-alt"></i> Đăng nhập
-                </button>
-                
-                <div class="auth-footer">
-                    <p>Chưa có tài khoản? <a href="#" id="registerLink">Đăng ký ngay</a></p>
-                    <p><a href="#" id="forgotPasswordLink">Quên mật khẩu?</a></p>
-                </div>
-            </form>
-            
-            <div id="authError" class="error-message"></div>
-        </div>
-    </div>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="logo">
+        <img src="assets/enactus-logo.png" alt="Enactus Logo">
+        <h1>HỆ THỐNG TUYỂN THÀNH VIÊN</h1>
+      </div>
 
-    <script src="js/firebase.js"></script>
-    <script src="js/auth.js"></script>
+      <form id="loginForm">
+        <div class="input-group">
+          <i class="fas fa-envelope"></i>
+          <input type="email" id="email" placeholder="Email FTU" required>
+        </div>
+
+        <div class="input-group">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="password" placeholder="Mật khẩu" required>
+        </div>
+
+        <button type="submit" class="login-btn" id="loginBtn">
+          <span id="btnText">Đăng nhập</span>
+          <div class="spinner hidden" id="spinner"></div>
+        </button>
+
+        <div class="links">
+          <a href="#" id="forgotPassword">Quên mật khẩu?</a>
+        </div>
+      </form>
+
+      <div id="loginError" class="error-message hidden"></div>
+    </div>
+  </div>
+
+  <script src="js/firebase.js"></script>
+  <script src="js/auth.js"></script>
 </body>
 </html>
