@@ -1,154 +1,93 @@
-/* Reset CSS */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
+  const loginBtn = document.getElementById('loginBtn');
+  const btnText = document.getElementById('btnText');
+  const spinner = document.getElementById('spinner');
 
-body {
-  font-family: 'Roboto', sans-serif;
-  background-color: #f5f7fa;
-}
+  // Login handler
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
 
-/* Layout */
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #2c3e50, #4ca1af);
-  padding: 20px;
-}
+    // Show loading
+    btnText.textContent = 'Đang đăng nhập...';
+    spinner.classList.remove('hidden');
+    loginBtn.disabled = true;
 
-.login-card {
-  background: white;
-  width: 100%;
-  max-width: 400px;
-  padding: 40px;
-  border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-  animation: fadeIn 0.5s ease;
-}
+    try {
+      // 1. Firebase authentication
+      const userCredential = await auth.signInWithEmailAndPassword(email, password);
+      const user = userCredential.user;
 
-.logo {
-  text-align: center;
-  margin-bottom: 30px;
-}
+      // 2. Check user role
+      const userDoc = await usersRef.doc(user.uid).get();
+      
+      if (!userDoc.exists) {
+        await usersRef.doc(user.uid).set({
+          email: user.email,
+          role: 'user',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
 
-.logo img {
-  height: 60px;
-  margin-bottom: 15px;
-}
+      // 3. Redirect based on role
+      const role = userDoc.data()?.role || 'user';
+      window.location.href = role === 'admin' ? 'dashboard.html' : 'profile.html';
 
-.logo h1 {
-  font-size: 18px;
-  color: #2c3e50;
-  font-weight: 500;
-}
+    } catch (error) {
+      handleLoginError(error);
+    } finally {
+      resetLoginButton();
+    }
+  });
 
-/* Form styles */
-.input-group {
-  position: relative;
-  margin-bottom: 20px;
-}
+  function handleLoginError(error) {
+    let errorMessage;
+    switch(error.code) {
+      case 'auth/invalid-email':
+        errorMessage = 'Email không hợp lệ';
+        break;
+      case 'auth/user-not-found':
+        errorMessage = 'Tài khoản không tồn tại';
+        break;
+      case 'auth/wrong-password':
+        errorMessage = 'Sai mật khẩu';
+        break;
+      default:
+        errorMessage = 'Lỗi đăng nhập. Vui lòng thử lại';
+    }
 
-.input-group i {
-  position: absolute;
-  left: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #7f8c8d;
-}
-
-.input-group input {
-  width: 100%;
-  padding: 12px 15px 12px 45px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 15px;
-  transition: all 0.3s;
-}
-
-.input-group input:focus {
-  border-color: #3498db;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-}
-
-.login-btn {
-  width: 100%;
-  padding: 12px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.3s;
-}
-
-.login-btn:hover {
-  background-color: #2980b9;
-}
-
-.links {
-  text-align: center;
-  margin-top: 20px;
-}
-
-.links a {
-  color: #7f8c8d;
-  font-size: 14px;
-  text-decoration: none;
-  transition: color 0.3s;
-}
-
-.links a:hover {
-  color: #3498db;
-}
-
-/* Error message */
-.error-message {
-  background: #f8d7da;
-  color: #721c24;
-  padding: 12px;
-  border-radius: 5px;
-  margin-top: 20px;
-  font-size: 14px;
-  border-left: 4px solid #f5c6cb;
-}
-
-.hidden {
-  display: none !important;
-}
-
-/* Spinner */
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s ease-in-out infinite;
-  margin-left: 10px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-  .login-card {
-    padding: 30px 20px;
+    loginError.textContent = errorMessage;
+    loginError.classList.remove('hidden');
   }
-}
+
+  function resetLoginButton() {
+    btnText.textContent = 'Đăng nhập';
+    spinner.classList.add('hidden');
+    loginBtn.disabled = false;
+  }
+
+  // Initialize admin account (run once)
+  async function initAdminAccount() {
+    try {
+      const adminEmail = 'admin@enactus.com';
+      const adminPassword = 'Admin@123';
+      
+      const { user } = await auth.createUserWithEmailAndPassword(adminEmail, adminPassword);
+      await usersRef.doc(user.uid).set({
+        email: adminEmail,
+        role: 'admin',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      console.log('Admin account created successfully');
+    } catch (err) {
+      console.log('Admin account already exists or error:', err.message);
+    }
+  }
+
+  // Uncomment this line only for first time setup
+  // initAdminAccount();
+});

@@ -8,14 +8,13 @@ const firebaseConfig = {
   appId: "1:611356979403:web:2c9a4cffb2b323ce3deb4e"
 };
 
+// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
-// Shortcut các service
+// Initialize services
 const auth = firebase.auth();
 const db = firebase.firestore();
-const storage = firebase.storage();
 
-// Tạo collection references
+// Collection references
 const usersRef = db.collection("users");
 const candidatesRef = db.collection("candidates");
-const roundsRef = db.collection("rounds");
