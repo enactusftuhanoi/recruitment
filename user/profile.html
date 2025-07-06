@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hồ sơ ứng viên | Enactus FTU Hanoi</title>
-  <link rel="icon" href="assets/icon.png" type="image/png">
+  <title>Profile | Enactus FTU Hanoi</title>
+  <link rel="icon" href="/assets/icon.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css">
   <style>
@@ -426,6 +426,18 @@
       box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
     }
 
+    .radio-group {
+      display: flex;
+      gap: 20px;
+      margin-top: 8px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
     /* Edit modal */
     .modal {
       display: none;
@@ -764,6 +776,21 @@
         </div>
         
         <div class="form-group">
+          <label class="form-label">Giới tính</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="gender" value="Nam" checked> Nam
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="gender" value="Nữ"> Nữ
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="gender" value="Khác"> Khác
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group">
           <label class="form-label">Ngày sinh</label>
           <input type="text" class="form-control" id="editDob" placeholder="DD/MM/YYYY">
         </div>
@@ -1037,6 +1064,11 @@
       document.getElementById('editFullName').value = currentUser.fullname || '';
       document.getElementById('editEmail').value = currentUser.email || '';
       document.getElementById('editPhone').value = currentUser.phone || '';
+      
+      // Set gender radio button
+      const gender = currentUser.gender || 'Nam';
+      document.querySelector(`input[name="gender"][value="${gender}"]`).checked = true;
+      
       document.getElementById('editDob').value = currentUser.dob || '';
       document.getElementById('editSchool').value = currentUser.school || '';
       document.getElementById('editFaculty').value = currentUser.faculty || '';
@@ -1052,10 +1084,13 @@
       if (!currentUserId) return;
       
       try {
+        const gender = document.querySelector('input[name="gender"]:checked').value;
+        
         const updatedData = {
           fullname: document.getElementById('editFullName').value,
           email: document.getElementById('editEmail').value,
           phone: document.getElementById('editPhone').value,
+          gender: gender,
           dob: document.getElementById('editDob').value,
           school: document.getElementById('editSchool').value,
           faculty: document.getElementById('editFaculty').value,
