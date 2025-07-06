@@ -191,6 +191,47 @@
       font-size: 15px;
     }
 
+    /* Main tabs */
+    .main-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .main-tab-btn {
+      padding: 12px 25px;
+      border-radius: 8px;
+      background: white;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      font-weight: 600;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .main-tab-btn:hover, .main-tab-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .main-tab-content {
+      display: none;
+    }
+
+    .main-tab-content.active {
+      display: block;
+      animation: fadeIn 0.4s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
     /* Candidate table */
     .candidate-table-container {
       background: white;
@@ -449,7 +490,7 @@
     }
 
     /* Round management tabs */
-    .tabs {
+    .round-tabs {
       display: flex;
       gap: 10px;
       margin-bottom: 20px;
@@ -457,7 +498,7 @@
       padding-bottom: 15px;
     }
 
-    .tab-btn {
+    .round-tab-btn {
       padding: 10px 20px;
       border-radius: 6px;
       background: white;
@@ -467,24 +508,19 @@
       transition: var(--transition);
     }
 
-    .tab-btn:hover, .tab-btn.active {
+    .round-tab-btn:hover, .round-tab-btn.active {
       background: var(--primary);
       color: white;
       border-color: var(--primary);
     }
 
-    .tab-content {
+    .round-tab-content {
       display: none;
     }
 
-    .tab-content.active {
+    .round-tab-content.active {
       display: block;
       animation: fadeIn 0.4s;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
     }
 
     /* Form elements */
@@ -513,6 +549,28 @@
       box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
     }
 
+    /* History section */
+    .history-item {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .history-date {
+      font-weight: 600;
+      color: var(--text-light);
+      min-width: 150px;
+    }
+
+    .history-action {
+      flex: 1;
+    }
+
     /* Responsive */
     @media (max-width: 992px) {
       .candidate-detail {
@@ -533,6 +591,14 @@
         width: 95%;
         padding: 20px;
       }
+      
+      .main-tabs {
+        flex-direction: column;
+      }
+      
+      .main-tab-btn {
+        width: 100%;
+      }
     }
 
     @media (max-width: 576px) {
@@ -550,12 +616,18 @@
         justify-content: space-between;
       }
       
-      .tabs {
+      .round-tabs {
         flex-direction: column;
       }
       
-      .tab-btn {
+      .round-tab-btn {
         width: 100%;
+      }
+      
+      .history-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
       }
     }
   </style>
@@ -645,72 +717,322 @@
         </div>
       </div>
       
-      <!-- Filter Section -->
-      <div class="filter-section">
-        <h3 style="margin-bottom: 15px; color: var(--primary);">
-          <i class="fas fa-filter"></i> Bộ lọc ứng viên
-        </h3>
+      <!-- Main Tabs -->
+      <div class="main-tabs">
+        <button class="main-tab-btn active" data-tab="candidatesTab">
+          <i class="fas fa-users"></i> Danh sách ứng viên
+        </button>
+        <button class="main-tab-btn" data-tab="roundsTab">
+          <i class="fas fa-tasks"></i> Quản lý vòng
+        </button>
+        <button class="main-tab-btn" data-tab="historyTab">
+          <i class="fas fa-history"></i> Lịch sử hoạt động
+        </button>
+        <button class="main-tab-btn" data-tab="settingsTab">
+          <i class="fas fa-cog"></i> Cài đặt
+        </button>
+      </div>
+      
+      <!-- Candidates Tab -->
+      <div id="candidatesTab" class="main-tab-content active">
+        <!-- Filter Section -->
+        <div class="filter-section">
+          <h3 style="margin-bottom: 15px; color: var(--primary);">
+            <i class="fas fa-filter"></i> Bộ lọc ứng viên
+          </h3>
+          
+          <div class="filter-row">
+            <div class="filter-group">
+              <label class="filter-label">Tìm kiếm</label>
+              <input type="text" id="searchInput" class="filter-input" placeholder="Tìm theo tên, email, SĐT...">
+            </div>
+            
+            <div class="filter-group">
+              <label class="filter-label">Ban ứng tuyển</label>
+              <select id="departmentFilter" class="filter-input">
+                <option value="">Tất cả ban</option>
+                <option value="Nhân sự">Nhân sự</option>
+                <option value="Truyền thông">Truyền thông</option>
+                <option value="Đối ngoại">Đối ngoại</option>
+                <option value="Dự án">Dự án</option>
+                <option value="Sáng tạo">Sáng tạo</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label class="filter-label">Vòng hiện tại</label>
+              <select id="roundFilter" class="filter-input">
+                <option value="">Tất cả vòng</option>
+                <option value="1">Vòng đơn</option>
+                <option value="2">Phỏng vấn nhóm</option>
+                <option value="3">Thử thách</option>
+                <option value="4">Phỏng vấn cá nhân</option>
+                <option value="5">Đã hoàn thành</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label class="filter-label">Trạng thái</label>
+              <select id="statusFilter" class="filter-input">
+                <option value="">Tất cả trạng thái</option>
+                <option value="Chờ xử lý">Chờ xử lý</option>
+                <option value="Đã duyệt">Đã duyệt</option>
+                <option value="Từ chối">Từ chối</option>
+              </select>
+            </div>
+          </div>
+        </div>
         
-        <div class="filter-row">
-          <div class="filter-group">
-            <label class="filter-label">Tìm kiếm</label>
-            <input type="text" id="searchInput" class="filter-input" placeholder="Tìm theo tên, email, SĐT...">
+        <!-- Candidate Table -->
+        <div class="candidate-table-container">
+          <table class="candidate-table">
+            <thead>
+              <tr>
+                <th data-sort="fullname">Họ tên</th>
+                <th data-sort="department">Ban ứng tuyển</th>
+                <th data-sort="current_round">Vòng hiện tại</th>
+                <th data-sort="email">Email</th>
+                <th data-sort="phone">SĐT</th>
+                <th data-sort="status">Trạng thái</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="candidateList">
+              <!-- Candidate data will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Rounds Management Tab -->
+      <div id="roundsTab" class="main-tab-content">
+        <div class="filter-section">
+          <h3 style="margin-bottom: 15px; color: var(--primary);">
+            <i class="fas fa-tasks"></i> Quản lý vòng tuyển dụng
+          </h3>
+          
+          <div class="filter-row">
+            <div class="filter-group">
+              <label class="filter-label">Chọn ứng viên</label>
+              <select id="roundCandidateSelect" class="filter-input">
+                <option value="">-- Chọn ứng viên --</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div id="roundManagementContent" style="display: none;">
+          <!-- Round Tabs -->
+          <div class="round-tabs">
+            <button class="round-tab-btn active" data-tab="round1Tab">Vòng đơn</button>
+            <button class="round-tab-btn" data-tab="round2Tab">Phỏng vấn nhóm</button>
+            <button class="round-tab-btn" data-tab="round3Tab">Thử thách</button>
+            <button class="round-tab-btn" data-tab="round4Tab">Phỏng vấn cá nhân</button>
           </div>
           
-          <div class="filter-group">
-            <label class="filter-label">Ban ứng tuyển</label>
-            <select id="departmentFilter" class="filter-input">
-              <option value="">Tất cả ban</option>
-              <option value="Nhân sự">Nhân sự</option>
-              <option value="Truyền thông">Truyền thông</option>
-              <option value="Đối ngoại">Đối ngoại</option>
-              <option value="Dự án">Dự án</option>
-              <option value="Sáng tạo">Sáng tạo</option>
-            </select>
+          <!-- Round 1 Content -->
+          <div id="round1Tab" class="round-tab-content active">
+            <div class="form-group">
+              <label class="form-label">Trạng thái</label>
+              <select class="form-control" id="round1StatusSelect">
+                <option value="Chưa bắt đầu">Chưa bắt đầu</option>
+                <option value="Đã nộp">Đã nộp</option>
+                <option value="Đã duyệt">Đã duyệt</option>
+                <option value="Từ chối">Từ chối</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" id="saveRound1Btn">
+              <i class="fas fa-save"></i> Lưu thông tin
+            </button>
           </div>
           
-          <div class="filter-group">
-            <label class="filter-label">Vòng hiện tại</label>
-            <select id="roundFilter" class="filter-input">
-              <option value="">Tất cả vòng</option>
-              <option value="1">Vòng đơn</option>
-              <option value="2">Phỏng vấn nhóm</option>
-              <option value="3">Thử thách</option>
-              <option value="4">Phỏng vấn cá nhân</option>
-              <option value="5">Đã hoàn thành</option>
-            </select>
+          <!-- Round 2 Content -->
+          <div id="round2Tab" class="round-tab-content">
+            <div class="form-group">
+              <label class="form-label">Trạng thái</label>
+              <select class="form-control" id="round2StatusSelect">
+                <option value="Chưa bắt đầu">Chưa bắt đầu</option>
+                <option value="Đang chờ">Đang chờ</option>
+                <option value="Đã hoàn thành">Đã hoàn thành</option>
+                <option value="Đã duyệt">Đã duyệt</option>
+                <option value="Từ chối">Từ chối</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Thời gian</label>
+              <input type="text" class="form-control" id="round2Time" placeholder="VD: 14:00 - 16:00, Thứ 7 ngày 15/07">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Địa điểm</label>
+              <input type="text" class="form-control" id="round2Location" placeholder="Nhập địa điểm">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Thành viên nhóm</label>
+              <input type="text" class="form-control" id="round2Members" placeholder="Nhập tên thành viên, cách nhau bằng dấu phẩy">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Ghi chú</label>
+              <textarea class="form-control" id="round2Note" rows="3" placeholder="Nhập ghi chú"></textarea>
+            </div>
+            
+            <button class="btn btn-primary" id="saveRound2Btn">
+              <i class="fas fa-save"></i> Lưu thông tin
+            </button>
           </div>
           
-          <div class="filter-group">
-            <label class="filter-label">Trạng thái</label>
-            <select id="statusFilter" class="filter-input">
-              <option value="">Tất cả trạng thái</option>
-              <option value="Chờ xử lý">Chờ xử lý</option>
-              <option value="Đã duyệt">Đã duyệt</option>
-              <option value="Từ chối">Từ chối</option>
-            </select>
+          <!-- Round 3 Content -->
+          <div id="round3Tab" class="round-tab-content">
+            <div class="form-group">
+              <label class="form-label">Trạng thái</label>
+              <select class="form-control" id="round3StatusSelect">
+                <option value="Chưa bắt đầu">Chưa bắt đầu</option>
+                <option value="Đang thực hiện">Đang thực hiện</option>
+                <option value="Đã nộp bài">Đã nộp bài</option>
+                <option value="Đã duyệt">Đã duyệt</option>
+                <option value="Từ chối">Từ chối</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Đề bài</label>
+              <textarea class="form-control" id="round3Challenge" rows="3" placeholder="Nhập đề bài thử thách"></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Tài liệu hướng dẫn</label>
+              <input type="text" class="form-control" id="round3Materials" placeholder="Link tài liệu">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Hạn nộp bài</label>
+              <input type="text" class="form-control" id="round3Deadline" placeholder="DD/MM/YYYY HH:MM">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Thông tin pitching</label>
+              <input type="text" class="form-control" id="round3Pitching" placeholder="Thời gian và địa điểm">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Advisor</label>
+              <input type="text" class="form-control" id="round3Advisor" placeholder="Tên advisor">
+            </div>
+            
+            <button class="btn btn-primary" id="saveRound3Btn">
+              <i class="fas fa-save"></i> Lưu thông tin
+            </button>
+          </div>
+          
+          <!-- Round 4 Content -->
+          <div id="round4Tab" class="round-tab-content">
+            <div class="form-group">
+              <label class="form-label">Trạng thái</label>
+              <select class="form-control" id="round4StatusSelect">
+                <option value="Chưa bắt đầu">Chưa bắt đầu</option>
+                <option value="Đang chờ">Đang chờ</option>
+                <option value="Đã hoàn thành">Đã hoàn thành</option>
+                <option value="Đã duyệt">Đã duyệt</option>
+                <option value="Từ chối">Từ chối</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Thời gian</label>
+              <input type="text" class="form-control" id="round4Time" placeholder="VD: 14:00 - 15:00, Thứ 3 ngày 20/07">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Địa điểm</label>
+              <input type="text" class="form-control" id="round4Location" placeholder="Nhập địa điểm">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Người phỏng vấn</label>
+              <input type="text" class="form-control" id="round4Interviewer" placeholder="Nhập tên người phỏng vấn">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Ghi chú</label>
+              <textarea class="form-control" id="round4Note" rows="3" placeholder="Nhập ghi chú"></textarea>
+            </div>
+            
+            <button class="btn btn-primary" id="saveRound4Btn">
+              <i class="fas fa-save"></i> Lưu thông tin
+            </button>
+          </div>
+        </div>
+        
+        <div id="noCandidateSelected" class="filter-section" style="text-align: center; padding: 50px;">
+          <i class="fas fa-user-slash" style="font-size: 48px; color: var(--text-light); margin-bottom: 20px;"></i>
+          <h3 style="color: var(--text-light);">Vui lòng chọn ứng viên để quản lý vòng tuyển dụng</h3>
+        </div>
+      </div>
+      
+      <!-- History Tab -->
+      <div id="historyTab" class="main-tab-content">
+        <div class="filter-section">
+          <h3 style="margin-bottom: 15px; color: var(--primary);">
+            <i class="fas fa-history"></i> Lịch sử hoạt động
+          </h3>
+          
+          <div class="filter-row">
+            <div class="filter-group">
+              <label class="filter-label">Chọn ứng viên</label>
+              <select id="historyCandidateSelect" class="filter-input">
+                <option value="">-- Chọn ứng viên --</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label class="filter-label">Loại hoạt động</label>
+              <select id="historyTypeFilter" class="filter-input">
+                <option value="">Tất cả hoạt động</option>
+                <option value="status">Thay đổi trạng thái</option>
+                <option value="round">Thay đổi vòng</option>
+                <option value="info">Thay đổi thông tin</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div id="historyContent">
+          <div class="filter-section" style="text-align: center; padding: 50px;">
+            <i class="fas fa-clock" style="font-size: 48px; color: var(--text-light); margin-bottom: 20px;"></i>
+            <h3 style="color: var(--text-light);">Vui lòng chọn ứng viên để xem lịch sử hoạt động</h3>
           </div>
         </div>
       </div>
       
-      <!-- Candidate Table -->
-      <div class="candidate-table-container">
-        <table class="candidate-table">
-          <thead>
-            <tr>
-              <th data-sort="fullname">Họ tên</th>
-              <th data-sort="department">Ban ứng tuyển</th>
-              <th data-sort="current_round">Vòng hiện tại</th>
-              <th data-sort="email">Email</th>
-              <th data-sort="phone">SĐT</th>
-              <th data-sort="status">Trạng thái</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody id="candidateList">
-            <!-- Candidate data will be loaded here -->
-          </tbody>
-        </table>
+      <!-- Settings Tab -->
+      <div id="settingsTab" class="main-tab-content">
+        <div class="filter-section">
+          <h3 style="margin-bottom: 15px; color: var(--primary);">
+            <i class="fas fa-cog"></i> Cài đặt hệ thống
+          </h3>
+          
+          <div class="form-group">
+            <label class="form-label">Tên hệ thống</label>
+            <input type="text" class="form-control" id="systemName" value="Enactus FTU Hanoi Recruitment">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Thông báo tuyển dụng</label>
+            <textarea class="form-control" id="recruitmentNotice" rows="5" placeholder="Nhập thông báo tuyển dụng"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Thời gian tuyển dụng</label>
+            <input type="text" class="form-control" id="recruitmentPeriod" placeholder="VD: 01/08/2025 - 30/08/2025">
+          </div>
+          
+          <button class="btn btn-primary" id="saveSettingsBtn">
+            <i class="fas fa-save"></i> Lưu cài đặt
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -784,151 +1106,6 @@
             <div class="info-card">
               <div class="info-label">MSSV</div>
               <div class="info-value" id="modalStudentId">20201234</div>
-            </div>
-          </div>
-          
-          <!-- Round Management Tabs -->
-          <div class="round-section">
-            <div class="tabs">
-              <button class="tab-btn active" data-tab="round1">Vòng đơn</button>
-              <button class="tab-btn" data-tab="round2">Phỏng vấn nhóm</button>
-              <button class="tab-btn" data-tab="round3">Thử thách</button>
-              <button class="tab-btn" data-tab="round4">Phỏng vấn cá nhân</button>
-            </div>
-            
-            <!-- Round 1 Content -->
-            <div id="round1" class="tab-content active">
-              <div class="form-group">
-                <label class="form-label">Trạng thái</label>
-                <select class="form-control" id="round1StatusSelect">
-                  <option value="Chưa bắt đầu">Chưa bắt đầu</option>
-                  <option value="Đã nộp">Đã nộp</option>
-                  <option value="Đã duyệt">Đã duyệt</option>
-                  <option value="Từ chối">Từ chối</option>
-                </select>
-              </div>
-              <button class="btn btn-primary" id="saveRound1Btn">
-                <i class="fas fa-save"></i> Lưu thông tin
-              </button>
-            </div>
-            
-            <!-- Round 2 Content -->
-            <div id="round2" class="tab-content">
-              <div class="form-group">
-                <label class="form-label">Trạng thái</label>
-                <select class="form-control" id="round2StatusSelect">
-                  <option value="Chưa bắt đầu">Chưa bắt đầu</option>
-                  <option value="Đang chờ">Đang chờ</option>
-                  <option value="Đã hoàn thành">Đã hoàn thành</option>
-                  <option value="Đã duyệt">Đã duyệt</option>
-                  <option value="Từ chối">Từ chối</option>
-                </select>
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Thời gian</label>
-                <input type="text" class="form-control" id="round2Time" placeholder="VD: 14:00 - 16:00, Thứ 7 ngày 15/07">
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Địa điểm</label>
-                <input type="text" class="form-control" id="round2Location" placeholder="Nhập địa điểm">
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Thành viên nhóm</label>
-                <input type="text" class="form-control" id="round2Members" placeholder="Nhập tên thành viên, cách nhau bằng dấu phẩy">
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Ghi chú</label>
-                <textarea class="form-control" id="round2Note" rows="3" placeholder="Nhập ghi chú"></textarea>
-              </div>
-              
-              <button class="btn btn-primary" id="saveRound2Btn">
-                <i class="fas fa-save"></i> Lưu thông tin
-              </button>
-            </div>
-            
-            <!-- Round 3 Content -->
-            <div id="round3" class="tab-content">
-              <div class="form-group">
-                <label class="form-label">Trạng thái</label>
-                <select class="form-control" id="round3StatusSelect">
-                  <option value="Chưa bắt đầu">Chưa bắt đầu</option>
-                  <option value="Đang thực hiện">Đang thực hiện</option>
-                  <option value="Đã nộp bài">Đã nộp bài</option>
-                  <option value="Đã duyệt">Đã duyệt</option>
-                  <option value="Từ chối">Từ chối</option>
-                </select>
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Đề bài</label>
-                <textarea class="form-control" id="round3Challenge" rows="3" placeholder="Nhập đề bài thử thách"></textarea>
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Tài liệu hướng dẫn</label>
-                <input type="text" class="form-control" id="round3Materials" placeholder="Link tài liệu">
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Hạn nộp bài</label>
-                <input type="text" class="form-control" id="round3Deadline" placeholder="DD/MM/YYYY HH:MM">
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Thông tin pitching</label>
-                <input type="text" class="form-control" id="round3Pitching" placeholder="Thời gian và địa điểm">
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Advisor</label>
-                <input type="text" class="form-control" id="round3Advisor" placeholder="Tên advisor">
-              </div>
-              
-              <button class="btn btn-primary" id="saveRound3Btn">
-                <i class="fas fa-save"></i> Lưu thông tin
-              </button>
-            </div>
-            
-            <!-- Round 4 Content -->
-            <div id="round4" class="tab-content">
-              <div class="form-group">
-                <label class="form-label">Trạng thái</label>
-                <select class="form-control" id="round4StatusSelect">
-                  <option value="Chưa bắt đầu">Chưa bắt đầu</option>
-                  <option value="Đang chờ">Đang chờ</option>
-                  <option value="Đã hoàn thành">Đã hoàn thành</option>
-                  <option value="Đã duyệt">Đã duyệt</option>
-                  <option value="Từ chối">Từ chối</option>
-                </select>
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Thời gian</label>
-                <input type="text" class="form-control" id="round4Time" placeholder="VD: 14:00 - 15:00, Thứ 3 ngày 20/07">
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Địa điểm</label>
-                <input type="text" class="form-control" id="round4Location" placeholder="Nhập địa điểm">
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Người phỏng vấn</label>
-                <input type="text" class="form-control" id="round4Interviewer" placeholder="Nhập tên người phỏng vấn">
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Ghi chú</label>
-                <textarea class="form-control" id="round4Note" rows="3" placeholder="Nhập ghi chú"></textarea>
-              </div>
-              
-              <button class="btn btn-primary" id="saveRound4Btn">
-                <i class="fas fa-save"></i> Lưu thông tin
-              </button>
             </div>
           </div>
         </div>
@@ -1052,6 +1229,22 @@
     const roundFilter = document.getElementById('roundFilter');
     const statusFilter = document.getElementById('statusFilter');
     
+    // Main tabs elements
+    const mainTabButtons = document.querySelectorAll('.main-tab-btn');
+    const mainTabContents = document.querySelectorAll('.main-tab-content');
+    
+    // Round management elements
+    const roundCandidateSelect = document.getElementById('roundCandidateSelect');
+    const roundManagementContent = document.getElementById('roundManagementContent');
+    const noCandidateSelected = document.getElementById('noCandidateSelected');
+    const roundTabButtons = document.querySelectorAll('.round-tab-btn');
+    const roundTabContents = document.querySelectorAll('.round-tab-content');
+    
+    // History elements
+    const historyCandidateSelect = document.getElementById('historyCandidateSelect');
+    const historyContent = document.getElementById('historyContent');
+    const historyTypeFilter = document.getElementById('historyTypeFilter');
+    
     // Modal elements
     const candidateModal = document.getElementById('candidateModal');
     const editModal = document.getElementById('editModal');
@@ -1062,9 +1255,6 @@
     const completedCandidates = document.getElementById('completedCandidates');
     const inProgressCandidates = document.getElementById('inProgressCandidates');
     const pendingCandidates = document.getElementById('pendingCandidates');
-    
-    // Tab management
-    const tabButtons = document.querySelectorAll('.tab-btn');
     
     // Current selected candidate
     let currentCandidateId = null;
@@ -1118,10 +1308,26 @@
         
         updateStats();
         renderCandidates();
+        populateCandidateSelects();
       } catch (error) {
         console.error('Error loading candidates:', error);
         toastr.error('Không thể tải danh sách ứng viên');
       }
+    }
+
+    // Populate candidate select dropdowns
+    function populateCandidateSelects() {
+      roundCandidateSelect.innerHTML = '<option value="">-- Chọn ứng viên --</option>';
+      historyCandidateSelect.innerHTML = '<option value="">-- Chọn ứng viên --</option>';
+      
+      candidatesData.forEach(candidate => {
+        const option = document.createElement('option');
+        option.value = candidate.id;
+        option.textContent = `${candidate.fullname} (${candidate.email})`;
+        
+        roundCandidateSelect.appendChild(option.cloneNode(true));
+        historyCandidateSelect.appendChild(option);
+      });
     }
 
     // Update dashboard stats
@@ -1238,39 +1444,8 @@
       document.getElementById('modalFaculty').textContent = candidate.faculty || 'Chưa cập nhật';
       document.getElementById('modalStudentId').textContent = candidate.studentId || 'Chưa cập nhật';
       
-      // Load round data
-      loadRoundData(candidate);
-      
       // Show modal
       candidateModal.style.display = 'block';
-    }
-
-    // Load round data into modal
-    function loadRoundData(candidate) {
-      // Round 1
-      document.getElementById('round1StatusSelect').value = candidate.round_1?.status || 'Chưa bắt đầu';
-      
-      // Round 2
-      document.getElementById('round2StatusSelect').value = candidate.round_2?.status || 'Chưa bắt đầu';
-      document.getElementById('round2Time').value = candidate.round_2?.time || '';
-      document.getElementById('round2Location').value = candidate.round_2?.location || '';
-      document.getElementById('round2Members').value = candidate.round_2?.members || '';
-      document.getElementById('round2Note').value = candidate.round_2?.note || '';
-      
-      // Round 3
-      document.getElementById('round3StatusSelect').value = candidate.round_3?.status || 'Chưa bắt đầu';
-      document.getElementById('round3Challenge').value = candidate.round_3?.challenge || '';
-      document.getElementById('round3Materials').value = candidate.round_3?.materials || '';
-      document.getElementById('round3Deadline').value = candidate.round_3?.deadline || '';
-      document.getElementById('round3Pitching').value = candidate.round_3?.pitching || '';
-      document.getElementById('round3Advisor').value = candidate.round_3?.advisor || '';
-      
-      // Round 4
-      document.getElementById('round4StatusSelect').value = candidate.round_4?.status || 'Chưa bắt đầu';
-      document.getElementById('round4Time').value = candidate.round_4?.time || '';
-      document.getElementById('round4Location').value = candidate.round_4?.location || '';
-      document.getElementById('round4Interviewer').value = candidate.round_4?.interviewer || '';
-      document.getElementById('round4Note').value = candidate.round_4?.note || '';
     }
 
     // Get round text
@@ -1359,6 +1534,7 @@
         // Update UI
         renderCandidates();
         updateStats();
+        populateCandidateSelects();
         
         // Close modal
         editModal.style.display = 'none';
@@ -1368,6 +1544,49 @@
         console.error('Error updating candidate:', error);
         toastr.error('Cập nhật thông tin thất bại');
       }
+    }
+
+    // Load round management for selected candidate
+    function loadRoundManagement(candidateId) {
+      const candidate = candidatesData.find(c => c.id === candidateId);
+      if (!candidate) return;
+      
+      currentCandidateId = candidateId;
+      
+      // Load round data
+      loadRoundData(candidate);
+      
+      // Show round management content
+      roundManagementContent.style.display = 'block';
+      noCandidateSelected.style.display = 'none';
+    }
+
+    // Load round data into form
+    function loadRoundData(candidate) {
+      // Round 1
+      document.getElementById('round1StatusSelect').value = candidate.round_1?.status || 'Chưa bắt đầu';
+      
+      // Round 2
+      document.getElementById('round2StatusSelect').value = candidate.round_2?.status || 'Chưa bắt đầu';
+      document.getElementById('round2Time').value = candidate.round_2?.time || '';
+      document.getElementById('round2Location').value = candidate.round_2?.location || '';
+      document.getElementById('round2Members').value = candidate.round_2?.members || '';
+      document.getElementById('round2Note').value = candidate.round_2?.note || '';
+      
+      // Round 3
+      document.getElementById('round3StatusSelect').value = candidate.round_3?.status || 'Chưa bắt đầu';
+      document.getElementById('round3Challenge').value = candidate.round_3?.challenge || '';
+      document.getElementById('round3Materials').value = candidate.round_3?.materials || '';
+      document.getElementById('round3Deadline').value = candidate.round_3?.deadline || '';
+      document.getElementById('round3Pitching').value = candidate.round_3?.pitching || '';
+      document.getElementById('round3Advisor').value = candidate.round_3?.advisor || '';
+      
+      // Round 4
+      document.getElementById('round4StatusSelect').value = candidate.round_4?.status || 'Chưa bắt đầu';
+      document.getElementById('round4Time').value = candidate.round_4?.time || '';
+      document.getElementById('round4Location').value = candidate.round_4?.location || '';
+      document.getElementById('round4Interviewer').value = candidate.round_4?.interviewer || '';
+      document.getElementById('round4Note').value = candidate.round_4?.note || '';
     }
 
     // Save round data
@@ -1430,6 +1649,61 @@
         console.error(`Error updating round ${roundNumber}:`, error);
         toastr.error(`Cập nhật thông tin vòng ${roundNumber} thất bại`);
       }
+    }
+
+    // Load candidate history
+    function loadCandidateHistory(candidateId) {
+      const candidate = candidatesData.find(c => c.id === candidateId);
+      if (!candidate) return;
+      
+      // Sample history data (in a real app, this would come from Firestore)
+      const history = [
+        { 
+          date: '15/07/2025 14:30', 
+          action: 'Đã cập nhật trạng thái thành "Đã duyệt"', 
+          type: 'status',
+          by: 'Admin' 
+        },
+        { 
+          date: '10/07/2025 09:15', 
+          action: 'Đã chuyển sang vòng 2: Phỏng vấn nhóm', 
+          type: 'round',
+          by: 'Admin' 
+        },
+        { 
+          date: '05/07/2025 16:45', 
+          action: 'Đã đăng ký ứng tuyển', 
+          type: 'info',
+          by: 'Hệ thống' 
+        }
+      ];
+      
+      const typeFilter = historyTypeFilter.value;
+      const filteredHistory = typeFilter 
+        ? history.filter(item => item.type === typeFilter)
+        : history;
+      
+      if (filteredHistory.length === 0) {
+        historyContent.innerHTML = `
+          <div class="filter-section" style="text-align: center; padding: 50px;">
+            <i class="fas fa-info-circle" style="font-size: 48px; color: var(--text-light); margin-bottom: 20px;"></i>
+            <h3 style="color: var(--text-light);">Không có hoạt động nào được ghi nhận</h3>
+          </div>
+        `;
+        return;
+      }
+      
+      historyContent.innerHTML = `
+        <div class="filter-section">
+          ${filteredHistory.map(item => `
+            <div class="history-item">
+              <div class="history-date">${item.date}</div>
+              <div class="history-action">${item.action}</div>
+              <div class="history-by">${item.by}</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
     }
 
     // Filter candidates
@@ -1524,6 +1798,28 @@
       toastr.success('Xuất file CSV thành công');
     }
 
+    // Switch main tabs
+    function switchMainTab(tabId) {
+      // Update active tab button
+      mainTabButtons.forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`.main-tab-btn[data-tab="${tabId}"]`).classList.add('active');
+      
+      // Update active tab content
+      mainTabContents.forEach(content => content.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    // Switch round tabs
+    function switchRoundTab(tabId) {
+      // Update active tab button
+      roundTabButtons.forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`.round-tab-btn[data-tab="${tabId}"]`).classList.add('active');
+      
+      // Update active tab content
+      roundTabContents.forEach(content => content.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+    }
+
     // Initialize event listeners
     function initEventListeners() {
       // Login button
@@ -1551,6 +1847,51 @@
         });
       });
       
+      // Main tab switching
+      mainTabButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          switchMainTab(this.getAttribute('data-tab'));
+        });
+      });
+      
+      // Round tab switching
+      roundTabButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          switchRoundTab(this.getAttribute('data-tab'));
+        });
+      });
+      
+      // Round candidate selection
+      roundCandidateSelect.addEventListener('change', function() {
+        if (this.value) {
+          loadRoundManagement(this.value);
+        } else {
+          roundManagementContent.style.display = 'none';
+          noCandidateSelected.style.display = 'block';
+        }
+      });
+      
+      // History candidate selection
+      historyCandidateSelect.addEventListener('change', function() {
+        if (this.value) {
+          loadCandidateHistory(this.value);
+        } else {
+          historyContent.innerHTML = `
+            <div class="filter-section" style="text-align: center; padding: 50px;">
+              <i class="fas fa-clock" style="font-size: 48px; color: var(--text-light); margin-bottom: 20px;"></i>
+              <h3 style="color: var(--text-light);">Vui lòng chọn ứng viên để xem lịch sử hoạt động</h3>
+            </div>
+          `;
+        }
+      });
+      
+      // History type filter
+      historyTypeFilter.addEventListener('change', function() {
+        if (historyCandidateSelect.value) {
+          loadCandidateHistory(historyCandidateSelect.value);
+        }
+      });
+      
       // Modal close buttons
       closeModalButtons.forEach(btn => {
         btn.addEventListener('click', function() {
@@ -1567,23 +1908,6 @@
         if (event.target === editModal) {
           editModal.style.display = 'none';
         }
-      });
-      
-      // Tab switching
-      tabButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-          const tabId = this.getAttribute('data-tab');
-          
-          // Update active tab button
-          tabButtons.forEach(tab => tab.classList.remove('active'));
-          this.classList.add('active');
-          
-          // Update active tab content
-          document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.remove('active');
-          });
-          document.getElementById(tabId).classList.add('active');
-        });
       });
       
       // Save buttons
