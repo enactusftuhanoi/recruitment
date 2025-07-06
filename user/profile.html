@@ -1245,56 +1245,57 @@
     }
 
     // Save onboarding data
-    async function saveOnboardingData(e) {
-      e.preventDefault();
-      
-      if (!currentUserId) return;
-      
-      try {
-        const gender = document.querySelector('input[name="onboardGender"]:checked').value;
-        const department = document.getElementById('onboardDepartment').value;
-        
-        const userData = {
-          fullname: document.getElementById('onboardFullName').value,
-          email: document.getElementById('onboardEmail').value,
-          phone: document.getElementById('onboardPhone').value,
-          gender: gender,
-          dob: document.getElementById('onboardDob').value,
-          school: document.getElementById('onboardSchool').value,
-          faculty: document.getElementById('onboardFaculty').value,
-          studentId: document.getElementById('onboardStudentId').value,
-          department: department,
-          status: "Chờ xử lý",
-          current_round: 1,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          round_1: {
-            status: "Chưa bắt đầu",
-            deadline: "15/07/2025",
-            guide: "Hoàn thành form đăng ký"
-          }
-        };
-        
-        await setDoc(doc(db, "users", currentUserId), userData);
-        
-        // Update UI
-        currentUser = userData;
-        updateProfileUI(currentUser);
-        updateRoundProgress(1);
-        showRoundDetails(1);
-        
-        // Hide onboarding and show profile
-        document.getElementById('profileSection').style.display = 'block';
-        document.getElementById('roundSection').style.display = 'block';
-        document.getElementById('onboardingSection').style.display = 'none';
-        onboardingModal.style.display = 'none';
-        
-        toastr.success('Đăng ký hồ sơ thành công!');
-      } catch (error) {
-        console.error('Error saving onboarding data:', error);
-        toastr.error('Đăng ký hồ sơ thất bại. Vui lòng thử lại.');
+async function saveOnboardingData(e) {
+  e.preventDefault();
+  
+  if (!currentUserId) return;
+  
+  try {
+    const gender = document.querySelector('input[name="onboardGender"]:checked').value;
+    const department = document.getElementById('onboardDepartment').value;
+    
+    const userData = {
+      fullname: document.getElementById('onboardFullName').value,
+      email: document.getElementById('onboardEmail').value,
+      phone: document.getElementById('onboardPhone').value,
+      gender: gender,
+      dob: document.getElementById('onboardDob').value,
+      school: document.getElementById('onboardSchool').value,
+      faculty: document.getElementById('onboardFaculty').value,
+      studentId: document.getElementById('onboardStudentId').value,
+      department: department,
+      status: "Chờ xử lý",
+      current_round: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      round_1: {
+        status: "Chưa bắt đầu",
+        deadline: "15/07/2025",
+        guide: "Hoàn thành form đăng ký"
       }
-    }
+    };
+    
+    // Sửa lỗi cú pháp ở đây
+    await setDoc(doc(db, "users", currentUserId)), userData;
+    
+    // Update UI
+    currentUser = userData;
+    updateProfileUI(currentUser);
+    updateRoundProgress(1);
+    showRoundDetails(1);
+    
+    // Hide onboarding and show profile
+    document.getElementById('profileSection').style.display = 'block';
+    document.getElementById('roundSection').style.display = 'block';
+    document.getElementById('onboardingSection').style.display = 'none';
+    onboardingModal.style.display = 'none';
+    
+    toastr.success('Đăng ký hồ sơ thành công!');
+  } catch (error) {
+    console.error('Error saving onboarding data:', error);
+    toastr.error('Đăng ký hồ sơ thất bại. Vui lòng thử lại.');
+  }
+}
 
     // Logout function
     async function logout() {
