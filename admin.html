@@ -6,7 +6,7 @@
   <title>Admin | Enactus FTU Hanoi</title>
   <link rel="icon" href="assets/icon.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css">
   <style>
     :root {
       --primary: #1a73e8;
@@ -1177,7 +1177,7 @@
   </div>
 
   <!-- Firebase and other scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
   <script type="module">
     // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -1210,10 +1210,36 @@
     // Toastr configuration
     toastr.options = {
       closeButton: true,
+      debug: false,
+      newestOnTop: true,
       progressBar: true,
       positionClass: 'toast-bottom-right',
-      timeOut: 3000
+      preventDuplicates: false,
+      onclick: null,
+      showDuration: '300',
+      hideDuration: '1000',
+      timeOut: '3000',
+      extendedTimeOut: '1000',
+      showEasing: 'swing',
+      hideEasing: 'linear',
+      showMethod: 'fadeIn',
+      hideMethod: 'fadeOut'
     };
+
+    // Safe toastr function with fallback
+    function showToast(type, message) {
+      try {
+        if (toastr && toastr[type]) {
+          toastr[type](message);
+        } else {
+          console[type === 'error' ? 'error' : 'log'](message);
+          alert(message);
+        }
+      } catch (e) {
+        console.log(message);
+        alert(message);
+      }
+    }
 
     // DOM elements
     const loginBox = document.getElementById('loginBox');
@@ -1269,7 +1295,7 @@
       const password = document.getElementById('loginPassword').value;
       
       if (!email || !password) {
-        toastr.warning('Vui lòng nhập email và mật khẩu');
+        showToast('warning', 'Vui lòng nhập email và mật khẩu');
         return;
       }
       
@@ -1278,10 +1304,10 @@
         loginBox.style.display = 'none';
         adminContent.style.display = 'block';
         loadCandidates();
-        toastr.success('Đăng nhập thành công');
+        showToast('success', 'Đăng nhập thành công');
       } catch (error) {
         console.error('Login error:', error);
-        toastr.error('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin');
+        showToast('error', 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin');
       }
     }
 
@@ -1292,10 +1318,10 @@
         adminContent.style.display = 'none';
         loginBox.style.display = 'block';
         loginForm.reset();
-        toastr.info('Bạn đã đăng xuất');
+        showToast('info', 'Bạn đã đăng xuất');
       } catch (error) {
         console.error('Logout error:', error);
-        toastr.error('Đăng xuất thất bại');
+        showToast('error', 'Đăng xuất thất bại');
       }
     }
 
@@ -1311,7 +1337,7 @@
         populateCandidateSelects();
       } catch (error) {
         console.error('Error loading candidates:', error);
-        toastr.error('Không thể tải danh sách ứng viên');
+        showToast('error', 'Không thể tải danh sách ứng viên');
       }
     }
 
@@ -1539,10 +1565,10 @@
         // Close modal
         editModal.style.display = 'none';
         
-        toastr.success('Cập nhật thông tin ứng viên thành công');
+        showToast('success', 'Cập nhật thông tin ứng viên thành công');
       } catch (error) {
         console.error('Error updating candidate:', error);
-        toastr.error('Cập nhật thông tin thất bại');
+        showToast('error', 'Cập nhật thông tin thất bại');
       }
     }
 
@@ -1644,10 +1670,10 @@
           filteredCandidates[filteredIndex][roundField] = roundData;
         }
         
-        toastr.success(`Cập nhật thông tin vòng ${roundNumber} thành công`);
+        showToast('success', `Cập nhật thông tin vòng ${roundNumber} thành công`);
       } catch (error) {
         console.error(`Error updating round ${roundNumber}:`, error);
-        toastr.error(`Cập nhật thông tin vòng ${roundNumber} thất bại`);
+        showToast('error', `Cập nhật thông tin vòng ${roundNumber} thất bại`);
       }
     }
 
@@ -1774,7 +1800,7 @@
     // Export to CSV
     function exportToCSV() {
       if (filteredCandidates.length === 0) {
-        toastr.warning('Không có dữ liệu để xuất');
+        showToast('warning', 'Không có dữ liệu để xuất');
         return;
       }
       
@@ -1795,7 +1821,7 @@
       link.click();
       document.body.removeChild(link);
       
-      toastr.success('Xuất file CSV thành công');
+      showToast('success', 'Xuất file CSV thành công');
     }
 
     // Switch main tabs
