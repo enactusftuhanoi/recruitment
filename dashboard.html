@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Enactus FTU Hanoi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="images/enactus-logo-white.png" alt="Enactus Logo">
+                <h2>Enactus FTU HN</h2>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active"><a href="#dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="#candidates"><i class="fas fa-users"></i> Quản lý ứng viên</a></li>
+                    <li><a href="#rounds"><i class="fas fa-list-ol"></i> Vòng tuyển dụng</a></li>
+                    <li><a href="#history"><i class="fas fa-history"></i> Lịch sử hoạt động</a></li>
+                    <li><a href="#export"><i class="fas fa-file-export"></i> Xuất dữ liệu</a></li>
+                </ul>
+            </nav>
+            <div class="logout">
+                <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header>
+                <h1 id="pageTitle">Dashboard</h1>
+                <div class="user-info">
+                    <span id="userEmail"></span>
+                    <div class="avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div id="dashboardContent" class="content-section">
+                <div class="stats-container">
+                    <div class="stat-card total">
+                        <h3>Tổng ứng viên</h3>
+                        <p id="totalCandidates">0</p>
+                    </div>
+                    <div class="stat-card completed">
+                        <h3>Hoàn thành</h3>
+                        <p id="completedCandidates">0</p>
+                    </div>
+                    <div class="stat-card in-progress">
+                        <h3>Đang tiến hành</h3>
+                        <p id="inProgressCandidates">0</p>
+                    </div>
+                    <div class="stat-card pending">
+                        <h3>Chờ xử lý</h3>
+                        <p id="pendingCandidates">0</p>
+                    </div>
+                </div>
+
+                <div class="recent-activity">
+                    <h2>Hoạt động gần đây</h2>
+                    <div class="activity-list" id="recentActivity">
+                        <!-- Activities will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Candidates Management Content -->
+            <div id="candidatesContent" class="content-section" style="display: none;">
+                <div class="action-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="candidateSearch" placeholder="Tìm kiếm ứng viên...">
+                    </div>
+                    <div class="filters">
+                        <select id="statusFilter">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="pending">Chờ xử lý</option>
+                            <option value="approved">Đã duyệt</option>
+                            <option value="rejected">Từ chối</option>
+                        </select>
+                        <select id="roundFilter">
+                            <option value="">Tất cả vòng</option>
+                            <option value="application">Vòng đơn</option>
+                            <option value="group-interview">Phỏng vấn nhóm</option>
+                            <option value="challenge">Thử thách</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="candidatesTable">
+                        <thead>
+                            <tr>
+                                <th data-sort="name">Họ tên <i class="fas fa-sort"></i></th>
+                                <th data-sort="department">Ban ứng tuyển <i class="fas fa-sort"></i></th>
+                                <th data-sort="currentRound">Vòng hiện tại <i class="fas fa-sort"></i></th>
+                                <th data-sort="status">Trạng thái <i class="fas fa-sort"></i></th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="candidatesTableBody">
+                            <!-- Candidates will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Candidate Detail Modal -->
+            <div id="candidateModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <div class="modal-header">
+                        <div class="candidate-status">
+                            <span id="modalDepartment" class="department-badge">HR</span>
+                            <span id="modalCurrentRound" class="round-badge">Vòng đơn</span>
+                            <span id="modalStatus" class="status-badge pending">Chờ xử lý</span>
+                        </div>
+                        <h2 id="modalCandidateName">Nguyễn Văn A</h2>
+                    </div>
+                    <div class="modal-body">
+                        <div class="candidate-photo">
+                            <img id="modalPhoto" src="images/default-avatar.jpg" alt="Candidate Photo">
+                        </div>
+                        <div class="candidate-info">
+                            <div class="info-row">
+                                <label>Giới tính:</label>
+                                <span id="modalGender">Nam</span>
+                            </div>
+                            <div class="info-row">
+                                <label>Email:</label>
+                                <span id="modalEmail">nguyenvana@example.com</span>
+                            </div>
+                            <div class="info-row">
+                                <label>SĐT:</label>
+                                <span id="modalPhone">0123456789</span>
+                            </div>
+                            <div class="info-row">
+                                <label>Ngày sinh:</label>
+                                <span id="modalDob">01/01/2000</span>
+                            </div>
+                            <div class="info-row">
+                                <label>Trường:</label>
+                                <span id="modalUniversity">Đại học Ngoại thương</span>
+                            </div>
+                            <div class="info-row">
+                                <label>Khóa/Khoa/Lớp:</label>
+                                <span id="modalClass">K47 - Kinh tế đối ngoại - A1</span>
+                            </div>
+                            <div class="info-row">
+                                <label>Mã sinh viên:</label>
+                                <span id="modalStudentId">123456789</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="editCandidateBtn" class="btn-edit">Chỉnh sửa</button>
+                        <button id="saveCandidateBtn" class="btn-save" style="display: none;">Lưu thay đổi</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rounds Management Content -->
+            <div id="roundsContent" class="content-section" style="display: none;">
+                <div class="rounds-tabs">
+                    <button class="tab-btn active" data-tab="application">Vòng đơn</button>
+                    <button class="tab-btn" data-tab="group-interview">Phỏng vấn nhóm</button>
+                    <button class="tab-btn" data-tab="challenge">Thử thách</button>
+                </div>
+
+                <div id="applicationTab" class="round-tab-content active-tab">
+                    <h2>Quản lý Vòng đơn</h2>
+                    <div class="round-info">
+                        <div class="info-item">
+                            <label>Trạng thái vòng:</label>
+                            <select id="applicationStatus">
+                                <option value="not-started">Chưa bắt đầu</option>
+                                <option value="in-progress">Đang diễn ra</option>
+                                <option value="completed">Đã hoàn thành</option>
+                            </select>
+                        </div>
+                        <button id="saveApplicationBtn" class="btn-save">Lưu thông tin</button>
+                    </div>
+                </div>
+
+                <div id="groupInterviewTab" class="round-tab-content">
+                    <h2>Quản lý Phỏng vấn nhóm</h2>
+                    <div class="round-info">
+                        <div class="info-item">
+                            <label>Trạng thái vòng:</label>
+                            <select id="groupInterviewStatus">
+                                <option value="not-started">Chưa bắt đầu</option>
+                                <option value="in-progress">Đang diễn ra</option>
+                                <option value="completed">Đã hoàn thành</option>
+                            </select>
+                        </div>
+                        <div class="info-item">
+                            <label>Thời gian:</label>
+                            <input type="datetime-local" id="groupInterviewTime">
+                        </div>
+                        <div class="info-item">
+                            <label>Địa điểm:</label>
+                            <input type="text" id="groupInterviewLocation" placeholder="Nhập địa điểm...">
+                        </div>
+                        <div class="info-item">
+                            <label>Thành viên phỏng vấn:</label>
+                            <input type="text" id="groupInterviewMembers" placeholder="Nhập tên thành viên, cách nhau bằng dấu phẩy">
+                        </div>
+                        <div class="info-item">
+                            <label>Ghi chú:</label>
+                            <textarea id="groupInterviewNotes" rows="3" placeholder="Nhập ghi chú..."></textarea>
+                        </div>
+                        <button id="saveGroupInterviewBtn" class="btn-save">Lưu thông tin</button>
+                    </div>
+                </div>
+
+                <div id="challengeTab" class="round-tab-content">
+                    <h2>Quản lý Thử thách</h2>
+                    <div class="round-info">
+                        <div class="info-item">
+                            <label>Trạng thái vòng:</label>
+                            <select id="challengeStatus">
+                                <option value="not-started">Chưa bắt đầu</option>
+                                <option value="in-progress">Đang diễn ra</option>
+                                <option value="completed">Đã hoàn thành</option>
+                            </select>
+                        </div>
+                        <div class="info-section">
+                            <h3>Công bố đề bài</h3>
+                            <textarea id="challengeDescription" rows="4" placeholder="Nhập đề bài thử thách..."></textarea>
+                        </div>
+                        <div class="info-section">
+                            <h3>Tài liệu</h3>
+                            <input type="file" id="challengeDocuments" multiple>
+                            <div id="uploadedDocuments" class="documents-list">
+                                <!-- Uploaded documents will appear here -->
+                            </div>
+                        </div>
+                        <div class="info-section">
+                            <h3>Thông tin vòng</h3>
+                            <div class="info-item">
+                                <label>Thời gian:</label>
+                                <input type="datetime-local" id="challengeTime">
+                            </div>
+                            <div class="info-item">
+                                <label>Địa điểm:</label>
+                                <input type="text" id="challengeLocation" placeholder="Nhập địa điểm...">
+                            </div>
+                            <div class="info-item">
+                                <label>Thành viên team:</label>
+                                <input type="text" id="challengeTeamMembers" placeholder="Nhập tên thành viên, cách nhau bằng dấu phẩy">
+                            </div>
+                            <div class="info-item">
+                                <label>Advisor:</label>
+                                <input type="text" id="challengeAdvisor" placeholder="Nhập tên advisor...">
+                            </div>
+                        </div>
+                        <div class="info-section">
+                            <h3>Thông tin pitching</h3>
+                            <div class="info-item">
+                                <label>Thời gian:</label>
+                                <input type="datetime-local" id="pitchingTime">
+                            </div>
+                            <div class="info-item">
+                                <label>Địa điểm:</label>
+                                <input type="text" id="pitchingLocation" placeholder="Nhập địa điểm...">
+                            </div>
+                        </div>
+                        <button id="saveChallengeBtn" class="btn-save">Lưu thông tin</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Content -->
+            <div id="historyContent" class="content-section" style="display: none;">
+                <h2>Lịch sử hoạt động</h2>
+                <div class="history-filters">
+                    <div class="filter-item">
+                        <label>Từ ngày:</label>
+                        <input type="date" id="historyFromDate">
+                    </div>
+                    <div class="filter-item">
+                        <label>Đến ngày:</label>
+                        <input type="date" id="historyToDate">
+                    </div>
+                    <div class="filter-item">
+                        <label>Loại hoạt động:</label>
+                        <select id="historyType">
+                            <option value="all">Tất cả</option>
+                            <option value="status-change">Thay đổi trạng thái</option>
+                            <option value="round-change">Thay đổi vòng</option>
+                            <option value="info-update">Cập nhật thông tin</option>
+                        </select>
+                    </div>
+                    <button id="applyHistoryFilter" class="btn-apply">Áp dụng</button>
+                </div>
+                <div class="history-table-container">
+                    <table id="historyTable">
+                        <thead>
+                            <tr>
+                                <th>Thời gian</th>
+                                <th>Ứng viên</th>
+                                <th>Hoạt động</th>
+                                <th>Chi tiết</th>
+                                <th>Người thực hiện</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- History records will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Export Content -->
+            <div id="exportContent" class="content-section" style="display: none;">
+                <h2>Xuất dữ liệu</h2>
+                <div class="export-options">
+                    <div class="option-card">
+                        <h3>Xuất toàn bộ ứng viên</h3>
+                        <p>Xuất danh sách tất cả ứng viên với đầy đủ thông tin</p>
+                        <button id="exportAllBtn" class="btn-export">Xuất CSV</button>
+                    </div>
+                    <div class="option-card">
+                        <h3>Xuất theo vòng</h3>
+                        <select id="exportRoundSelect">
+                            <option value="application">Vòng đơn</option>
+                            <option value="group-interview">Phỏng vấn nhóm</option>
+                            <option value="challenge">Thử thách</option>
+                        </select>
+                        <button id="exportByRoundBtn" class="btn-export">Xuất CSV</button>
+                    </div>
+                    <div class="option-card">
+                        <h3>Xuất theo ban</h3>
+                        <select id="exportDepartmentSelect">
+                            <option value="HR">HR</option>
+                            <option value="PR">PR</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Project">Project</option>
+                        </select>
+                        <button id="exportByDepartmentBtn" class="btn-export">Xuất CSV</button>
+                    </div>
+                </div>
+                <div class="export-notice">
+                    <p><i class="fas fa-info-circle"></i> File CSV sẽ được tải về tự động. Để tránh lỗi font chữ, vui lòng mở file bằng UTF-8 encoding.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
