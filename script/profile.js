@@ -1,240 +1,538 @@
-// profile.js
-document.addEventListener('DOMContentLoaded', function() {
-  // DOM Elements
-  const onboardingSection = document.getElementById('onboardingSection');
-  const profileSection = document.getElementById('profileSection');
-  const roundSection = document.getElementById('roundSection');
-  const startOnboardingBtn = document.getElementById('startOnboardingBtn');
-  const editProfileBtn = document.getElementById('editProfileBtn');
-  const refreshBtn = document.getElementById('refreshBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const editModal = document.getElementById('editModal');
-  const onboardingModal = document.getElementById('onboardingModal');
-  const closeModalButtons = document.querySelectorAll('.close-modal');
-  const editForm = document.getElementById('editForm');
-  const onboardingForm = document.getElementById('onboardingForm');
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { 
+  getAuth, 
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { 
+  getFirestore, 
+  doc, 
+  getDoc,
+  setDoc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
+  authDomain: "enactusftuhanoi-tracuu.firebaseapp.com",
+  projectId: "enactusftuhanoi-tracuu",
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Toastr configuration
+toastr.options = {
+  closeButton: true,
+  debug: false,
+  newestOnTop: true,
+  progressBar: true,
+  positionClass: 'toast-bottom-right',
+  preventDuplicates: false,
+  onclick: null,
+  showDuration: '300',
+  hideDuration: '1000',
+  timeOut: '3000',
+  extendedTimeOut: '1000',
+  showEasing: 'swing',
+  hideEasing: 'linear',
+  showMethod: 'fadeIn',
+  hideMethod: 'fadeOut'
+};
+
+// DOM elements
+const logoutBtn = document.getElementById('logoutBtn');
+const refreshBtn = document.getElementById('refreshBtn');
+const editProfileBtn = document.getElementById('editProfileBtn');
+const startOnboardingBtn = document.getElementById('startOnboardingBtn');
+const editModal = document.getElementById('editModal');
+const onboardingModal = document.getElementById('onboardingModal');
+const closeModalButtons = document.querySelectorAll('.close-modal');
+const editForm = document.getElementById('editForm');
+const onboardingForm = document.getElementById('onboardingForm');
+
+// Current user data
+let currentUser = null;
+let currentUserId = null;
+
+// ========== HELPER FUNCTIONS ==========
+function getInitials(name) {
+  const names = name.split(' ');
+  let initials = names[0].substring(0, 1).toUpperCase();
   
-  // Check if user has profile data (simulated)
-  const hasProfile = false; // Change to true to test with profile data
-  
-  // Initialize UI based on user state
-  function initUI() {
-    if (hasProfile) {
-      onboardingSection.style.display = 'none';
-      profileSection.style.display = 'block';
-      roundSection.style.display = 'block';
-      
-      // Simulate loading profile data
-      setTimeout(loadProfileData, 500);
-    } else {
-      onboardingSection.style.display = 'flex';
-      profileSection.style.display = 'none';
-      roundSection.style.display = 'none';
-    }
+  if (names.length > 1) {
+    initials += names[names.length - 1].substring(0, 1).toUpperCase();
   }
   
-  // Load profile data (simulated)
-  function loadProfileData() {
-    // In a real app, this would come from a database
-    const profileData = {
-      fullName: 'Nguyễn Văn A',
-      email: 'example@ftu.edu.vn',
-      phone: '0123456789',
-      gender: 'Nam',
-      dob: '01/01/2007',
-      school: 'Trường Đại học Ngoại Thương',
-      faculty: 'K64 - Anh 05 - TC KTQT',
-      studentId: '2415410000',
-      department: 'Nhân sự',
-      currentRound: 'Vòng 1',
-      status: 'Chờ xử lý'
+  return initials;
+}
+
+function generateColorFromName(name) {
+  const colors = [
+    '#1a73e8', '#4caf50', '#ff9800', '#9c27b0', 
+    '#e91e63', '#00bcd4', '#8bc34a', '#ff5722'
+  ];
+  
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  const index = Math.abs(hash) % colors.length;
+  return colors[index];
+}
+
+// Function to update user avatar with high quality image
+function updateUserAvatar(user) {
+  const avatarImg = document.getElementById('userAvatar');
+  
+  // Clear any existing content
+  avatarImg.innerHTML = '';
+  avatarImg.style.backgroundImage = '';
+  
+  // Try to get high quality photo from Google
+  let photoUrl = user.photoURL;
+  if (photoUrl && photoUrl.includes('googleusercontent.com')) {
+    // Replace with higher quality version (s0=default, s96-c=96px, s400-c=400px)
+    photoUrl = photoUrl.replace(/=s\d+(-c)?/, '=s1000-c');
+  }
+
+  if (photoUrl) {
+    // Create image element to handle loading and error
+    const img = new Image();
+    img.src = photoUrl;
+    
+    img.onload = function() {
+      avatarImg.style.backgroundImage = `url(${photoUrl})`;
+      avatarImg.style.backgroundSize = 'cover';
+      avatarImg.style.backgroundPosition = 'center';
     };
     
-    // Update profile section
-    document.getElementById('userFullName').textContent = profileData.fullName;
-    document.getElementById('userEmail').textContent = profileData.email;
-    document.getElementById('userPhone').textContent = profileData.phone;
-    document.getElementById('userGender').textContent = profileData.gender;
-    document.getElementById('userDob').textContent = profileData.dob;
-    document.getElementById('userSchool').textContent = profileData.school;
-    document.getElementById('userFaculty').textContent = profileData.faculty;
-    document.getElementById('userStudentId').textContent = profileData.studentId;
-    document.getElementById('userDepartment').textContent = profileData.department;
-    document.getElementById('userCurrentRound').textContent = profileData.currentRound;
-    document.getElementById('userStatus').textContent = profileData.status;
-    
-    // Update progress bar
-    updateProgressBar(1);
+    img.onerror = function() {
+      // Fallback to initials if image fails to load
+      showInitialsAvatar(user);
+    };
+  } else {
+    // No photo URL available, use initials
+    showInitialsAvatar(user);
   }
+}
+
+// Helper function to show initials avatar
+function showInitialsAvatar(user) {
+  const avatarImg = document.getElementById('userAvatar');
+  const name = user.fullname || user.email || 'User';
+  const initials = getInitials(name);
   
-  // Update progress bar based on current round
-  function updateProgressBar(currentRound) {
-    const progressBar = document.getElementById('progressBar');
-    let progress = 0;
+  avatarImg.innerHTML = initials || '<i class="fas fa-user"></i>';
+  avatarImg.style.backgroundColor = generateColorFromName(name);
+  avatarImg.style.color = 'white';
+  avatarImg.style.display = 'flex';
+  avatarImg.style.alignItems = 'center';
+  avatarImg.style.justifyContent = 'center';
+  avatarImg.style.fontSize = initials.length > 2 ? '50px' : '60px';
+  avatarImg.style.fontWeight = 'bold';
+  avatarImg.style.backgroundImage = 'none';
+}
+
+async function loadUserData(userId, email) {
+  try {
+    const auth = getAuth();
+    const user = auth.currentUser;
     
-    switch(currentRound) {
-      case 'Vòng 1':
-        progress = 0;
-        break;
-      case 'Vòng 2':
-        progress = 25;
-        break;
-      case 'Vòng 3':
-        progress = 50;
-        break;
-      case 'Vòng 4':
-        progress = 75;
-        break;
-      case 'Hoàn thành':
-        progress = 100;
-        break;
-    }
+    const userDoc = await getDoc(doc(db, "users", userId));
     
-    progressBar.style.width = `${progress}%`;
-    
-    // Update active steps
-    document.querySelectorAll('.step').forEach((step, index) => {
-      if (index < currentRound) {
-        step.classList.add('active');
+    if (userDoc.exists()) {
+      // Existing user - show profile
+      currentUser = userDoc.data();
+      currentUserId = userId;
+      
+      document.getElementById('profileSection').style.display = 'block';
+      document.getElementById('roundSection').style.display = 'block';
+      document.getElementById('onboardingSection').style.display = 'none';
+      
+      updateProfileUI(currentUser);
+      updateRoundProgress(currentUser.current_round || 1);
+      showRoundDetails(currentUser.current_round || 1);
+      
+      // Update avatar with Google photo if available
+      if (user && user.photoURL) {
+        updateUserAvatar({
+          ...currentUser,
+          photoURL: user.photoURL
+        });
       } else {
-        step.classList.remove('active');
+        updateUserAvatar(currentUser);
       }
-    });
+    } else {
+      // New user - show onboarding
+      document.getElementById('profileSection').style.display = 'none';
+      document.getElementById('roundSection').style.display = 'none';
+      document.getElementById('onboardingSection').style.display = 'block';
+      
+      currentUserId = userId;
+      
+      if (email) {
+        document.getElementById('onboardEmail').value = email;
+      }
+      
+      // If user has Google photo, show it in onboarding
+      if (user && user.photoURL) {
+        const avatarPreview = document.createElement('div');
+        avatarPreview.style.width = '100px';
+        avatarPreview.style.height = '100px';
+        avatarPreview.style.borderRadius = '50%';
+        avatarPreview.style.backgroundImage = `url(${user.photoURL})`;
+        avatarPreview.style.backgroundSize = 'cover';
+        avatarPreview.style.backgroundPosition = 'center';
+        avatarPreview.style.margin = '0 auto 15px';
+        
+        const onboardingIcon = document.querySelector('.onboarding-icon');
+        onboardingIcon.innerHTML = '';
+        onboardingIcon.appendChild(avatarPreview);
+      }
+    }
+  } catch (error) {
+    console.error('Error loading user data:', error);
+    toastr.error('Lỗi khi tải dữ liệu người dùng');
   }
+}
+
+// Update profile UI with user data
+function updateProfileUI(user) {
+  document.getElementById('userFullName').textContent = user.fullname || 'Chưa cập nhật';
+  document.getElementById('userGender').textContent = user.gender || 'Chưa cập nhật';
+  document.getElementById('userEmail').textContent = user.email || 'Chưa cập nhật';
+  document.getElementById('userPhone').textContent = user.phone || 'Chưa cập nhật';
+  document.getElementById('userDob').textContent = user.dob || 'Chưa cập nhật';
+  document.getElementById('userSchool').textContent = user.school || 'Chưa cập nhật';
+  document.getElementById('userFaculty').textContent = user.faculty || 'Chưa cập nhật';
+  document.getElementById('userStudentId').textContent = user.studentId || 'Chưa cập nhật';
+  document.getElementById('userDepartment').textContent = user.department || 'Chưa chọn';
   
-  // Show modal function
-  function showModal(modal) {
-    modal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
+  // Update status badges
+  document.getElementById('userCurrentRound').textContent = getRoundText(user.current_round || 1);
+  document.getElementById('userStatus').textContent = user.status || 'Chưa xác định';
+  
+  // Update badge colors based on status
+  const statusBadge = document.getElementById('userStatus');
+  statusBadge.className = 'badge ';
+  if (user.status === 'Đã duyệt') {
+    statusBadge.classList.add('badge-success');
+  } else if (user.status === 'Từ chối') {
+    statusBadge.classList.add('badge-danger');
+  } else {
+    statusBadge.classList.add('badge-warning');
   }
+}
+
+// Get round text
+function getRoundText(round) {
+  if (!round) return 'Chưa bắt đầu';
   
-  // Hide modal function
-  function hideModal(modal) {
-    modal.style.display = 'none';
-    document.body.style.overflow = 'auto';
+  const rounds = [
+    'Vòng đơn',
+    'Phỏng vấn nhóm',
+    'Thử thách',
+    'Phỏng vấn cá nhân',
+    'Hoàn thành'
+  ];
+  
+  if (round <= 4) {
+    return `Vòng ${round}: ${rounds[round-1]}`;
+  } else {
+    return rounds[4];
   }
+}
+
+// Update round progress visualization
+function updateRoundProgress(currentRound) {
+  const steps = document.querySelectorAll('.step');
+  const progressBar = document.getElementById('progressBar');
   
-  // Event Listeners
-  startOnboardingBtn.addEventListener('click', () => {
-    showModal(onboardingModal);
+  // Reset all steps
+  steps.forEach(step => {
+    step.classList.remove('active', 'completed');
   });
   
-  editProfileBtn.addEventListener('click', () => {
-    // Pre-fill the form with current data
-    document.getElementById('editFullName').value = document.getElementById('userFullName').textContent;
-    document.getElementById('editEmail').value = document.getElementById('userEmail').textContent;
-    document.getElementById('editPhone').value = document.getElementById('userPhone').textContent;
-    document.getElementById('editDob').value = document.getElementById('userDob').textContent;
-    document.getElementById('editSchool').value = document.getElementById('userSchool').textContent;
-    document.getElementById('editFaculty').value = document.getElementById('userFaculty').textContent;
-    document.getElementById('editStudentId').value = document.getElementById('userStudentId').textContent;
-    
-    // Set gender radio button
-    const gender = document.getElementById('userGender').textContent;
-    document.querySelector(`input[name="gender"][value="${gender}"]`).checked = true;
-    
-    showModal(editModal);
+  // Calculate progress percentage
+  let progressPercent = 0;
+  
+  if (currentRound > 5) currentRound = 5;
+  
+  // Update steps based on current round
+  for (let i = 0; i < currentRound; i++) {
+    if (i < steps.length) {
+      steps[i].classList.add('completed');
+    }
+  }
+  
+  if (currentRound <= 5) {
+    steps[currentRound - 1].classList.add('active');
+    progressPercent = ((currentRound - 1) / 4) * 100;
+  } else {
+    progressPercent = 100;
+  }
+  
+  progressBar.style.width = `${progressPercent}%`;
+}
+
+// Show round details based on current round
+function showRoundDetails(currentRound) {
+  // Hide all round details first
+  document.querySelectorAll('.round-card').forEach(card => {
+    card.style.display = 'none';
   });
   
+  // Show details up to current round
+  for (let i = 1; i <= currentRound; i++) {
+    const roundCard = document.getElementById(`round${i}Details`);
+    if (roundCard) {
+      roundCard.style.display = 'block';
+      updateRoundStatus(i);
+    }
+  }
+}
+
+// Update round status in details cards
+function updateRoundStatus(roundNumber) {
+  if (!currentUser) return;
+  
+  const roundData = currentUser[`round_${roundNumber}`] || {};
+  const statusElement = document.getElementById(`round${roundNumber}Status`);
+  const statusTextElement = document.getElementById(`round${roundNumber}StatusText`);
+  
+  if (statusElement && statusTextElement) {
+    const status = roundData.status || 'Chưa bắt đầu';
+    statusElement.textContent = status;
+    statusTextElement.textContent = status;
+    
+    // Update badge color
+    statusElement.className = 'badge ';
+    if (status === 'Đã duyệt') {
+      statusElement.classList.add('badge-success');
+    } else if (status === 'Từ chối') {
+      statusElement.classList.add('badge-danger');
+    } else if (status === 'Đang chờ' || status === 'Đang thực hiện') {
+      statusElement.classList.add('badge-primary');
+    } else {
+      statusElement.classList.add('badge-warning');
+    }
+  }
+  
+  // Update round-specific details
+  switch(roundNumber) {
+    case 1:
+      document.getElementById('round1Deadline').textContent = roundData.deadline || 'Chưa cập nhật';
+      document.getElementById('round1Guide').textContent = roundData.guide || 'Chưa cập nhật';
+      break;
+    case 2:
+      document.getElementById('round2Time').textContent = roundData.time || 'Chưa cập nhật';
+      document.getElementById('round2Location').textContent = roundData.location || 'Chưa cập nhật';
+      document.getElementById('round2Members').textContent = roundData.members || 'Chưa cập nhật';
+      break;
+    case 3:
+      document.getElementById('round3Challenge').textContent = roundData.challenge || 'Chưa cập nhật';
+      document.getElementById('round3Deadline').textContent = roundData.deadline || 'Chưa cập nhật';
+      document.getElementById('round3Materials').textContent = roundData.materials || 'Chưa cập nhật';
+      break;
+    case 4:
+      document.getElementById('round4Time').textContent = roundData.time || 'Chưa cập nhật';
+      document.getElementById('round4Location').textContent = roundData.location || 'Chưa cập nhật';
+      document.getElementById('round4Interviewer').textContent = roundData.interviewer || 'Chưa cập nhật';
+      break;
+  }
+}
+
+// Show edit modal with current data
+function showEditModal() {
+  if (!currentUser) return;
+  
+  document.getElementById('editFullName').value = currentUser.fullname || '';
+  document.getElementById('editEmail').value = currentUser.email || '';
+  document.getElementById('editPhone').value = currentUser.phone || '';
+  
+  // Set gender radio button
+  const gender = currentUser.gender || 'Nam';
+  document.querySelector(`input[name="gender"][value="${gender}"]`).checked = true;
+  
+  document.getElementById('editDob').value = currentUser.dob || '';
+  document.getElementById('editSchool').value = currentUser.school || '';
+  document.getElementById('editFaculty').value = currentUser.faculty || '';
+  document.getElementById('editStudentId').value = currentUser.studentId || '';
+  
+  editModal.style.display = 'block';
+}
+
+// Save edited profile
+async function saveProfile(e) {
+  e.preventDefault();
+  
+  if (!currentUserId) return;
+  
+  try {
+    const gender = document.querySelector('input[name="gender"]:checked').value;
+    
+    const updatedData = {
+      fullname: document.getElementById('editFullName').value,
+      email: document.getElementById('editEmail').value,
+      phone: document.getElementById('editPhone').value,
+      gender: gender,
+      dob: document.getElementById('editDob').value,
+      school: document.getElementById('editSchool').value,
+      faculty: document.getElementById('editFaculty').value,
+      studentId: document.getElementById('editStudentId').value,
+      updatedAt: new Date()
+    };
+    
+    await updateDoc(doc(db, "users", currentUserId), updatedData);
+    
+    // Update local data
+    currentUser = { ...currentUser, ...updatedData };
+    updateProfileUI(currentUser);
+    
+    // Close modal
+    editModal.style.display = 'none';
+    
+    toastr.success('Cập nhật hồ sơ thành công');
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    toastr.error('Cập nhật hồ sơ thất bại');
+  }
+}
+
+// Save onboarding data
+async function saveOnboardingData(e) {
+  e.preventDefault();
+  
+  const auth = getAuth();
+  const user = auth.currentUser;
+  
+  if (!user) {
+    toastr.error('Người dùng chưa đăng nhập');
+    return;
+  }
+  
+  try {
+    const gender = document.querySelector('input[name="onboardGender"]:checked').value;
+    const department = document.getElementById('onboardDepartment').value;
+    
+    const userData = {
+      fullname: document.getElementById('onboardFullName').value,
+      email: document.getElementById('onboardEmail').value,
+      phone: document.getElementById('onboardPhone').value,
+      gender: gender,
+      dob: document.getElementById('onboardDob').value,
+      school: document.getElementById('onboardSchool').value,
+      faculty: document.getElementById('onboardFaculty').value,
+      studentId: document.getElementById('onboardStudentId').value,
+      department: department,
+      status: "Chờ xử lý",
+      current_round: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      round_1: {
+        status: "Chưa bắt đầu",
+        deadline: "15/07/2025",
+        guide: "Hoàn thành form đăng ký"
+      }
+    };
+    
+    // Sử dụng UID của người dùng đã đăng nhập
+    await setDoc(doc(db, "users", user.uid), userData);
+    
+    // Cập nhật UI
+    currentUser = userData;
+    currentUserId = user.uid;
+    updateProfileUI(currentUser);
+    updateRoundProgress(1);
+    showRoundDetails(1);
+    
+    // Ẩn onboarding và hiển thị profile
+    document.getElementById('profileSection').style.display = 'block';
+    document.getElementById('roundSection').style.display = 'block';
+    document.getElementById('onboardingSection').style.display = 'none';
+    onboardingModal.style.display = 'none';
+    
+    toastr.success('Đăng ký hồ sơ thành công!');
+  } catch (error) {
+    console.error('Lỗi khi lưu dữ liệu:', error);
+    toastr.error('Đăng ký hồ sơ thất bại: ' + error.message);
+  }
+}
+
+// Logout function
+async function logout() {
+  try {
+    await signOut(auth);
+    window.location.href = '/index.html'; // Redirect to login page
+  } catch (error) {
+    console.error('Logout error:', error);
+    toastr.error('Đăng xuất thất bại');
+  }
+}
+
+// Initialize event listeners
+function initEventListeners() {
+  // Logout button
+  logoutBtn.addEventListener('click', logout);
+  
+  // Refresh button
   refreshBtn.addEventListener('click', () => {
-    toastr.info('Đang làm mới dữ liệu...');
-    // Simulate refresh
-    setTimeout(() => {
-      toastr.success('Dữ liệu đã được cập nhật');
-    }, 1000);
+    if (currentUserId) {
+      loadUserData(currentUserId);
+      toastr.info('Đang làm mới dữ liệu...');
+    }
   });
   
-  logoutBtn.addEventListener('click', () => {
-    toastr.info('Đang đăng xuất...');
-    // Simulate logout
-    setTimeout(() => {
-      window.location.href = 'login.html';
-    }, 1500);
+  // Edit profile button
+  editProfileBtn.addEventListener('click', showEditModal);
+  
+  // Start onboarding button
+  startOnboardingBtn.addEventListener('click', () => {
+    onboardingModal.style.display = 'block';
   });
   
-  closeModalButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      const modal = button.closest('.modal');
-      hideModal(modal);
+  // Close modal buttons
+  closeModalButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      editModal.style.display = 'none';
+      onboardingModal.style.display = 'none';
     });
   });
   
   // Close modal when clicking outside
-  window.addEventListener('click', (event) => {
-    if (event.target.classList.contains('modal')) {
-      hideModal(event.target);
+  window.addEventListener('click', function(event) {
+    if (event.target === editModal) {
+      editModal.style.display = 'none';
+    }
+    if (event.target === onboardingModal) {
+      onboardingModal.style.display = 'none';
     }
   });
   
-  // Form submission handlers
-  editForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    // Get form values
-    const fullName = document.getElementById('editFullName').value;
-    const email = document.getElementById('editEmail').value;
-    const phone = document.getElementById('editPhone').value;
-    const gender = document.querySelector('input[name="gender"]:checked').value;
-    const dob = document.getElementById('editDob').value;
-    const school = document.getElementById('editSchool').value;
-    const faculty = document.getElementById('editFaculty').value;
-    const studentId = document.getElementById('editStudentId').value;
-    
-    // Update profile (in a real app, this would save to database)
-    document.getElementById('userFullName').textContent = fullName;
-    document.getElementById('userEmail').textContent = email;
-    document.getElementById('userPhone').textContent = phone;
-    document.getElementById('userGender').textContent = gender;
-    document.getElementById('userDob').textContent = dob;
-    document.getElementById('userSchool').textContent = school;
-    document.getElementById('userFaculty').textContent = faculty;
-    document.getElementById('userStudentId').textContent = studentId;
-    
-    hideModal(editModal);
-    toastr.success('Cập nhật hồ sơ thành công');
-  });
+  // Edit form submission
+  editForm.addEventListener('submit', (e) => saveProfile(e));
   
-  onboardingForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    // Get form values
-    const fullName = document.getElementById('onboardFullName').value;
-    const email = document.getElementById('onboardEmail').value;
-    const phone = document.getElementById('onboardPhone').value;
-    const gender = document.querySelector('input[name="onboardGender"]:checked').value;
-    const dob = document.getElementById('onboardDob').value;
-    const school = document.getElementById('onboardSchool').value;
-    const faculty = document.getElementById('onboardFaculty').value;
-    const studentId = document.getElementById('onboardStudentId').value;
-    const department = document.getElementById('onboardDepartment').value;
-    
-    // Create profile (in a real app, this would save to database)
-    document.getElementById('userFullName').textContent = fullName;
-    document.getElementById('userEmail').textContent = email;
-    document.getElementById('userPhone').textContent = phone;
-    document.getElementById('userGender').textContent = gender;
-    document.getElementById('userDob').textContent = dob;
-    document.getElementById('userSchool').textContent = school;
-    document.getElementById('userFaculty').textContent = faculty;
-    document.getElementById('userStudentId').textContent = studentId;
-    document.getElementById('userDepartment').textContent = department;
-    
-    // Update UI
-    hasProfile = true;
-    initUI();
-    
-    hideModal(onboardingModal);
-    toastr.success('Đăng ký hồ sơ thành công');
-  });
-  
-  // Initialize the UI
-  initUI();
-  
-  // Initialize toastr
-  toastr.options = {
-    positionClass: 'toast-bottom-right',
-    progressBar: true,
-    closeButton: true,
-    timeOut: 3000
-  };
+  // Onboarding form submission
+  onboardingForm.addEventListener('submit', (e) => saveOnboardingData(e));
+}
+
+// Check auth state and load data
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    currentUserId = user.uid;
+    loadUserData(user.uid, user.email);
+  } else {
+    window.location.href = '/index.html'; // Redirect if not logged in
+  }
+});
+
+// Initialize the app
+document.addEventListener('DOMContentLoaded', function() {
+  initEventListeners();
 });
