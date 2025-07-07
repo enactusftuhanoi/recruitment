@@ -177,19 +177,21 @@
     }
 
     .avatar-img {
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid var(--primary-light);
-      margin: 0 auto 20px;
-      background-color: #f0f0f0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ccc;
-      font-size: 60px;
-    }
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-light);
+    margin: 0 auto 20px;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ccc;
+    font-size: 60px;
+    background-size: cover;
+    background-position: center;
+  }
 
     .upload-btn {
       margin-top: 15px;
@@ -700,7 +702,7 @@
             </div>
             <div class="detail-item">
               <div class="detail-label">Thời hạn nộp</div>
-              <div class="detail-value" id="round1Deadline">15/07/2025</div>
+              <div class="detail-value" id="round1Deadline">Chưa cập nhật</div>
             </div>
             <div class="detail-item">
               <div class="detail-label">Hướng dẫn</div>
@@ -848,7 +850,7 @@
         </div>
         
         <div class="form-group">
-          <label class="form-label required">Khoa/Ngành</label>
+          <label class="form-label required">Khoa/Lớp/Khoa</label>
           <input type="text" class="form-control" id="editFaculty" required>
         </div>
         
@@ -916,7 +918,7 @@
         </div>
         
         <div class="form-group">
-          <label class="form-label required">Khoa/Ngành</label>
+          <label class="form-label required">Khóa/Lớp/Khoa</label>
           <input type="text" class="form-control" id="onboardFaculty" required>
         </div>
         
@@ -1008,43 +1010,122 @@
     let currentUserId = null;
 
     // ========== CÁC HÀM CHỨC NĂNG ==========
-
-    // Load user data
-    async function loadUserData(userId, email) {
-      try {
-        const userDoc = await getDoc(doc(db, "users", userId));
+    // Function to update user avatar with high quality image
+    function updateUserAvatar(user) {
+      const avatarImg = document.getElementById('userAvatar');
+      
+      // Clear any existing content
+      avatarImg.innerHTML = '';
+      avatarImg.style.backgroundImage = '';
+      
+      // Try to get high quality photo from Google
+      let photoUrl = user.photoURL;
+      if (photoUrl && photoUrl.includes('googleusercontent.com')) {
+        // Replace with higher quality version (s0=default, s96-c=96px, s400-c=400px)
+        photoUrl = photoUrl.replace(/=s\d+(-c)?/, '=s1000-c');
+      }
+    
+      if (photoUrl) {
+        // Create image element to handle loading and error
+        const img = new Image();
+        img.src = photoUrl;
         
-        if (userDoc.exists()) {
-          // Existing user - show profile
-          currentUser = userDoc.data();
-          currentUserId = userId;
-          
-          document.getElementById('profileSection').style.display = 'block';
-          document.getElementById('roundSection').style.display = 'block';
-          document.getElementById('onboardingSection').style.display = 'none';
-          
-          updateProfileUI(currentUser);
-          updateRoundProgress(currentUser.current_round || 1);
-          showRoundDetails(currentUser.current_round || 1);
-        } else {
-          // New user - show onboarding
-          document.getElementById('profileSection').style.display = 'none';
-          document.getElementById('roundSection').style.display = 'none';
-          document.getElementById('onboardingSection').style.display = 'block';
-          
-          // Initialize currentUserId for new users
-          currentUserId = userId;
-          
-          if (email) {
-            document.getElementById('onboardEmail').value = email;
-          }
-        }
-      } catch (error) {
-        console.error('Error loading user data:', error);
-        toastr.error('Lỗi khi tải dữ liệu người dùng');
+        img.onload = function() {
+          avatarImg.style.backgroundImage = `url(${photoUrl})`;
+          avatarImg.style.backgroundSize = 'cover';
+          avatarImg.style.backgroundPosition = 'center';
+        };
+        
+        img.onerror = function() {
+          // Fallback to initials if image fails to load
+          showInitialsAvatar(user);
+        };
+      } else {
+        // No photo URL available, use initials
+        showInitialsAvatar(user);
       }
     }
-
+    
+    // Helper function to show initials avatar
+    function showInitialsAvatar(user) {
+      const avatarImg = document.getElementById('userAvatar');
+      const name = user.fullname || user.email || 'User';
+      const initials = getInitials(name);
+      
+      avatarImg.innerHTML = initials || '<i class="fas fa-user"></i>';
+      avatarImg.style.backgroundColor = generateColorFromName(name);
+      avatarImg.style.color = 'white';
+      avatarImg.style.display = 'flex';
+      avatarImg.style.alignItems = 'center';
+      avatarImg.style.justifyContent = 'center';
+      avatarImg.style.fontSize = initials.length > 2 ? '50px' : '60px';
+      avatarImg.style.fontWeight = 'bold';
+      avatarImg.style.backgroundImage = 'none';
+    }
+    
+    async function loadUserData(userId, email) {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      
+      const userDoc = await getDoc(doc(db, "users", userId));
+      
+      if (userDoc.exists()) {
+        // Existing user - show profile
+        currentUser = userDoc.data();
+        currentUserId = userId;
+        
+        document.getElementById('profileSection').style.display = 'block';
+        document.getElementById('roundSection').style.display = 'block';
+        document.getElementById('onboardingSection').style.display = 'none';
+        
+        updateProfileUI(currentUser);
+        updateRoundProgress(currentUser.current_round || 1);
+        showRoundDetails(currentUser.current_round || 1);
+        
+        // Update avatar with Google photo if available
+        if (user && user.photoURL) {
+          updateUserAvatar({
+            ...currentUser,
+            photoURL: user.photoURL
+          });
+        } else {
+          updateUserAvatar(currentUser);
+        }
+      } else {
+        // New user - show onboarding
+        document.getElementById('profileSection').style.display = 'none';
+        document.getElementById('roundSection').style.display = 'none';
+        document.getElementById('onboardingSection').style.display = 'block';
+        
+        currentUserId = userId;
+        
+        if (email) {
+          document.getElementById('onboardEmail').value = email;
+        }
+        
+        // If user has Google photo, show it in onboarding
+        if (user && user.photoURL) {
+          const avatarPreview = document.createElement('div');
+          avatarPreview.style.width = '100px';
+          avatarPreview.style.height = '100px';
+          avatarPreview.style.borderRadius = '50%';
+          avatarPreview.style.backgroundImage = `url(${user.photoURL})`;
+          avatarPreview.style.backgroundSize = 'cover';
+          avatarPreview.style.backgroundPosition = 'center';
+          avatarPreview.style.margin = '0 auto 15px';
+          
+          const onboardingIcon = document.querySelector('.onboarding-icon');
+          onboardingIcon.innerHTML = '';
+          onboardingIcon.appendChild(avatarPreview);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      toastr.error('Lỗi khi tải dữ liệu người dùng');
+    }
+  }
+    
     // Update profile UI with user data
     function updateProfileUI(user) {
       document.getElementById('userFullName').textContent = user.fullname || 'Chưa cập nhật';
