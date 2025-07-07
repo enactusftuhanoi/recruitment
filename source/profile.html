@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile | Enactus FTU Hanoi</title>
+  <link rel="icon" href="/assets/icon.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css">
+  <style>
+    :root {
+      --primary: #1a73e8;
+      --primary-dark: #0d62cb;
+      --primary-light: #e8f0fe;
+      --secondary: #f5f7fa;
+      --accent: #ff6b6b;
+      --success: #4caf50;
+      --warning: #ff9800;
+      --info: #17a2b8;
+      --text: #202124;
+      --text-light: #5f6368;
+      --border: #dadce0;
+      --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      background: #f5f7fa;
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* Header styles */
+    .user-header {
+      background: white;
+      padding: 15px 30px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 50px;
+      height: 50px;
+      background: var(--primary);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+    }
+
+    .logo-text {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .user-actions {
+      display: flex;
+      gap: 15px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background: white;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+
+    .btn-outline:hover {
+      background: var(--primary-light);
+    }
+
+    /* Main container */
+    .app-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Onboarding section */
+    .onboarding-section {
+      background: white;
+      border-radius: 12px;
+      padding: 50px 30px;
+      box-shadow: var(--card-shadow);
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .onboarding-icon {
+      font-size: 48px;
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
+
+    /* Profile section */
+    .profile-section {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: var(--card-shadow);
+      margin-top: 30px;
+      display: none;
+    }
+
+    .profile-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .profile-title {
+      font-size: 28px;
+      color: var(--primary);
+    }
+
+    .profile-content {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 768px) {
+      .profile-content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .profile-avatar {
+      text-align: center;
+    }
+
+    .avatar-img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-light);
+    margin: 0 auto 20px;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ccc;
+    font-size: 60px;
+    background-size: cover;
+    background-position: center;
+  }
+
+    .upload-btn {
+      margin-top: 15px;
+    }
+
+    .profile-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 576px) {
+      .profile-info {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .info-card {
+      background: #f9fbfd;
+      border-radius: 8px;
+      padding: 15px;
+      border-left: 3px solid var(--primary);
+    }
+
+    .info-label {
+      font-size: 14px;
+      color: var(--text-light);
+      margin-bottom: 5px;
+    }
+
+    .info-value {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .status-card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 20px;
+    }
+
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .badge-primary {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .badge-success {
+      background: rgba(76, 175, 80, 0.15);
+      color: var(--success);
+    }
+
+    .badge-warning {
+      background: rgba(255, 152, 0, 0.15);
+      color: var(--warning);
+    }
+
+    .badge-danger {
+      background: rgba(255, 107, 107, 0.15);
+      color: var(--accent);
+    }
+
+    /* Round progress */
+    .round-section {
+      margin-top: 40px;
+      display: none;
+    }
+
+    .round-title {
+      font-size: 22px;
+      color: var(--primary);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .round-progress {
+      margin-top: 30px;
+    }
+
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin-bottom: 30px;
+    }
+
+    .progress-steps::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--border);
+      z-index: 1;
+    }
+
+    .progress-bar {
+      position: absolute;
+      top: 15px;
+      left: 0;
+      height: 4px;
+      background: var(--primary);
+      z-index: 2;
+      transition: width 0.5s ease;
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 3;
+    }
+
+    .step-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--text-light);
+      margin-bottom: 8px;
+      transition: var(--transition);
+    }
+
+    .step.active .step-icon {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: white;
+    }
+
+    .step.completed .step-icon {
+      border-color: var(--success);
+      background: var(--success);
+      color: white;
+    }
+
+    .step-label {
+      font-size: 14px;
+      color: var(--text-light);
+      text-align: center;
+      max-width: 100px;
+    }
+
+    .step.active .step-label,
+    .step.completed .step-label {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* Round details */
+    .round-details {
+      margin-top: 30px;
+    }
+
+    .round-card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 20px;
+    }
+
+    .round-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .round-card-title {
+      font-size: 18px;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .round-card-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    @media (max-width: 768px) {
+      .round-card-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .detail-item {
+      margin-bottom: 10px;
+    }
+
+    .detail-label {
+      font-size: 14px;
+      color: var(--text-light);
+      margin-bottom: 5px;
+    }
+
+    .detail-value {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    /* Form elements */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    .form-label.required::after {
+      content: '*';
+      color: var(--accent);
+      margin-left: 4px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 15px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 15px;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 20px;
+      margin-top: 8px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    .radio-option input {
+      cursor: pointer;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      overflow: auto;
+    }
+
+    .modal-content {
+      background: white;
+      margin: 5% auto;
+      padding: 30px;
+      border-radius: 12px;
+      width: 80%;
+      max-width: 600px;
+      box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+      animation: modalFadeIn 0.3s;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title {
+      font-size: 24px;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .close-modal {
+      font-size: 28px;
+      cursor: pointer;
+      color: var(--text-light);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .user-header {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .user-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      .modal-content {
+        width: 95%;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="user-header">
+    <div class="logo">
+      <div class="logo-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="logo-text">ENACTUS FTU HANOI</div>
+    </div>
+    <div class="user-actions">
+      <button id="refreshBtn" class="btn btn-outline">
+        <i class="fas fa-sync-alt"></i> Làm mới
+      </button>
+      <button id="logoutBtn" class="btn btn-primary">
+        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="app-container">
+    <!-- Onboarding Section (for new users) -->
+    <div id="onboardingSection" class="onboarding-section">
+      <div class="onboarding-icon">
+        <i class="fas fa-user-plus"></i>
+      </div>
+      <h2>Chào mừng bạn đến với Enactus FTU Hanoi!</h2>
+      <p style="margin: 20px 0 30px; color: var(--text-light);">Vui lòng điền thông tin cá nhân để bắt đầu quá trình ứng tuyển</p>
+      <button id="startOnboardingBtn" class="btn btn-primary">
+        <i class="fas fa-pencil-alt"></i> Điền thông tin
+      </button>
+    </div>
+
+    <!-- Profile Section (for existing users) -->
+    <div id="profileSection" class="profile-section">
+      <div class="profile-header">
+        <h1 class="profile-title">
+          <i class="fas fa-user-circle"></i> Hồ sơ ứng viên
+        </h1>
+        <button id="editProfileBtn" class="btn btn-primary">
+          <i class="fas fa-edit"></i> Chỉnh sửa
+        </button>
+      </div>
+      
+      <div class="profile-content">
+        <div class="profile-avatar">
+          <div class="avatar-img" id="userAvatar">
+            <i class="fas fa-user"></i>
+          </div>
+          <button class="btn btn-outline upload-btn">
+            <i class="fas fa-camera"></i> Đổi ảnh đại diện
+          </button>
+        </div>
+        
+        <div>
+          <div class="status-card">
+            <div class="status-item">
+              <span>Ban ứng tuyển:</span>
+              <span class="badge badge-primary" id="userDepartment">Chưa có dữ liệu</span>
+            </div>
+            <div class="status-item">
+              <span>Vòng hiện tại:</span>
+              <span class="badge badge-success" id="userCurrentRound">Vòng 1</span>
+            </div>
+            <div class="status-item">
+              <span>Trạng thái:</span>
+              <span class="badge badge-warning" id="userStatus">Chờ xử lý</span>
+            </div>
+          </div>
+          
+          <div class="profile-info">
+            <div class="info-card">
+              <div class="info-label">Họ và tên</div>
+              <div class="info-value" id="userFullName">Nguyễn Văn A</div>
+            </div>
+            <div class="info-card">
+              <div class="info-label">Giới tính</div>
+              <div class="info-value" id="userGender">Nam</div>
+            </div>
+            <div class="info-card">
+              <div class="info-label">Email</div>
+              <div class="info-value" id="userEmail">example@ftu.edu.vn</div>
+            </div>
+            <div class="info-card">
+              <div class="info-label">Số điện thoại</div>
+              <div class="info-value" id="userPhone">0123456789</div>
+            </div>
+            <div class="info-card">
+              <div class="info-label">Ngày sinh</div>
+              <div class="info-value" id="userDob">01/01/2007</div>
+            </div>
+            <div class="info-card">
+              <div class="info-label">Trường</div>
+              <div class="info-value" id="userSchool">Trường Đại học Ngoại Thương</div>
+            </div>
+            <div class="info-card">
+              <div class="info-label">Khóa/Lớp/Khoa</div>
+              <div class="info-value" id="userFaculty">K64 - Anh 05 - TC KTQT</div>
+            </div>
+            <div class="info-card">
+              <div class="info-label">MSSV</div>
+              <div class="info-value" id="userStudentId">2415410000</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Round Section (for existing users) -->
+    <div id="roundSection" class="round-section">
+      <h2 class="round-title">
+        <i class="fas fa-tasks"></i> Tiến trình ứng tuyển
+      </h2>
+      
+      <div class="round-progress">
+        <div class="progress-steps">
+          <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+          
+          <div class="step active" id="step1">
+            <div class="step-icon">1</div>
+            <div class="step-label">Vòng đơn</div>
+          </div>
+          
+          <div class="step" id="step2">
+            <div class="step-icon">2</div>
+            <div class="step-label">Phỏng vấn nhóm</div>
+          </div>
+          
+          <div class="step" id="step3">
+            <div class="step-icon">3</div>
+            <div class="step-label">Thử thách</div>
+          </div>
+          
+          <div class="step" id="step4">
+            <div class="step-icon">4</div>
+            <div class="step-label">Phỏng vấn cá nhân</div>
+          </div>
+          
+          <div class="step" id="step5">
+            <div class="step-icon"><i class="fas fa-check"></i></div>
+            <div class="step-label">Hoàn thành</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Round Details -->
+      <div class="round-details">
+        <!-- Round 1 Details -->
+        <div class="round-card" id="round1Details">
+          <div class="round-card-header">
+            <h3 class="round-card-title">
+              <i class="fas fa-file-alt"></i> Vòng 1: Vòng đơn
+            </h3>
+            <span class="badge badge-warning" id="round1Status">Chưa bắt đầu</span>
+          </div>
+          <div class="round-card-body">
+            <div class="detail-item">
+              <div class="detail-label">Trạng thái</div>
+              <div class="detail-value" id="round1StatusText">Chưa bắt đầu</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Thời hạn nộp</div>
+              <div class="detail-value" id="round1Deadline">Chưa cập nhật</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Hướng dẫn</div>
+              <div class="detail-value" id="round1Guide">Hoàn thành form đăng ký</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Round 2 Details -->
+        <div class="round-card" id="round2Details" style="display: none;">
+          <div class="round-card-header">
+            <h3 class="round-card-title">
+              <i class="fas fa-users"></i> Vòng 2: Phỏng vấn nhóm
+            </h3>
+            <span class="badge badge-warning" id="round2Status">Chưa bắt đầu</span>
+          </div>
+          <div class="round-card-body">
+            <div class="detail-item">
+              <div class="detail-label">Trạng thái</div>
+              <div class="detail-value" id="round2StatusText">Chưa bắt đầu</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Thời gian</div>
+              <div class="detail-value" id="round2Time">Chưa cập nhật</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Địa điểm</div>
+              <div class="detail-value" id="round2Location">Chưa cập nhật</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Thành viên nhóm</div>
+              <div class="detail-value" id="round2Members">Chưa cập nhật</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Round 3 Details -->
+        <div class="round-card" id="round3Details" style="display: none;">
+          <div class="round-card-header">
+            <h3 class="round-card-title">
+              <i class="fas fa-tasks"></i> Vòng 3: Thử thách
+            </h3>
+            <span class="badge badge-warning" id="round3Status">Chưa bắt đầu</span>
+          </div>
+          <div class="round-card-body">
+            <div class="detail-item">
+              <div class="detail-label">Trạng thái</div>
+              <div class="detail-value" id="round3StatusText">Chưa bắt đầu</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Đề bài</div>
+              <div class="detail-value" id="round3Challenge">Chưa cập nhật</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Hạn nộp</div>
+              <div class="detail-value" id="round3Deadline">Chưa cập nhật</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Tài liệu</div>
+              <div class="detail-value" id="round3Materials">Chưa cập nhật</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Round 4 Details -->
+        <div class="round-card" id="round4Details" style="display: none;">
+          <div class="round-card-header">
+            <h3 class="round-card-title">
+              <i class="fas fa-user-tie"></i> Vòng 4: Phỏng vấn cá nhân
+            </h3>
+            <span class="badge badge-warning" id="round4Status">Chưa bắt đầu</span>
+          </div>
+          <div class="round-card-body">
+            <div class="detail-item">
+              <div class="detail-label">Trạng thái</div>
+              <div class="detail-value" id="round4StatusText">Chưa bắt đầu</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Thời gian</div>
+              <div class="detail-value" id="round4Time">Chưa cập nhật</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Địa điểm</div>
+              <div class="detail-value" id="round4Location">Chưa cập nhật</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Người phỏng vấn</div>
+              <div class="detail-value" id="round4Interviewer">Chưa cập nhật</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <i class="fas fa-edit"></i> Chỉnh sửa hồ sơ
+        </h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      
+      <form id="editForm">
+        <div class="form-group">
+          <label class="form-label required">Họ và tên</label>
+          <input type="text" class="form-control" id="editFullName" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Email</label>
+          <input type="email" class="form-control" id="editEmail" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Số điện thoại</label>
+          <input type="tel" class="form-control" id="editPhone" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Giới tính</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="gender" value="Nam" checked> Nam
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="gender" value="Nữ"> Nữ
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="gender" value="Khác"> Khác
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Ngày sinh</label>
+          <input type="text" class="form-control" id="editDob" placeholder="DD/MM/YYYY">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Trường</label>
+          <input type="text" class="form-control" id="editSchool" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Khoa/Lớp/Khoa</label>
+          <input type="text" class="form-control" id="editFaculty" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">MSSV</label>
+          <input type="text" class="form-control" id="editStudentId" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 20px;">
+          <i class="fas fa-save"></i> Lưu thay đổi
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Onboarding Modal -->
+  <div id="onboardingModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <i class="fas fa-user-plus"></i> Điền thông tin ứng tuyển
+        </h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      
+      <form id="onboardingForm">
+        <div class="form-group">
+          <label class="form-label required">Họ và tên</label>
+          <input type="text" class="form-control" id="onboardFullName" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Email</label>
+          <input type="email" class="form-control" id="onboardEmail" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Số điện thoại</label>
+          <input type="tel" class="form-control" id="onboardPhone" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Giới tính</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="onboardGender" value="Nam" checked> Nam
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="onboardGender" value="Nữ"> Nữ
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="onboardGender" value="Khác"> Khác
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Ngày sinh</label>
+          <input type="text" class="form-control" id="onboardDob" placeholder="DD/MM/YYYY">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Trường</label>
+          <input type="text" class="form-control" id="onboardSchool" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Khóa/Lớp/Khoa</label>
+          <input type="text" class="form-control" id="onboardFaculty" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">MSSV</label>
+          <input type="text" class="form-control" id="onboardStudentId" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label required">Ban ứng tuyển</label>
+          <select class="form-control" id="onboardDepartment" required>
+            <option value="">-- Chọn ban --</option>
+            <option value="Nhân sự">Nhân sự</option>
+            <option value="Truyền thông">Truyền thông</option>
+            <option value="Đối ngoại">Đối ngoại</option>
+            <option value="Dự án">Dự án</option>
+          </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 20px;">
+          <i class="fas fa-check"></i> Hoàn thành đăng ký
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Firebase and other scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+      getAuth, 
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { 
+      getFirestore, 
+      doc, 
+      getDoc,
+      setDoc,
+      updateDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
+      authDomain: "enactusftuhanoi-tracuu.firebaseapp.com",
+      projectId: "enactusftuhanoi-tracuu",
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Toastr configuration
+    toastr.options = {
+      closeButton: true,
+      debug: false,
+      newestOnTop: true,
+      progressBar: true,
+      positionClass: 'toast-bottom-right',
+      preventDuplicates: false,
+      onclick: null,
+      showDuration: '300',
+      hideDuration: '1000',
+      timeOut: '3000',
+      extendedTimeOut: '1000',
+      showEasing: 'swing',
+      hideEasing: 'linear',
+      showMethod: 'fadeIn',
+      hideMethod: 'fadeOut'
+    };
+
+    // DOM elements
+    const logoutBtn = document.getElementById('logoutBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const editProfileBtn = document.getElementById('editProfileBtn');
+    const startOnboardingBtn = document.getElementById('startOnboardingBtn');
+    const editModal = document.getElementById('editModal');
+    const onboardingModal = document.getElementById('onboardingModal');
+    const closeModalButtons = document.querySelectorAll('.close-modal');
+    const editForm = document.getElementById('editForm');
+    const onboardingForm = document.getElementById('onboardingForm');
+
+    // Current user data
+    let currentUser = null;
+    let currentUserId = null;
+
+    // ========== CÁC HÀM CHỨC NĂNG ==========
+    // Function to update user avatar with high quality image
+    function updateUserAvatar(user) {
+      const avatarImg = document.getElementById('userAvatar');
+      
+      // Clear any existing content
+      avatarImg.innerHTML = '';
+      avatarImg.style.backgroundImage = '';
+      
+      // Try to get high quality photo from Google
+      let photoUrl = user.photoURL;
+      if (photoUrl && photoUrl.includes('googleusercontent.com')) {
+        // Replace with higher quality version (s0=default, s96-c=96px, s400-c=400px)
+        photoUrl = photoUrl.replace(/=s\d+(-c)?/, '=s1000-c');
+      }
+    
+      if (photoUrl) {
+        // Create image element to handle loading and error
+        const img = new Image();
+        img.src = photoUrl;
+        
+        img.onload = function() {
+          avatarImg.style.backgroundImage = `url(${photoUrl})`;
+          avatarImg.style.backgroundSize = 'cover';
+          avatarImg.style.backgroundPosition = 'center';
+        };
+        
+        img.onerror = function() {
+          // Fallback to initials if image fails to load
+          showInitialsAvatar(user);
+        };
+      } else {
+        // No photo URL available, use initials
+        showInitialsAvatar(user);
+      }
+    }
+    
+    // Helper function to show initials avatar
+    function showInitialsAvatar(user) {
+      const avatarImg = document.getElementById('userAvatar');
+      const name = user.fullname || user.email || 'User';
+      const initials = getInitials(name);
+      
+      avatarImg.innerHTML = initials || '<i class="fas fa-user"></i>';
+      avatarImg.style.backgroundColor = generateColorFromName(name);
+      avatarImg.style.color = 'white';
+      avatarImg.style.display = 'flex';
+      avatarImg.style.alignItems = 'center';
+      avatarImg.style.justifyContent = 'center';
+      avatarImg.style.fontSize = initials.length > 2 ? '50px' : '60px';
+      avatarImg.style.fontWeight = 'bold';
+      avatarImg.style.backgroundImage = 'none';
+    }
+    
+    async function loadUserData(userId, email) {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      
+      const userDoc = await getDoc(doc(db, "users", userId));
+      
+      if (userDoc.exists()) {
+        // Existing user - show profile
+        currentUser = userDoc.data();
+        currentUserId = userId;
+        
+        document.getElementById('profileSection').style.display = 'block';
+        document.getElementById('roundSection').style.display = 'block';
+        document.getElementById('onboardingSection').style.display = 'none';
+        
+        updateProfileUI(currentUser);
+        updateRoundProgress(currentUser.current_round || 1);
+        showRoundDetails(currentUser.current_round || 1);
+        
+        // Update avatar with Google photo if available
+        if (user && user.photoURL) {
+          updateUserAvatar({
+            ...currentUser,
+            photoURL: user.photoURL
+          });
+        } else {
+          updateUserAvatar(currentUser);
+        }
+      } else {
+        // New user - show onboarding
+        document.getElementById('profileSection').style.display = 'none';
+        document.getElementById('roundSection').style.display = 'none';
+        document.getElementById('onboardingSection').style.display = 'block';
+        
+        currentUserId = userId;
+        
+        if (email) {
+          document.getElementById('onboardEmail').value = email;
+        }
+        
+        // If user has Google photo, show it in onboarding
+        if (user && user.photoURL) {
+          const avatarPreview = document.createElement('div');
+          avatarPreview.style.width = '100px';
+          avatarPreview.style.height = '100px';
+          avatarPreview.style.borderRadius = '50%';
+          avatarPreview.style.backgroundImage = `url(${user.photoURL})`;
+          avatarPreview.style.backgroundSize = 'cover';
+          avatarPreview.style.backgroundPosition = 'center';
+          avatarPreview.style.margin = '0 auto 15px';
+          
+          const onboardingIcon = document.querySelector('.onboarding-icon');
+          onboardingIcon.innerHTML = '';
+          onboardingIcon.appendChild(avatarPreview);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      toastr.error('Lỗi khi tải dữ liệu người dùng');
+    }
+  }
+    
+    // Update profile UI with user data
+    function updateProfileUI(user) {
+      document.getElementById('userFullName').textContent = user.fullname || 'Chưa cập nhật';
+      document.getElementById('userGender').textContent = user.gender || 'Chưa cập nhật';
+      document.getElementById('userEmail').textContent = user.email || 'Chưa cập nhật';
+      document.getElementById('userPhone').textContent = user.phone || 'Chưa cập nhật';
+      document.getElementById('userDob').textContent = user.dob || 'Chưa cập nhật';
+      document.getElementById('userSchool').textContent = user.school || 'Chưa cập nhật';
+      document.getElementById('userFaculty').textContent = user.faculty || 'Chưa cập nhật';
+      document.getElementById('userStudentId').textContent = user.studentId || 'Chưa cập nhật';
+      document.getElementById('userDepartment').textContent = user.department || 'Chưa chọn';
+      
+      // Update status badges
+      document.getElementById('userCurrentRound').textContent = getRoundText(user.current_round || 1);
+      document.getElementById('userStatus').textContent = user.status || 'Chưa xác định';
+      
+      // Update badge colors based on status
+      const statusBadge = document.getElementById('userStatus');
+      statusBadge.className = 'badge ';
+      if (user.status === 'Đã duyệt') {
+        statusBadge.classList.add('badge-success');
+      } else if (user.status === 'Từ chối') {
+        statusBadge.classList.add('badge-danger');
+      } else {
+        statusBadge.classList.add('badge-warning');
+      }
+    }
+
+    // Get round text
+    function getRoundText(round) {
+      if (!round) return 'Chưa bắt đầu';
+      
+      const rounds = [
+        'Vòng đơn',
+        'Phỏng vấn nhóm',
+        'Thử thách',
+        'Phỏng vấn cá nhân',
+        'Hoàn thành'
+      ];
+      
+      if (round <= 4) {
+        return `Vòng ${round}: ${rounds[round-1]}`;
+      } else {
+        return rounds[4];
+      }
+    }
+
+    // Update round progress visualization
+    function updateRoundProgress(currentRound) {
+      const steps = document.querySelectorAll('.step');
+      const progressBar = document.getElementById('progressBar');
+      
+      // Reset all steps
+      steps.forEach(step => {
+        step.classList.remove('active', 'completed');
+      });
+      
+      // Calculate progress percentage
+      let progressPercent = 0;
+      
+      if (currentRound > 5) currentRound = 5;
+      
+      // Update steps based on current round
+      for (let i = 0; i < currentRound; i++) {
+        if (i < steps.length) {
+          steps[i].classList.add('completed');
+        }
+      }
+      
+      if (currentRound <= 5) {
+        steps[currentRound - 1].classList.add('active');
+        progressPercent = ((currentRound - 1) / 4) * 100;
+      } else {
+        progressPercent = 100;
+      }
+      
+      progressBar.style.width = `${progressPercent}%`;
+    }
+
+    // Show round details based on current round
+    function showRoundDetails(currentRound) {
+      // Hide all round details first
+      document.querySelectorAll('.round-card').forEach(card => {
+        card.style.display = 'none';
+      });
+      
+      // Show details up to current round
+      for (let i = 1; i <= currentRound; i++) {
+        const roundCard = document.getElementById(`round${i}Details`);
+        if (roundCard) {
+          roundCard.style.display = 'block';
+          updateRoundStatus(i);
+        }
+      }
+    }
+
+    // Update round status in details cards
+    function updateRoundStatus(roundNumber) {
+      if (!currentUser) return;
+      
+      const roundData = currentUser[`round_${roundNumber}`] || {};
+      const statusElement = document.getElementById(`round${roundNumber}Status`);
+      const statusTextElement = document.getElementById(`round${roundNumber}StatusText`);
+      
+      if (statusElement && statusTextElement) {
+        const status = roundData.status || 'Chưa bắt đầu';
+        statusElement.textContent = status;
+        statusTextElement.textContent = status;
+        
+        // Update badge color
+        statusElement.className = 'badge ';
+        if (status === 'Đã duyệt') {
+          statusElement.classList.add('badge-success');
+        } else if (status === 'Từ chối') {
+          statusElement.classList.add('badge-danger');
+        } else if (status === 'Đang chờ' || status === 'Đang thực hiện') {
+          statusElement.classList.add('badge-primary');
+        } else {
+          statusElement.classList.add('badge-warning');
+        }
+      }
+      
+      // Update round-specific details
+      switch(roundNumber) {
+        case 1:
+          document.getElementById('round1Deadline').textContent = roundData.deadline || 'Chưa cập nhật';
+          document.getElementById('round1Guide').textContent = roundData.guide || 'Chưa cập nhật';
+          break;
+        case 2:
+          document.getElementById('round2Time').textContent = roundData.time || 'Chưa cập nhật';
+          document.getElementById('round2Location').textContent = roundData.location || 'Chưa cập nhật';
+          document.getElementById('round2Members').textContent = roundData.members || 'Chưa cập nhật';
+          break;
+        case 3:
+          document.getElementById('round3Challenge').textContent = roundData.challenge || 'Chưa cập nhật';
+          document.getElementById('round3Deadline').textContent = roundData.deadline || 'Chưa cập nhật';
+          document.getElementById('round3Materials').textContent = roundData.materials || 'Chưa cập nhật';
+          break;
+        case 4:
+          document.getElementById('round4Time').textContent = roundData.time || 'Chưa cập nhật';
+          document.getElementById('round4Location').textContent = roundData.location || 'Chưa cập nhật';
+          document.getElementById('round4Interviewer').textContent = roundData.interviewer || 'Chưa cập nhật';
+          break;
+      }
+    }
+
+    // Show edit modal with current data
+    function showEditModal() {
+      if (!currentUser) return;
+      
+      document.getElementById('editFullName').value = currentUser.fullname || '';
+      document.getElementById('editEmail').value = currentUser.email || '';
+      document.getElementById('editPhone').value = currentUser.phone || '';
+      
+      // Set gender radio button
+      const gender = currentUser.gender || 'Nam';
+      document.querySelector(`input[name="gender"][value="${gender}"]`).checked = true;
+      
+      document.getElementById('editDob').value = currentUser.dob || '';
+      document.getElementById('editSchool').value = currentUser.school || '';
+      document.getElementById('editFaculty').value = currentUser.faculty || '';
+      document.getElementById('editStudentId').value = currentUser.studentId || '';
+      
+      editModal.style.display = 'block';
+    }
+
+    // Save edited profile
+    async function saveProfile(e) {
+      e.preventDefault();
+      
+      if (!currentUserId) return;
+      
+      try {
+        const gender = document.querySelector('input[name="gender"]:checked').value;
+        
+        const updatedData = {
+          fullname: document.getElementById('editFullName').value,
+          email: document.getElementById('editEmail').value,
+          phone: document.getElementById('editPhone').value,
+          gender: gender,
+          dob: document.getElementById('editDob').value,
+          school: document.getElementById('editSchool').value,
+          faculty: document.getElementById('editFaculty').value,
+          studentId: document.getElementById('editStudentId').value,
+          updatedAt: new Date()
+        };
+        
+        await updateDoc(doc(db, "users", currentUserId), updatedData);
+        
+        // Update local data
+        currentUser = { ...currentUser, ...updatedData };
+        updateProfileUI(currentUser);
+        
+        // Close modal
+        editModal.style.display = 'none';
+        
+        toastr.success('Cập nhật hồ sơ thành công');
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        toastr.error('Cập nhật hồ sơ thất bại');
+      }
+    }
+
+    // Save onboarding data
+    async function saveOnboardingData(e) {
+      e.preventDefault();
+      
+      const auth = getAuth();
+      const user = auth.currentUser;
+      
+      if (!user) {
+        toastr.error('Người dùng chưa đăng nhập');
+        return;
+      }
+      
+      try {
+        const gender = document.querySelector('input[name="onboardGender"]:checked').value;
+        const department = document.getElementById('onboardDepartment').value;
+        
+        const userData = {
+          fullname: document.getElementById('onboardFullName').value,
+          email: document.getElementById('onboardEmail').value,
+          phone: document.getElementById('onboardPhone').value,
+          gender: gender,
+          dob: document.getElementById('onboardDob').value,
+          school: document.getElementById('onboardSchool').value,
+          faculty: document.getElementById('onboardFaculty').value,
+          studentId: document.getElementById('onboardStudentId').value,
+          department: department,
+          status: "Chờ xử lý",
+          current_round: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          round_1: {
+            status: "Chưa bắt đầu",
+            deadline: "15/07/2025",
+            guide: "Hoàn thành form đăng ký"
+          }
+        };
+        
+        // Sử dụng UID của người dùng đã đăng nhập
+        await setDoc(doc(db, "users", user.uid), userData);
+        
+        // Cập nhật UI
+        currentUser = userData;
+        currentUserId = user.uid;
+        updateProfileUI(currentUser);
+        updateRoundProgress(1);
+        showRoundDetails(1);
+        
+        // Ẩn onboarding và hiển thị profile
+        document.getElementById('profileSection').style.display = 'block';
+        document.getElementById('roundSection').style.display = 'block';
+        document.getElementById('onboardingSection').style.display = 'none';
+        onboardingModal.style.display = 'none';
+        
+        toastr.success('Đăng ký hồ sơ thành công!');
+      } catch (error) {
+        console.error('Lỗi khi lưu dữ liệu:', error);
+        toastr.error('Đăng ký hồ sơ thất bại: ' + error.message);
+      }
+    }
+
+    // Logout function
+    async function logout() {
+      try {
+        await signOut(auth);
+        window.location.href = '/index.html'; // Redirect to login page
+      } catch (error) {
+        console.error('Logout error:', error);
+        toastr.error('Đăng xuất thất bại');
+      }
+    }
+
+    // Initialize event listeners
+    function initEventListeners() {
+      // Logout button
+      logoutBtn.addEventListener('click', logout);
+      
+      // Refresh button
+      refreshBtn.addEventListener('click', () => {
+        if (currentUserId) {
+          loadUserData(currentUserId);
+          toastr.info('Đang làm mới dữ liệu...');
+        }
+      });
+      
+      // Edit profile button
+      editProfileBtn.addEventListener('click', showEditModal);
+      
+      // Start onboarding button
+      startOnboardingBtn.addEventListener('click', () => {
+        onboardingModal.style.display = 'block';
+      });
+      
+      // Close modal buttons
+      closeModalButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          editModal.style.display = 'none';
+          onboardingModal.style.display = 'none';
+        });
+      });
+      
+      // Close modal when clicking outside
+      window.addEventListener('click', function(event) {
+        if (event.target === editModal) {
+          editModal.style.display = 'none';
+        }
+        if (event.target === onboardingModal) {
+          onboardingModal.style.display = 'none';
+        }
+      });
+      
+      // Edit form submission
+      editForm.addEventListener('submit', (e) => saveProfile(e));
+      
+      // Onboarding form submission
+      onboardingForm.addEventListener('submit', (e) => saveOnboardingData(e));
+    }
+
+    // Check auth state and load data
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUserId = user.uid;
+        loadUserData(user.uid, user.email);
+      } else {
+        window.location.href = '/index.html'; // Redirect if not logged in
+      }
+    });
+
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', function() {
+      initEventListeners();
+    });
+  </script>
+</body>
+</html>
