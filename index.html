@@ -6,7 +6,7 @@
   <title>RECRUITMENT | ENACTUS FTU HANOI</title>
   <link rel="icon" href="/assets/icon.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka+One&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Montserrat:wght@600&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -35,498 +35,126 @@
     body {
       background-color: #f5f5f5;
       min-height: 100vh;
-      padding: 20px;
-      position: relative;
-      overflow-x: hidden;
-    }
-
-    /* Layout */
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-      min-height: 80vh;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-    }
-
-    /* Left Panel - Information */
-    .left-panel {
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      padding: 40px;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
-      color: white;
-      position: relative;
+      padding: 15px;
+    }
+
+    /* Main Container - Compact */
+    .container {
+      width: 100%;
+      max-width: 400px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
       overflow: hidden;
     }
 
-    .left-panel::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-      transform: rotate(30deg);
-    }
-
-    /* Right Panel - Registration */
-    .right-panel {
-      padding: 40px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      position: relative;
-    }
-
-    /* Logo & Header */
-    .logo-container {
-      margin-bottom: 30px;
+    /* Header Section */
+    .header {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      padding: 20px;
       text-align: center;
-      z-index: 1;
+      color: white;
     }
 
     .logo {
-      width: 120px;
-      height: 120px;
+      width: 60px;
+      height: 60px;
       background: white;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      transition: all 0.5s ease;
+      margin: 0 auto 10px;
     }
 
     .logo i {
-      font-size: 50px;
+      font-size: 25px;
       color: var(--primary);
-      transition: all 0.5s ease;
-    }
-
-    .logo:hover {
-      transform: scale(1.05) rotate(5deg);
-    }
-
-    .logo:hover i {
-      transform: scale(1.1);
     }
 
     h1 {
-      font-size: 32px;
-      font-weight: 700;
-      margin-bottom: 15px;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 5px;
       font-family: 'Montserrat', sans-serif;
-      color: white;
-      text-align: center;
-      position: relative;
-      display: inline-block;
-    }
-
-    h1::after {
-      content: '';
-      position: absolute;
-      bottom: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80px;
-      height: 4px;
-      background: white;
-      border-radius: 2px;
     }
 
     .tagline {
-      font-size: 18px;
-      font-weight: 500;
-      margin-bottom: 30px;
-      text-align: center;
+      font-size: 12px;
+      font-weight: 400;
       opacity: 0.9;
     }
 
-    /* Features List */
-    .features {
-      margin: 30px 0;
-      z-index: 1;
-    }
-
-    .feature-item {
-      display: flex;
-      align-items: center;
-      margin-bottom: 20px;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 15px;
-      border-radius: 10px;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(5px);
-    }
-
-    .feature-item:hover {
-      background: rgba(255, 255, 255, 0.2);
-      transform: translateX(5px);
-    }
-
-    .feature-icon {
-      width: 40px;
-      height: 40px;
-      background: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 15px;
-      flex-shrink: 0;
-      color: var(--primary);
-      font-size: 18px;
-    }
-
-    .feature-text {
-      font-size: 14px;
-      font-weight: 500;
-    }
-
-    /* Right Panel Content */
-    .right-panel h2 {
-      font-size: 28px;
-      color: var(--dark);
-      margin-bottom: 20px;
-      font-family: 'Montserrat', sans-serif;
-      position: relative;
-    }
-
-    .right-panel h2::after {
-      content: '';
-      position: absolute;
-      bottom: -10px;
-      left: 0;
-      width: 60px;
-      height: 4px;
-      background: linear-gradient(to right, var(--primary), var(--accent));
-      border-radius: 2px;
-    }
-
-    .description {
-      color: var(--gray);
-      font-size: 15px;
-      margin-bottom: 30px;
-      line-height: 1.6;
-    }
-
-    /* SDG Carousel */
-    .sdg-carousel {
-      margin: 30px 0;
-      position: relative;
-    }
-
-    .sdg-carousel h3 {
-      font-size: 18px;
-      color: var(--dark);
-      margin-bottom: 15px;
-      font-weight: 600;
-    }
-
-    .sdg-track {
-      display: flex;
-      gap: 12px;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      padding-bottom: 20px;
-      scrollbar-width: none;
-      scroll-behavior: smooth;
-    }
-
-    .sdg-track::-webkit-scrollbar {
-      display: none;
-    }
-
-    .sdg-item {
-      scroll-snap-align: start;
-      flex: 0 0 90px;
-      background: white;
-      border-radius: 10px;
-      padding: 12px;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-      border-top: 4px solid var(--color);
-    }
-
-    .sdg-item:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .sdg-icon {
-      width: 50px;
-      height: 50px;
-      object-fit: contain;
-      margin: 0 auto 8px;
-      display: block;
-    }
-
-    .sdg-item p {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--dark);
-      text-align: center;
-      line-height: 1.3;
-    }
-
-    /* Carousel Navigation */
-    .carousel-nav {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-top: 15px;
-    }
-
-    .carousel-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: var(--primary);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      border: none;
-      transition: all 0.3s ease;
-    }
-
-    .carousel-btn:hover {
-      background: var(--accent);
-      transform: scale(1.1);
-    }
-
-    .carousel-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
+    /* Content Section */
+    .content {
+      padding: 20px;
     }
 
     /* Login Section */
     .login-section {
-      margin-top: 20px;
+      margin-top: 10px;
     }
 
     .login-btn {
       background: linear-gradient(to right, var(--primary), var(--accent));
       color: white;
       border: none;
-      padding: 16px 30px;
-      font-size: 16px;
-      font-weight: 600;
-      border-radius: 50px;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 20px;
       cursor: pointer;
       width: 100%;
-      margin: 20px 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+      gap: 8px;
       transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
     }
 
     .login-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(46, 125, 50, 0.4);
+      opacity: 0.9;
     }
 
-    .login-btn:active {
-      transform: translateY(0);
-    }
-
-    .login-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: 0.5s;
-    }
-
-    .login-btn:hover::before {
-      left: 100%;
-    }
-
-    .login-btn .spinner {
-      display: none;
-      width: 18px;
-      height: 18px;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 1s ease-in-out infinite;
-    }
-
-    .login-btn.loading .spinner {
-      display: inline-block;
-    }
-
-    .login-btn.loading .btn-text {
-      display: none;
+    .login-btn i {
+      font-size: 15px;
     }
 
     .login-error {
       color: var(--error);
-      font-size: 14px;
+      font-size: 11px;
       text-align: center;
-      margin-top: 10px;
+      margin-top: 8px;
       display: none;
-    }
-
-    /* Footer */
-    .footer {
-      margin-top: 30px;
-      color: var(--gray);
-      font-size: 13px;
-      text-align: center;
-    }
-
-    /* SDG Modal */
-    .sdg-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-    }
-
-    .sdg-modal.active {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .modal-content {
-      background: white;
-      border-radius: 20px;
-      width: 90%;
-      max-width: 500px;
-      padding: 30px;
-      position: relative;
-      transform: scale(0.9);
-      transition: all 0.3s ease;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-    }
-
-    .sdg-modal.active .modal-content {
-      transform: scale(1);
-    }
-
-    .modal-header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    }
-
-    .modal-icon {
-      width: 80px;
-      height: 80px;
-      border-radius: 12px;
-      background: var(--color);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 15px;
-      flex-shrink: 0;
-    }
-
-    .modal-icon img {
-      width: 60px;
-      height: 60px;
-      object-fit: contain;
-    }
-
-    .modal-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--dark);
-    }
-
-    .modal-number {
-      font-size: 14px;
-      color: var(--color);
-      font-weight: 600;
-      margin-top: 3px;
-    }
-
-    .modal-description {
-      color: var(--gray);
-      font-size: 15px;
-      line-height: 1.6;
-      margin-bottom: 20px;
-    }
-
-    .close-modal {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.05);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .close-modal:hover {
-      background: rgba(0, 0, 0, 0.1);
-      transform: rotate(90deg);
     }
 
     /* User Profile */
     .user-profile {
       display: none;
       text-align: center;
-      margin: 20px 0;
+      padding: 15px 0;
     }
 
     .user-avatar {
-      width: 80px;
-      height: 80px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       object-fit: cover;
-      margin: 0 auto 15px;
-      border: 3px solid var(--primary-light);
+      margin: 0 auto 10px;
+      border: 2px solid var(--primary-light);
     }
 
     .user-name {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--dark);
-      margin-bottom: 5px;
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 3px;
     }
 
     .user-email {
-      font-size: 14px;
+      font-size: 12px;
       color: var(--gray);
       margin-bottom: 15px;
     }
@@ -535,25 +163,21 @@
       background: var(--primary);
       color: white;
       border: none;
-      padding: 12px 25px;
-      font-size: 15px;
-      font-weight: 500;
-      border-radius: 50px;
+      padding: 8px 15px;
+      font-size: 13px;
+      border-radius: 20px;
       cursor: pointer;
-      display: inline-block;
       transition: all 0.3s ease;
     }
 
     .continue-btn:hover {
       background: var(--accent);
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 131, 143, 0.3);
     }
 
     .logout-btn {
       color: var(--gray);
-      font-size: 13px;
-      margin-top: 15px;
+      font-size: 11px;
+      margin-top: 10px;
       display: inline-block;
       cursor: pointer;
       transition: all 0.3s ease;
@@ -562,424 +186,38 @@
     .logout-btn:hover {
       color: var(--error);
     }
-
-    /* Application Form */
-    .application-form {
-      display: none;
-      margin-top: 20px;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 500;
-      color: var(--dark);
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%;
-      padding: 12px 15px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 15px;
-      transition: all 0.3s ease;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      border-color: var(--primary);
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.2);
-    }
-
-    .form-group textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    .submit-btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 14px 30px;
-      font-size: 16px;
-      font-weight: 600;
-      border-radius: 50px;
-      cursor: pointer;
-      width: 100%;
-      transition: all 0.3s ease;
-      margin-top: 10px;
-    }
-
-    .submit-btn:hover {
-      background: var(--accent);
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 131, 143, 0.3);
-    }
-
-    /* Success Message */
-    .success-message {
-      display: none;
-      text-align: center;
-      padding: 30px;
-    }
-
-    .success-icon {
-      font-size: 60px;
-      color: var(--success);
-      margin-bottom: 20px;
-    }
-
-    .success-message h3 {
-      font-size: 24px;
-      color: var(--dark);
-      margin-bottom: 15px;
-    }
-
-    .success-message p {
-      color: var(--gray);
-      margin-bottom: 25px;
-      line-height: 1.6;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 992px) {
-      .container {
-        grid-template-columns: 1fr;
-      }
-      
-      .left-panel {
-        padding: 30px 20px;
-      }
-      
-      .right-panel {
-        padding: 30px 20px;
-      }
-      
-      h1 {
-        font-size: 28px;
-      }
-      
-      .sdg-item {
-        flex: 0 0 80px;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .logo {
-        width: 100px;
-        height: 100px;
-      }
-      
-      .logo i {
-        font-size: 40px;
-      }
-      
-      .feature-item {
-        padding: 12px;
-      }
-      
-      .feature-icon {
-        width: 35px;
-        height: 35px;
-        font-size: 16px;
-      }
-      
-      .sdg-item {
-        flex: 0 0 70px;
-      }
-      
-      .sdg-icon {
-        width: 40px;
-        height: 40px;
-      }
-      
-      .sdg-item p {
-        font-size: 10px;
-      }
-    }
-
-    @media (max-width: 576px) {
-      body {
-        padding: 10px;
-      }
-      
-      .logo {
-        width: 80px;
-        height: 80px;
-      }
-      
-      .logo i {
-        font-size: 36px;
-      }
-      
-      .sdg-item {
-        flex: 0 0 65px;
-        padding: 8px;
-      }
-      
-      .sdg-icon {
-        width: 35px;
-        height: 35px;
-      }
-    }
-
-    /* Animations */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .animated {
-      animation: fadeIn 0.6s ease forwards;
-    }
-
-    .delay-1 { animation-delay: 0.2s; }
-    .delay-2 { animation-delay: 0.4s; }
-    .delay-3 { animation-delay: 0.6s; }
-    .delay-4 { animation-delay: 0.8s; }
   </style>
 </head>
 <body>
+  <!-- Main Container -->
   <div class="container">
-    <!-- Left Panel - Information -->
-    <div class="left-panel">
-      <div class="logo-container animated">
-        <div class="logo">
-          <i class="fas fa-hands-helping"></i>
-        </div>
-        <h1>ENACTUS FTU HANOI</h1>
-        <p class="tagline">18TH RECRUITMENT SEASON</p>
+    <!-- Header Section -->
+    <div class="header">
+      <div class="logo">
+        <img src="/assets/icon.png" alt="Logo" style="height: 40px;" />
       </div>
-      
-      <div class="features">
-        <div class="feature-item animated delay-1">
-          <div class="feature-icon">
-            <i class="fas fa-lightbulb"></i>
-          </div>
-          <div class="feature-text">Social entrepreneurship projects</div>
-        </div>
-        
-        <div class="feature-item animated delay-2">
-          <div class="feature-icon">
-            <i class="fas fa-globe-asia"></i>
-          </div>
-          <div class="feature-text">17 Sustainable Development Goals</div>
-        </div>
-        
-        <div class="feature-item animated delay-3">
-          <div class="feature-icon">
-            <i class="fas fa-users"></i>
-          </div>
-          <div class="feature-text">Collaborative environment</div>
-        </div>
-        
-        <div class="feature-item animated delay-4">
-          <div class="feature-icon">
-            <i class="fas fa-chart-line"></i>
-          </div>
-          <div class="feature-text">Professional development</div>
-        </div>
-      </div>
+      <h1>ENACTUS FTU HANOI</h1>
+      <p class="tagline">18TH RECRUITMENT SEASON</p>
     </div>
     
-    <!-- Right Panel - Registration -->
-    <div class="right-panel">
-      <h2 class="animated">Join Our Community</h2>
-      <p class="description animated delay-1">
-        Become part of Enactus FTU Hanoi and work on projects that create positive social impact while developing your entrepreneurial skills. Together we can build a better, more sustainable future.
-      </p>
-      
-      <div class="sdg-carousel animated delay-2">
-        <h3>Our Focus Areas - 17 Sustainable Development Goals</h3>
-        <div class="sdg-track">
-          <!-- All 17 SDGs -->
-          <div class="sdg-item" style="--color: var(--sdg1)" data-sdg="1" data-title="No Poverty" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-01.jpg" data-desc="End poverty in all its forms everywhere">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-01.jpg" alt="SDG 1" class="sdg-icon">
-            <p>No Poverty</p>
-          </div>
-          <div class="sdg-item" style="--color: var(--sdg2)" data-sdg="2" data-title="Zero Hunger" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-02.jpg" data-desc="End hunger, achieve food security and improved nutrition">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-02.jpg" alt="SDG 2" class="sdg-icon">
-            <p>Zero Hunger</p>
-          </div>
-          <div class="sdg-item" style="--color: var(--sdg3)" data-sdg="3" data-title="Good Health" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-03.jpg" data-desc="Ensure healthy lives and promote well-being">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-03.jpg" alt="SDG 3" class="sdg-icon">
-            <p>Good Health</p>
-          </div>
-          <div class="sdg-item" style="--color: var(--sdg4)" data-sdg="4" data-title="Quality Education" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-04.jpg" data-desc="Ensure inclusive and equitable quality education">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-04.jpg" alt="SDG 4" class="sdg-icon">
-            <p>Quality Education</p>
-          </div>
-          <div class="sdg-item" style="--color: var(--sdg5)" data-sdg="5" data-title="Gender Equality" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-05.jpg" data-desc="Achieve gender equality and empower all women">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-05.jpg" alt="SDG 5" class="sdg-icon">
-            <p>Gender Equality</p>
-          </div>
-          <div class="sdg-item" style="--color: var(--sdg6)" data-sdg="6" data-title="Clean Water" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-06.jpg" data-desc="Ensure availability of water and sanitation">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-06.jpg" alt="SDG 6" class="sdg-icon">
-            <p>Clean Water</p>
-          </div>
-          <div class="sdg-item" style="--color: var(--sdg7)" data-sdg="7" data-title="Affordable Energy" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-07.jpg" data-desc="Ensure access to affordable, reliable energy">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-07.jpg" alt="SDG 7" class="sdg-icon">
-            <p>Affordable Energy</p>
-          </div>
-          <div class="sdg-item" style="--color: var(--sdg8)" data-sdg="8" data-title="Decent Work" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-08.jpg" data-desc="Promote sustained economic growth and decent work">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-08.jpg" alt="SDG 8" class="sdg-icon">
-            <p>Decent Work</p>
-          </div>
-          <div class="sdg-item" style="--color: var(--sdg9)" data-sdg="9" data-title="Industry & Innovation" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-09.jpg" data-desc="Build resilient infrastructure, promote sustainable industrialization">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-09.jpg" alt="SDG 9" class="sdg-icon">
-            <p>Industry & Innovation</p>
-          </div>
-          <div class="sdg-item" style="--color: var(--sdg10)" data-sdg="10" data-title="Reduced Inequalities" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-10.jpg" data-desc="Reduce inequality within and among countries">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-10.jpg" alt="SDG 10" class="sdg-icon">
-            <p>Reduced Inequalities</p>
-          </div>
-          <div class="sdg-item" style="--color: var(--sdg11)" data-sdg="11" data-title="Sustainable Cities" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-11.jpg" data-desc="Make cities inclusive, safe, resilient and sustainable">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-11.jpg" alt="SDG 11" class="sdg-icon">
-            <p>Sustainable Cities</p>
-          </div>
-          <div class="sdg-item" style="--color: var(--sdg12)" data-sdg="12" data-title="Responsible Consumption" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-12.jpg" data-desc="Ensure sustainable consumption and production patterns">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-12.jpg" alt="SDG 12" class="sdg-icon">
-            <p>Responsible Consumption</p>
-          </div>
-          <div class="sdg-item" style="--color: var(--sdg13)" data-sdg="13" data-title="Climate Action" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-13.jpg" data-desc="Take urgent action to combat climate change">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-13.jpg" alt="SDG 13" class="sdg-icon">
-            <p>Climate Action</p>
-          </div>
-          <div class="sdg-item" style="--color: var(--sdg14)" data-sdg="14" data-title="Life Below Water" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-14.jpg" data-desc="Conserve and sustainably use the oceans, seas and marine resources">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-14.jpg" alt="SDG 14" class="sdg-icon">
-            <p>Life Below Water</p>
-          </div>
-          <div class="sdg-item" style="--color: var(--sdg15)" data-sdg="15" data-title="Life on Land" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-15.jpg" data-desc="Protect, restore and promote sustainable use of terrestrial ecosystems">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-15.jpg" alt="SDG 15" class="sdg-icon">
-            <p>Life on Land</p>
-          </div>
-          <div class="sdg-item" style="--color: var(--sdg16)" data-sdg="16" data-title="Peace & Justice" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-16.jpg" data-desc="Promote peaceful and inclusive societies">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-16.jpg" alt="SDG 16" class="sdg-icon">
-            <p>Peace & Justice</p>
-          </div>
-          <div class="sdg-item" style="--color: var(--sdg17)" data-sdg="17" data-title="Partnerships" data-icon="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-17.jpg" data-desc="Strengthen the means of implementation and revitalize partnerships">
-            <img src="https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-17.jpg" alt="SDG 17" class="sdg-icon">
-            <p>Partnerships</p>
-          </div>
-        </div>
-        <div class="carousel-nav">
-          <button class="carousel-btn prev-btn" aria-label="Previous SDGs">
-            <i class="fas fa-chevron-left"></i>
-          </button>
-          <button class="carousel-btn next-btn" aria-label="Next SDGs">
-            <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
-      </div>
-      
+    <!-- Content Section -->
+    <div class="content">
       <!-- Login Section -->
       <div class="login-section">
-        <button id="loginBtn" class="login-btn animated delay-3">
+        <button id="loginBtn" class="login-btn">
           <i class="fab fa-google"></i>
-          <span class="btn-text">Đăng nhập bằng Google</span>
-          <span class="spinner"></span>
+          <span class="btn-text">Login with Google</span>
         </button>
         <p class="login-error" id="loginError"></p>
       </div>
       
-      <!-- User Profile (hidden by default) -->
+      <!-- User Profile -->
       <div class="user-profile" id="userProfile">
         <img src="" alt="User Avatar" class="user-avatar" id="userAvatar">
         <h3 class="user-name" id="userName"></h3>
         <p class="user-email" id="userEmail"></p>
-        <button class="continue-btn" id="continueBtn">Continue Application</button>
-        <p class="logout-btn" id="logoutBtn">Not you? Log out</p>
-      </div>
-      
-      <!-- Application Form (hidden by default) -->
-      <div class="application-form" id="applicationForm">
-        <div class="form-group">
-          <label for="fullName">Full Name</label>
-          <input type="text" id="fullName" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="studentId">Student ID</label>
-          <input type="text" id="studentId" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="major">Major</label>
-          <input type="text" id="major" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="year">Year of Study</label>
-          <select id="year" required>
-            <option value="">Select year</option>
-            <option value="1">First Year</option>
-            <option value="2">Second Year</option>
-            <option value="3">Third Year</option>
-            <option value="4">Fourth Year</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="phone">Phone Number</label>
-          <input type="tel" id="phone" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="motivation">Why do you want to join Enactus FTU Hanoi? (min 100 words)</label>
-          <textarea id="motivation" required></textarea>
-        </div>
-        
-        <div class="form-group">
-          <label for="experience">Relevant experience or skills</label>
-          <textarea id="experience"></textarea>
-        </div>
-        
-        <button class="submit-btn" id="submitBtn">Submit Application</button>
-      </div>
-      
-      <!-- Success Message (hidden by default) -->
-      <div class="success-message" id="successMessage">
-        <div class="success-icon">
-          <i class="fas fa-check-circle"></i>
-        </div>
-        <h3>Application Submitted!</h3>
-        <p>Thank you for applying to Enactus FTU Hanoi. We've received your application and will review it carefully. You'll receive an email with further instructions within 3-5 business days.</p>
-        <button class="continue-btn" id="homeBtn">Back to Home</button>
-      </div>
-      
-      <p class="footer animated delay-4">© 2025 Enactus FTU Hanoi. All rights reserved.</p>
-    </div>
-  </div>
-
-  <!-- SDG Modal -->
-  <div class="sdg-modal">
-    <div class="modal-content">
-      <div class="close-modal">
-        <i class="fas fa-times"></i>
-      </div>
-      <div class="modal-header">
-        <div class="modal-icon">
-          <img id="modal-icon" src="" alt="SDG Icon">
-        </div>
-        <div>
-          <div class="modal-title" id="modal-title">SDG Title</div>
-          <div class="modal-number" id="modal-number">SDG 1</div>
-        </div>
-      </div>
-      <div class="modal-description" id="modal-description">
-        SDG description goes here...
+        <button class="continue-btn" id="continueBtn">Continue to Profile</button>
+        <p class="logout-btn" id="logoutBtn" style="display: block; margin-top: 10px;">Not you? Log out</p>
       </div>
     </div>
   </div>
@@ -991,13 +229,13 @@
   <script>
     // Firebase configuration
     const firebaseConfig = {
-    apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
-    authDomain: "enactusftuhanoi-tracuu.firebaseapp.com",
-    projectId: "enactusftuhanoi-tracuu",
-    storageBucket: "enactusftuhanoi-tracuu",
-    messagingSenderId: "611356979403",
-    appId: "1:611356979403:web:2c9a4cffb2b323ce3deb4e"
-  };
+      apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
+      authDomain: "enactusftuhanoi-tracuu.firebaseapp.com",
+      projectId: "enactusftuhanoi-tracuu",
+      storageBucket: "enactusftuhanoi-tracuu",
+      messagingSenderId: "611356979403",
+      appId: "1:611356979403:web:2c9a4cffb2b323ce3deb4e"
+    };
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
@@ -1011,19 +249,15 @@
       const loginBtn = document.getElementById('loginBtn');
       const loginError = document.getElementById('loginError');
       
-      loginBtn.classList.add('loading');
       loginError.style.display = 'none';
       
       firebase.auth()
         .signInWithPopup(provider)
         .then((result) => {
-          // User signed in
           const user = result.user;
           showUserProfile(user);
         })
         .catch((error) => {
-          // Handle errors
-          loginBtn.classList.remove('loading');
           loginError.textContent = error.message;
           loginError.style.display = 'block';
         });
@@ -1036,23 +270,23 @@
       });
     });
 
-    // Show user profile after login
+    // Continue to profile
+    document.getElementById('continueBtn').addEventListener('click', () => {
+      window.location.href = '/user/profile.html';
+    });
+
+    // Show user profile
     function showUserProfile(user) {
-      document.getElementById('loginBtn').classList.remove('loading');
-      
-      // Update profile info
       document.getElementById('userName').textContent = user.displayName || 'User';
       document.getElementById('userEmail').textContent = user.email;
       
-      // Set avatar or default
       const avatar = document.getElementById('userAvatar');
       if (user.photoURL) {
         avatar.src = user.photoURL;
       } else {
-        avatar.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || 'User') + '&background=' + encodeURIComponent('#2E7D32') + '&color=ffffff';
+        avatar.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || 'User') + '&background=2E7D32&color=ffffff';
       }
       
-      // Show profile and hide login
       document.querySelector('.login-section').style.display = 'none';
       document.getElementById('userProfile').style.display = 'block';
     }
@@ -1061,57 +295,9 @@
     function hideUserProfile() {
       document.querySelector('.login-section').style.display = 'block';
       document.getElementById('userProfile').style.display = 'none';
-      document.getElementById('applicationForm').style.display = 'none';
-      document.getElementById('successMessage').style.display = 'none';
     }
 
-    // Continue to application form
-    document.getElementById('continueBtn').addEventListener('click', () => {
-      document.getElementById('userProfile').style.display = 'none';
-      document.getElementById('applicationForm').style.display = 'block';
-      
-      // Pre-fill known information
-      const user = auth.currentUser;
-      if (user) {
-        document.getElementById('fullName').value = user.displayName || '';
-        document.getElementById('studentId').value = '';
-        document.getElementById('major').value = '';
-        document.getElementById('year').value = '';
-        document.getElementById('phone').value = '';
-        document.getElementById('motivation').value = '';
-        document.getElementById('experience').value = '';
-      }
-    });
-
-    // Submit application
-    document.getElementById('submitBtn').addEventListener('click', () => {
-      // Validate form
-      const fullName = document.getElementById('fullName').value.trim();
-      const studentId = document.getElementById('studentId').value.trim();
-      const major = document.getElementById('major').value.trim();
-      const year = document.getElementById('year').value;
-      const phone = document.getElementById('phone').value.trim();
-      const motivation = document.getElementById('motivation').value.trim();
-      const experience = document.getElementById('experience').value.trim();
-      
-      if (!fullName || !studentId || !major || !year || !phone || !motivation || motivation.split(' ').length < 100) {
-        alert('Please fill in all required fields and ensure your motivation has at least 100 words.');
-        return;
-      }
-      
-      // Here you would typically send the data to your backend
-      // For now, we'll just show the success message
-      document.getElementById('applicationForm').style.display = 'none';
-      document.getElementById('successMessage').style.display = 'block';
-    });
-
-    // Back to home from success message
-    document.getElementById('homeBtn').addEventListener('click', () => {
-      document.getElementById('successMessage').style.display = 'none';
-      document.getElementById('userProfile').style.display = 'block';
-    });
-
-    // Check auth state on load
+    // Check auth state
     auth.onAuthStateChanged((user) => {
       if (user) {
         showUserProfile(user);
@@ -1119,107 +305,6 @@
         hideUserProfile();
       }
     });
-
-    // SDG Carousel Navigation
-    const track = document.querySelector('.sdg-track');
-    const prevBtn = document.querySelector('.prev-btn');
-    const nextBtn = document.querySelector('.next-btn');
-    let currentPosition = 0;
-    const itemWidth = 102; // Width of each SDG item including gap
-    const visibleItems = Math.floor(track.clientWidth / itemWidth);
-
-    // Update button states
-    function updateButtons() {
-      prevBtn.disabled = currentPosition === 0;
-      nextBtn.disabled = currentPosition >= track.scrollWidth - track.clientWidth;
-    }
-
-    // Scroll to position
-    function scrollToPosition(position) {
-      track.scrollTo({
-        left: position,
-        behavior: 'smooth'
-      });
-    }
-
-    // Event listeners for buttons
-    prevBtn.addEventListener('click', () => {
-      currentPosition = Math.max(0, currentPosition - (visibleItems * itemWidth));
-      scrollToPosition(currentPosition);
-      setTimeout(updateButtons, 300); // Wait for scroll to complete
-    });
-
-    nextBtn.addEventListener('click', () => {
-      currentPosition = Math.min(
-        track.scrollWidth - track.clientWidth,
-        currentPosition + (visibleItems * itemWidth)
-      );
-      scrollToPosition(currentPosition);
-      setTimeout(updateButtons, 300); // Wait for scroll to complete
-    });
-
-    // Initialize buttons
-    updateButtons();
-
-    // SDG Modal functionality
-    const sdgItems = document.querySelectorAll('.sdg-item');
-    const modal = document.querySelector('.sdg-modal');
-    const modalTitle = document.getElementById('modal-title');
-    const modalNumber = document.getElementById('modal-number');
-    const modalIcon = document.getElementById('modal-icon');
-    const modalDesc = document.getElementById('modal-description');
-    const closeModal = document.querySelector('.close-modal');
-    const modalContent = document.querySelector('.modal-content');
-    const modalHeaderIcon = document.querySelector('.modal-icon');
-
-    sdgItems.forEach(item => {
-      item.addEventListener('click', () => {
-        const sdg = item.dataset.sdg;
-        const title = item.dataset.title;
-        const icon = item.dataset.icon;
-        const desc = item.dataset.desc;
-        const color = item.style.getPropertyValue('--color');
-
-        modalTitle.textContent = title;
-        modalNumber.textContent = `SDG ${sdg}`;
-        modalIcon.src = icon;
-        modalDesc.textContent = desc;
-        modalHeaderIcon.style.backgroundColor = color;
-        modalContent.style.borderTop = `5px solid ${color}`;
-
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-      });
-    });
-
-    closeModal.addEventListener('click', () => {
-      modal.classList.remove('active');
-      document.body.style.overflow = 'auto';
-    });
-
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
-      }
-    });
-
-    // Animation on scroll
-    const animatedElements = document.querySelectorAll('.animated');
-    
-    function checkAnimation() {
-      animatedElements.forEach(element => {
-        const elementTop = element.getBoundingClientRect().top;
-        const windowHeight = window.innerHeight;
-        
-        if (elementTop < windowHeight - 100) {
-          element.style.opacity = 1;
-        }
-      });
-    }
-    
-    window.addEventListener('load', checkAnimation);
-    window.addEventListener('scroll', checkAnimation);
   </script>
 </body>
 </html>
