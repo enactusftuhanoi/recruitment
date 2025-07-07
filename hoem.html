@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RECRUITMENT | ENACTUS FTU HANOI</title>
+  <link rel="icon" href="/assets/icon.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Montserrat:wght@600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    :root {
+      /* SDG Colors */
+      --sdg1: #E5243B; --sdg2: #DDA63A; --sdg3: #4C9F38; --sdg4: #C5192D; --sdg5: #FF3A21;
+      --sdg6: #26BDE2; --sdg7: #FCC30B; --sdg8: #A21942; --sdg9: #FD6925; --sdg10: #DD1367;
+      --sdg11: #FD9D24; --sdg12: #BF8B2E; --sdg13: #3F7E44; --sdg14: #0A97D9; --sdg15: #56C02B;
+      --sdg16: #00689D; --sdg17: #19486A;
+      /* Theme Colors */
+      --primary: #2E7D32;
+      --primary-light: #81C784;
+      --accent: #00838F;
+      --light: #f9fafb;
+      --dark: #263238;
+      --gray: #607D8B;
+      --success: #8BC34A;
+      --error: #f44336;
+    }
+
+    body {
+      background-color: #f5f5f5;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+    }
+
+    /* Main Container - Compact */
+    .container {
+      width: 100%;
+      max-width: 400px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    /* Header Section */
+    .header {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      padding: 20px;
+      text-align: center;
+      color: white;
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+    }
+
+    .logo i {
+      font-size: 25px;
+      color: var(--primary);
+    }
+
+    h1 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 5px;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .tagline {
+      font-size: 12px;
+      font-weight: 400;
+      opacity: 0.9;
+    }
+
+    /* Content Section */
+    .content {
+      padding: 20px;
+    }
+
+    /* Login Section */
+    .login-section {
+      margin-top: 10px;
+    }
+
+    .login-btn {
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      color: white;
+      border: none;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 20px;
+      cursor: pointer;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .login-btn:hover {
+      opacity: 0.9;
+    }
+
+    .login-btn i {
+      font-size: 15px;
+    }
+
+    .login-error {
+      color: var(--error);
+      font-size: 11px;
+      text-align: center;
+      margin-top: 8px;
+      display: none;
+    }
+
+    /* User Profile */
+    .user-profile {
+      display: none;
+      text-align: center;
+      padding: 15px 0;
+    }
+
+    .user-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 10px;
+      border: 2px solid var(--primary-light);
+    }
+
+    .user-name {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 3px;
+    }
+
+    .user-email {
+      font-size: 12px;
+      color: var(--gray);
+      margin-bottom: 15px;
+    }
+
+    .continue-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      font-size: 13px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .continue-btn:hover {
+      background: var(--accent);
+    }
+
+    .logout-btn {
+      color: var(--gray);
+      font-size: 11px;
+      margin-top: 10px;
+      display: inline-block;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      color: var(--error);
+    }
+  </style>
+</head>
+<body>
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Header Section -->
+    <div class="header">
+      <div class="logo">
+        <img src="/assets/icon.png" alt="Logo" style="height: 40px;" />
+      </div>
+      <h1>ENACTUS FTU HANOI</h1>
+      <p class="tagline">18TH RECRUITMENT SEASON</p>
+    </div>
+    
+    <!-- Content Section -->
+    <div class="content">
+      <!-- Login Section -->
+      <div class="login-section">
+        <button id="loginBtn" class="login-btn">
+          <i class="fab fa-google"></i>
+          <span class="btn-text">Login with Google</span>
+        </button>
+        <p class="login-error" id="loginError"></p>
+      </div>
+      
+      <!-- User Profile -->
+      <div class="user-profile" id="userProfile">
+        <img src="" alt="User Avatar" class="user-avatar" id="userAvatar">
+        <h3 class="user-name" id="userName"></h3>
+        <p class="user-email" id="userEmail"></p>
+        <button class="continue-btn" id="continueBtn">Continue to Profile</button>
+        <p class="logout-btn" id="logoutBtn" style="display: block; margin-top: 10px;">Not you? Log out</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
+      authDomain: "enactusftuhanoi-tracuu.firebaseapp.com",
+      projectId: "enactusftuhanoi-tracuu",
+      storageBucket: "enactusftuhanoi-tracuu",
+      messagingSenderId: "611356979403",
+      appId: "1:611356979403:web:2c9a4cffb2b323ce3deb4e"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Google Auth Provider
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    // Login with Google
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      const loginBtn = document.getElementById('loginBtn');
+      const loginError = document.getElementById('loginError');
+      
+      loginError.style.display = 'none';
+      
+      firebase.auth()
+        .signInWithPopup(provider)
+        .then((result) => {
+          const user = result.user;
+          showUserProfile(user);
+        })
+        .catch((error) => {
+          loginError.textContent = error.message;
+          loginError.style.display = 'block';
+        });
+    });
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      firebase.auth().signOut().then(() => {
+        hideUserProfile();
+      });
+    });
+
+    // Continue to profile
+    document.getElementById('continueBtn').addEventListener('click', () => {
+      window.location.href = '/user/profile.html';
+    });
+
+    // Show user profile
+    function showUserProfile(user) {
+      document.getElementById('userName').textContent = user.displayName || 'User';
+      document.getElementById('userEmail').textContent = user.email;
+      
+      const avatar = document.getElementById('userAvatar');
+      if (user.photoURL) {
+        avatar.src = user.photoURL;
+      } else {
+        avatar.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || 'User') + '&background=2E7D32&color=ffffff';
+      }
+      
+      document.querySelector('.login-section').style.display = 'none';
+      document.getElementById('userProfile').style.display = 'block';
+    }
+
+    // Hide user profile
+    function hideUserProfile() {
+      document.querySelector('.login-section').style.display = 'block';
+      document.getElementById('userProfile').style.display = 'none';
+    }
+
+    // Check auth state
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        showUserProfile(user);
+      } else {
+        hideUserProfile();
+      }
+    });
+  </script>
+</body>
+</html>
