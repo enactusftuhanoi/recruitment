@@ -6,7 +6,7 @@
   <title>RECRUITMENT | ENACTUS FTU HANOI</title>
   <link rel="icon" href="/assets/icon.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Montserrat:wght@600&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -16,240 +16,114 @@
     }
     
     :root {
-      /* Màu sắc theo phong cách Enactus - kết hợp xanh lá (phát triển) và xanh dương (tin cậy) */
-      --enactus-green: #2E7D32; /* Màu chủ đạo của Enactus */
-      --enactus-blue: #005B82;   /* Màu phụ, đại diện cho sự tin cậy */
-      --enactus-accent: #FFC107;  /* Màu điểm nhấn vàng - năng lượng, sáng tạo */
-      --enactus-light: #F5F9FA;   /* Nền sáng */
-      --enactus-dark: #263238;    /* Chữ đậm */
-      --enactus-gray: #90A4AE;    /* Chữ phụ */
-      --success: #4CAF50;
-      --error: #F44336;
-      --box-shadow: 0 8px 30px rgba(0, 91, 130, 0.15);
-      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      /* Theme Colors */
+      --primary: #2E7D32;
+      --primary-light: #81C784;
+      --accent: #00838F;
+      --light: #f9fafb;
+      --dark: #263238;
+      --gray: #607D8B;
+      --success: #8BC34A;
+      --error: #f44336;
     }
 
     body {
-      background-color: var(--enactus-light);
+      background-color: #f5f5f5;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px;
-      background-image: url('/assets/vsic2024.png');
-      background-size: auto;               /* Giữ nguyên size ảnh gốc */
-      background-repeat: no-repeat;        /* Không lặp ảnh */
-      background-position: center bottom;  /* Căn giữa ngang, dính sát đáy */
-      background-size: contain;          /* Giữ nguyên tỉ lệ, toàn ảnh nằm gọn */
-}
+      padding: 15px;
+    }
 
-    /* Main Container */
+    /* Main Container - Compact */
     .container {
       width: 100%;
-      max-width: 450px;
+      max-width: 400px;
       background: white;
-      border-radius: 20px;
-      box-shadow: var(--box-shadow);
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
       overflow: hidden;
-      transform: translateY(0);
-      transition: var(--transition);
-      animation: fadeInUp 0.6s ease-out;
     }
 
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Header Section - Lấy cảm hứng từ logo Enactus */
+    /* Header Section */
     .header {
-      background: linear-gradient(135deg, var(--enactus-green), var(--enactus-blue));
-      padding: 30px 20px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      padding: 20px;
       text-align: center;
       color: white;
-      position: relative;
-      overflow: hidden;
     }
 
-    .header::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 10c0-5.523-4.477-10-10-10s-10 4.477-10 10 4.477 10 10 10 10-4.477 10-10zm0 20c0-5.523-4.477-10-10-10s-10 4.477-10 10 4.477 10 10 10 10-4.477 10-10zm0 20c0-5.523-4.477-10-10-10s-10 4.477-10 10 4.477 10 10 10 10-4.477 10-10z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
-      opacity: 0.3;
-    }
-
-    .logo-container {
-      position: relative;
-      margin: 0 auto 15px;
-      width: 100px;
-      height: 100px;
-    }
-
-    .logo-bg {
-      position: absolute;
-      width: 100%;
-      height: 100%;
+    .logo {
+      width: 60px;
+      height: 60px;
       background: white;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      transition: var(--transition);
+      margin: 0 auto 10px;
     }
 
-    .logo-bg:hover {
-      transform: rotate(10deg) scale(1.05);
-    }
-
-    .logo-bg::after {
-      content: '';
-      position: absolute;
-      width: 110%;
-      height: 110%;
-      border: 2px dashed var(--enactus-accent);
-      border-radius: 50%;
-      animation: rotate 20s linear infinite;
-    }
-
-    @keyframes rotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    .logo {
-      width: 80%;
-      height: 80%;
-      object-fit: contain;
-      z-index: 2;
+    .logo i {
+      font-size: 25px;
+      color: var(--primary);
     }
 
     h1 {
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 5px;
       font-family: 'Montserrat', sans-serif;
-      letter-spacing: 0.5px;
-      position: relative;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .tagline {
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 400;
       opacity: 0.9;
-      position: relative;
-      letter-spacing: 0.5px;
     }
 
     /* Content Section */
     .content {
-      padding: 30px;
+      padding: 20px;
     }
 
     /* Login Section */
     .login-section {
       margin-top: 10px;
-      text-align: center;
     }
 
     .login-btn {
-      background: linear-gradient(to right, var(--enactus-green), var(--enactus-blue));
+      background: linear-gradient(to right, var(--primary), var(--accent));
       color: white;
       border: none;
-      padding: 14px;
-      font-size: 16px;
-      font-weight: 600;
-      border-radius: 50px;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 20px;
       cursor: pointer;
       width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      transition: var(--transition);
-      box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .login-btn::after {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(
-        to bottom right,
-        rgba(255, 255, 255, 0.3) 0%,
-        rgba(255, 255, 255, 0) 60%
-      );
-      transform: rotate(30deg);
-      transition: var(--transition);
+      gap: 8px;
+      transition: all 0.3s ease;
     }
 
     .login-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 25px rgba(46, 125, 50, 0.4);
-    }
-
-    .login-btn:hover::after {
-      transform: translateX(100%) rotate(30deg);
-    }
-
-    .login-btn:active {
-      transform: translateY(0);
+      opacity: 0.9;
     }
 
     .login-btn i {
-      font-size: 20px;
+      font-size: 15px;
     }
 
     .login-error {
       color: var(--error);
-      font-size: 13px;
+      font-size: 11px;
       text-align: center;
-      margin-top: 15px;
+      margin-top: 8px;
       display: none;
-      font-weight: 500;
-      background: rgba(244, 67, 54, 0.1);
-      padding: 8px 12px;
-      border-radius: 8px;
-    }
-
-    .divider {
-      display: flex;
-      align-items: center;
-      margin: 25px 0;
-      color: var(--enactus-gray);
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      border-bottom: 1px solid var(--enactus-gray);
-      opacity: 0.3;
-    }
-
-    .divider::before {
-      margin-right: 15px;
-    }
-
-    .divider::after {
-      margin-left: 15px;
     }
 
     /* User Profile */
@@ -257,189 +131,55 @@
       display: none;
       text-align: center;
       padding: 15px 0;
-      animation: fadeIn 0.5s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .user-avatar-container {
-      position: relative;
-      width: 100px;
-      height: 100px;
-      margin: 0 auto 20px;
     }
 
     .user-avatar {
-      width: 100%;
-      height: 100%;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       object-fit: cover;
-      border: 3px solid white;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-      transition: var(--transition);
-      position: relative;
-      z-index: 2;
-    }
-
-    .user-avatar-bg {
-      position: absolute;
-      width: 110%;
-      height: 110%;
-      top: -5%;
-      left: -5%;
-      background: linear-gradient(135deg, var(--enactus-green), var(--enactus-blue));
-      border-radius: 50%;
-      z-index: 1;
-      animation: pulse 2s infinite alternate;
-    }
-
-    @keyframes pulse {
-      from { transform: scale(1); opacity: 0.8; }
-      to { transform: scale(1.05); opacity: 1; }
+      margin: 0 auto 10px;
+      border: 2px solid var(--primary-light);
     }
 
     .user-name {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 5px;
-      color: var(--enactus-dark);
-      position: relative;
-      display: inline-block;
-    }
-
-    .user-name::after {
-      content: '';
-      position: absolute;
-      bottom: -5px;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background: var(--enactus-accent);
-      transform: scaleX(0);
-      transition: var(--transition);
-    }
-
-    .user-name:hover::after {
-      transform: scaleX(1);
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 3px;
     }
 
     .user-email {
-      font-size: 14px;
-      color: var(--enactus-gray);
-      margin-bottom: 25px;
-      font-weight: 500;
+      font-size: 12px;
+      color: var(--gray);
+      margin-bottom: 15px;
     }
 
     .continue-btn {
-      background: linear-gradient(to right, var(--enactus-green), var(--enactus-blue));
+      background: var(--primary);
       color: white;
       border: none;
-      padding: 14px 30px;
-      font-size: 16px;
-      font-weight: 600;
-      border-radius: 50px;
+      padding: 8px 15px;
+      font-size: 13px;
+      border-radius: 20px;
       cursor: pointer;
-      transition: var(--transition);
-      box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
-      display: inline-block;
-      min-width: 220px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .continue-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.3),
-        transparent
-      );
-      transition: var(--transition);
+      transition: all 0.3s ease;
     }
 
     .continue-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 25px rgba(46, 125, 50, 0.4);
-    }
-
-    .continue-btn:hover::before {
-      left: 100%;
-    }
-
-    .continue-btn:active {
-      transform: translateY(0);
+      background: var(--accent);
     }
 
     .logout-btn {
-      color: var(--enactus-gray);
-      font-size: 14px;
-      margin-top: 20px;
+      color: var(--gray);
+      font-size: 11px;
+      margin-top: 10px;
       display: inline-block;
       cursor: pointer;
-      transition: var(--transition);
-      position: relative;
-      padding-bottom: 3px;
-    }
-
-    .logout-btn::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 0;
-      height: 1px;
-      background: var(--error);
-      transition: var(--transition);
+      transition: all 0.3s ease;
     }
 
     .logout-btn:hover {
       color: var(--error);
-    }
-
-    .logout-btn:hover::after {
-      width: 100%;
-    }
-
-    .footer-text {
-      font-size: 12px;
-      color: var(--enactus-gray);
-      text-align: center;
-      margin-top: 25px;
-      line-height: 1.6;
-    }
-
-    .enactus-values {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-top: 20px;
-      flex-wrap: wrap;
-    }
-
-    .value-item {
-      background: rgba(0, 91, 130, 0.08);
-      color: var(--enactus-blue);
-      padding: 5px 12px;
-      border-radius: 50px;
-      font-size: 11px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .value-item i {
-      color: var(--enactus-green);
-      font-size: 12px;
     }
   </style>
 </head>
@@ -448,12 +188,11 @@
   <div class="container">
     <!-- Header Section -->
     <div class="header">
-      <div class="logo-container">
-        <div class="logo-bg">
-          <img src="/assets/icon.png" alt="Enactus FTU Hanoi Logo" class="logo">
-        </div>
+      <div class="logo">
+        <img src="/assets/icon.png" alt="Logo" style="height: 40px;" />
       </div>
       <h1>ENACTUS FTU HANOI</h1>
+      <p class="tagline">18TH RECRUITMENT SEASON</p>
     </div>
     
     <!-- Content Section -->
@@ -462,43 +201,18 @@
       <div class="login-section">
         <button id="loginBtn" class="login-btn">
           <i class="fab fa-google"></i>
-          <span class="btn-text">ĐĂNG NHẬP BẰNG GOOGLE</span>
+          <span class="btn-text">Login with Google</span>
         </button>
         <p class="login-error" id="loginError"></p>
-        
-        <div class="divider">Enactus FTU Hanoi Recruitment</div>
-        
-        <div class="enactus-values">
-          <div class="value-item">
-            <i class="fas fa-lightbulb"></i>
-            <span>Entrepreneurial</span>
-          </div>
-          <div class="value-item">
-            <i class="fas fa-hands-helping"></i>
-            <span>Action</span>
-          </div>
-          <div class="value-item">
-            <i class="fas fa-globe-asia"></i>
-            <span>Us</span>
-          </div>
-        </div>
-        
-        <p class="footer-text">
-          Bằng việc tiếp tục, bạn đồng ý với <a href="#" style="color: var(--enactus-blue); text-decoration: none; font-weight: 600;">Điều khoản dịch vụ</a> 
-          và <a href="#" style="color: var(--enactus-blue); text-decoration: none; font-weight: 600;">Chính sách bảo mật</a> của Enactus FTU Hanoi
-        </p>
       </div>
       
       <!-- User Profile -->
       <div class="user-profile" id="userProfile">
-        <div class="user-avatar-container">
-          <div class="user-avatar-bg"></div>
-          <img src="" alt="User Avatar" class="user-avatar" id="userAvatar">
-        </div>
+        <img src="" alt="User Avatar" class="user-avatar" id="userAvatar">
         <h3 class="user-name" id="userName"></h3>
         <p class="user-email" id="userEmail"></p>
-        <button class="continue-btn" id="continueBtn">Continue</button>
-        <p class="logout-btn" id="logoutBtn">Not you? Log out</p>
+        <button class="continue-btn" id="continueBtn">Continue to Profile</button>
+        <p class="logout-btn" id="logoutBtn" style="display: block; margin-top: 10px;">Not you? Log out</p>
       </div>
     </div>
   </div>
@@ -530,7 +244,6 @@
       const loginBtn = document.getElementById('loginBtn');
       const loginError = document.getElementById('loginError');
       
-      loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG ĐĂNG NHẬP...';
       loginError.style.display = 'none';
       
       firebase.auth()
@@ -542,7 +255,6 @@
         .catch((error) => {
           loginError.textContent = error.message;
           loginError.style.display = 'block';
-          loginBtn.innerHTML = '<i class="fab fa-google"></i> ĐĂNG NHẬP BẰNG GOOGLE';
         });
     });
 
@@ -560,19 +272,18 @@
 
     // Show user profile
     function showUserProfile(user) {
-      document.getElementById('userName').textContent = user.displayName || 'Người dùng';
+      document.getElementById('userName').textContent = user.displayName || 'User';
       document.getElementById('userEmail').textContent = user.email;
       
       const avatar = document.getElementById('userAvatar');
       if (user.photoURL) {
         avatar.src = user.photoURL;
       } else {
-        avatar.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || 'User') + '&background=2E7D32&color=ffffff&size=256';
+        avatar.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || 'User') + '&background=2E7D32&color=ffffff';
       }
       
       document.querySelector('.login-section').style.display = 'none';
       document.getElementById('userProfile').style.display = 'block';
-      document.getElementById('loginBtn').innerHTML = '<i class="fab fa-google"></i> ĐĂNG NHẬP BẰNG GOOGLE';
     }
 
     // Hide user profile
@@ -592,3 +303,4 @@
   </script>
 </body>
 </html>
+
