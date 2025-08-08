@@ -1,4 +1,4 @@
-// Import Firebase modules
+// Firebase imports with error handling
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { 
   getAuth, 
@@ -10,529 +10,700 @@ import {
   doc, 
   getDoc,
   setDoc,
-  updateDoc
+  updateDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Firebase configuration
-const firebaseConfig = {
+// =========================== CONFIG & CONSTANTS ===========================
+const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
   authDomain: "enactusftuhanoi-tracuu.firebaseapp.com",
   projectId: "enactusftuhanoi-tracuu",
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// Toastr configuration
-toastr.options = {
-  closeButton: true,
-  debug: false,
-  newestOnTop: true,
-  progressBar: true,
-  positionClass: 'toast-bottom-right',
-  preventDuplicates: false,
-  onclick: null,
-  showDuration: '300',
-  hideDuration: '1000',
-  timeOut: '3000',
-  extendedTimeOut: '1000',
-  showEasing: 'swing',
-  hideEasing: 'linear',
-  showMethod: 'fadeIn',
-  hideMethod: 'fadeOut'
+const ROUND_DEFINITIONS = {
+  1: { name: 'Vòng đơn', description: 'Nộp hồ sơ đăng ký' },
+  2: { name: 'Phỏng vấn nhóm', description: 'Thảo luận nhóm và đánh giá' },
+  3: { name: 'Thử thách', description: 'Hoàn thành nhiệm vụ thực tế' },
+  4: { name: 'Phỏng vấn cá nhân', description: 'Đánh giá cuối cùng' },
+  5: { name: 'Hoàn thành', description: 'Kết thúc quá trình' }
 };
 
-// DOM elements
-const logoutBtn = document.getElementById('logoutBtn');
-const refreshBtn = document.getElementById('refreshBtn');
-const editProfileBtn = document.getElementById('editProfileBtn');
-const startOnboardingBtn = document.getElementById('startOnboardingBtn');
-const editModal = document.getElementById('editModal');
-const onboardingModal = document.getElementById('onboardingModal');
-const closeModalButtons = document.querySelectorAll('.close-modal');
-const editForm = document.getElementById('editForm');
-const onboardingForm = document.getElementById('onboardingForm');
+const STATUS_COLORS = {
+  'Đã duyệt': 'badge-success',
+  'Từ chối': 'badge-danger',
+  'Đang chờ': 'badge-primary',
+  'Đang thực hiện': 'badge-primary',
+  'Chưa bắt đầu': 'badge-warning',
+  'Chờ xử lý': 'badge-warning'
+};
 
-// Current user data
-let currentUser = null;
-let currentUserId = null;
+const AVATAR_COLORS = [
+  '#1a73e8', '#4caf50', '#ff9800', '#9c27b0', 
+  '#e91e63', '#00bcd4', '#8bc34a', '#ff5722',
+  '#795548', '#607d8b', '#f44336', '#2196f3'
+];
 
-// ========== HELPER FUNCTIONS ==========
-function getInitials(name) {
-  const names = name.split(' ');
-  let initials = names[0].substring(0, 1).toUpperCase();
-  
-  if (names.length > 1) {
-    initials += names[names.length - 1].substring(0, 1).toUpperCase();
-  }
-  
-  return initials;
-}
-
-function generateColorFromName(name) {
-  const colors = [
-    '#1a73e8', '#4caf50', '#ff9800', '#9c27b0', 
-    '#e91e63', '#00bcd4', '#8bc34a', '#ff5722'
-  ];
-  
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  
-  const index = Math.abs(hash) % colors.length;
-  return colors[index];
-}
-
-// Function to update user avatar with high quality image
-function updateUserAvatar(user) {
-  const avatarImg = document.getElementById('userAvatar');
-  
-  // Clear any existing content
-  avatarImg.innerHTML = '';
-  avatarImg.style.backgroundImage = '';
-  
-  // Try to get high quality photo from Google
-  let photoUrl = user.photoURL;
-  if (photoUrl && photoUrl.includes('googleusercontent.com')) {
-    // Replace with higher quality version (s0=default, s96-c=96px, s400-c=400px)
-    photoUrl = photoUrl.replace(/=s\d+(-c)?/, '=s1000-c');
-  }
-
-  if (photoUrl) {
-    // Create image element to handle loading and error
-    const img = new Image();
-    img.src = photoUrl;
+// =========================== APP INITIALIZATION ===========================
+class UserManagement {
+  constructor() {
+    this.app = initializeApp(FIREBASE_CONFIG);
+    this.auth = getAuth(this.app);
+    this.db = getFirestore(this.app);
     
-    img.onload = function() {
-      avatarImg.style.backgroundImage = `url(${photoUrl})`;
-      avatarImg.style.backgroundSize = 'cover';
-      avatarImg.style.backgroundPosition = 'center';
+    this.currentUser = null;
+    this.currentUserId = null;
+    this.isLoading = false;
+    
+    this.initializeToastr();
+    this.initializeEventListeners();
+    this.initializeAuthStateListener();
+    
+    this.showLoader = this.debounce(this.showLoader.bind(this), 300);
+  }
+
+  // =========================== UTILITY METHODS ===========================
+  debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func.apply(this, args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
     };
-    
-    img.onerror = function() {
-      // Fallback to initials if image fails to load
-      showInitialsAvatar(user);
-    };
-  } else {
-    // No photo URL available, use initials
-    showInitialsAvatar(user);
   }
-}
 
-// Helper function to show initials avatar
-function showInitialsAvatar(user) {
-  const avatarImg = document.getElementById('userAvatar');
-  const name = user.fullname || user.email || 'User';
-  const initials = getInitials(name);
-  
-  avatarImg.innerHTML = initials || '<i class="fas fa-user"></i>';
-  avatarImg.style.backgroundColor = generateColorFromName(name);
-  avatarImg.style.color = 'white';
-  avatarImg.style.display = 'flex';
-  avatarImg.style.alignItems = 'center';
-  avatarImg.style.justifyContent = 'center';
-  avatarImg.style.fontSize = initials.length > 2 ? '50px' : '60px';
-  avatarImg.style.fontWeight = 'bold';
-  avatarImg.style.backgroundImage = 'none';
-}
+  generateHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return Math.abs(hash);
+  }
 
-async function loadUserData(userId, email) {
-  try {
-    const auth = getAuth();
-    const user = auth.currentUser;
+  getInitials(name) {
+    if (!name) return 'U';
     
-    const userDoc = await getDoc(doc(db, "users", userId));
+    const words = name.trim().split(' ').filter(word => word.length > 0);
+    if (words.length === 0) return 'U';
     
-    if (userDoc.exists()) {
-      // Existing user - show profile
-      currentUser = userDoc.data();
-      currentUserId = userId;
-      
-      document.getElementById('profileSection').style.display = 'block';
-      document.getElementById('roundSection').style.display = 'block';
-      document.getElementById('onboardingSection').style.display = 'none';
-      
-      updateProfileUI(currentUser);
-      updateRoundProgress(currentUser.current_round || 1);
-      showRoundDetails(currentUser.current_round || 1);
-      
-      // Update avatar with Google photo if available
-      if (user && user.photoURL) {
-        updateUserAvatar({
-          ...currentUser,
-          photoURL: user.photoURL
-        });
-      } else {
-        updateUserAvatar(currentUser);
+    if (words.length === 1) {
+      return words[0].substring(0, 2).toUpperCase();
+    }
+    
+    return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+  }
+
+  generateColorFromName(name) {
+    const index = this.generateHash(name) % AVATAR_COLORS.length;
+    return AVATAR_COLORS[index];
+  }
+
+  formatDate(date) {
+    if (!date) return 'Chưa cập nhật';
+    if (date.toDate) return date.toDate().toLocaleDateString('vi-VN');
+    if (date instanceof Date) return date.toLocaleDateString('vi-VN');
+    return date;
+  }
+
+  sanitizeInput(input) {
+    return input?.toString().trim() || '';
+  }
+
+  // =========================== UI HELPER METHODS ===========================
+  initializeToastr() {
+    if (typeof toastr !== 'undefined') {
+      toastr.options = {
+        closeButton: true,
+        newestOnTop: true,
+        progressBar: true,
+        positionClass: 'toast-bottom-right',
+        timeOut: 3000,
+        extendedTimeOut: 1000,
+        showEasing: 'swing',
+        hideEasing: 'linear',
+        showMethod: 'fadeIn',
+        hideMethod: 'fadeOut'
+      };
+    }
+  }
+
+  showNotification(type, message) {
+    if (typeof toastr !== 'undefined') {
+      toastr[type](message);
+    } else {
+      console.log(`${type.toUpperCase()}: ${message}`);
+    }
+  }
+
+  showLoader(show = true) {
+    const loader = document.getElementById('pageLoader');
+    if (loader) {
+      loader.style.display = show ? 'flex' : 'none';
+    }
+    this.isLoading = show;
+  }
+
+  setElementText(id, text) {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = text || 'Chưa cập nhật';
+    }
+  }
+
+  setElementValue(id, value) {
+    const element = document.getElementById(id);
+    if (element) {
+      element.value = value || '';
+    }
+  }
+
+  // =========================== AVATAR MANAGEMENT ===========================
+  async updateUserAvatar(user) {
+    const avatarElement = document.getElementById('userAvatar');
+    if (!avatarElement) return;
+
+    this.resetAvatar(avatarElement);
+
+    let photoUrl = user.photoURL;
+    if (photoUrl?.includes('googleusercontent.com')) {
+      photoUrl = photoUrl.replace(/=s\d+(-c)?/, '=s400-c');
+    }
+
+    if (photoUrl) {
+      try {
+        await this.loadImageWithFallback(avatarElement, photoUrl, user);
+      } catch (error) {
+        this.showInitialsAvatar(avatarElement, user);
       }
     } else {
-      // New user - show onboarding
-      document.getElementById('profileSection').style.display = 'none';
-      document.getElementById('roundSection').style.display = 'none';
-      document.getElementById('onboardingSection').style.display = 'block';
-      
-      currentUserId = userId;
-      
-      if (email) {
-        document.getElementById('onboardEmail').value = email;
-      }
-      
-      // If user has Google photo, show it in onboarding
-      if (user && user.photoURL) {
-        const avatarPreview = document.createElement('div');
-        avatarPreview.style.width = '100px';
-        avatarPreview.style.height = '100px';
-        avatarPreview.style.borderRadius = '50%';
-        avatarPreview.style.backgroundImage = `url(${user.photoURL})`;
-        avatarPreview.style.backgroundSize = 'cover';
-        avatarPreview.style.backgroundPosition = 'center';
-        avatarPreview.style.margin = '0 auto 15px';
-        
-        const onboardingIcon = document.querySelector('.onboarding-icon');
-        onboardingIcon.innerHTML = '';
-        onboardingIcon.appendChild(avatarPreview);
-      }
-    }
-  } catch (error) {
-    console.error('Error loading user data:', error);
-    toastr.error('Lỗi khi tải dữ liệu người dùng');
-  }
-}
-
-// Update profile UI with user data
-function updateProfileUI(user) {
-  document.getElementById('userFullName').textContent = user.fullname || 'Chưa cập nhật';
-  document.getElementById('userGender').textContent = user.gender || 'Chưa cập nhật';
-  document.getElementById('userEmail').textContent = user.email || 'Chưa cập nhật';
-  document.getElementById('userPhone').textContent = user.phone || 'Chưa cập nhật';
-  document.getElementById('userDob').textContent = user.dob || 'Chưa cập nhật';
-  document.getElementById('userSchool').textContent = user.school || 'Chưa cập nhật';
-  document.getElementById('userFaculty').textContent = user.faculty || 'Chưa cập nhật';
-  document.getElementById('userStudentId').textContent = user.studentId || 'Chưa cập nhật';
-  document.getElementById('userDepartment').textContent = user.department || 'Chưa chọn';
-  
-  // Update status badges
-  document.getElementById('userCurrentRound').textContent = getRoundText(user.current_round || 1);
-  document.getElementById('userStatus').textContent = user.status || 'Chưa xác định';
-  
-  // Update badge colors based on status
-  const statusBadge = document.getElementById('userStatus');
-  statusBadge.className = 'badge ';
-  if (user.status === 'Đã duyệt') {
-    statusBadge.classList.add('badge-success');
-  } else if (user.status === 'Từ chối') {
-    statusBadge.classList.add('badge-danger');
-  } else {
-    statusBadge.classList.add('badge-warning');
-  }
-}
-
-// Get round text
-function getRoundText(round) {
-  if (!round) return 'Chưa bắt đầu';
-  
-  const rounds = [
-    'Vòng đơn',
-    'Phỏng vấn nhóm',
-    'Thử thách',
-    'Phỏng vấn cá nhân',
-    'Hoàn thành'
-  ];
-  
-  if (round <= 4) {
-    return `Vòng ${round}: ${rounds[round-1]}`;
-  } else {
-    return rounds[4];
-  }
-}
-
-// Update round progress visualization
-function updateRoundProgress(currentRound) {
-  const steps = document.querySelectorAll('.step');
-  const progressBar = document.getElementById('progressBar');
-  
-  // Reset all steps
-  steps.forEach(step => {
-    step.classList.remove('active', 'completed');
-  });
-  
-  // Calculate progress percentage
-  let progressPercent = 0;
-  
-  if (currentRound > 5) currentRound = 5;
-  
-  // Update steps based on current round
-  for (let i = 0; i < currentRound; i++) {
-    if (i < steps.length) {
-      steps[i].classList.add('completed');
+      this.showInitialsAvatar(avatarElement, user);
     }
   }
-  
-  if (currentRound <= 5) {
-    steps[currentRound - 1].classList.add('active');
-    progressPercent = ((currentRound - 1) / 4) * 100;
-  } else {
-    progressPercent = 100;
-  }
-  
-  progressBar.style.width = `${progressPercent}%`;
-}
 
-// Show round details based on current round
-function showRoundDetails(currentRound) {
-  // Hide all round details first
-  document.querySelectorAll('.round-card').forEach(card => {
-    card.style.display = 'none';
-  });
-  
-  // Show details up to current round
-  for (let i = 1; i <= currentRound; i++) {
-    const roundCard = document.getElementById(`round${i}Details`);
-    if (roundCard) {
-      roundCard.style.display = 'block';
-      updateRoundStatus(i);
-    }
+  resetAvatar(avatarElement) {
+    avatarElement.innerHTML = '';
+    avatarElement.style.backgroundImage = '';
+    avatarElement.className = avatarElement.className.replace(/avatar-\w+/g, '');
   }
-}
 
-// Update round status in details cards
-function updateRoundStatus(roundNumber) {
-  if (!currentUser) return;
-  
-  const roundData = currentUser[`round_${roundNumber}`] || {};
-  const statusElement = document.getElementById(`round${roundNumber}Status`);
-  const statusTextElement = document.getElementById(`round${roundNumber}StatusText`);
-  
-  if (statusElement && statusTextElement) {
-    const status = roundData.status || 'Chưa bắt đầu';
-    statusElement.textContent = status;
-    statusTextElement.textContent = status;
-    
-    // Update badge color
-    statusElement.className = 'badge ';
-    if (status === 'Đã duyệt') {
-      statusElement.classList.add('badge-success');
-    } else if (status === 'Từ chối') {
-      statusElement.classList.add('badge-danger');
-    } else if (status === 'Đang chờ' || status === 'Đang thực hiện') {
-      statusElement.classList.add('badge-primary');
-    } else {
-      statusElement.classList.add('badge-warning');
-    }
-  }
-  
-  // Update round-specific details
-  switch(roundNumber) {
-    case 1:
-      document.getElementById('round1Deadline').textContent = roundData.deadline || 'Chưa cập nhật';
-      document.getElementById('round1Guide').textContent = roundData.guide || 'Chưa cập nhật';
-      break;
-    case 2:
-      document.getElementById('round2Time').textContent = roundData.time || 'Chưa cập nhật';
-      document.getElementById('round2Location').textContent = roundData.location || 'Chưa cập nhật';
-      document.getElementById('round2Members').textContent = roundData.members || 'Chưa cập nhật';
-      break;
-    case 3:
-      document.getElementById('round3Challenge').textContent = roundData.challenge || 'Chưa cập nhật';
-      document.getElementById('round3Deadline').textContent = roundData.deadline || 'Chưa cập nhật';
-      document.getElementById('round3Materials').textContent = roundData.materials || 'Chưa cập nhật';
-      break;
-    case 4:
-      document.getElementById('round4Time').textContent = roundData.time || 'Chưa cập nhật';
-      document.getElementById('round4Location').textContent = roundData.location || 'Chưa cập nhật';
-      document.getElementById('round4Interviewer').textContent = roundData.interviewer || 'Chưa cập nhật';
-      break;
-  }
-}
+  loadImageWithFallback(avatarElement, photoUrl, user) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const timeout = setTimeout(() => {
+        reject(new Error('Image load timeout'));
+      }, 5000);
 
-// Show edit modal with current data
-function showEditModal() {
-  if (!currentUser) return;
-  
-  document.getElementById('editFullName').value = currentUser.fullname || '';
-  document.getElementById('editEmail').value = currentUser.email || '';
-  document.getElementById('editPhone').value = currentUser.phone || '';
-  
-  // Set gender radio button
-  const gender = currentUser.gender || 'Nam';
-  document.querySelector(`input[name="gender"][value="${gender}"]`).checked = true;
-  
-  document.getElementById('editDob').value = currentUser.dob || '';
-  document.getElementById('editSchool').value = currentUser.school || '';
-  document.getElementById('editFaculty').value = currentUser.faculty || '';
-  document.getElementById('editStudentId').value = currentUser.studentId || '';
-  
-  editModal.style.display = 'block';
-}
+      img.onload = () => {
+        clearTimeout(timeout);
+        avatarElement.style.backgroundImage = `url(${photoUrl})`;
+        avatarElement.style.backgroundSize = 'cover';
+        avatarElement.style.backgroundPosition = 'center';
+        avatarElement.classList.add('avatar-image');
+        resolve();
+      };
 
-// Save edited profile
-async function saveProfile(e) {
-  e.preventDefault();
-  
-  if (!currentUserId) return;
-  
-  try {
-    const gender = document.querySelector('input[name="gender"]:checked').value;
-    
-    const updatedData = {
-      fullname: document.getElementById('editFullName').value,
-      email: document.getElementById('editEmail').value,
-      phone: document.getElementById('editPhone').value,
-      gender: gender,
-      dob: document.getElementById('editDob').value,
-      school: document.getElementById('editSchool').value,
-      faculty: document.getElementById('editFaculty').value,
-      studentId: document.getElementById('editStudentId').value,
-      updatedAt: new Date()
-    };
-    
-    await updateDoc(doc(db, "users", currentUserId), updatedData);
-    
-    // Update local data
-    currentUser = { ...currentUser, ...updatedData };
-    updateProfileUI(currentUser);
-    
-    // Close modal
-    editModal.style.display = 'none';
-    
-    toastr.success('Cập nhật hồ sơ thành công');
-  } catch (error) {
-    console.error('Error updating profile:', error);
-    toastr.error('Cập nhật hồ sơ thất bại');
-  }
-}
+      img.onerror = () => {
+        clearTimeout(timeout);
+        reject(new Error('Image load failed'));
+      };
 
-// Save onboarding data
-async function saveOnboardingData(e) {
-  e.preventDefault();
-  
-  const auth = getAuth();
-  const user = auth.currentUser;
-  
-  if (!user) {
-    toastr.error('Người dùng chưa đăng nhập');
-    return;
-  }
-  
-  try {
-    const gender = document.querySelector('input[name="onboardGender"]:checked').value;
-    const department = document.getElementById('onboardDepartment').value;
-    
-    const userData = {
-      fullname: document.getElementById('onboardFullName').value,
-      email: document.getElementById('onboardEmail').value,
-      phone: document.getElementById('onboardPhone').value,
-      gender: gender,
-      dob: document.getElementById('onboardDob').value,
-      school: document.getElementById('onboardSchool').value,
-      faculty: document.getElementById('onboardFaculty').value,
-      studentId: document.getElementById('onboardStudentId').value,
-      department: department,
-      status: "Chờ xử lý",
-      current_round: 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      round_1: {
-        status: "Chưa bắt đầu",
-        deadline: "15/07/2025",
-        guide: "Hoàn thành form đăng ký"
-      }
-    };
-    
-    // Sử dụng UID của người dùng đã đăng nhập
-    await setDoc(doc(db, "users", user.uid), userData);
-    
-    // Cập nhật UI
-    currentUser = userData;
-    currentUserId = user.uid;
-    updateProfileUI(currentUser);
-    updateRoundProgress(1);
-    showRoundDetails(1);
-    
-    // Ẩn onboarding và hiển thị profile
-    document.getElementById('profileSection').style.display = 'block';
-    document.getElementById('roundSection').style.display = 'block';
-    document.getElementById('onboardingSection').style.display = 'none';
-    onboardingModal.style.display = 'none';
-    
-    toastr.success('Đăng ký hồ sơ thành công!');
-  } catch (error) {
-    console.error('Lỗi khi lưu dữ liệu:', error);
-    toastr.error('Đăng ký hồ sơ thất bại: ' + error.message);
-  }
-}
-
-// Logout function
-async function logout() {
-  try {
-    await signOut(auth);
-    window.location.href = '/index.html'; // Redirect to login page
-  } catch (error) {
-    console.error('Logout error:', error);
-    toastr.error('Đăng xuất thất bại');
-  }
-}
-
-// Initialize event listeners
-function initEventListeners() {
-  // Logout button
-  logoutBtn.addEventListener('click', logout);
-  
-  // Refresh button
-  refreshBtn.addEventListener('click', () => {
-    if (currentUserId) {
-      loadUserData(currentUserId);
-      toastr.info('Đang làm mới dữ liệu...');
-    }
-  });
-  
-  // Edit profile button
-  editProfileBtn.addEventListener('click', showEditModal);
-  
-  // Start onboarding button
-  startOnboardingBtn.addEventListener('click', () => {
-    onboardingModal.style.display = 'block';
-  });
-  
-  // Close modal buttons
-  closeModalButtons.forEach(btn => {
-    btn.addEventListener('click', function() {
-      editModal.style.display = 'none';
-      onboardingModal.style.display = 'none';
+      img.src = photoUrl;
     });
-  });
-  
-  // Close modal when clicking outside
-  window.addEventListener('click', function(event) {
-    if (event.target === editModal) {
-      editModal.style.display = 'none';
+  }
+
+  showInitialsAvatar(avatarElement, user) {
+    const name = user.fullname || user.email || 'User';
+    const initials = this.getInitials(name);
+    
+    avatarElement.innerHTML = initials;
+    avatarElement.style.backgroundColor = this.generateColorFromName(name);
+    avatarElement.style.color = 'white';
+    avatarElement.style.display = 'flex';
+    avatarElement.style.alignItems = 'center';
+    avatarElement.style.justifyContent = 'center';
+    avatarElement.style.fontSize = initials.length > 2 ? '45px' : '55px';
+    avatarElement.style.fontWeight = '600';
+    avatarElement.style.backgroundImage = 'none';
+    avatarElement.classList.add('avatar-initials');
+  }
+
+  // =========================== DATA LOADING ===========================
+  async loadUserData(userId, email) {
+    if (this.isLoading) return;
+    
+    this.showLoader(true);
+    
+    try {
+      const user = this.auth.currentUser;
+      const userDoc = await getDoc(doc(this.db, "users", userId));
+      
+      if (userDoc.exists()) {
+        await this.handleExistingUser(userDoc.data(), userId, user);
+      } else {
+        await this.handleNewUser(userId, email, user);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      this.showNotification('error', 'Lỗi khi tải dữ liệu người dùng');
+    } finally {
+      this.showLoader(false);
     }
-    if (event.target === onboardingModal) {
-      onboardingModal.style.display = 'none';
+  }
+
+  async handleExistingUser(userData, userId, firebaseUser) {
+    this.currentUser = userData;
+    this.currentUserId = userId;
+    
+    this.showSection('profileSection', true);
+    this.showSection('roundSection', true);
+    this.showSection('onboardingSection', false);
+    
+    this.updateProfileUI(this.currentUser);
+    this.updateRoundProgress(this.currentUser.current_round || 1);
+    this.showRoundDetails(this.currentUser.current_round || 1);
+    
+    await this.updateUserAvatar({
+      ...this.currentUser,
+      photoURL: firebaseUser?.photoURL
+    });
+  }
+
+  async handleNewUser(userId, email, firebaseUser) {
+    this.currentUserId = userId;
+    
+    this.showSection('profileSection', false);
+    this.showSection('roundSection', false);
+    this.showSection('onboardingSection', true);
+    
+    if (email) {
+      this.setElementValue('onboardEmail', email);
     }
-  });
-  
-  // Edit form submission
-  editForm.addEventListener('submit', (e) => saveProfile(e));
-  
-  // Onboarding form submission
-  onboardingForm.addEventListener('submit', (e) => saveOnboardingData(e));
+    
+    if (firebaseUser?.photoURL) {
+      await this.showOnboardingAvatar(firebaseUser.photoURL);
+    }
+  }
+
+  showSection(sectionId, show) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.style.display = show ? 'block' : 'none';
+    }
+  }
+
+  async showOnboardingAvatar(photoUrl) {
+    const onboardingIcon = document.querySelector('.onboarding-icon');
+    if (!onboardingIcon) return;
+
+    const avatarPreview = document.createElement('div');
+    Object.assign(avatarPreview.style, {
+      width: '100px',
+      height: '100px',
+      borderRadius: '50%',
+      backgroundImage: `url(${photoUrl})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      margin: '0 auto 15px',
+      border: '3px solid #fff',
+      boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+    });
+    
+    onboardingIcon.innerHTML = '';
+    onboardingIcon.appendChild(avatarPreview);
+  }
+
+  // =========================== UI UPDATE METHODS ===========================
+  updateProfileUI(user) {
+    const fields = {
+      'userFullName': user.fullname,
+      'userGender': user.gender,
+      'userEmail': user.email,
+      'userPhone': user.phone,
+      'userDob': this.formatDate(user.dob),
+      'userSchool': user.school,
+      'userFaculty': user.faculty,
+      'userStudentId': user.studentId,
+      'userDepartment': user.department || 'Chưa chọn'
+    };
+
+    Object.entries(fields).forEach(([id, value]) => {
+      this.setElementText(id, value);
+    });
+
+    this.updateStatusBadges(user);
+  }
+
+  updateStatusBadges(user) {
+    const currentRoundText = this.getRoundText(user.current_round || 1);
+    this.setElementText('userCurrentRound', currentRoundText);
+    this.setElementText('userStatus', user.status || 'Chưa xác định');
+    
+    const statusBadge = document.getElementById('userStatus');
+    if (statusBadge) {
+      statusBadge.className = `badge ${STATUS_COLORS[user.status] || 'badge-warning'}`;
+    }
+  }
+
+  getRoundText(round) {
+    if (!round || round < 1) return 'Chưa bắt đầu';
+    
+    const roundInfo = ROUND_DEFINITIONS[Math.min(round, 5)];
+    return round <= 4 ? `Vòng ${round}: ${roundInfo.name}` : roundInfo.name;
+  }
+
+  updateRoundProgress(currentRound) {
+    const steps = document.querySelectorAll('.step');
+    const progressBar = document.getElementById('progressBar');
+    
+    if (!steps.length || !progressBar) return;
+
+    // Reset and update steps
+    steps.forEach((step, index) => {
+      step.classList.remove('active', 'completed');
+      
+      if (index < currentRound - 1) {
+        step.classList.add('completed');
+      } else if (index === currentRound - 1 && currentRound <= 5) {
+        step.classList.add('active');
+      }
+    });
+
+    // Update progress bar
+    const progressPercent = Math.min(((currentRound - 1) / 4) * 100, 100);
+    progressBar.style.width = `${progressPercent}%`;
+    progressBar.style.transition = 'width 0.3s ease';
+  }
+
+  showRoundDetails(currentRound) {
+    // Hide all round cards
+    document.querySelectorAll('.round-card').forEach(card => {
+      card.style.display = 'none';
+    });
+
+    // Show cards up to current round with animation
+    for (let i = 1; i <= Math.min(currentRound, 4); i++) {
+      const roundCard = document.getElementById(`round${i}Details`);
+      if (roundCard) {
+        roundCard.style.display = 'block';
+        this.updateRoundStatus(i);
+        
+        // Add subtle animation
+        setTimeout(() => {
+          roundCard.classList.add('fade-in');
+        }, i * 100);
+      }
+    }
+  }
+
+  updateRoundStatus(roundNumber) {
+    if (!this.currentUser) return;
+    
+    const roundData = this.currentUser[`round_${roundNumber}`] || {};
+    const status = roundData.status || 'Chưa bắt đầu';
+    
+    const statusElement = document.getElementById(`round${roundNumber}Status`);
+    const statusTextElement = document.getElementById(`round${roundNumber}StatusText`);
+    
+    if (statusElement) {
+      statusElement.textContent = status;
+      statusElement.className = `badge ${STATUS_COLORS[status] || 'badge-warning'}`;
+    }
+    
+    if (statusTextElement) {
+      statusTextElement.textContent = status;
+    }
+    
+    this.updateRoundSpecificDetails(roundNumber, roundData);
+  }
+
+  updateRoundSpecificDetails(roundNumber, roundData) {
+    const detailMappings = {
+      1: {
+        'round1Deadline': roundData.deadline,
+        'round1Guide': roundData.guide
+      },
+      2: {
+        'round2Time': roundData.time,
+        'round2Location': roundData.location,
+        'round2Members': roundData.members
+      },
+      3: {
+        'round3Challenge': roundData.challenge,
+        'round3Deadline': roundData.deadline,
+        'round3Materials': roundData.materials
+      },
+      4: {
+        'round4Time': roundData.time,
+        'round4Location': roundData.location,
+        'round4Interviewer': roundData.interviewer
+      }
+    };
+
+    const details = detailMappings[roundNumber];
+    if (details) {
+      Object.entries(details).forEach(([id, value]) => {
+        this.setElementText(id, value);
+      });
+    }
+  }
+
+  // =========================== MODAL MANAGEMENT ===========================
+  showEditModal() {
+    if (!this.currentUser) return;
+    
+    const editModal = document.getElementById('editModal');
+    if (!editModal) return;
+
+    // Populate form fields
+    const fields = {
+      'editFullName': this.currentUser.fullname,
+      'editEmail': this.currentUser.email,
+      'editPhone': this.currentUser.phone,
+      'editDob': this.currentUser.dob,
+      'editSchool': this.currentUser.school,
+      'editFaculty': this.currentUser.faculty,
+      'editStudentId': this.currentUser.studentId
+    };
+
+    Object.entries(fields).forEach(([id, value]) => {
+      this.setElementValue(id, value);
+    });
+
+    // Set gender radio button
+    const gender = this.currentUser.gender || 'Nam';
+    const genderRadio = document.querySelector(`input[name="gender"][value="${gender}"]`);
+    if (genderRadio) genderRadio.checked = true;
+
+    editModal.style.display = 'block';
+    editModal.classList.add('modal-fade-in');
+  }
+
+  hideModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.add('modal-fade-out');
+      setTimeout(() => {
+        modal.style.display = 'none';
+        modal.classList.remove('modal-fade-in', 'modal-fade-out');
+      }, 200);
+    }
+  }
+
+  // =========================== FORM HANDLING ===========================
+  async saveProfile(e) {
+    e.preventDefault();
+    
+    if (!this.currentUserId || this.isLoading) return;
+    
+    this.showLoader(true);
+    
+    try {
+      const formData = this.getFormData([
+        'editFullName', 'editEmail', 'editPhone', 
+        'editDob', 'editSchool', 'editFaculty', 'editStudentId'
+      ]);
+
+      const genderInput = document.querySelector('input[name="gender"]:checked');
+      if (!genderInput) throw new Error('Vui lòng chọn giới tính');
+
+      const updatedData = {
+        ...formData,
+        gender: genderInput.value,
+        updatedAt: serverTimestamp()
+      };
+
+      await updateDoc(doc(this.db, "users", this.currentUserId), updatedData);
+      
+      // Update local data
+      this.currentUser = { ...this.currentUser, ...updatedData };
+      this.updateProfileUI(this.currentUser);
+      
+      this.hideModal('editModal');
+      this.showNotification('success', 'Cập nhật hồ sơ thành công');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      this.showNotification('error', 'Cập nhật hồ sơ thất bại: ' + error.message);
+    } finally {
+      this.showLoader(false);
+    }
+  }
+
+  async saveOnboardingData(e) {
+    e.preventDefault();
+    
+    const user = this.auth.currentUser;
+    if (!user || this.isLoading) return;
+    
+    this.showLoader(true);
+    
+    try {
+      const formData = this.getFormData([
+        'onboardFullName', 'onboardEmail', 'onboardPhone',
+        'onboardDob', 'onboardSchool', 'onboardFaculty', 
+        'onboardStudentId', 'onboardDepartment'
+      ]);
+
+      const genderInput = document.querySelector('input[name="onboardGender"]:checked');
+      if (!genderInput) throw new Error('Vui lòng chọn giới tính');
+
+      if (!formData.onboardFullName || !formData.onboardPhone) {
+        throw new Error('Vui lòng điền đầy đủ thông tin bắt buộc');
+      }
+
+      const userData = {
+        fullname: this.sanitizeInput(formData.onboardFullName),
+        email: this.sanitizeInput(formData.onboardEmail),
+        phone: this.sanitizeInput(formData.onboardPhone),
+        gender: genderInput.value,
+        dob: formData.onboardDob,
+        school: this.sanitizeInput(formData.onboardSchool),
+        faculty: this.sanitizeInput(formData.onboardFaculty),
+        studentId: this.sanitizeInput(formData.onboardStudentId),
+        department: formData.onboardDepartment,
+        status: "Chờ xử lý",
+        current_round: 1,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        round_1: {
+          status: "Chưa bắt đầu",
+          deadline: "15/07/2025",
+          guide: "Hoàn thành form đăng ký"
+        }
+      };
+
+      await setDoc(doc(this.db, "users", user.uid), userData);
+      
+      // Update UI
+      this.currentUser = userData;
+      this.currentUserId = user.uid;
+      
+      await this.handleExistingUser(userData, user.uid, user);
+      
+      this.hideModal('onboardingModal');
+      this.showNotification('success', 'Đăng ký hồ sơ thành công!');
+    } catch (error) {
+      console.error('Error saving onboarding data:', error);
+      this.showNotification('error', 'Đăng ký hồ sơ thất bại: ' + error.message);
+    } finally {
+      this.showLoader(false);
+    }
+  }
+
+  getFormData(fieldIds) {
+    const data = {};
+    fieldIds.forEach(id => {
+      const element = document.getElementById(id);
+      if (element) {
+        data[id] = element.value.trim();
+      }
+    });
+    return data;
+  }
+
+  // =========================== AUTH MANAGEMENT ===========================
+  async logout() {
+    if (this.isLoading) return;
+    
+    try {
+      this.showLoader(true);
+      await signOut(this.auth);
+      window.location.href = '/index.html';
+    } catch (error) {
+      console.error('Logout error:', error);
+      this.showNotification('error', 'Đăng xuất thất bại');
+      this.showLoader(false);
+    }
+  }
+
+  initializeAuthStateListener() {
+    onAuthStateChanged(this.auth, (user) => {
+      if (user) {
+        this.currentUserId = user.uid;
+        this.loadUserData(user.uid, user.email);
+      } else {
+        window.location.href = '/index.html';
+      }
+    });
+  }
+
+  // =========================== EVENT LISTENERS ===========================
+  initializeEventListeners() {
+    document.addEventListener('DOMContentLoaded', () => {
+      this.bindElementEvents();
+    });
+  }
+
+  bindElementEvents() {
+    const eventBindings = {
+      'logoutBtn': { event: 'click', handler: () => this.logout() },
+      'refreshBtn': { event: 'click', handler: () => this.refreshData() },
+      'editProfileBtn': { event: 'click', handler: () => this.showEditModal() },
+      'startOnboardingBtn': { event: 'click', handler: () => this.showModal('onboardingModal') },
+      'editForm': { event: 'submit', handler: (e) => this.saveProfile(e) },
+      'onboardingForm': { event: 'submit', handler: (e) => this.saveOnboardingData(e) }
+    };
+
+    Object.entries(eventBindings).forEach(([id, {event, handler}]) => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.addEventListener(event, handler);
+      }
+    });
+
+    this.bindModalEvents();
+  }
+
+  bindModalEvents() {
+    // Close modal buttons
+    document.querySelectorAll('.close-modal').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const modal = e.target.closest('.modal');
+        if (modal) {
+          this.hideModal(modal.id);
+        }
+      });
+    });
+
+    // Close modal on outside click
+    ['editModal', 'onboardingModal'].forEach(modalId => {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            this.hideModal(modalId);
+          }
+        });
+      }
+    });
+
+    // ESC key to close modals
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.hideModal('editModal');
+        this.hideModal('onboardingModal');
+      }
+    });
+  }
+
+  showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.style.display = 'block';
+      modal.classList.add('modal-fade-in');
+    }
+  }
+
+  refreshData() {
+    if (this.currentUserId && !this.isLoading) {
+      this.loadUserData(this.currentUserId);
+      this.showNotification('info', 'Đang làm mới dữ liệu...');
+    }
+  }
 }
 
-// Check auth state and load data
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    currentUserId = user.uid;
-    loadUserData(user.uid, user.email);
-  } else {
-    window.location.href = '/index.html'; // Redirect if not logged in
-  }
-});
-
-// Initialize the app
-document.addEventListener('DOMContentLoaded', function() {
-  initEventListeners();
-});
+// =========================== INITIALIZATION ===========================
+// Initialize the application
+const userApp = new UserManagement();
