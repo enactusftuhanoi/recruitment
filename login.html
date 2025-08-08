@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RECRUITMENT | ENACTUS FTU HANOI</title>
+  <link rel="icon" href="/assets/icon.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Clash+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    :root {
+      /* Theme Colors - Updated to Yellow/Gray/White */
+      --yellow: #F8F3CE;
+      --yellow-light: #FFD54F;
+      --gray-50: #FAFAFA;
+      --gray-100: #F5F5F5;
+      --gray-900: #374151;
+      --gray-700: #6B7280;
+      --gray-600: #9CA3AF;
+      --white: #FFFFFF;
+      --error: #f44336;
+      --success: #8BC34A;
+    }
+
+    body {
+      background-color: var(--gray-50);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    /* Main Container */
+    .container {
+      width: 100%;
+      max-width: 420px;
+      background: var(--white);
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    /* Header Section */
+    .header {
+      background: linear-gradient(135deg, var(--yellow), var(--yellow-light));
+      padding: 32px 24px;
+      text-align: center;
+      color: var(--gray-900);
+      position: relative;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      transition: transform 0.3s ease;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .logo img {
+      height: 75px;
+      width: auto;
+    }
+
+    h1 {
+      font-family: 'Clash Display', 'Plus Jakarta Sans', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+      color: var(--gray-900);
+    }
+
+    .tagline {
+      font-size: 10px;
+      font-weight: 600;
+      opacity: 0.8;
+      letter-spacing: 0.5px;
+    }
+
+    /* Content Section */
+    .content {
+      padding: 32px 24px;
+    }
+
+    /* Welcome Text */
+    .welcome-text {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .welcome-text h2 {
+      font-family: 'Clash Display', 'Plus Jakarta Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--gray-900);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .welcome-text p {
+      font-size: 15px;
+      color: var(--gray-700);
+      line-height: 1.5;
+    }
+
+    /* Login Section */
+    .login-section {
+      margin-top: 16px;
+    }
+
+    .login-btn {
+      background: var(--white);
+      color: var(--gray-700);
+      border: 2px solid #E5E7EB;
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .login-btn:hover {
+      border-color: var(--yellow);
+      background: #FFFBF0;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.15);
+    }
+
+    .login-btn:focus {
+      outline: none;
+      border-color: var(--yellow);
+      box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
+    }
+
+    .login-btn i {
+      font-size: 18px;
+    }
+
+    .login-error {
+      color: var(--error);
+      font-size: 13px;
+      text-align: center;
+      margin-top: 12px;
+      padding: 8px 12px;
+      background: #FEF2F2;
+      border-radius: 8px;
+      display: none;
+    }
+
+    /* User Profile */
+    .user-profile {
+      display: none;
+      text-align: center;
+      padding: 20px 0;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .user-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 16px;
+      object-fit: cover;
+      margin: 0 auto 16px;
+      border: 3px solid var(--yellow);
+      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .user-avatar:hover {
+      transform: scale(1.05);
+    }
+
+    .user-name {
+      font-family: 'Clash Display', 'Plus Jakarta Sans', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--gray-900);
+      letter-spacing: -0.01em;
+    }
+
+    .user-email {
+      font-size: 14px;
+      color: var(--gray-600);
+      margin-bottom: 20px;
+      padding: 6px 12px;
+      background: var(--gray-100);
+      border-radius: 20px;
+      display: inline-block;
+    }
+
+    .continue-btn {
+      background: var(--yellow);
+      color: var(--gray-900);
+      border: none;
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 16px;
+      font-family: inherit;
+      box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+    }
+
+    .continue-btn:hover {
+      background: var(--yellow-light);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    }
+
+    .continue-btn:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2);
+    }
+
+    .logout-btn {
+      color: var(--gray-600);
+      font-size: 13px;
+      margin-top: 12px;
+      display: inline-block;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 6px 12px;
+      border-radius: 6px;
+    }
+
+    .logout-btn:hover {
+      color: var(--error);
+      background: rgba(244, 67, 54, 0.1);
+    }
+
+    /* Footer */
+    .footer {
+      padding: 20px 24px;
+      text-align: center;
+      border-top: 1px solid #E5E7EB;
+    }
+
+    .footer p {
+      font-size: 12px;
+      color: var(--gray-600);
+      line-height: 1.4;
+    }
+
+    /* Loading Animation */
+    .loading {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #E5E7EB;
+      border-top: 2px solid var(--gray-700);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      body {
+        padding: 16px;
+      }
+      
+      .container {
+        max-width: 360px;
+        border-radius: 16px;
+      }
+      
+      .header {
+        padding: 28px 20px;
+      }
+      
+      .content {
+        padding: 28px 20px;
+      }
+      
+      .footer {
+        padding: 16px 20px;
+      }
+      
+      h1 {
+        font-size: 20px;
+      }
+      
+      .welcome-text h2 {
+        font-size: 18px;
+      }
+      
+      .tagline {
+        font-size: 13px;
+      }
+    }
+
+    /* Smooth transitions for sections */
+    .login-section,
+    .user-profile {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .login-section.fade-out {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    .user-profile.fade-in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Hover effect for container */
+    .container:hover {
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+      transition: box-shadow 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Header Section -->
+    <div class="header">
+      <div class="logo">
+        <img src="/assets/logo_den.png" alt="Logo" />
+      </div>
+    </div>
+    
+    <!-- Content Section -->
+    <div class="content">
+      <!-- Welcome Text -->
+      <div class="welcome-text">
+        <h1>Đăng nhập hệ thống</h1>
+      </div>
+
+      <!-- Login Section -->
+      <div class="login-section">
+        <button id="loginBtn" class="login-btn">
+          <i class="fab fa-google"></i>
+          <span class="btn-text">Login with Google</span>
+        </button>
+        <p class="login-error" id="loginError"></p>
+      </div>
+      
+      <!-- User Profile -->
+      <div class="user-profile" id="userProfile">
+        <img src="" alt="User Avatar" class="user-avatar" id="userAvatar">
+        <h3 class="user-name" id="userName"></h3>
+        <p class="user-email" id="userEmail"></p>
+        </br>
+        <button class="continue-btn" id="continueBtn">Continue to Profile</button>
+        <p class="logout-btn" id="logoutBtn" style="display: block; margin-top: 10px;">Not you? Log out</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>© 2025 Enactus FTU Hanoi. All Rights Reserved.</p>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
+      authDomain: "enactusftuhanoi-tracuu.firebaseapp.com",
+      projectId: "enactusftuhanoi-tracuu",
+      storageBucket: "enactusftuhanoi-tracuu",
+      messagingSenderId: "611356979403",
+      appId: "1:611356979403:web:2c9a4cffb2b323ce3deb4e"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Google Auth Provider
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    // Login with Google
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      const loginBtn = document.getElementById('loginBtn');
+      const loginError = document.getElementById('loginError');
+      const btnText = loginBtn.querySelector('.btn-text');
+      
+      loginError.style.display = 'none';
+      btnText.innerHTML = '<div class="loading"></div>';
+      loginBtn.disabled = true;
+      
+      firebase.auth()
+        .signInWithPopup(provider)
+        .then((result) => {
+          const user = result.user;
+          showUserProfile(user);
+        })
+        .catch((error) => {
+          loginError.textContent = error.message;
+          loginError.style.display = 'block';
+          btnText.textContent = 'Login with Google';
+          loginBtn.disabled = false;
+        });
+    });
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      firebase.auth().signOut().then(() => {
+        hideUserProfile();
+      });
+    });
+
+    // Continue to profile
+    document.getElementById('continueBtn').addEventListener('click', () => {
+      const continueBtn = document.getElementById('continueBtn');
+      continueBtn.innerHTML = '<div class="loading"></div> Loading...';
+      continueBtn.disabled = true;
+      
+      setTimeout(() => {
+        window.location.href = '/user/profile.html';
+      }, 800);
+    });
+
+    // Show user profile
+    function showUserProfile(user) {
+      document.getElementById('userName').textContent = user.displayName || 'User';
+      document.getElementById('userEmail').textContent = user.email;
+      
+      const avatar = document.getElementById('userAvatar');
+      if (user.photoURL) {
+        avatar.src = user.photoURL;
+      } else {
+        avatar.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || 'User') + '&background=FFC107&color=374151';
+      }
+      
+      const loginSection = document.querySelector('.login-section');
+      const userProfile = document.getElementById('userProfile');
+      
+      loginSection.classList.add('fade-out');
+      
+      setTimeout(() => {
+        loginSection.style.display = 'none';
+        userProfile.style.display = 'block';
+        requestAnimationFrame(() => {
+          userProfile.classList.add('fade-in');
+        });
+      }, 300);
+    }
+
+    // Hide user profile
+    function hideUserProfile() {
+      const loginSection = document.querySelector('.login-section');
+      const userProfile = document.getElementById('userProfile');
+      const loginBtn = document.getElementById('loginBtn');
+      const btnText = loginBtn.querySelector('.btn-text');
+      
+      userProfile.classList.remove('fade-in');
+      
+      setTimeout(() => {
+        userProfile.style.display = 'none';
+        loginSection.style.display = 'block';
+        loginSection.classList.remove('fade-out');
+      }, 300);
+      
+      btnText.textContent = 'Login with Google';
+      loginBtn.disabled = false;
+    }
+
+    // Check auth state
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        showUserProfile(user);
+      } else {
+        hideUserProfile();
+      }
+    });
+  </script>
+</body>
+</html>
