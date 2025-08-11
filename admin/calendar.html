@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý lịch phỏng vấn | Enactus FTU Hanoi</title>
+  <link rel="icon" href="/assets/icon.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css">
+  <link rel="stylesheet" href="../css/admin-calendar.css">
+</head>
+<body>
+  <!-- Admin Header -->
+  <div class="admin-header">
+    <div class="logo">
+      <div class="logo-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="logo-text">ENACTUS FTU HANOI - QUẢN LÝ LỊCH</div>
+    </div>
+    <div class="admin-actions">
+      <button id="dashboardBtn" class="btn btn-outline">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </button>
+      <button id="logoutBtn" class="btn btn-primary">
+        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="app-container">
+    <!-- Calendar Controls -->
+    <div class="calendar-controls">
+      <div class="control-group">
+        <button id="prevWeekBtn" class="btn btn-outline">
+          <i class="fas fa-chevron-left"></i> Tuần trước
+        </button>
+        <h2 id="currentWeekRange">Tuần hiện tại</h2>
+        <button id="nextWeekBtn" class="btn btn-outline">
+          Tuần sau <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+      
+      <div class="control-group">
+        <button id="todayBtn" class="btn btn-outline">
+          <i class="fas fa-calendar-day"></i> Hôm nay
+        </button>
+        <button id="addSlotBtn" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Thêm khung giờ
+        </button>
+      </div>
+    </div>
+
+    <!-- Calendar View Tabs -->
+    <div class="view-tabs">
+      <div class="tab active" data-view="week">Xem theo tuần</div>
+      <div class="tab" data-view="day">Xem theo ngày</div>
+      <div class="tab" data-view="list">Danh sách khung giờ</div>
+    </div>
+
+    <!-- Week View -->
+    <div id="weekView" class="calendar-view active">
+      <div class="calendar-header">
+        <div class="time-column">Giờ</div>
+        <div class="day-header">Thứ 2</div>
+        <div class="day-header">Thứ 3</div>
+        <div class="day-header">Thứ 4</div>
+        <div class="day-header">Thứ 5</div>
+        <div class="day-header">Thứ 6</div>
+        <div class="day-header">Thứ 7</div>
+        <div class="day-header">Chủ nhật</div>
+      </div>
+      
+      <div class="calendar-body">
+        <!-- Time slots will be generated here -->
+      </div>
+    </div>
+
+    <!-- Day View -->
+    <div id="dayView" class="calendar-view">
+      <div class="day-view-header">
+        <h3 id="dayViewDate">Thứ 2, 15/07/2025</h3>
+        <div class="day-controls">
+          <button class="btn btn-outline day-nav-btn" id="prevDayBtn">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button class="btn btn-outline day-nav-btn" id="nextDayBtn">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="day-view-body">
+        <!-- Day time slots will be generated here -->
+      </div>
+    </div>
+
+    <!-- List View -->
+    <div id="listView" class="calendar-view">
+      <div class="list-view-controls">
+        <div class="filter-group">
+          <label>Loại:</label>
+          <select id="listTypeFilter">
+            <option value="all">Tất cả</option>
+            <option value="online">Online</option>
+            <option value="offline">Offline</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label>Trạng thái:</label>
+          <select id="listStatusFilter">
+            <option value="all">Tất cả</option>
+            <option value="available">Còn trống</option>
+            <option value="booked">Đã đặt</option>
+            <option value="cancelled">Đã hủy</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="slot-list" id="slotList">
+        <!-- Slot list will be generated here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Slot Modal -->
+  <div id="slotModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <i class="fas fa-calendar-plus"></i> 
+          <span id="slotModalTitle">Thêm khung giờ phỏng vấn</span>
+        </h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      
+      <form id="slotForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label required">Tiêu đề</label>
+            <input type="text" class="form-control" id="slotTitle" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label required">Hình thức</label>
+            <select class="form-control" id="slotType" required>
+              <option value="online">Online</option>
+              <option value="offline">Offline</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label required">Ngày</label>
+            <input type="date" class="form-control" id="slotDate" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label required">Giờ bắt đầu</label>
+            <input type="time" class="form-control" id="slotStartTime" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label required">Giờ kết thúc</label>
+            <input type="time" class="form-control" id="slotEndTime" required>
+          </div>
+        </div>
+        
+        <div class="form-group" id="locationGroup">
+          <label class="form-label required">Địa điểm/Link</label>
+          <input type="text" class="form-control" id="slotLocation" required>
+          <small class="form-hint">Nhập địa điểm phỏng vấn hoặc link meeting</small>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Người phỏng vấn</label>
+          <input type="text" class="form-control" id="slotInterviewer">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Số lượng tối đa</label>
+          <input type="number" class="form-control" id="slotMaxCandidates" min="1" value="1">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Ghi chú</label>
+          <textarea class="form-control" id="slotNotes" rows="3"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Cho phép chọn nhiều khung giờ</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="multiSlot" value="yes"> Có
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="multiSlot" value="no" checked> Không
+            </label>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" id="saveSlotBtn">
+          <i class="fas fa-save"></i> Lưu khung giờ
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Slot Detail Modal -->
+  <div id="slotDetailModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <i class="fas fa-calendar-alt"></i> 
+          <span id="slotDetailTitle">Chi tiết khung giờ</span>
+        </h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      
+      <div class="slot-detail-content">
+        <div class="detail-item">
+          <div class="detail-label">Tiêu đề:</div>
+          <div class="detail-value" id="detailSlotTitle">Phỏng vấn cá nhân - Ban Nhân sự</div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">Thời gian:</div>
+          <div class="detail-value" id="detailSlotTime">14:00 - 15:00, Thứ 3 ngày 15/07/2025</div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">Hình thức:</div>
+          <div class="detail-value">
+            <span class="badge" id="detailSlotType">Offline</span>
+          </div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">Địa điểm:</div>
+          <div class="detail-value" id="detailSlotLocation">Phòng A1, Trường Đại học Ngoại Thương</div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">Người phỏng vấn:</div>
+          <div class="detail-value" id="detailSlotInterviewer">Nguyễn Thị B (Trưởng ban)</div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">Số lượng:</div>
+          <div class="detail-value" id="detailSlotCapacity">3/5 ứng viên</div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">Trạng thái:</div>
+          <div class="detail-value">
+            <span class="badge" id="detailSlotStatus">Còn trống</span>
+          </div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">Ghi chú:</div>
+          <div class="detail-value" id="detailSlotNotes">- Mang theo CV bản cứng<br>- Có mặt trước 15 phút</div>
+        </div>
+      </div>
+      
+      <div class="slot-candidates">
+        <h4><i class="fas fa-users"></i> Danh sách ứng viên đã đăng ký</h4>
+        <div class="candidate-list" id="slotCandidateList">
+          <!-- Candidates will be listed here -->
+          <div class="candidate-item">
+            <div class="candidate-info">
+              <div class="candidate-name">Nguyễn Văn A</div>
+              <div class="candidate-email">nguyenvana@ftu.edu.vn</div>
+            </div>
+            <div class="candidate-actions">
+              <button class="btn btn-sm btn-outline">Xem hồ sơ</button>
+              <button class="btn btn-sm btn-danger">Hủy đăng ký</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="editSlotBtn">
+          <i class="fas fa-edit"></i> Chỉnh sửa
+        </button>
+        <button class="btn btn-danger" id="cancelSlotBtn">
+          <i class="fas fa-times"></i> Hủy khung giờ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirmModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <i class="fas fa-exclamation-triangle"></i> Xác nhận
+        </h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      
+      <div class="modal-body">
+        <p id="confirmMessage">Bạn có chắc chắn muốn hủy khung giờ này?</p>
+        <p class="text-muted">Tất cả ứng viên đã đăng ký sẽ được thông báo về việc hủy này.</p>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="cancelConfirmBtn">Hủy bỏ</button>
+        <button class="btn btn-danger" id="confirmActionBtn">Xác nhận</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase and other scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
+  <script src="../script/admin-calendar.js" type="module"></script>
+</body>
+</html>
