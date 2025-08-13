@@ -528,3 +528,160 @@ body {
     padding: 20px;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Thêm vào profile.css */
+
+/* Thiết kế lại header */
+.user-header {
+  background: linear-gradient(135deg, #1a73e8 0%, #0d62cb 100%);
+  padding: 15px 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  color: white;
+}
+
+.logo-text {
+  color: white;
+  font-size: 24px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Thiết kế lại card profile */
+.profile-section {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  margin-top: 30px;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Avatar mới */
+.avatar-img {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid white;
+  margin: 0 auto 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.avatar-img:hover {
+  transform: scale(1.05);
+}
+
+/* Info card mới */
+.info-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid var(--primary);
+  transition: all 0.3s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Progress bar mới */
+.progress-steps::before {
+  height: 6px;
+  background: #f0f0f0;
+  border-radius: 3px;
+}
+
+.progress-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #1a73e8 0%, #4caf50 100%);
+}
+
+.step-icon {
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+  border-width: 4px;
+}
+
+/* Nút mới */
+.btn {
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #1a73e8 0%, #0d62cb 100%);
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(26, 115, 232, 0.4);
+}
+
+/* Modal mới */
+.modal-content {
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  animation: modalFadeIn 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-content {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .profile-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .round-card-body {
+    grid-template-columns: 1fr;
+  }
+  
+  .avatar-img {
+    width: 140px;
+    height: 140px;
+  }
+}
