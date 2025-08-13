@@ -1,323 +1,503 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quản lý lịch phỏng vấn | Enactus FTU Hanoi</title>
-  <link rel="icon" href="/assets/icon.png" type="image/png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css">
-  <link rel="stylesheet" href="../css/admin-calendar.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin • Lịch phỏng vấn Enactus FTU Hanoi</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #2563eb;
+      --primary-weak: #e0e7ff;
+      --danger: #ef4444;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+    header {
+      position: sticky; top: 0; z-index: 10;
+      background: var(--card); border-bottom: 1px solid #e5e7eb;
+      display: flex; align-items: center; justify-content: space-between; padding: 14px 20px;
+    }
+    header h1 { font-size: 18px; margin: 0; }
+    header .right { display: flex; gap: 8px; align-items: center; }
+    .container { max-width: 1100px; margin: 20px auto; padding: 0 16px; }
+
+    .grid { display: grid; grid-template-columns: 360px 1fr; gap: 16px; align-items: start; }
+
+    .card { background: var(--card); border: 1px solid #e5e7eb; border-radius: var(--radius); box-shadow: 0 10px 24px rgba(2,6,23,0.04); }
+    .card h2 { font-size: 16px; margin: 0 0 10px 0; }
+    .card .head { padding: 14px 16px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; }
+    .card .body { padding: 14px 16px; }
+
+    label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 6px; }
+    input[type="text"], input[type="date"], input[type="time"], textarea, select {
+      width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid #e5e7eb; background: #fff; outline: none;
+      font-size: 14px; color: var(--text);
+    }
+    textarea { min-height: 88px; resize: vertical; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+    .switch { display: flex; align-items: center; gap: 10px; }
+    .switch input { width: 18px; height: 18px; }
+
+    .slots { display: flex; flex-direction: column; gap: 10px; }
+    .slot-item { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; }
+    .slot-item .remove { border: 1px dashed #ef4444; color: #ef4444; background: #fff; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
+
+    .btn { border: none; padding: 10px 14px; border-radius: 12px; cursor: pointer; font-weight: 600; }
+    .btn.primary { background: var(--primary); color: #fff; }
+    .btn.ghost { background: #fff; border: 1px solid #e5e7eb; }
+    .btn.warning { background: var(--warning); color: #111827; }
+    .btn.danger { background: var(--danger); color: #fff; }
+    .btn.success { background: var(--success); color: #fff; }
+
+    .list { display: flex; flex-direction: column; }
+    .row-item { padding: 12px 14px; border-bottom: 1px solid #eef2f7; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+    .row-item h3 { margin: 0; font-size: 14px; }
+    .row-item p { margin: 4px 0 0 0; color: var(--muted); font-size: 12px; }
+
+    .pill { font-size: 12px; padding: 4px 8px; border-radius: 999px; background: var(--primary-weak); color: var(--primary); }
+    .muted { color: var(--muted); }
+
+    .footer-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+    .tabs { display: flex; gap: 6px; }
+    .tab { padding: 8px 12px; border-radius: 999px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; font-size: 13px; }
+    .tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    @media (max-width: 900px){
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-  <!-- Admin Header -->
-  <div class="admin-header">
-    <div class="logo">
-      <div class="logo-icon">
-        <i class="fas fa-users"></i>
-      </div>
-      <div class="logo-text">ENACTUS FTU HANOI - QUẢN LÝ LỊCH</div>
+  <header>
+    <h1>Admin • Quản lý lịch phỏng vấn</h1>
+    <div class="right">
+      <button id="btn-new" class="btn ghost">+ Lịch mới</button>
+      <a class="btn primary" href="/user/calendar.html">Tới trang ứng viên</a>
     </div>
-    <div class="admin-actions">
-      <button id="dashboardBtn" class="btn btn-outline">
-        <i class="fas fa-tachometer-alt"></i> Dashboard
-      </button>
-      <button id="logoutBtn" class="btn btn-primary">
-        <i class="fas fa-sign-out-alt"></i> Đăng xuất
-      </button>
-    </div>
-  </div>
+  </header>
 
-  <!-- Main Content -->
-  <div class="app-container">
-    <!-- Calendar Controls -->
-    <div class="calendar-controls">
-      <div class="control-group">
-        <button id="prevWeekBtn" class="btn btn-outline">
-          <i class="fas fa-chevron-left"></i> Tuần trước
-        </button>
-        <h2 id="currentWeekRange">Tuần hiện tại</h2>
-        <button id="nextWeekBtn" class="btn btn-outline">
-          Tuần sau <i class="fas fa-chevron-right"></i>
-        </button>
-      </div>
-      
-      <div class="control-group">
-        <button id="todayBtn" class="btn btn-outline">
-          <i class="fas fa-calendar-day"></i> Hôm nay
-        </button>
-        <button id="addSlotBtn" class="btn btn-primary">
-          <i class="fas fa-plus"></i> Thêm khung giờ
-        </button>
-      </div>
-    </div>
+  <div class="container">
+    <div class="grid">
+      <!-- LEFT: FORM -->
+      <div class="card" id="form-card">
+        <div class="head"><h2 id="form-title">Tạo lịch mới</h2><span id="doc-id" class="muted"></span></div>
+        <div class="body">
+          <div class="tabs" style="margin-bottom: 10px;">
+            <button class="tab active" data-target="#tab-config">Cấu hình</button>
+            <button class="tab" data-target="#tab-slots">Các ca (slots)</button>
+          </div>
 
-    <!-- Calendar View Tabs -->
-    <div class="view-tabs">
-      <div class="tab active" data-view="week">Xem theo tuần</div>
-      <div class="tab" data-view="day">Xem theo ngày</div>
-      <div class="tab" data-view="list">Danh sách khung giờ</div>
-    </div>
-
-    <!-- Week View -->
-    <div id="weekView" class="calendar-view active">
-      <div class="calendar-header">
-        <div class="time-column">Giờ</div>
-        <div class="day-header">Thứ 2</div>
-        <div class="day-header">Thứ 3</div>
-        <div class="day-header">Thứ 4</div>
-        <div class="day-header">Thứ 5</div>
-        <div class="day-header">Thứ 6</div>
-        <div class="day-header">Thứ 7</div>
-        <div class="day-header">Chủ nhật</div>
-      </div>
-      
-      <div class="calendar-body">
-        <!-- Time slots will be generated here -->
-      </div>
-    </div>
-
-    <!-- Day View -->
-    <div id="dayView" class="calendar-view">
-      <div class="day-view-header">
-        <h3 id="dayViewDate">Thứ 2, 15/07/2025</h3>
-        <div class="day-controls">
-          <button class="btn btn-outline day-nav-btn" id="prevDayBtn">
-            <i class="fas fa-chevron-left"></i>
-          </button>
-          <button class="btn btn-outline day-nav-btn" id="nextDayBtn">
-            <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
-      </div>
-      
-      <div class="day-view-body">
-        <!-- Day time slots will be generated here -->
-      </div>
-    </div>
-
-    <!-- List View -->
-    <div id="listView" class="calendar-view">
-      <div class="list-view-controls">
-        <div class="filter-group">
-          <label>Loại:</label>
-          <select id="listTypeFilter">
-            <option value="all">Tất cả</option>
-            <option value="online">Online</option>
-            <option value="offline">Offline</option>
-          </select>
-        </div>
-        
-        <div class="filter-group">
-          <label>Trạng thái:</label>
-          <select id="listStatusFilter">
-            <option value="all">Tất cả</option>
-            <option value="available">Còn trống</option>
-            <option value="booked">Đã đặt</option>
-            <option value="cancelled">Đã hủy</option>
-          </select>
-        </div>
-      </div>
-      
-      <div class="slot-list" id="slotList">
-        <!-- Slot list will be generated here -->
-      </div>
-    </div>
-  </div>
-
-  <!-- Add/Edit Slot Modal -->
-  <div id="slotModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title">
-          <i class="fas fa-calendar-plus"></i> 
-          <span id="slotModalTitle">Thêm khung giờ phỏng vấn</span>
-        </h2>
-        <span class="close-modal">&times;</span>
-      </div>
-      
-      <form id="slotForm">
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label required">Tiêu đề</label>
-            <input type="text" class="form-control" id="slotTitle" required>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label required">Hình thức</label>
-            <select class="form-control" id="slotType" required>
-              <option value="online">Online</option>
-              <option value="offline">Offline</option>
-            </select>
-          </div>
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label required">Ngày</label>
-            <input type="date" class="form-control" id="slotDate" required>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label required">Giờ bắt đầu</label>
-            <input type="time" class="form-control" id="slotStartTime" required>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label required">Giờ kết thúc</label>
-            <input type="time" class="form-control" id="slotEndTime" required>
-          </div>
-        </div>
-        
-        <div class="form-group" id="locationGroup">
-          <label class="form-label required">Địa điểm/Link</label>
-          <input type="text" class="form-control" id="slotLocation" required>
-          <small class="form-hint">Nhập địa điểm phỏng vấn hoặc link meeting</small>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label">Người phỏng vấn</label>
-          <input type="text" class="form-control" id="slotInterviewer">
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label">Số lượng tối đa</label>
-          <input type="number" class="form-control" id="slotMaxCandidates" min="1" value="1">
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label">Ghi chú</label>
-          <textarea class="form-control" id="slotNotes" rows="3"></textarea>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label">Cho phép chọn nhiều khung giờ</label>
-          <div class="radio-group">
-            <label class="radio-option">
-              <input type="radio" name="multiSlot" value="yes"> Có
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="multiSlot" value="no" checked> Không
-            </label>
-          </div>
-        </div>
-        
-        <button type="submit" class="btn btn-primary" id="saveSlotBtn">
-          <i class="fas fa-save"></i> Lưu khung giờ
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Slot Detail Modal -->
-  <div id="slotDetailModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title">
-          <i class="fas fa-calendar-alt"></i> 
-          <span id="slotDetailTitle">Chi tiết khung giờ</span>
-        </h2>
-        <span class="close-modal">&times;</span>
-      </div>
-      
-      <div class="slot-detail-content">
-        <div class="detail-item">
-          <div class="detail-label">Tiêu đề:</div>
-          <div class="detail-value" id="detailSlotTitle">Phỏng vấn cá nhân - Ban Nhân sự</div>
-        </div>
-        
-        <div class="detail-item">
-          <div class="detail-label">Thời gian:</div>
-          <div class="detail-value" id="detailSlotTime">14:00 - 15:00, Thứ 3 ngày 15/07/2025</div>
-        </div>
-        
-        <div class="detail-item">
-          <div class="detail-label">Hình thức:</div>
-          <div class="detail-value">
-            <span class="badge" id="detailSlotType">Offline</span>
-          </div>
-        </div>
-        
-        <div class="detail-item">
-          <div class="detail-label">Địa điểm:</div>
-          <div class="detail-value" id="detailSlotLocation">Phòng A1, Trường Đại học Ngoại Thương</div>
-        </div>
-        
-        <div class="detail-item">
-          <div class="detail-label">Người phỏng vấn:</div>
-          <div class="detail-value" id="detailSlotInterviewer">Nguyễn Thị B (Trưởng ban)</div>
-        </div>
-        
-        <div class="detail-item">
-          <div class="detail-label">Số lượng:</div>
-          <div class="detail-value" id="detailSlotCapacity">3/5 ứng viên</div>
-        </div>
-        
-        <div class="detail-item">
-          <div class="detail-label">Trạng thái:</div>
-          <div class="detail-value">
-            <span class="badge" id="detailSlotStatus">Còn trống</span>
-          </div>
-        </div>
-        
-        <div class="detail-item">
-          <div class="detail-label">Ghi chú:</div>
-          <div class="detail-value" id="detailSlotNotes">- Mang theo CV bản cứng<br>- Có mặt trước 15 phút</div>
-        </div>
-      </div>
-      
-      <div class="slot-candidates">
-        <h4><i class="fas fa-users"></i> Danh sách ứng viên đã đăng ký</h4>
-        <div class="candidate-list" id="slotCandidateList">
-          <!-- Candidates will be listed here -->
-          <div class="candidate-item">
-            <div class="candidate-info">
-              <div class="candidate-name">Nguyễn Văn A</div>
-              <div class="candidate-email">nguyenvana@ftu.edu.vn</div>
+          <div class="section active" id="tab-config">
+            <div class="row">
+              <div>
+                <label>Tiêu đề</label>
+                <input type="text" id="title" placeholder="VD: Phỏng vấn Ban Nội dung" />
+              </div>
+              <div>
+                <label>Ngày (hiển thị ngoài box)</label>
+                <input type="text" id="date" placeholder="VD: 25/08/2025" />
+              </div>
             </div>
-            <div class="candidate-actions">
-              <button class="btn btn-sm btn-outline">Xem hồ sơ</button>
-              <button class="btn btn-sm btn-danger">Hủy đăng ký</button>
+
+            <div class="row">
+              <div>
+                <label>Địa điểm / Link</label>
+                <input type="text" id="location" placeholder="Phòng A101 hoặc Google Meet" />
+              </div>
+              <div>
+                <label>Hình thức</label>
+                <select id="type">
+                  <option value="Online">Online</option>
+                  <option value="Offline">Offline</option>
+                  <option value="Hybrid">Hybrid</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div>
+                <label>Thành phần tham gia (phân tách bằng dấu phẩy)</label>
+                <input type="text" id="members" placeholder="Trưởng ban, Phó ban" />
+              </div>
+              <div>
+                <label>Cho vote nhiều ca?</label>
+                <div class="switch"><input type="checkbox" id="canVoteMultiple" /><span class="muted">Nếu bật, ứng viên có thể chọn nhiều ca.</span></div>
+              </div>
+            </div>
+
+            <div>
+              <label>Chi tiết</label>
+              <textarea id="details" placeholder="Mô tả chi tiết buổi phỏng vấn..."></textarea>
+            </div>
+
+            <div>
+              <label>Ghi chú</label>
+              <textarea id="note" placeholder="Chuẩn bị tài liệu, dress code, ..."></textarea>
+            </div>
+
+            <div class="row">
+              <div class="switch">
+                <input type="checkbox" id="allowEdit" checked />
+                <span>Cho ứng viên sửa vote (Sửa vote)</span>
+              </div>
+              <div class="switch">
+                <input type="checkbox" id="finalized" />
+                <span>Khoá lịch (Ứng viên không thể vote)</span>
+              </div>
             </div>
           </div>
+
+          <div class="section" id="tab-slots">
+            <div class="row3" style="margin-bottom: 8px;">
+              <div>
+                <label>Giờ bắt đầu</label>
+                <input type="time" id="slot-start" />
+              </div>
+              <div>
+                <label>Giờ kết thúc</label>
+                <input type="time" id="slot-end" />
+              </div>
+              <div style="align-self: end;">
+                <button class="btn ghost" id="btn-add-slot">+ Thêm ca</button>
+              </div>
+            </div>
+            <div id="slots" class="slots"></div>
+          </div>
+
+          <div class="footer-actions" style="margin-top: 14px;">
+            <button class="btn danger" id="btn-delete" style="display:none;">Xoá</button>
+            <button class="btn ghost" id="btn-reset">Làm lại</button>
+            <button class="btn primary" id="btn-save">Lưu</button>
+          </div>
         </div>
       </div>
-      
-      <div class="modal-footer">
-        <button class="btn btn-outline" id="editSlotBtn">
-          <i class="fas fa-edit"></i> Chỉnh sửa
-        </button>
-        <button class="btn btn-danger" id="cancelSlotBtn">
-          <i class="fas fa-times"></i> Hủy khung giờ
-        </button>
+
+      <!-- RIGHT: LIST + VOTES -->
+      <div class="card">
+        <div class="head"><h2>Danh sách lịch</h2></div>
+        <div class="body">
+          <div id="schedule-list" class="list"></div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="head"><h2>Votes của ứng viên (theo lịch đang chọn)</h2><span id="votes-for" class="pill" style="display:none;"></span></div>
+        <div class="body" id="votes-area">
+          <p class="muted">Chưa chọn lịch nào.</p>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Confirmation Modal -->
-  <div id="confirmModal" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
-      <div class="modal-header">
-        <h2 class="modal-title">
-          <i class="fas fa-exclamation-triangle"></i> Xác nhận
-        </h2>
-        <span class="close-modal">&times;</span>
-      </div>
-      
-      <div class="modal-body">
-        <p id="confirmMessage">Bạn có chắc chắn muốn hủy khung giờ này?</p>
-        <p class="text-muted">Tất cả ứng viên đã đăng ký sẽ được thông báo về việc hủy này.</p>
-      </div>
-      
-      <div class="modal-footer">
-        <button class="btn btn-outline" id="cancelConfirmBtn">Hủy bỏ</button>
-        <button class="btn btn-danger" id="confirmActionBtn">Xác nhận</button>
-      </div>
-    </div>
-  </div>
+  <script type="module">
+    // ===== Firebase v11 SDK =====
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { 
+      getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-  <!-- Firebase and other scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
-  <script src="../script/admin-calendar.js" type="module"></script>
+    // ===== YOUR CONFIG (provided) =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
+      authDomain: "enactusftuhanoi-tracuu.firebaseapp.com",
+      projectId: "enactusftuhanoi-tracuu",
+      storageBucket: "enactusftuhanoi-tracuu.appspot.com",
+      messagingSenderId: "611356979403",
+      appId: "1:611356979403:web:2c9a4cffb2b323ce3deb4e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ===== Elements =====
+    const $ = (q) => document.querySelector(q);
+    const $$ = (q) => Array.from(document.querySelectorAll(q));
+
+    const formTitle = $('#form-title');
+    const docIdSpan = $('#doc-id');
+    const titleEl = $('#title');
+    const dateEl = $('#date');
+    const locationEl = $('#location');
+    const typeEl = $('#type');
+    const membersEl = $('#members');
+    const detailsEl = $('#details');
+    const noteEl = $('#note');
+    const allowEditEl = $('#allowEdit');
+    const finalizedEl = $('#finalized');
+    const canVoteMultipleEl = $('#canVoteMultiple');
+
+    const slotStartEl = $('#slot-start');
+    const slotEndEl = $('#slot-end');
+    const slotsWrap = $('#slots');
+
+    const btnAddSlot = $('#btn-add-slot');
+    const btnSave = $('#btn-save');
+    const btnReset = $('#btn-reset');
+    const btnDelete = $('#btn-delete');
+    const btnNew = $('#btn-new');
+
+    const listWrap = $('#schedule-list');
+    const votesArea = $('#votes-area');
+    const votesFor = $('#votes-for');
+
+    let editingId = null;
+    let currentSlots = []; // [{start:"12:00", end:"14:00"}, ...]
+
+    // ===== Tabs =====
+    $$('.tab').forEach(t => t.addEventListener('click', () => {
+      $$('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      $$('.section').forEach(s => s.classList.remove('active'));
+      document.querySelector(t.dataset.target).classList.add('active');
+    }));
+
+    // ===== Slots UI helpers =====
+    function renderSlots(){
+      slotsWrap.innerHTML = '';
+      currentSlots.forEach((s, idx) => {
+        const row = document.createElement('div');
+        row.className = 'slot-item';
+        row.innerHTML = `
+          <div>
+            <label>Start</label>
+            <input type="time" value="${s.start}" data-idx="${idx}" data-key="start"/>
+          </div>
+          <div>
+            <label>End</label>
+            <input type="time" value="${s.end}" data-idx="${idx}" data-key="end"/>
+          </div>
+          <button class="remove" data-idx="${idx}">Xoá</button>
+        `;
+        slotsWrap.appendChild(row);
+      });
+
+      // bind changes
+      slotsWrap.querySelectorAll('input[type="time"]').forEach(inp => {
+        inp.addEventListener('change', (e) => {
+          const idx = +e.target.dataset.idx;
+          const key = e.target.dataset.key;
+          currentSlots[idx][key] = e.target.value;
+        });
+      });
+      slotsWrap.querySelectorAll('.remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = +btn.dataset.idx;
+          currentSlots.splice(idx,1);
+          renderSlots();
+        });
+      });
+    }
+
+    btnAddSlot.addEventListener('click', () => {
+      const s = slotStartEl.value.trim();
+      const e = slotEndEl.value.trim();
+      if(!s || !e){ alert('Nhập giờ bắt đầu & kết thúc trước khi thêm.'); return; }
+      currentSlots.push({ start: s, end: e });
+      slotStartEl.value = '';
+      slotEndEl.value = '';
+      renderSlots();
+    });
+
+    // ===== CRUD Schedules =====
+    const schedulesCol = collection(db, 'schedules');
+
+    function formData(){
+      const members = membersEl.value.trim() ? membersEl.value.split(',').map(x=>x.trim()).filter(Boolean) : [];
+      return {
+        title: titleEl.value.trim(),
+        date: dateEl.value.trim(),
+        location: locationEl.value.trim(),
+        type: typeEl.value,
+        members,
+        details: detailsEl.value.trim(),
+        note: noteEl.value.trim(),
+        allowEdit: !!allowEditEl.checked,
+        finalized: !!finalizedEl.checked,
+        canVoteMultiple: !!canVoteMultipleEl.checked,
+        slots: currentSlots.slice(),
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
+    function validateData(d){
+      if(!d.title) return 'Thiếu tiêu đề';
+      if(!d.date) return 'Thiếu ngày hiển thị';
+      if(!d.location) return 'Thiếu địa điểm/link';
+      if(!d.slots || !d.slots.length) return 'Cần ít nhất 1 ca (slot)';
+      for(const s of d.slots){
+        if(!s.start || !s.end) return 'Mỗi ca cần giờ bắt đầu/kết thúc';
+      }
+      return null;
+    }
+
+    async function save(){
+      const data = formData();
+      const err = validateData(data);
+      if(err){ alert(err); return; }
+      if(editingId){
+        await updateDoc(doc(db,'schedules', editingId), data);
+      } else {
+        const ref = await addDoc(schedulesCol, { createdAt: new Date().toISOString(), ...data });
+        editingId = ref.id;
+      }
+      alert('Đã lưu lịch.');
+    }
+
+    async function remove(){
+      if(!editingId) return;
+      if(!confirm('Xoá lịch này? Hành động không thể hoàn tác.')) return;
+      await deleteDoc(doc(db,'schedules', editingId));
+      newForm();
+      alert('Đã xoá.');
+    }
+
+    function loadToForm(id, data){
+      editingId = id;
+      formTitle.textContent = 'Sửa lịch';
+      docIdSpan.textContent = id;
+      titleEl.value = data.title || '';
+      dateEl.value = data.date || '';
+      locationEl.value = data.location || '';
+      typeEl.value = data.type || 'Online';
+      membersEl.value = (data.members||[]).join(', ');
+      detailsEl.value = data.details || '';
+      noteEl.value = data.note || '';
+      allowEditEl.checked = !!data.allowEdit;
+      finalizedEl.checked = !!data.finalized;
+      canVoteMultipleEl.checked = !!data.canVoteMultiple;
+      currentSlots = Array.isArray(data.slots)? data.slots.slice() : [];
+      renderSlots();
+      btnDelete.style.display = 'inline-flex';
+      // show votes of this schedule
+      showVotesFor(id, data);
+    }
+
+    function newForm(){
+      editingId = null;
+      formTitle.textContent = 'Tạo lịch mới';
+      docIdSpan.textContent = '';
+      titleEl.value = '';
+      dateEl.value = '';
+      locationEl.value = '';
+      typeEl.value = 'Online';
+      membersEl.value = '';
+      detailsEl.value = '';
+      noteEl.value = '';
+      allowEditEl.checked = true;
+      finalizedEl.checked = false;
+      canVoteMultipleEl.checked = false;
+      currentSlots = [];
+      renderSlots();
+      btnDelete.style.display = 'none';
+      votesArea.innerHTML = '<p class="muted">Chưa chọn lịch nào.</p>';
+      votesFor.style.display = 'none';
+    }
+
+    btnSave.addEventListener('click', save);
+    btnDelete.addEventListener('click', remove);
+    btnReset.addEventListener('click', newForm);
+    btnNew.addEventListener('click', newForm);
+
+    // ===== List + Live updates =====
+    onSnapshot(query(schedulesCol, orderBy('updatedAt','desc')), (snap) => {
+      listWrap.innerHTML = '';
+      snap.forEach(d => {
+        const s = d.data();
+        const item = document.createElement('div');
+        item.className = 'row-item';
+        item.innerHTML = `
+          <div>
+            <h3>${s.title || '(Không tiêu đề)'} ${s.finalized ? '<span class="pill">Khoá</span>': ''}</h3>
+            <p>${s.date || ''} • ${s.location || ''} • ${s.type || ''} • ${s.slots?.length||0} ca</p>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="btn ghost" data-id="${d.id}" data-act="edit">Sửa</button>
+            <button class="btn ${s.finalized? 'warning':'success'}" data-id="${d.id}" data-act="toggle-final">${s.finalized? 'Mở khoá':'Khoá'}</button>
+          </div>
+        `;
+        listWrap.appendChild(item);
+      });
+
+      // bind
+      listWrap.querySelectorAll('button[data-act="edit"]').forEach(b => b.addEventListener('click', async () => {
+        const id = b.dataset.id;
+        const snapDoc = await getDoc(doc(db,'schedules', id));
+        if(snapDoc.exists()) loadToForm(id, snapDoc.data());
+      }));
+      listWrap.querySelectorAll('button[data-act="toggle-final"]').forEach(b => b.addEventListener('click', async () => {
+        const id = b.dataset.id;
+        const ref = doc(db,'schedules', id);
+        const cur = await getDoc(ref);
+        if(cur.exists()){
+          const val = !!cur.data().finalized;
+          await updateDoc(ref, { finalized: !val });
+        }
+      }));
+    });
+
+    // ===== Votes viewer (read users collection and aggregate) =====
+    async function showVotesFor(scheduleId, scheduleData){
+      votesArea.innerHTML = '<p class="muted">Đang tải votes...</p>';
+      votesFor.style.display = 'inline-flex';
+      votesFor.textContent = scheduleData.title || scheduleId;
+
+      const usersSnap = await getDocs(collection(db,'users'));
+      const rows = [];
+      usersSnap.forEach(u => {
+        const data = u.data();
+        const vote = data.votes && data.votes[scheduleId];
+        if(vote){
+          const chosen = (vote.slots||[]).map(i => scheduleData.slots?.[i] ? `${scheduleData.slots[i].start}-${scheduleData.slots[i].end}` : `#${i}`).join(', ');
+          rows.push({ name: data.name||'(Không tên)', email: data.email||'', chosen });
+        }
+      });
+
+      if(!rows.length){
+        votesArea.innerHTML = '<p class="muted">Chưa có ai vote.</p>';
+        return;
+      }
+
+      const tbl = document.createElement('table');
+      tbl.style.width = '100%';
+      tbl.style.borderCollapse = 'collapse';
+      tbl.innerHTML = `
+        <thead>
+          <tr>
+            <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Ứng viên</th>
+            <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Email</th>
+            <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Đã chọn</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(r => `
+            <tr>
+              <td style="padding:8px; border-bottom:1px solid #f1f5f9;">${r.name}</td>
+              <td style="padding:8px; border-bottom:1px solid #f1f5f9;" class="muted">${r.email}</td>
+              <td style="padding:8px; border-bottom:1px solid #f1f5f9;">${r.chosen}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      `;
+      votesArea.innerHTML = '';
+      votesArea.appendChild(tbl);
+    }
+
+    // init
+    newForm();
+  </script>
 </body>
 </html>
