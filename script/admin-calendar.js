@@ -116,29 +116,29 @@ function initEventListeners() {
   cancelConfirmBtn.addEventListener('click', () => confirmModal.style.display = 'none');
   confirmActionBtn.addEventListener('click', cancelCurrentSlot);
 
-// Kiểm tra đăng nhập
+  // Check auth state
+  // Thay thế phần checkAdminStatus bằng hàm đơn giản chỉ kiểm tra đăng nhập
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    // Người dùng đã đăng nhập và tồn tại trong Firebase Authentication
-    console.log("User logged in:", user.email);
-    loadSlots(); // Tải dữ liệu calendar
+    // Người dùng đã đăng nhập - cho phép truy cập
+    loadSlots();
   } else {
-    // Chưa đăng nhập hoặc không tồn tại trong Auth
-    console.log("User not authenticated");
-    window.location.href = "/login.html"; // Chuyển hướng về trang login
+    // Chưa đăng nhập - chuyển hướng về trang login
+    window.location.href = '/admin/login.html';
   }
 });
+}
 
-// Logout
-document.getElementById('logoutBtn').addEventListener('click', async () => {
+// Logout function
+async function logout() {
   try {
     await signOut(auth);
-    window.location.href = "/login.html";
+    window.location.href = '/admin/login.html';
   } catch (error) {
-    console.error("Logout failed:", error);
-    alert("Đăng xuất thất bại!");
+    console.error("Logout error:", error);
+    showToast('error', 'Đăng xuất thất bại');
   }
-});
+}
 
 // Switch calendar view
 function switchView(view) {
