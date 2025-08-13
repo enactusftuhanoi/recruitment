@@ -11,31 +11,33 @@
 </head>
 <body>
   <!-- Header -->
-  <div class="user-header">
-    <div class="logo">
-      <div class="logo-icon">
-        <i class="fas fa-users"></i>
+  <header class="profile-header">
+    <div class="header-container">
+      <div class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <div class="logo-text">ENACTUS FTU HANOI</div>
       </div>
-      <div class="logo-text">ENACTUS FTU HANOI</div>
+      <div class="header-actions">
+        <button id="refreshBtn" class="btn btn-outline">
+          <i class="fas fa-sync-alt"></i> Làm mới
+        </button>
+        <button id="logoutBtn" class="btn btn-primary">
+          <i class="fas fa-sign-out-alt"></i> Đăng xuất
+        </button>
+      </div>
     </div>
-    <div class="user-actions">
-      <button id="refreshBtn" class="btn btn-outline">
-        <i class="fas fa-sync-alt"></i> Làm mới
-      </button>
-      <button id="logoutBtn" class="btn btn-primary">
-        <i class="fas fa-sign-out-alt"></i> Đăng xuất
-      </button>
-    </div>
-  </div>
+  </header>
 
-  <!-- Main Content -->
-  <div class="app-container">
+  <!-- Main Container -->
+  <main class="profile-container">
     <!-- Onboarding Section (for new users) -->
-    <div id="onboardingSection" class="onboarding-section">
-      <div class="onboarding-icon">
+    <div id="onboardingSection" class="profile-card" style="text-align: center; display: none;">
+      <div class="avatar-img" id="onboardingAvatar" style="margin: 0 auto;">
         <i class="fas fa-user-plus"></i>
       </div>
-      <h2>Chào mừng bạn đến với Enactus FTU Hanoi!</h2>
+      <h2 style="margin-top: 1rem;">Chào mừng bạn đến với Enactus FTU Hanoi!</h2>
       <p style="margin: 20px 0 30px; color: var(--text-light);">Vui lòng điền thông tin cá nhân để bắt đầu quá trình ứng tuyển</p>
       <button id="startOnboardingBtn" class="btn btn-primary">
         <i class="fas fa-pencil-alt"></i> Điền thông tin
@@ -43,74 +45,68 @@
     </div>
 
     <!-- Profile Section (for existing users) -->
-    <div id="profileSection" class="profile-section">
-      <div class="profile-header">
-        <h1 class="profile-title">
-          <i class="fas fa-user-circle"></i> Hồ sơ ứng viên
-        </h1>
-        <button id="editProfileBtn" class="btn btn-primary">
-          <i class="fas fa-edit"></i> Chỉnh sửa
-        </button>
-      </div>
-      
-      <div class="profile-content">
-        <div class="profile-avatar">
+    <div id="profileSection" style="display: none;">
+      <div class="profile-card">
+        <div class="avatar-section">
           <div class="avatar-img" id="userAvatar">
             <i class="fas fa-user"></i>
           </div>
-          <button class="btn btn-outline upload-btn">
+          <button class="btn btn-outline">
             <i class="fas fa-camera"></i> Đổi ảnh đại diện
           </button>
         </div>
         
-        <div>
-          <div class="status-card">
-            <div class="status-item">
-              <span>Ban ứng tuyển:</span>
-              <span class="badge badge-primary" id="userDepartment">Chưa có dữ liệu</span>
-            </div>
-            <div class="status-item">
-              <span>Vòng hiện tại:</span>
-              <span class="badge badge-success" id="userCurrentRound">Vòng 1</span>
-            </div>
-            <div class="status-item">
-              <span>Trạng thái:</span>
-              <span class="badge badge-warning" id="userStatus">Chờ xử lý</span>
-            </div>
+        <div class="profile-info">
+          <h2 id="userFullName">Nguyễn Văn A</h2>
+          
+          <div class="profile-meta">
+            <span class="badge badge-primary" id="userDepartment">Chưa có dữ liệu</span>
+            <span class="badge badge-success" id="userCurrentRound">Vòng 1</span>
+            <span class="badge badge-warning" id="userStatus">Chờ xử lý</span>
           </div>
           
-          <div class="profile-info">
-            <div class="info-card">
-              <div class="info-label">Họ và tên</div>
-              <div class="info-value" id="userFullName">Nguyễn Văn A</div>
+          <div class="contact-info">
+            <div class="contact-item">
+              <i class="fas fa-venus-mars"></i>
+              <span id="userGender">Nam</span>
             </div>
-            <div class="info-card">
-              <div class="info-label">Giới tính</div>
-              <div class="info-value" id="userGender">Nam</div>
+            <div class="contact-item">
+              <i class="fas fa-envelope"></i>
+              <span id="userEmail">example@ftu.edu.vn</span>
             </div>
-            <div class="info-card">
-              <div class="info-label">Email</div>
-              <div class="info-value" id="userEmail">example@ftu.edu.vn</div>
+            <div class="contact-item">
+              <i class="fas fa-phone"></i>
+              <span id="userPhone">0123456789</span>
             </div>
-            <div class="info-card">
-              <div class="info-label">Số điện thoại</div>
-              <div class="info-value" id="userPhone">0123456789</div>
+            <div class="contact-item">
+              <i class="fas fa-birthday-cake"></i>
+              <span id="userDob">01/01/2007</span>
             </div>
-            <div class="info-card">
-              <div class="info-label">Ngày sinh</div>
-              <div class="info-value" id="userDob">01/01/2007</div>
+          </div>
+        </div>
+        
+        <div class="action-section">
+          <button id="editProfileBtn" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Chỉnh sửa
+          </button>
+        </div>
+      </div>
+
+      <div class="details-section">
+        <div class="details-card">
+          <h3><i class="fas fa-graduation-cap"></i> Học vấn</h3>
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="detail-label">Trường</span>
+              <span class="detail-value" id="userSchool">Trường Đại học Ngoại Thương</span>
             </div>
-            <div class="info-card">
-              <div class="info-label">Trường</div>
-              <div class="info-value" id="userSchool">Trường Đại học Ngoại Thương</div>
+            <div class="detail-item">
+              <span class="detail-label">Khóa/Lớp/Khoa</span>
+              <span class="detail-value" id="userFaculty">K64 - Anh 05 - TC KTQT</span>
             </div>
-            <div class="info-card">
-              <div class="info-label">Khóa/Lớp/Khoa</div>
-              <div class="info-value" id="userFaculty">K64 - Anh 05 - TC KTQT</div>
-            </div>
-            <div class="info-card">
-              <div class="info-label">MSSV</div>
-              <div class="info-value" id="userStudentId">2415410000</div>
+            <div class="detail-item">
+              <span class="detail-label">MSSV</span>
+              <span class="detail-value" id="userStudentId">2415410000</span>
             </div>
           </div>
         </div>
@@ -118,16 +114,14 @@
     </div>
     
     <!-- Round Section (for existing users) -->
-    <div id="roundSection" class="round-section">
-      <h2 class="round-title">
-        <i class="fas fa-tasks"></i> Tiến trình ứng tuyển
-      </h2>
+    <div id="roundSection" class="progress-section" style="display: none;">
+      <h2><i class="fas fa-tasks"></i> Tiến trình ứng tuyển</h2>
       
-      <div class="round-progress">
+      <div class="progress-track">
         <div class="progress-steps">
           <div class="progress-bar" id="progressBar" style="width: 0%"></div>
           
-          <div class="step active" id="step1">
+          <div class="step" id="step1">
             <div class="step-icon">1</div>
             <div class="step-label">Vòng đơn</div>
           </div>
@@ -162,7 +156,7 @@
             <h3 class="round-card-title">
               <i class="fas fa-file-alt"></i> Vòng 1: Vòng đơn
             </h3>
-            <span class="badge badge-warning" id="round1Status">Chưa bắt đầu</span>
+            <span class="badge" id="round1Status">Chưa bắt đầu</span>
           </div>
           <div class="round-card-body">
             <div class="detail-item">
@@ -186,7 +180,7 @@
             <h3 class="round-card-title">
               <i class="fas fa-users"></i> Vòng 2: Phỏng vấn nhóm
             </h3>
-            <span class="badge badge-warning" id="round2Status">Chưa bắt đầu</span>
+            <span class="badge" id="round2Status">Chưa bắt đầu</span>
           </div>
           <div class="round-card-body">
             <div class="detail-item">
@@ -214,7 +208,7 @@
             <h3 class="round-card-title">
               <i class="fas fa-tasks"></i> Vòng 3: Thử thách
             </h3>
-            <span class="badge badge-warning" id="round3Status">Chưa bắt đầu</span>
+            <span class="badge" id="round3Status">Chưa bắt đầu</span>
           </div>
           <div class="round-card-body">
             <div class="detail-item">
@@ -242,7 +236,7 @@
             <h3 class="round-card-title">
               <i class="fas fa-user-tie"></i> Vòng 4: Phỏng vấn cá nhân
             </h3>
-            <span class="badge badge-warning" id="round4Status">Chưa bắt đầu</span>
+            <span class="badge" id="round4Status">Chưa bắt đầu</span>
           </div>
           <div class="round-card-body">
             <div class="detail-item">
@@ -265,7 +259,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </main>
 
   <!-- Edit Profile Modal -->
   <div id="editModal" class="modal">
