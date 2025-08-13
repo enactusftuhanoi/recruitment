@@ -3,43 +3,440 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lịch phỏng vấn - Ứng viên</title>
+  <title>Lịch phỏng vấn - Ứng viên | Enactus FTU Hanoi</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f6f8; }
-    .user-info { display: flex; align-items: center; gap: 15px; background: #fff; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .user-info img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
-    #schedule-list { padding: 20px; display: grid; gap: 20px; }
-    .schedule-card { background: #fff; border-radius: 10px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .schedule-card h3 { margin: 0 0 10px; }
-    .schedule-card p { margin: 4px 0; }
-    .schedule-card button { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; }
-    .vote-btn { background: #007bff; color: #fff; }
-    .edit-btn { background: #ffc107; color: #000; }
-    #vote-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
-    #vote-modal.hidden { display: none; }
-    .modal-content { background: #fff; border-radius: 10px; padding: 20px; width: 400px; max-width: 90%; }
-    .modal-content h3 { margin-top: 0; }
-    .modal-content label { display: block; margin: 8px 0; }
-    .modal-content button { margin-top: 15px; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; }
-    #confirm-vote { background: #28a745; color: #fff; }
-    #close-modal { background: #dc3545; color: #fff; margin-left: 10px; }
+    :root {
+      --primary: #4361ee;
+      --primary-dark: #3a56d4;
+      --secondary: #3f37c9;
+      --success: #4cc9f0;
+      --warning: #f8961e;
+      --danger: #f72585;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --light-gray: #e9ecef;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      color: var(--dark);
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .header h1 {
+      color: var(--primary);
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-size: 2.2rem;
+    }
+    
+    .header p {
+      color: var(--gray);
+      font-size: 1rem;
+    }
+    
+    /* User Info */
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: #fff;
+      padding: 25px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border-radius: 12px;
+      margin-bottom: 30px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border-left: 5px solid var(--primary);
+    }
+    
+    .user-info:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+    }
+    
+    .user-info img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--primary);
+      box-shadow: 0 4px 8px rgba(67, 97, 238, 0.2);
+    }
+    
+    .user-info-details {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+    
+    .user-info-details h2 {
+      margin: 0;
+      font-size: 1.4rem;
+      color: var(--dark);
+      font-weight: 600;
+    }
+    
+    .user-info-details span {
+      font-size: 1rem;
+      color: var(--gray);
+      margin-top: 5px;
+    }
+    
+    /* Schedule List */
+    #schedule-list {
+      display: grid;
+      gap: 25px;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      margin-bottom: 40px;
+    }
+    
+    .schedule-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.3s ease;
+      border-top: 3px solid var(--primary);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .schedule-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(90deg, var(--primary), var(--success));
+    }
+    
+    .schedule-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    }
+    
+    .schedule-card h3 {
+      margin: 0;
+      font-size: 1.3rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+    
+    .schedule-card .schedule-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      color: var(--gray);
+      margin: 5px 0;
+    }
+    
+    .schedule-card .schedule-meta i {
+      color: var(--primary);
+      width: 18px;
+      text-align: center;
+    }
+    
+    .schedule-card .slots-container {
+      margin-top: 10px;
+      border-top: 1px dashed var(--light-gray);
+      padding-top: 10px;
+    }
+    
+    .schedule-card .slot-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .schedule-card .slot-item:last-child {
+      border-bottom: none;
+    }
+    
+    .schedule-card .slot-time {
+      font-weight: 500;
+      color: var(--dark);
+    }
+    
+    .schedule-card .slot-number {
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+    }
+    
+    .schedule-card .action-buttons {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+    }
+    
+    .schedule-card button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+    
+    .vote-btn {
+      background: var(--primary);
+      color: #fff;
+      flex-grow: 1;
+    }
+    
+    .vote-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    
+    .edit-btn {
+      background: var(--warning);
+      color: #000;
+    }
+    
+    .edit-btn:hover {
+      background: #e07e0c;
+      color: #fff;
+      transform: translateY(-2px);
+    }
+    
+    .voted-badge {
+      background: var(--success);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    /* Modal */
+    #vote-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    #vote-modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .modal-content {
+      background: #fff;
+      border-radius: 16px;
+      padding: 30px;
+      width: 480px;
+      max-width: 95%;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    #vote-modal.active .modal-content {
+      transform: translateY(0);
+    }
+    
+    .modal-content h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 1.4rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+    
+    .modal-content .modal-details {
+      color: var(--gray);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    
+    .modal-slot-item {
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .modal-slot-item input[type="radio"],
+    .modal-slot-item input[type="checkbox"] {
+      margin-right: 12px;
+      width: 18px;
+      height: 18px;
+    }
+    
+    .modal-slot-item label {
+      font-size: 0.95rem;
+      color: var(--dark);
+      cursor: pointer;
+      flex-grow: 1;
+      padding: 10px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+    
+    .modal-slot-item label:hover {
+      background: rgba(67, 97, 238, 0.1);
+    }
+    
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 25px;
+    }
+    
+    .modal-actions button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    #confirm-vote {
+      background: var(--primary);
+      color: #fff;
+    }
+    
+    #confirm-vote:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    
+    #close-modal {
+      background: var(--light-gray);
+      color: var(--dark);
+    }
+    
+    #close-modal:hover {
+      background: #d1d7e0;
+      transform: translateY(-2px);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      #schedule-list {
+        grid-template-columns: 1fr;
+      }
+      
+      .user-info {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .user-info-details {
+        align-items: center;
+      }
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .schedule-card {
+      animation: fadeIn 0.5s ease forwards;
+    }
+    
+    /* Loading state */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+      color: transparent;
+    }
+    
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
   </style>
 </head>
 <body>
-  <div class="user-info">
-    <img id="user-avatar" src="" alt="Avatar">
-    <h2 id="user-name"></h2>
-    <p id="user-email"></p>
+  <div class="container">
+    <div class="header">
+      <h1><i class="fas fa-calendar-alt"></i> Lịch Phỏng vấn</h1>
+      <p>Chọn ca phỏng vấn phù hợp với lịch trình của bạn</p>
+    </div>
+    
+    <div class="user-info">
+      <img id="user-avatar" src="" alt="Avatar">
+      <div class="user-info-details">
+        <h2 id="user-name"></h2>
+        <span id="user-email"></span>
+      </div>
+    </div>
+    
+    <div id="schedule-list">
+      <!-- Schedules will be loaded here -->
+    </div>
   </div>
-  <div id="schedule-list"></div>
 
-  <div id="vote-modal" class="hidden">
+  <!-- Vote Modal -->
+  <div id="vote-modal">
     <div class="modal-content">
       <h3 id="modal-title"></h3>
-      <p id="modal-details"></p>
+      <p class="modal-details" id="modal-details"></p>
       <div id="modal-slots"></div>
-      <button id="confirm-vote">Xác nhận</button>
-      <button id="close-modal">Đóng</button>
+      <div class="modal-actions">
+        <button id="close-modal">Đóng</button>
+        <button id="confirm-vote">Xác nhận lựa chọn</button>
+      </div>
     </div>
   </div>
 
@@ -63,89 +460,222 @@
 
     let currentUser;
 
+    // Show loading skeleton
+    function showLoadingSkeleton() {
+      const list = document.getElementById('schedule-list');
+      list.innerHTML = '';
+      
+      for (let i = 0; i < 3; i++) {
+        const card = document.createElement('div');
+        card.className = 'schedule-card';
+        card.innerHTML = `
+          <h3 class="skeleton" style="width: 70%">&nbsp;</h3>
+          <p class="skeleton" style="width: 90%">&nbsp;</p>
+          <p class="skeleton" style="width: 80%">&nbsp;</p>
+          <div class="slots-container">
+            <div class="slot-item">
+              <span class="skeleton" style="width: 60%">&nbsp;</span>
+            </div>
+            <div class="slot-item">
+              <span class="skeleton" style="width: 60%">&nbsp;</span>
+            </div>
+          </div>
+          <div class="action-buttons">
+            <button class="skeleton" style="width: 100%; height: 40px; border: none">&nbsp;</button>
+          </div>
+        `;
+        list.appendChild(card);
+      }
+    }
+
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "/";
         return;
       }
+      
+      showLoadingSkeleton();
+      
       currentUser = user;
-      document.getElementById('user-avatar').src = user.photoURL || 'default.png';
-      document.getElementById('user-name').textContent = user.displayName || '';
+      document.getElementById('user-avatar').src = user.photoURL || 'https://via.placeholder.com/80';
+      document.getElementById('user-name').textContent = user.displayName || 'Ứng viên';
       document.getElementById('user-email').textContent = user.email || '';
-
-      loadSchedules();
+      
+      // Simulate loading delay for better UX
+      setTimeout(() => {
+        loadSchedules();
+      }, 800);
     });
 
     async function loadSchedules() {
       const list = document.getElementById('schedule-list');
       list.innerHTML = '';
-      const schedulesSnap = await getDocs(collection(db, 'schedules'));
-      const userRef = doc(db, 'users', currentUser.uid);
-      const userSnap = await getDoc(userRef);
-      const userData = userSnap.data() || {};
+      
+      try {
+        const schedulesSnap = await getDocs(collection(db, 'schedules'));
+        const userRef = doc(db, 'users', currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        const userData = userSnap.data() || {};
 
-      schedulesSnap.forEach(docSnap => {
-        const s = docSnap.data();
-        const voteData = userData.votes?.[docSnap.id];
+        if (schedulesSnap.empty) {
+          list.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+              <i class="fas fa-calendar-times" style="font-size: 3rem; color: var(--gray); margin-bottom: 15px;"></i>
+              <h3 style="color: var(--gray);">Hiện chưa có lịch phỏng vấn nào</h3>
+              <p>Vui lòng quay lại sau...</p>
+            </div>
+          `;
+          return;
+        }
 
-        const card = document.createElement('div');
-        card.className = 'schedule-card';
-        card.innerHTML = `
-          <h3>${s.title}</h3>
-          <p><b>Ngày:</b> ${s.date}</p>
-          <p><b>Địa điểm:</b> ${s.location} (${s.type})</p>
-          ${s.slots.map((slot, idx) => `<p>Ca ${idx+1}: ${slot.start} - ${slot.end}</p>`).join('')}
-          ${voteData ? `<span>✅ Đã vote</span> ${s.allowEdit ? `<button data-id="${docSnap.id}" class="edit-btn">Sửa vote</button>` : ''}` : `<button data-id="${docSnap.id}" class="vote-btn">Vote</button>`}
+        schedulesSnap.forEach(docSnap => {
+          const s = docSnap.data();
+          const voteData = userData.votes?.[docSnap.id];
+          
+          const card = document.createElement('div');
+          card.className = 'schedule-card';
+          card.style.animationDelay = `${Math.random() * 0.3}s`;
+          
+          card.innerHTML = `
+            <h3>${s.title}</h3>
+            <div class="schedule-meta">
+              <i class="fas fa-calendar-day"></i>
+              <span>${s.date}</span>
+            </div>
+            <div class="schedule-meta">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>${s.location} (${s.type})</span>
+            </div>
+            <div class="slots-container">
+              ${s.slots.map((slot, idx) => `
+                <div class="slot-item">
+                  <span class="slot-time">${slot.start} - ${slot.end}</span>
+                  <span class="slot-number">${idx+1}</span>
+                </div>
+              `).join('')}
+            </div>
+            <div class="action-buttons">
+              ${voteData ? `
+                <div class="voted-badge">
+                  <i class="fas fa-check-circle"></i>
+                  <span>Đã chọn ca ${voteData.slots.map(s => s+1).join(', ')}</span>
+                </div>
+                ${s.allowEdit ? `<button data-id="${docSnap.id}" class="edit-btn"><i class="fas fa-edit"></i> Sửa lựa chọn</button>` : ''}
+              ` : `<button data-id="${docSnap.id}" class="vote-btn"><i class="fas fa-vote-yea"></i> Chọn ca phỏng vấn</button>`}
+            </div>
+          `;
+          
+          list.appendChild(card);
+        });
+
+        document.querySelectorAll('.vote-btn, .edit-btn').forEach(btn => {
+          btn.addEventListener('click', () => openVoteModal(btn.dataset.id));
+        });
+      } catch (error) {
+        console.error("Error loading schedules:", error);
+        list.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger); margin-bottom: 15px;"></i>
+            <h3 style="color: var(--danger);">Đã xảy ra lỗi khi tải dữ liệu</h3>
+            <p>Vui lòng tải lại trang hoặc thử lại sau...</p>
+            <button onclick="window.location.reload()" style="margin-top: 15px; padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer;">
+              <i class="fas fa-sync-alt"></i> Tải lại trang
+            </button>
+          </div>
         `;
-        list.appendChild(card);
-      });
-
-      document.querySelectorAll('.vote-btn, .edit-btn').forEach(btn => {
-        btn.addEventListener('click', () => openVoteModal(btn.dataset.id));
-      });
+      }
     }
 
     let currentScheduleId = null;
     function openVoteModal(scheduleId) {
       currentScheduleId = scheduleId;
       document.getElementById('modal-slots').innerHTML = '';
+      document.getElementById('vote-modal').classList.add('active');
+      
       getDoc(doc(db, 'schedules', scheduleId)).then(snap => {
-        if (!snap.exists()) return;
+        if (!snap.exists()) {
+          alert('Không tìm thấy lịch phỏng vấn này');
+          closeModal();
+          return;
+        }
+        
         const s = snap.data();
         document.getElementById('modal-title').textContent = s.title;
-        document.getElementById('modal-details').textContent = s.details || '';
+        document.getElementById('modal-details').textContent = s.details || 'Vui lòng chọn ca phỏng vấn phù hợp với bạn.';
+        
         const container = document.getElementById('modal-slots');
         s.slots.forEach((slot, idx) => {
-          const label = document.createElement('label');
-          label.innerHTML = `<input type="${s.canVoteMultiple ? 'checkbox' : 'radio'}" name="slot" value="${idx}"> Ca ${idx+1}: ${slot.start} - ${slot.end}`;
-          container.appendChild(label);
+          const item = document.createElement('div');
+          item.className = 'modal-slot-item';
+          item.innerHTML = `
+            <input type="${s.canVoteMultiple ? 'checkbox' : 'radio'}" name="slot" value="${idx}" id="slot-${idx}">
+            <label for="slot-${idx}">
+              <strong>Ca ${idx+1}:</strong> ${slot.start} - ${slot.end}
+              ${slot.note ? `<br><small style="color: var(--gray);">${slot.note}</small>` : ''}
+            </label>
+          `;
+          container.appendChild(item);
         });
-        document.getElementById('vote-modal').classList.remove('hidden');
+      }).catch(error => {
+        console.error("Error loading schedule:", error);
+        alert('Đã xảy ra lỗi khi tải thông tin lịch phỏng vấn');
+        closeModal();
       });
     }
 
-    document.getElementById('close-modal').onclick = () => {
-      document.getElementById('vote-modal').classList.add('hidden');
-    };
+    function closeModal() {
+      document.getElementById('vote-modal').classList.remove('active');
+      currentScheduleId = null;
+    }
 
-    document.getElementById('confirm-vote').onclick = async () => {
+    document.getElementById('close-modal').addEventListener('click', closeModal);
+
+    document.getElementById('confirm-vote').addEventListener('click', async () => {
       const selected = Array.from(document.querySelectorAll('#modal-slots input:checked')).map(i => parseInt(i.value));
+      
       if (!selected.length) {
-        alert('Vui lòng chọn ít nhất một ca');
+        alert('Vui lòng chọn ít nhất một ca phỏng vấn');
         return;
       }
-      const userRef = doc(db, 'users', currentUser.uid);
-      const userSnap = await getDoc(userRef);
-      const userData = userSnap.data() || {};
-      const newVotes = userData.votes || {};
-      newVotes[currentScheduleId] = { slots: selected };
-      await updateDoc(userRef, {
-        votes: newVotes,
-        interviewStatus: 'Đã vote lịch'
-      });
-      document.getElementById('vote-modal').classList.add('hidden');
-      loadSchedules();
-    };
+      
+      try {
+        const userRef = doc(db, 'users', currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        const userData = userSnap.data() || {};
+        const newVotes = userData.votes || {};
+        
+        newVotes[currentScheduleId] = { slots: selected };
+        
+        await updateDoc(userRef, {
+          votes: newVotes,
+          'rounds.round_4': {
+            status: 'Đã chọn lịch',
+            scheduleId: currentScheduleId,
+            slots: selected,
+            updatedAt: new Date()
+          }
+        });
+        
+        closeModal();
+        showLoadingSkeleton();
+        
+        // Simulate loading delay for better UX
+        setTimeout(() => {
+          loadSchedules();
+        }, 500);
+        
+      } catch (error) {
+        console.error("Error updating vote:", error);
+        alert('Đã xảy ra lỗi khi cập nhật lựa chọn của bạn');
+      }
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('vote-modal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeModal();
+      }
+    });
   </script>
 </body>
 </html>
