@@ -3,292 +3,130 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chọn lịch phỏng vấn | Enactus FTU Hanoi</title>
-  <link rel="icon" href="/assets/icon.png" type="image/png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css">
-  <link rel="stylesheet" href="/css/calendar.css">
+  <title>Lịch phỏng vấn - Ứng viên</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Header -->
-  <div class="user-header">
-    <div class="logo">
-      <div class="logo-icon">
-        <i class="fas fa-users"></i>
-      </div>
-      <div class="logo-text">ENACTUS FTU HANOI</div>
-    </div>
-    <div class="user-actions">
-      <button id="profileBtn" class="btn btn-outline">
-        <i class="fas fa-user"></i> Hồ sơ
-      </button>
-      <button id="logoutBtn" class="btn btn-primary">
-        <i class="fas fa-sign-out-alt"></i> Đăng xuất
-      </button>
-    </div>
+  <div class="user-info">
+    <img id="user-avatar" src="" alt="Avatar">
+    <h2 id="user-name"></h2>
+    <p id="user-email"></p>
   </div>
+  <div id="schedule-list"></div>
 
-  <!-- Main Content -->
-  <div class="app-container">
-    <!-- User Info Card -->
-    <div class="user-card">
-      <div class="user-avatar">
-        <div class="avatar-img" id="calendarUserAvatar">
-          <i class="fas fa-user"></i>
-        </div>
-      </div>
-      <div class="user-details">
-        <h3 id="calendarUserName">Nguyễn Văn A</h3>
-        <p id="calendarUserEmail">example@ftu.edu.vn</p>
-        <div class="user-status">
-          <span class="badge badge-primary" id="calendarUserDepartment">Nhân sự</span>
-          <span class="badge badge-success" id="calendarUserRound">Vòng 4: Phỏng vấn cá nhân</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Voting Section -->
-    <div class="voting-section">
-      <h2 class="section-title">
-        <i class="fas fa-calendar-alt"></i> Chọn lịch phỏng vấn
-      </h2>
-      
-      <div class="voting-instructions">
-        <p>Vui lòng chọn các khung giờ phỏng vấn phù hợp với bạn. Bạn có thể chọn nhiều khung giờ nếu được phép.</p>
-        <p id="votingPolicyNotice">Bạn có thể chọn tối đa <span id="maxSlots">3</span> khung giờ.</p>
-      </div>
-
-      <!-- Schedule Tabs -->
-      <div class="schedule-tabs">
-        <div class="tab active" data-tab="all">Tất cả</div>
-        <div class="tab" data-tab="online">Online</div>
-        <div class="tab" data-tab="offline">Offline</div>
-      </div>
-
-      <!-- Schedule List -->
-      <div class="schedule-list">
-        <!-- Schedule Item 1 -->
-        <div class="schedule-item" data-type="offline" data-id="1">
-          <div class="schedule-header">
-            <h3 class="schedule-title">Phỏng vấn cá nhân - Ban Nhân sự</h3>
-            <span class="badge badge-offline">Offline</span>
-          </div>
-          <div class="schedule-time">
-            <i class="fas fa-clock"></i> 14:00 - 15:00, 15/08/2023
-          </div>
-          <div class="schedule-location">
-            <i class="fas fa-map-marker-alt"></i> Phòng A1, Trường Đại học Ngoại Thương
-          </div>
-          <div class="schedule-status">
-            <span class="badge badge-warning">Chưa chọn</span>
-          </div>
-          <button class="btn btn-outline schedule-detail-btn">
-            <i class="fas fa-info-circle"></i> Chi tiết
-          </button>
-          <button class="btn btn-primary schedule-vote-btn">
-            <i class="fas fa-check"></i> Chọn
-          </button>
-        </div>
-
-        <!-- Schedule Item 2 -->
-        <div class="schedule-item" data-type="online" data-id="2">
-          <div class="schedule-header">
-            <h3 class="schedule-title">Phỏng vấn cá nhân - Ban Nhân sự</h3>
-            <span class="badge badge-online">Online</span>
-          </div>
-          <div class="schedule-time">
-            <i class="fas fa-clock"></i> 09:00 - 10:00, 16/08/2023
-          </div>
-          <div class="schedule-location">
-            <i class="fas fa-video"></i> Google Meet
-          </div>
-          <div class="schedule-status">
-            <span class="badge badge-warning">Chưa chọn</span>
-          </div>
-          <button class="btn btn-outline schedule-detail-btn">
-            <i class="fas fa-info-circle"></i> Chi tiết
-          </button>
-          <button class="btn btn-primary schedule-vote-btn">
-            <i class="fas fa-check"></i> Chọn
-          </button>
-        </div>
-
-        <!-- Schedule Item 3 (Already voted) -->
-        <div class="schedule-item voted" data-type="offline" data-id="3">
-          <div class="schedule-header">
-            <h3 class="schedule-title">Phỏng vấn cá nhân - Ban Nhân sự</h3>
-            <span class="badge badge-offline">Offline</span>
-          </div>
-          <div class="schedule-time">
-            <i class="fas fa-clock"></i> 10:00 - 11:00, 17/08/2023
-          </div>
-          <div class="schedule-location">
-            <i class="fas fa-map-marker-alt"></i> Phòng B2, Trường Đại học Ngoại Thương
-          </div>
-          <div class="schedule-status">
-            <span class="badge badge-success">Đã chọn</span>
-          </div>
-          <button class="btn btn-outline schedule-detail-btn">
-            <i class="fas fa-info-circle"></i> Chi tiết
-          </button>
-          <button class="btn btn-danger schedule-vote-btn">
-            <i class="fas fa-times"></i> Hủy chọn
-          </button>
-        </div>
-      </div>
-
-      <!-- Selected Slots Summary -->
-      <div class="selected-slots">
-        <h3>
-          <i class="fas fa-list-check"></i> Các khung giờ đã chọn (<span id="selectedCount">1</span>/<span id="maxSlotsDisplay">3</span>)
-        </h3>
-        <div class="selected-list">
-          <div class="selected-item" data-id="3">
-            <div class="selected-info">
-              <span class="selected-time">10:00 - 11:00, 17/08/2023</span>
-              <span class="selected-location">Phòng B2, Trường Đại học Ngoại Thương</span>
-            </div>
-            <button class="btn btn-sm btn-danger remove-slot-btn">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Submit Button -->
-      <div class="submit-section">
-        <button id="submitVotesBtn" class="btn btn-primary" disabled>
-          <i class="fas fa-paper-plane"></i> Gửi lựa chọn
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Schedule Detail Modal -->
-  <div id="scheduleDetailModal" class="modal">
+  <div id="vote-modal" class="hidden">
     <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title" id="detailModalTitle">
-          <i class="fas fa-info-circle"></i> Chi tiết lịch phỏng vấn
-        </h2>
-        <span class="close-modal">&times;</span>
-      </div>
-      
-      <div class="modal-body">
-        <div class="detail-item">
-          <div class="detail-label">Tiêu đề</div>
-          <div class="detail-value" id="detailTitle">Phỏng vấn cá nhân - Ban Nhân sự</div>
-        </div>
-        
-        <div class="detail-item">
-          <div class="detail-label">Thời gian</div>
-          <div class="detail-value" id="detailTime">10:00 - 11:00, 17/08/2023</div>
-        </div>
-        
-        <div class="detail-item">
-          <div class="detail-label">Hình thức</div>
-          <div class="detail-value">
-            <span class="badge badge-offline" id="detailType">Offline</span>
-          </div>
-        </div>
-        
-        <div class="detail-item">
-          <div class="detail-label">Địa điểm</div>
-          <div class="detail-value" id="detailLocation">Phòng B2, Trường Đại học Ngoại Thương</div>
-        </div>
-        
-        <div class="detail-item">
-          <div class="detail-label">Thành phần</div>
-          <div class="detail-value" id="detailInterviewers">Nguyễn Thị B (Trưởng ban), Trần Văn C (Phó ban)</div>
-        </div>
-        
-        <div class="detail-item">
-          <div class="detail-label">Ghi chú</div>
-          <div class="detail-value" id="detailNotes">
-            - Mang theo CV bản cứng<br>
-           - Có mặt trước 15 phút để làm thủ tục<br>
-           - Liên hệ SĐT: 0123456789 nếu có thắc mắc
-          </div>
-        </div>
-        
-        <div class="detail-item">
-          <div class="detail-label">Các ca phỏng vấn</div>
-          <div class="detail-value">
-            <div class="time-slots">
-              <div class="time-slot active">
-                <i class="fas fa-clock"></i> 09:00 - 10:00, 16/08/2023
-              </div>
-              <div class="time-slot">
-                <i class="fas fa-clock"></i> 10:00 - 11:00, 17/08/2023
-              </div>
-              <div class="time-slot">
-                <i class="fas fa-clock"></i> 14:00 - 15:00, 18/08/2023
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="modal-footer">
-        <button class="btn btn-primary" id="voteFromDetailBtn">
-          <i class="fas fa-check"></i> Chọn khung giờ này
-        </button>
-      </div>
+      <h3 id="modal-title"></h3>
+      <p id="modal-details"></p>
+      <div id="modal-slots"></div>
+      <button id="confirm-vote">Xác nhận</button>
+      <button id="close-modal">Đóng</button>
     </div>
   </div>
 
-  <!-- Confirmation Modal -->
-  <div id="confirmationModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title">
-          <i class="fas fa-check-circle"></i> Xác nhận
-        </h2>
-        <span class="close-modal">&times;</span>
-      </div>
-      
-      <div class="modal-body">
-        <p id="confirmationMessage">Bạn có chắc chắn muốn gửi các lựa chọn lịch phỏng vấn này không?</p>
-        <div class="selected-slots-confirm">
-          <h4>Các khung giờ đã chọn:</h4>
-          <ul id="confirmSlotsList">
-            <li>10:00 - 11:00, 17/08/2023 - Phòng B2, FTU</li>
-          </ul>
-        </div>
-      </div>
-      
-      <div class="modal-footer">
-        <button class="btn btn-outline" id="cancelConfirmBtn">Hủy bỏ</button>
-        <button class="btn btn-primary" id="submitConfirmBtn">Xác nhận</button>
-      </div>
-    </div>
-  </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  <!-- Success Modal -->
-  <div id="successModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title">
-          <i class="fas fa-check-circle"></i> Thành công
-        </h2>
-      </div>
-      
-      <div class="modal-body">
-        <div class="success-icon">
-          <i class="fas fa-check"></i>
-        </div>
-        <p>Bạn đã chọn lịch phỏng vấn thành công!</p>
-        <p>Thông tin chi tiết đã được gửi đến email của bạn.</p>
-      </div>
-      
-      <div class="modal-footer">
-        <button class="btn btn-primary" id="closeSuccessBtn">Đóng</button>
-      </div>
-    </div>
-  </div>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
+      authDomain: "enactusftuhanoi-tracuu.firebaseapp.com",
+      projectId: "enactusftuhanoi-tracuu",
+      storageBucket: "enactusftuhanoi-tracuu.appspot.com",
+      messagingSenderId: "611356979403",
+      appId: "1:611356979403:web:2c9a4cffb2b323ce3deb4e"
+    };
 
-  <!-- Firebase and other scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
-  <script src="/script/calendar.js" type="module"></script>
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "/";
+        return;
+      }
+      currentUser = user;
+      document.getElementById('user-avatar').src = user.photoURL || 'default.png';
+      document.getElementById('user-name').textContent = user.displayName || '';
+      document.getElementById('user-email').textContent = user.email || '';
+
+      loadSchedules();
+    });
+
+    async function loadSchedules() {
+      const list = document.getElementById('schedule-list');
+      list.innerHTML = '';
+      const schedulesSnap = await getDocs(collection(db, 'schedules'));
+      const userRef = doc(db, 'users', currentUser.uid);
+      const userSnap = await getDoc(userRef);
+      const userData = userSnap.data() || {};
+
+      schedulesSnap.forEach(docSnap => {
+        const s = docSnap.data();
+        const voteData = userData.votes?.[docSnap.id];
+
+        const card = document.createElement('div');
+        card.className = 'schedule-card';
+        card.innerHTML = `
+          <h3>${s.title}</h3>
+          <p><b>Ngày:</b> ${s.date}</p>
+          <p><b>Địa điểm:</b> ${s.location} (${s.type})</p>
+          ${s.slots.map((slot, idx) => `<p>Ca ${idx+1}: ${slot.start} - ${slot.end}</p>`).join('')}
+          ${voteData ? `<span>✅ Đã vote</span> ${s.allowEdit ? `<button data-id="${docSnap.id}" class="edit-btn">Sửa vote</button>` : ''}` : `<button data-id="${docSnap.id}" class="vote-btn">Vote</button>`}
+        `;
+        list.appendChild(card);
+      });
+
+      document.querySelectorAll('.vote-btn, .edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => openVoteModal(btn.dataset.id));
+      });
+    }
+
+    let currentScheduleId = null;
+    function openVoteModal(scheduleId) {
+      currentScheduleId = scheduleId;
+      document.getElementById('modal-slots').innerHTML = '';
+      getDoc(doc(db, 'schedules', scheduleId)).then(snap => {
+        if (!snap.exists()) return;
+        const s = snap.data();
+        document.getElementById('modal-title').textContent = s.title;
+        document.getElementById('modal-details').textContent = s.details || '';
+        const container = document.getElementById('modal-slots');
+        s.slots.forEach((slot, idx) => {
+          const label = document.createElement('label');
+          label.innerHTML = `<input type="${s.canVoteMultiple ? 'checkbox' : 'radio'}" name="slot" value="${idx}"> Ca ${idx+1}: ${slot.start} - ${slot.end}`;
+          container.appendChild(label);
+        });
+        document.getElementById('vote-modal').classList.remove('hidden');
+      });
+    }
+
+    document.getElementById('close-modal').onclick = () => {
+      document.getElementById('vote-modal').classList.add('hidden');
+    };
+
+    document.getElementById('confirm-vote').onclick = async () => {
+      const selected = Array.from(document.querySelectorAll('#modal-slots input:checked')).map(i => parseInt(i.value));
+      if (!selected.length) {
+        alert('Vui lòng chọn ít nhất một ca');
+        return;
+      }
+      const userRef = doc(db, 'users', currentUser.uid);
+      const userSnap = await getDoc(userRef);
+      const userData = userSnap.data() || {};
+      const newVotes = userData.votes || {};
+      newVotes[currentScheduleId] = { slots: selected };
+      await updateDoc(userRef, {
+        votes: newVotes,
+        interviewStatus: 'Đã vote lịch'
+      });
+      document.getElementById('vote-modal').classList.add('hidden');
+      loadSchedules();
+    };
+  </script>
 </body>
 </html>
