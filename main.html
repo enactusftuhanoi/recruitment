@@ -117,26 +117,70 @@
             display: flex;
             justify-content: center;
             margin: 40px auto;
-            max-width: 600px;
+            max-width: 800px;
+            gap: 15px;
         }
         
         .countdown-item {
-            margin: 0 15px;
             text-align: center;
+            position: relative;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
         
         .countdown-number {
-            font-size: 3.5rem;
+            font-size: 3rem;
             font-weight: 700;
             color: var(--yellow);
             line-height: 1;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
         
         .countdown-label {
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: var(--white);
             text-transform: uppercase;
-            margin-top: 5px;
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .countdown-item {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .countdown-number {
+                font-size: 2rem;
+            }
+            
+            .countdown-label {
+                font-size: 0.7rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .countdown {
+                gap: 8px;
+            }
+            
+            .countdown-item {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .countdown-number {
+                font-size: 1.8rem;
+            }
         }
         
         .cta-button {
@@ -889,24 +933,45 @@
     </footer>
 
     <script>
-        // Countdown Timer
-        function updateCountdown() {
-            // Set the date we're counting down to (example: next event in 30 days)
-            const countdownDate = new Date("September 20, 2025 00:00:00");
-            
-            const now = new Date().getTime();
-            const distance = countdownDate - now;
-            
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-            document.getElementById('days').textContent = days.toString().padStart(2, '0');
-            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
-            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
-            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
-        }
+        // Thêm vào script
+function animateCountdown(element) {
+    element.style.transform = 'scale(1.1)';
+    element.style.transition = 'transform 0.3s ease';
+    
+    setTimeout(() => {
+        element.style.transform = 'scale(1)';
+    }, 300);
+}
+
+function updateCountdown() {
+    const countdownDate = new Date("September 20, 2025 00:00:00");
+    const now = new Date().getTime();
+    const distance = countdownDate - now;
+    
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    
+    // Animate only if value changes
+    if (document.getElementById('days').textContent !== days.toString().padStart(2, '0')) {
+        animateCountdown(document.getElementById('days'));
+    }
+    if (document.getElementById('hours').textContent !== hours.toString().padStart(2, '0')) {
+        animateCountdown(document.getElementById('hours'));
+    }
+    if (document.getElementById('minutes').textContent !== minutes.toString().padStart(2, '0')) {
+        animateCountdown(document.getElementById('minutes'));
+    }
+    if (document.getElementById('seconds').textContent !== seconds.toString().padStart(2, '0')) {
+        animateCountdown(document.getElementById('seconds'));
+    }
+    
+    document.getElementById('days').textContent = days.toString().padStart(2, '0');
+    document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+    document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+    document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+}
         
         // Update the countdown every 1 second
         updateCountdown();
