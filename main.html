@@ -893,7 +893,6 @@
         function updateCountdown() {
             // Set the date we're counting down to (example: next event in 30 days)
             const countdownDate = new Date("September 20, 2025 00:00:00");
-            countdownDate.setDate(countdownDate.getDate() + 30);
             
             const now = new Date().getTime();
             const distance = countdownDate - now;
