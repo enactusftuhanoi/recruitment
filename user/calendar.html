@@ -4,7 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lịch phỏng vấn - Ứng viên</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f6f8; }
+    .user-info { display: flex; align-items: center; gap: 15px; background: #fff; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .user-info img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
+    #schedule-list { padding: 20px; display: grid; gap: 20px; }
+    .schedule-card { background: #fff; border-radius: 10px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .schedule-card h3 { margin: 0 0 10px; }
+    .schedule-card p { margin: 4px 0; }
+    .schedule-card button { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; }
+    .vote-btn { background: #007bff; color: #fff; }
+    .edit-btn { background: #ffc107; color: #000; }
+    #vote-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
+    #vote-modal.hidden { display: none; }
+    .modal-content { background: #fff; border-radius: 10px; padding: 20px; width: 400px; max-width: 90%; }
+    .modal-content h3 { margin-top: 0; }
+    .modal-content label { display: block; margin: 8px 0; }
+    .modal-content button { margin-top: 15px; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; }
+    #confirm-vote { background: #28a745; color: #fff; }
+    #close-modal { background: #dc3545; color: #fff; margin-left: 10px; }
+  </style>
 </head>
 <body>
   <div class="user-info">
