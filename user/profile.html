@@ -11,142 +11,137 @@
 </head>
 <body>
   <!-- Header -->
-  <div class="user-header">
-    <div class="logo">
-      <div class="logo-icon">
-        <i class="fas fa-users"></i>
+  <header class="profile-header">
+    <div class="header-container">
+      <div class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <h1 class="logo-text">ENACTUS FTU HANOI</h1>
       </div>
-      <div class="logo-text">ENACTUS FTU HANOI</div>
-    </div>
-    <div class="user-actions">
-      <button id="refreshBtn" class="btn btn-outline">
-        <i class="fas fa-sync-alt"></i> Làm mới
-      </button>
-      <button id="logoutBtn" class="btn btn-primary">
-        <i class="fas fa-sign-out-alt"></i> Đăng xuất
-      </button>
-    </div>
-  </div>
-
-  <!-- Main Content -->
-  <div class="app-container">
-    <!-- Onboarding Section -->
-    <div id="onboardingSection" class="onboarding-section">
-      <div class="onboarding-icon">
-        <i class="fas fa-user-plus"></i>
-      </div>
-      <h2>Chào mừng bạn đến với Enactus FTU Hanoi!</h2>
-      <p style="margin: 20px 0 30px; color: var(--text-light);">Vui lòng điền thông tin cá nhân để bắt đầu quá trình ứng tuyển</p>
-      <button id="startOnboardingBtn" class="btn btn-primary">
-        <i class="fas fa-pencil-alt"></i> Điền thông tin
-      </button>
-    </div>
-
-    <!-- Profile Section -->
-    <div id="profileSection" class="profile-section">
-      <div class="profile-header">
-        <h1 class="profile-title">
-          <i class="fas fa-user-circle"></i> Hồ sơ ứng viên
-        </h1>
-        <button id="editProfileBtn" class="btn btn-primary">
-          <i class="fas fa-edit"></i> Chỉnh sửa
+      <div class="header-actions">
+        <button id="refreshBtn" class="btn btn-outline">
+          <i class="fas fa-sync-alt"></i> Làm mới
+        </button>
+        <button id="logoutBtn" class="btn btn-primary">
+          <i class="fas fa-sign-out-alt"></i> Đăng xuất
         </button>
       </div>
-      
-      <div class="profile-content">
-        <div class="profile-avatar">
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="profile-container">
+    <!-- Profile Overview Section -->
+    <section class="profile-overview">
+      <div class="profile-card">
+        <div class="avatar-section">
           <div class="avatar-img" id="userAvatar">
             <i class="fas fa-user"></i>
           </div>
-          <button class="btn btn-outline upload-btn">
-            <i class="fas fa-camera"></i> Đổi ảnh đại diện
+          <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+          <button id="uploadBtn" class="btn btn-outline upload-btn">
+            <i class="fas fa-camera"></i> Đổi ảnh
           </button>
         </div>
         
-        <div>
-          <div class="status-card">
-            <div class="status-item">
-              <span>Ban ứng tuyển:</span>
-              <span class="badge badge-primary" id="userDepartment">Chưa có dữ liệu</span>
-            </div>
-            <div class="status-item">
-              <span>Vòng hiện tại:</span>
-              <span class="badge badge-success" id="userCurrentRound">Vòng 1</span>
-            </div>
-            <div class="status-item">
-              <span>Trạng thái:</span>
-              <span class="badge badge-warning" id="userStatus">Chờ xử lý</span>
-            </div>
+        <div class="profile-info">
+          <h2 id="userFullName">Nguyễn Văn A</h2>
+          <div class="profile-meta">
+            <span class="badge badge-primary" id="userDepartment">Nhân sự</span>
+            <span class="badge badge-status" id="userStatus">Đang ứng tuyển</span>
           </div>
           
-          <div class="profile-info">
-            <div class="info-card">
-              <div class="info-label">Họ và tên</div>
-              <div class="info-value" id="userFullName">Nguyễn Văn A</div>
+          <div class="contact-info">
+            <div class="contact-item">
+              <i class="fas fa-envelope"></i>
+              <span id="userEmail">example@ftu.edu.vn</span>
             </div>
-            <div class="info-card">
-              <div class="info-label">Giới tính</div>
-              <div class="info-value" id="userGender">Nam</div>
+            <div class="contact-item">
+              <i class="fas fa-phone"></i>
+              <span id="userPhone">0123456789</span>
             </div>
-            <div class="info-card">
-              <div class="info-label">Email</div>
-              <div class="info-value" id="userEmail">example@ftu.edu.vn</div>
-            </div>
-            <div class="info-card">
-              <div class="info-label">Số điện thoại</div>
-              <div class="info-value" id="userPhone">0123456789</div>
-            </div>
-            <div class="info-card">
-              <div class="info-label">Ngày sinh</div>
-              <div class="info-value" id="userDob">01/01/2007</div>
-            </div>
-            <div class="info-card">
-              <div class="info-label">Trường</div>
-              <div class="info-value" id="userSchool">Trường Đại học Ngoại Thương</div>
-            </div>
-            <div class="info-card">
-              <div class="info-label">Khóa/Lớp/Khoa</div>
-              <div class="info-value" id="userFaculty">K64 - Anh 05 - TC KTQT</div>
-            </div>
-            <div class="info-card">
-              <div class="info-label">MSSV</div>
-              <div class="info-value" id="userStudentId">2415410000</div>
+            <div class="contact-item">
+              <i class="fas fa-calendar-day"></i>
+              <span id="userDob">01/01/2000</span>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    
-    <!-- Round Section -->
-    <div id="roundSection" class="round-section">
-      <h2 class="round-title">
-        <i class="fas fa-tasks"></i> Tiến trình ứng tuyển
-      </h2>
       
-      <div class="round-progress">
+      <div class="action-section">
+        <button id="editProfileBtn" class="btn btn-primary">
+          <i class="fas fa-edit"></i> Chỉnh sửa hồ sơ
+        </button>
+      </div>
+    </section>
+
+    <!-- Personal Details Section -->
+    <section class="details-section">
+      <div class="details-card">
+        <h3><i class="fas fa-user-tag"></i> Thông tin cá nhân</h3>
+        <div class="details-grid">
+          <div class="detail-item">
+            <span class="detail-label">Giới tính</span>
+            <span class="detail-value" id="userGender">Nam</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Ngày sinh</span>
+            <span class="detail-value" id="userDobDetail">01/01/2000</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Địa chỉ</span>
+            <span class="detail-value" id="userAddress">Hà Nội, Việt Nam</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="details-card">
+        <h3><i class="fas fa-graduation-cap"></i> Thông tin học vấn</h3>
+        <div class="details-grid">
+          <div class="detail-item">
+            <span class="detail-label">Trường</span>
+            <span class="detail-value" id="userSchool">ĐH Ngoại Thương</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Khoa/Lớp</span>
+            <span class="detail-value" id="userFaculty">K64 - Anh 05</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">MSSV</span>
+            <span class="detail-value" id="userStudentId">2415410000</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">GPA</span>
+            <span class="detail-value" id="userGPA">3.5/4.0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Application Progress Section -->
+    <section class="progress-section">
+      <h2><i class="fas fa-tasks"></i> Tiến trình ứng tuyển</h2>
+      
+      <div class="progress-track">
+        <div class="progress-bar" id="progressBar"></div>
         <div class="progress-steps">
-          <div class="progress-bar" id="progressBar" style="width: 0%"></div>
-          
           <div class="step" id="step1">
             <div class="step-icon">1</div>
             <div class="step-label">Vòng đơn</div>
           </div>
-          
           <div class="step" id="step2">
             <div class="step-icon">2</div>
             <div class="step-label">Phỏng vấn nhóm</div>
           </div>
-          
           <div class="step" id="step3">
             <div class="step-icon">3</div>
             <div class="step-label">Thử thách</div>
           </div>
-          
           <div class="step" id="step4">
             <div class="step-icon">4</div>
             <div class="step-label">Phỏng vấn cá nhân</div>
           </div>
-          
           <div class="step" id="step5">
             <div class="step-icon"><i class="fas fa-check"></i></div>
             <div class="step-label">Hoàn thành</div>
@@ -155,267 +150,134 @@
       </div>
       
       <!-- Round Details -->
-      <div class="round-details">
-        <!-- Round 1 Details -->
-        <div class="round-card" id="round1Details">
+      <div class="round-details" id="roundDetails">
+        <div class="round-card">
           <div class="round-card-header">
-            <h3 class="round-card-title">
-              <i class="fas fa-file-alt"></i> Vòng 1: Vòng đơn
-            </h3>
-            <span class="badge badge-warning" id="round1Status">Chưa bắt đầu</span>
+            <div class="round-card-title">
+              <i class="fas fa-file-alt"></i> Vòng đơn
+            </div>
+            <span class="badge badge-success">Đã hoàn thành</span>
           </div>
           <div class="round-card-body">
             <div class="detail-item">
-              <div class="detail-label">Trạng thái</div>
-              <div class="detail-value" id="round1StatusText">Chưa bắt đầu</div>
+              <span class="detail-label">Ngày nộp</span>
+              <span class="detail-value">15/08/2023</span>
             </div>
             <div class="detail-item">
-              <div class="detail-label">Thời hạn nộp</div>
-              <div class="detail-value" id="round1Deadline">Chưa cập nhật</div>
+              <span class="detail-label">Trạng thái</span>
+              <span class="detail-value">Đã duyệt</span>
             </div>
             <div class="detail-item">
-              <div class="detail-label">Hướng dẫn</div>
-              <div class="detail-value" id="round1Guide">Hoàn thành form đăng ký</div>
+              <span class="detail-label">Kết quả</span>
+              <span class="detail-value">Đạt</span>
             </div>
           </div>
         </div>
         
-        <!-- Round 2 Details -->
-        <div class="round-card" id="round2Details" style="display: none;">
+        <div class="round-card">
           <div class="round-card-header">
-            <h3 class="round-card-title">
-              <i class="fas fa-users"></i> Vòng 2: Phỏng vấn nhóm
-            </h3>
-            <span class="badge badge-warning" id="round2Status">Chưa bắt đầu</span>
+            <div class="round-card-title">
+              <i class="fas fa-users"></i> Phỏng vấn nhóm
+            </div>
+            <span class="badge badge-warning">Đang chờ</span>
           </div>
           <div class="round-card-body">
             <div class="detail-item">
-              <div class="detail-label">Trạng thái</div>
-              <div class="detail-value" id="round2StatusText">Chưa bắt đầu</div>
+              <span class="detail-label">Ngày hẹn</span>
+              <span class="detail-value">25/08/2023</span>
             </div>
             <div class="detail-item">
-              <div class="detail-label">Thời gian</div>
-              <div class="detail-value" id="round2Time">Chưa cập nhật</div>
+              <span class="detail-label">Thời gian</span>
+              <span class="detail-value">14:00 - 16:00</span>
             </div>
             <div class="detail-item">
-              <div class="detail-label">Địa điểm</div>
-              <div class="detail-value" id="round2Location">Chưa cập nhật</div>
-            </div>
-            <div class="detail-item">
-              <div class="detail-label">Thành viên nhóm</div>
-              <div class="detail-value" id="round2Members">Chưa cập nhật</div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Round 3 Details -->
-        <div class="round-card" id="round3Details" style="display: none;">
-          <div class="round-card-header">
-            <h3 class="round-card-title">
-              <i class="fas fa-tasks"></i> Vòng 3: Thử thách
-            </h3>
-            <span class="badge badge-warning" id="round3Status">Chưa bắt đầu</span>
-          </div>
-          <div class="round-card-body">
-            <div class="detail-item">
-              <div class="detail-label">Trạng thái</div>
-              <div class="detail-value" id="round3StatusText">Chưa bắt đầu</div>
-            </div>
-            <div class="detail-item">
-              <div class="detail-label">Đề bài</div>
-              <div class="detail-value" id="round3Challenge">Chưa cập nhật</div>
-            </div>
-            <div class="detail-item">
-              <div class="detail-label">Hạn nộp</div>
-              <div class="detail-value" id="round3Deadline">Chưa cập nhật</div>
-            </div>
-            <div class="detail-item">
-              <div class="detail-label">Tài liệu</div>
-              <div class="detail-value" id="round3Materials">Chưa cập nhật</div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Round 4 Details -->
-        <div class="round-card" id="round4Details" style="display: none;">
-          <div class="round-card-header">
-            <h3 class="round-card-title">
-              <i class="fas fa-user-tie"></i> Vòng 4: Phỏng vấn cá nhân
-            </h3>
-            <span class="badge badge-warning" id="round4Status">Chưa bắt đầu</span>
-          </div>
-          <div class="round-card-body">
-            <div class="detail-item">
-              <div class="detail-label">Trạng thái</div>
-              <div class="detail-value" id="round4StatusText">Chưa bắt đầu</div>
-            </div>
-            <div class="detail-item">
-              <div class="detail-label">Thời gian</div>
-              <div class="detail-value" id="round4Time">Chưa cập nhật</div>
-            </div>
-            <div class="detail-item">
-              <div class="detail-label">Địa điểm</div>
-              <div class="detail-value" id="round4Location">Chưa cập nhật</div>
-            </div>
-            <div class="detail-item">
-              <div class="detail-label">Người phỏng vấn</div>
-              <div class="detail-value" id="round4Interviewer">Chưa cập nhật</div>
+              <span class="detail-label">Địa điểm</span>
+              <span class="detail-value">Phòng A301, FTU</span>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
+  </main>
 
   <!-- Edit Profile Modal -->
   <div id="editModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2 class="modal-title">
-          <i class="fas fa-edit"></i> Chỉnh sửa hồ sơ
-        </h2>
+        <h2><i class="fas fa-edit"></i> Chỉnh sửa hồ sơ</h2>
         <span class="close-modal">&times;</span>
       </div>
       
       <form id="editForm">
         <div class="form-group">
-          <label class="form-label required">Họ và tên</label>
-          <input type="text" class="form-control" id="editFullName" required>
+          <label for="editFullName">Họ và tên</label>
+          <input type="text" id="editFullName" class="form-control" required>
         </div>
         
-        <div class="form-group">
-          <label class="form-label required">Email</label>
-          <input type="email" class="form-control" id="editEmail" required>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editEmail">Email</label>
+            <input type="email" id="editEmail" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="editPhone">Số điện thoại</label>
+            <input type="tel" id="editPhone" class="form-control" required>
+          </div>
         </div>
         
-        <div class="form-group">
-          <label class="form-label required">Số điện thoại</label>
-          <input type="tel" class="form-control" id="editPhone" required>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label required">Giới tính</label>
-          <div class="radio-group">
-            <label class="radio-option">
-              <input type="radio" name="gender" value="Nam" checked> Nam
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="gender" value="Nữ"> Nữ
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="gender" value="Khác"> Khác
-            </label>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editDob">Ngày sinh</label>
+            <input type="date" id="editDob" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="editGender">Giới tính</label>
+            <select id="editGender" class="form-control" required>
+              <option value="Nam">Nam</option>
+              <option value="Nữ">Nữ</option>
+              <option value="Khác">Khác</option>
+            </select>
           </div>
         </div>
         
         <div class="form-group">
-          <label class="form-label">Ngày sinh</label>
-          <input type="text" class="form-control" id="editDob" placeholder="DD/MM/YYYY">
+          <label for="editAddress">Địa chỉ</label>
+          <input type="text" id="editAddress" class="form-control">
         </div>
         
-        <div class="form-group">
-          <label class="form-label required">Trường</label>
-          <input type="text" class="form-control" id="editSchool" required>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label required">Khoa/Lớp/Khoa</label>
-          <input type="text" class="form-control" id="editFaculty" required>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label required">MSSV</label>
-          <input type="text" class="form-control" id="editStudentId" required>
-        </div>
-        
-        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 20px;">
-          <i class="fas fa-save"></i> Lưu thay đổi
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Onboarding Modal -->
-  <div id="onboardingModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title">
-          <i class="fas fa-user-plus"></i> Điền thông tin ứng tuyển
-        </h2>
-        <span class="close-modal">&times;</span>
-      </div>
-      
-      <form id="onboardingForm">
-        <div class="form-group">
-          <label class="form-label required">Họ và tên</label>
-          <input type="text" class="form-control" id="onboardFullName" required>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label required">Email</label>
-          <input type="email" class="form-control" id="onboardEmail" required>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label required">Số điện thoại</label>
-          <input type="tel" class="form-control" id="onboardPhone" required>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label required">Giới tính</label>
-          <div class="radio-group">
-            <label class="radio-option">
-              <input type="radio" name="onboardGender" value="Nam" checked> Nam
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="onboardGender" value="Nữ"> Nữ
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="onboardGender" value="Khác"> Khác
-            </label>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editSchool">Trường</label>
+            <input type="text" id="editSchool" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="editFaculty">Khoa/Lớp</label>
+            <input type="text" id="editFaculty" class="form-control" required>
           </div>
         </div>
         
-        <div class="form-group">
-          <label class="form-label">Ngày sinh</label>
-          <input type="text" class="form-control" id="onboardDob" placeholder="DD/MM/YYYY">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editStudentId">MSSV</label>
+            <input type="text" id="editStudentId" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="editGPA">GPA</label>
+            <input type="text" id="editGPA" class="form-control">
+          </div>
         </div>
         
-        <div class="form-group">
-          <label class="form-label required">Trường</label>
-          <input type="text" class="form-control" id="onboardSchool" required>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" id="cancelEdit">Hủy bỏ</button>
+          <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
         </div>
-        
-        <div class="form-group">
-          <label class="form-label required">Khóa/Lớp/Khoa</label>
-          <input type="text" class="form-control" id="onboardFaculty" required>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label required">MSSV</label>
-          <input type="text" class="form-control" id="onboardStudentId" required>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label required">Ban ứng tuyển</label>
-          <select class="form-control" id="onboardDepartment" required>
-            <option value="">-- Chọn ban --</option>
-            <option value="Nhân sự">Nhân sự</option>
-            <option value="Truyền thông">Truyền thông</option>
-            <option value="Đối ngoại">Đối ngoại</option>
-            <option value="Dự án">Dự án</option>
-          </select>
-        </div>
-        
-        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 20px;">
-          <i class="fas fa-check"></i> Hoàn thành đăng ký
-        </button>
       </form>
     </div>
   </div>
 
   <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
-  <script src="../script/profile.js" type="module"></script>
+  <script src="../script/profile.js"></script>
 </body>
 </html>
