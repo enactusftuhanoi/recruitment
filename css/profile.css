@@ -510,3 +510,180 @@ body {
   from { opacity: 0; transform: translateY(-50px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Thêm vào cuối file CSS (trước phần @media) */
+
+/* Cải thiện bố cục profile card */
+.profile-card {
+  flex-direction: column;
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.avatar-section {
+  margin-bottom: 1.5rem;
+}
+
+.profile-info {
+  width: 100%;
+  text-align: center;
+}
+
+.profile-meta {
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.contact-info {
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.action-section {
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+/* Cải thiện details section */
+.details-section {
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.details-card {
+  padding: 1.25rem;
+}
+
+.details-card h3 {
+  margin-bottom: 1rem;
+}
+
+/* Cải thiện progress section */
+.progress-section {
+  padding: 1.5rem;
+}
+
+.progress-steps {
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.step {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.step-icon {
+  margin-bottom: 0.75rem;
+}
+
+.progress-steps::before,
+.progress-bar {
+  display: none;
+}
+
+/* Round cards cải thiện */
+.round-card {
+  margin-bottom: 1rem;
+}
+
+.round-card-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.round-card-body {
+  grid-template-columns: 1fr;
+}
+
+/* Responsive improvements */
+@media (min-width: 768px) {
+  .profile-card {
+    flex-direction: row;
+    text-align: left;
+    padding: 2rem;
+  }
+  
+  .avatar-section {
+    margin-bottom: 0;
+    align-items: flex-start;
+  }
+  
+  .profile-info {
+    text-align: left;
+  }
+  
+  .contact-info {
+    align-items: flex-start;
+  }
+  
+  .action-section {
+    justify-content: flex-end;
+  }
+  
+  .details-section {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  .progress-steps {
+    flex-wrap: nowrap;
+  }
+  
+  .step {
+    width: 20%;
+    margin-bottom: 0;
+  }
+  
+  .progress-steps::before,
+  .progress-bar {
+    display: block;
+  }
+  
+  .round-card-header {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .round-card-body {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+/* Thêm khoảng cách và căn chỉnh */
+.profile-overview {
+  gap: 1.5rem;
+}
+
+.round-details {
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* Đảm bảo badge không bị tràn */
+.badge {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+/* Form items trong modal */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
