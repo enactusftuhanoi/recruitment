@@ -86,6 +86,25 @@ body {
   gap: 2rem;
 }
 
+/* Onboarding Section */
+.onboarding-container {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: var(--card-shadow);
+  text-align: center;
+}
+
+.onboarding-container h2 {
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.onboarding-container p {
+  color: var(--text-light);
+  margin-bottom: 2rem;
+}
+
 /* Profile Overview */
 .profile-overview {
   display: flex;
@@ -218,11 +237,17 @@ body {
 
 .progress-section h2 {
   font-size: 20px;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   color: var(--primary);
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.current-round {
+  color: var(--primary);
+  font-weight: 600;
+  margin-bottom: 1.5rem;
 }
 
 .progress-track {
@@ -257,7 +282,7 @@ body {
   z-index: 2;
   transition: width 0.5s ease;
   border-radius: 3px;
-  width: 25%; /* Default progress */
+  width: 0%;
 }
 
 .step {
@@ -516,6 +541,23 @@ select.form-control {
   background-size: 1em;
 }
 
+.radio-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.radio-label input {
+  margin: 0;
+}
+
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -557,6 +599,11 @@ select.form-control {
   .form-row {
     flex-direction: column;
     gap: 0;
+  }
+  
+  .radio-group {
+    flex-direction: column;
+    gap: 0.5rem;
   }
 }
 
