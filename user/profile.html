@@ -262,72 +262,77 @@
   </main>
 
   <!-- Edit Profile Modal -->
-  <div id="editModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title">
-          <i class="fas fa-edit"></i> Chỉnh sửa hồ sơ
-        </h2>
-        <span class="close-modal">&times;</span>
+  <!-- Edit Profile Modal -->
+<div id="editModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">
+        <i class="fas fa-user-edit"></i> Chỉnh sửa hồ sơ
+      </h2>
+      <span class="close-modal">&times;</span>
+    </div>
+    
+    <form id="editForm">
+      <div class="form-group">
+        <label for="editFullName" class="form-label required">Họ và tên</label>
+        <input type="text" class="form-control" id="editFullName" required>
       </div>
       
-      <form id="editForm">
+      <div class="form-row">
         <div class="form-group">
-          <label class="form-label required">Họ và tên</label>
-          <input type="text" class="form-control" id="editFullName" required>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label required">Email</label>
+          <label for="editEmail" class="form-label required">Email</label>
           <input type="email" class="form-control" id="editEmail" required>
         </div>
         
         <div class="form-group">
-          <label class="form-label required">Số điện thoại</label>
+          <label for="editPhone" class="form-label required">Số điện thoại</label>
           <input type="tel" class="form-control" id="editPhone" required>
         </div>
-        
-        <div class="form-group">
-          <label class="form-label required">Giới tính</label>
-          <div class="radio-group">
-            <label class="radio-option">
-              <input type="radio" name="gender" value="Nam" checked> Nam
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="gender" value="Nữ"> Nữ
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="gender" value="Khác"> Khác
-            </label>
-          </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label required">Giới tính</label>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="gender" value="Nam" checked> Nam
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="gender" value="Nữ"> Nữ
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="gender" value="Khác"> Khác
+          </label>
         </div>
-        
+      </div>
+      
+      <div class="form-group">
+        <label for="editDob" class="form-label">Ngày sinh</label>
+        <input type="text" class="form-control" id="editDob" placeholder="DD/MM/YYYY">
+      </div>
+      
+      <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Ngày sinh</label>
-          <input type="text" class="form-control" id="editDob" placeholder="DD/MM/YYYY">
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label required">Trường</label>
+          <label for="editSchool" class="form-label required">Trường</label>
           <input type="text" class="form-control" id="editSchool" required>
         </div>
         
         <div class="form-group">
-          <label class="form-label required">Khoa/Lớp/Khoa</label>
+          <label for="editFaculty" class="form-label required">Khoa/Lớp</label>
           <input type="text" class="form-control" id="editFaculty" required>
         </div>
-        
-        <div class="form-group">
-          <label class="form-label required">MSSV</label>
-          <input type="text" class="form-control" id="editStudentId" required>
-        </div>
-        
-        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 20px;">
-          <i class="fas fa-save"></i> Lưu thay đổi
-        </button>
-      </form>
-    </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="editStudentId" class="form-label required">MSSV</label>
+        <input type="text" class="form-control" id="editStudentId" required>
+      </div>
+      
+      <button type="submit" class="modal-submit-btn">
+        <i class="fas fa-save"></i> Lưu thay đổi
+      </button>
+    </form>
   </div>
+</div>
 
   <!-- Onboarding Modal -->
   <div id="onboardingModal" class="modal">
@@ -413,3 +418,4 @@
   <script src="../script/profile.js" type="module"></script>
 </body>
 </html>
+
