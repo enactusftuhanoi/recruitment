@@ -39,10 +39,10 @@
           <div class="avatar-img" id="userAvatar">
             <i class="fas fa-user"></i>
           </div>
-          <input type="file" id="avatarInput" accept="image/*" style="display: none;">
-          <button id="uploadBtn" class="btn btn-outline upload-btn">
+          <button class="btn btn-outline upload-btn" id="uploadAvatarBtn">
             <i class="fas fa-camera"></i> Đổi ảnh
           </button>
+          <input type="file" id="avatarInput" accept="image/*" style="display: none;">
         </div>
         
         <div class="profile-info">
@@ -118,16 +118,15 @@
     <!-- Application Progress Section -->
     <section class="progress-section">
       <h2><i class="fas fa-tasks"></i> Tiến trình ứng tuyển</h2>
-      <p id="userCurrentRound" class="current-round">Vòng 1: Vòng đơn</p>
       
       <div class="progress-track">
-        <div class="progress-bar" id="progressBar"></div>
+        <div class="progress-bar" id="progressBar" style="width: 40%;"></div>
         <div class="progress-steps">
-          <div class="step" id="step1">
+          <div class="step active" id="step1">
             <div class="step-icon">1</div>
             <div class="step-label">Vòng đơn</div>
           </div>
-          <div class="step" id="step2">
+          <div class="step active" id="step2">
             <div class="step-icon">2</div>
             <div class="step-label">Phỏng vấn nhóm</div>
           </div>
@@ -148,110 +147,67 @@
       
       <!-- Round Details -->
       <div class="round-details" id="roundDetails">
-        <!-- Round 1 -->
-        <div class="round-card" id="round1Details" style="display: none;">
+        <div class="round-card">
           <div class="round-card-header">
-            <div class="round-card-title">
+            <h4 class="round-card-title">
               <i class="fas fa-file-alt"></i> Vòng đơn
-            </div>
-            <span class="badge badge-warning" id="round1Status">Chưa bắt đầu</span>
+            </h4>
+            <span class="badge badge-success">Đã hoàn thành</span>
           </div>
           <div class="round-card-body">
             <div class="detail-item">
               <span class="detail-label">Trạng thái</span>
-              <span class="detail-value" id="round1StatusText">Chưa bắt đầu</span>
+              <span class="detail-value">Đã nộp</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">Hạn nộp</span>
-              <span class="detail-value" id="round1Deadline">15/07/2025</span>
+              <span class="detail-label">Ngày nộp</span>
+              <span class="detail-value">15/08/2023</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">Hướng dẫn</span>
-              <span class="detail-value" id="round1Guide">Hoàn thành form đăng ký</span>
+              <span class="detail-label">Kết quả</span>
+              <span class="detail-value">Đạt</span>
             </div>
           </div>
         </div>
         
-        <!-- Round 2 -->
-        <div class="round-card" id="round2Details" style="display: none;">
+        <div class="round-card">
           <div class="round-card-header">
-            <div class="round-card-title">
+            <h4 class="round-card-title">
               <i class="fas fa-users"></i> Phỏng vấn nhóm
-            </div>
-            <span class="badge badge-warning" id="round2Status">Chưa bắt đầu</span>
+            </h4>
+            <span class="badge badge-success">Đã hoàn thành</span>
           </div>
           <div class="round-card-body">
             <div class="detail-item">
               <span class="detail-label">Trạng thái</span>
-              <span class="detail-value" id="round2StatusText">Chưa bắt đầu</span>
+              <span class="detail-value">Đã tham gia</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">Thời gian</span>
-              <span class="detail-value" id="round2Time">Chưa cập nhật</span>
+              <span class="detail-label">Ngày phỏng vấn</span>
+              <span class="detail-value">25/08/2023</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">Địa điểm</span>
-              <span class="detail-value" id="round2Location">Chưa cập nhật</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Thành viên nhóm</span>
-              <span class="detail-value" id="round2Members">Chưa cập nhật</span>
+              <span class="detail-label">Kết quả</span>
+              <span class="detail-value">Đạt</span>
             </div>
           </div>
         </div>
         
-        <!-- Round 3 -->
-        <div class="round-card" id="round3Details" style="display: none;">
+        <div class="round-card">
           <div class="round-card-header">
-            <div class="round-card-title">
+            <h4 class="round-card-title">
               <i class="fas fa-tasks"></i> Thử thách
-            </div>
-            <span class="badge badge-warning" id="round3Status">Chưa bắt đầu</span>
+            </h4>
+            <span class="badge badge-warning">Đang chờ</span>
           </div>
           <div class="round-card-body">
             <div class="detail-item">
               <span class="detail-label">Trạng thái</span>
-              <span class="detail-value" id="round3StatusText">Chưa bắt đầu</span>
+              <span class="detail-value">Chưa bắt đầu</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">Thử thách</span>
-              <span class="detail-value" id="round3Challenge">Chưa cập nhật</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Hạn nộp</span>
-              <span class="detail-value" id="round3Deadline">Chưa cập nhật</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Tài liệu hướng dẫn</span>
-              <span class="detail-value" id="round3Materials">Chưa cập nhật</span>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Round 4 -->
-        <div class="round-card" id="round4Details" style="display: none;">
-          <div class="round-card-header">
-            <div class="round-card-title">
-              <i class="fas fa-user-tie"></i> Phỏng vấn cá nhân
-            </div>
-            <span class="badge badge-warning" id="round4Status">Chưa bắt đầu</span>
-          </div>
-          <div class="round-card-body">
-            <div class="detail-item">
-              <span class="detail-label">Trạng thái</span>
-              <span class="detail-value" id="round4StatusText">Chưa bắt đầu</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Thời gian</span>
-              <span class="detail-value" id="round4Time">Chưa cập nhật</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Địa điểm</span>
-              <span class="detail-value" id="round4Location">Chưa cập nhật</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Người phỏng vấn</span>
-              <span class="detail-value" id="round4Interviewer">Chưa cập nhật</span>
+              <span class="detail-label">Dự kiến</span>
+              <span class="detail-value">05/09/2023</span>
             </div>
           </div>
         </div>
@@ -273,36 +229,35 @@
           <input type="text" id="editFullName" class="form-control" required>
         </div>
         
-        <div class="form-row">
-          <div class="form-group">
-            <label for="editEmail">Email</label>
-            <input type="email" id="editEmail" class="form-control" required>
-          </div>
-          <div class="form-group">
-            <label for="editPhone">Số điện thoại</label>
-            <input type="tel" id="editPhone" class="form-control" required>
-          </div>
+        <div class="form-group">
+          <label for="editEmail">Email</label>
+          <input type="email" id="editEmail" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="editPhone">Số điện thoại</label>
+          <input type="tel" id="editPhone" class="form-control" required>
         </div>
         
         <div class="form-row">
           <div class="form-group">
+            <label for="editGender">Giới tính</label>
+            <select id="editGender" class="form-control" required>
+              <option value="Nam">Nam</option>
+              <option value="Nữ">Nữ</option>
+              <option value="Khác">Khác</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
             <label for="editDob">Ngày sinh</label>
             <input type="date" id="editDob" class="form-control" required>
           </div>
-          <div class="form-group">
-            <label>Giới tính</label>
-            <div class="radio-group">
-              <label class="radio-label">
-                <input type="radio" name="gender" value="Nam" checked> Nam
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="gender" value="Nữ"> Nữ
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="gender" value="Khác"> Khác
-              </label>
-            </div>
-          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="editAddress">Địa chỉ</label>
+          <input type="text" id="editAddress" class="form-control">
         </div>
         
         <div class="form-group">
@@ -315,6 +270,7 @@
             <label for="editFaculty">Khoa/Lớp</label>
             <input type="text" id="editFaculty" class="form-control" required>
           </div>
+          
           <div class="form-group">
             <label for="editStudentId">MSSV</label>
             <input type="text" id="editStudentId" class="form-control" required>
@@ -322,7 +278,7 @@
         </div>
         
         <div class="form-actions">
-          <button type="button" class="btn btn-outline" id="cancelEdit">Hủy bỏ</button>
+          <button type="button" class="btn btn-outline" id="cancelEditBtn">Hủy bỏ</button>
           <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
         </div>
       </form>
@@ -332,6 +288,6 @@
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
-  <script type="module" src="../script/profile.js"></script>
+  <script src="../script/profile.js"></script>
 </body>
 </html>
