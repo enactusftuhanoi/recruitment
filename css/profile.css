@@ -319,7 +319,6 @@ body {
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: var(--card-shadow);
-  margin-bottom: 1rem;
 }
 
 .round-card-header {
@@ -475,84 +474,6 @@ body {
   color: var(--text-light);
 }
 
-.close-modal:hover {
-  color: var(--text);
-}
-
-/* Form Styles */
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-row {
-  display: flex;
-  gap: 1rem;
-}
-
-.form-row .form-group {
-  flex: 1;
-}
-
-.form-control {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 16px;
-  transition: var(--transition);
-}
-
-.form-control:focus {
-  border-color: var(--primary);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
-}
-
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: var(--text-light);
-}
-
-select.form-control {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%235f6368' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 16px 12px;
-  padding-right: 2.5rem;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-/* Toastr Customization */
-.toast {
-  font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-  border-radius: 8px !important;
-}
-
-.toast-success {
-  background-color: var(--success) !important;
-}
-
-.toast-error {
-  background-color: var(--accent) !important;
-}
-
-.toast-info {
-  background-color: var(--info) !important;
-}
-
-.toast-warning {
-  background-color: var(--warning) !important;
-}
-
 /* Responsive Styles */
 @media (max-width: 768px) {
   .header-container {
@@ -582,11 +503,6 @@ select.form-control {
   .progress-steps::before,
   .progress-bar {
     display: none;
-  }
-  
-  .form-row {
-    flex-direction: column;
-    gap: 0;
   }
 }
 
