@@ -611,36 +611,30 @@
                     
                     <div class="position-container">
                         <div class="position-box">
-                            <h3><i class="fas fa-star"></i> Vị trí ưu tiên <span class="required"></span></h3>
+                            <h3><i class="fas fa-star"></i> Phân ban ưu tiên <span class="required"></span></h3>
                             <div class="form-group">
-                                <label for="priority_position" class="required">Vị trí mong muốn nhất</label>
+                                <label for="priority_position" class="required">Phân ban mong muốn nhất</label>
                                 <select id="priority_position" name="priority_position" required onchange="updateSecondaryOptions()">
                                     <option value="">-- Chọn vị trí --</option>
-                                    <option value="Design">Thiết kế đồ họa</option>
-                                    <option value="Content">Content Writer</option>
-                                    <option value="Marketing">Digital Marketing</option>
-                                    <option value="PR">Quan hệ công chúng</option>
-                                    <option value="Event">Tổ chức sự kiện</option>
-                                    <option value="HR">Nhân sự</option>
-                                    <option value="IT">Công nghệ thông tin</option>
+                                    <option value="MD">Ban Truyền thông</option>
+                                    <option value="HR">Ban Nhân sự</option>
+                                    <option value="ER">Ban Đối ngoại</option>
+                                    <option value="PD">Ban Nội dung</option>
                                 </select>
                             </div>
                         </div>
                         
                         <div class="position-box">
-                            <h3><i class="fas fa-clock"></i> Vị trí dự bị (không bắt buộc)</h3>
+                            <h3><i class="fas fa-clock"></i> Phân ban dự bị (không bắt buộc)</h3>
                             <div class="form-group">
-                                <label for="secondary_position">Vị trí quan tâm khác</label>
+                                <label for="secondary_position">Phân ban quan tâm khác</label>
                                 <select id="secondary_position" name="secondary_position">
                                     <option value="">-- Chọn vị trí --</option>
-                                    <option value="Design">Thiết kế đồ họa</option>
-                                    <option value="Content">Content Writer</option>
-                                    <option value="Marketing">Digital Marketing</option>
-                                    <option value="PR">Quan hệ công chúng</option>
-                                    <option value="Event">Tổ chức sự kiện</option>
-                                    <option value="HR">Nhân sự</option>
-                                    <option value="IT">Công nghệ thông tin</option>
                                     <option value="None">Không chọn</option>
+                                    <option value="MD">Ban Truyền thông</option>
+                                    <option value="HR">Ban Nhân sự</option>
+                                    <option value="ER">Ban Đối ngoại</option>
+                                    <option value="PD">Ban Nội dung</option>
                                 </select>
                             </div>
                         </div>
@@ -934,8 +928,6 @@
                 <p><strong>Khoa:</strong> ${form.faculty.options[form.faculty.selectedIndex].text}</p>
                 <p><strong>Vị trí ưu tiên:</strong> ${priorityPositionText}</p>
                 <p><strong>Vị trí dự bị:</strong> ${secondaryPositionText === "-- Chọn vị trí --" ? "Không chọn" : secondaryPositionText}</p>
-                <p><strong>Thời gian tham gia:</strong> ${form.availability.options[form.availability.selectedIndex].text}</p>
-                <p><strong>Kỹ năng:</strong> ${selectedSkills.join(', ') || 'Không có'}</p>
             `;
             
             summaryDiv.innerHTML = summaryHTML;
