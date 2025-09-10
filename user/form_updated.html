@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đơn ứng tuyển - Enactus FTU Hanoi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #0d47a1;
+            --secondary: #f5f5f5;
+            --accent: #ff5722;
+            --text: #333;
+            --text-light: #777;
+            --success: #4caf50;
+            --error: #f44336;
+            --border: #ddd;
+            --light-blue: #e8f0fe;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(120deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(30deg);
+        }
+        
+        .logo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .logo i {
+            font-size: 42px;
+            margin-right: 15px;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .logo h1 {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        
+        .header-content p {
+            font-size: 18px;
+            margin-top: 10px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 25px 50px;
+            background: var(--secondary);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+        
+        .step {
+            text-align: center;
+            position: relative;
+            flex: 1;
+            z-index: 2;
+        }
+        
+        .step:not(:last-child):after {
+            content: '';
+            position: absolute;
+            top: 22px;
+            right: -50%;
+            width: 100%;
+            height: 3px;
+            background: var(--border);
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 10px;
+            position: relative;
+            z-index: 2;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active .step-number {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3);
+        }
+        
+        .step.completed .step-number {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+        }
+        
+        .step.completed:after {
+            background: var(--success);
+        }
+        
+        .step-label {
+            font-size: 14px;
+            color: var(--text-light);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active .step-label {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .form-container {
+            padding: 35px;
+        }
+        
+        .form-section {
+            display: none;
+        }
+        
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h2 {
+            color: var(--primary);
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light-blue);
+            font-size: 24px;
+            position: relative;
+        }
+        
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 70px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: var(--text);
+            font-size: 15px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: 'Roboto', sans-serif;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .required:after {
+            content: " *";
+            color: var(--error);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            background: #f9f9f9;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .checkbox-item:hover {
+            background: #f0f0f0;
+        }
+        
+        .checkbox-item input {
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 35px;
+        }
+        
+        button {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-prev {
+            background: #f1f1f1;
+            color: var(--text);
+        }
+        
+        .btn-prev:hover {
+            background: #e2e2e2;
+            transform: translateX(-3px);
+        }
+        
+        .btn-next, .btn-submit {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.25);
+        }
+        
+        .btn-next:hover, .btn-submit:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(26, 115, 232, 0.35);
+        }
+        
+        .success-message {
+            text-align: center;
+            padding: 50px 40px;
+            display: none;
+            animation: fadeIn 0.8s ease;
+        }
+        
+        .success-message i {
+            font-size: 70px;
+            color: var(--success);
+            margin-bottom: 25px;
+            animation: scaleUp 0.5s ease;
+        }
+        
+        @keyframes scaleUp {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .success-message h2 {
+            color: var(--success);
+            border: none;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        
+        .success-message h2::after {
+            display: none;
+        }
+        
+        .success-message p {
+            font-size: 17px;
+            line-height: 1.6;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 25px;
+            background: var(--secondary);
+            color: var(--text-light);
+            font-size: 14px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .position-container {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .position-box {
+            flex: 1;
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #f9f9f9;
+            transition: all 0.3s;
+        }
+        
+        .position-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .position-box h3 {
+            margin-bottom: 18px;
+            color: var(--primary);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .position-box h3 i {
+            font-size: 20px;
+        }
+        
+        .position-detail {
+            background: var(--light-blue);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .position-detail h4 {
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .position-detail h4 i {
+            font-size: 20px;
+        }
+        
+        .sub-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        
+        .sub-section h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        /* Styles for different question types */
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .radio-item {
+            display: flex;
+            align-items: center;
+            background: #f9f9f9;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .radio-item:hover {
+            background: #f0f0f0;
+        }
+        
+        .radio-item input {
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .scale-container {
+            margin-top: 10px;
+        }
+        
+        .scale-container input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #ddd;
+            outline: none;
+            border-radius: 4px;
+        }
+        
+        .scale-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+        }
+        
+        .scale-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+        
+        .scale-container output {
+            display: block;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 5px;
+            font-size: 16px;
+            color: var(--primary);
+        }
+        
+        .grid-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .grid-item {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .grid-item:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+        
+        .time-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .time-input input {
+            flex: 1;
+        }
+      
+        @media (max-width: 900px) {
+            .progress-bar {
+                padding: 20px 30px;
+            }
+            
+            .step:not(:last-child):after {
+                right: -40%;
+            }
+            
+            .form-container {
+                padding: 25px;
+            }
+            
+            .position-container {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .container {
+                border-radius: 12px;
+            }
+            
+            header {
+                padding: 25px 20px;
+            }
+            
+            .logo h1 {
+                font-size: 26px;
+            }
+            
+            .progress-bar {
+                padding: 15px 20px;
+                flex-wrap: wrap;
+            }
+            
+            .step {
+                flex: 0 0 50%;
+                margin-bottom: 20px;
+            }
+            
+            .step:not(:last-child):after {
+                display: none;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            h2 {
+                font-size: 22px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .step {
+                flex: 0 0 100%;
+            }
+            
+            .logo {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .logo i {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+            
+            .checkbox-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .checkbox-item {
+                width: 100%;
+            }
+        }
+    </style>
+    
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-handshake"></i>
+                <h1>Enactus FTU Hanoi</h1>
+            </div>
+            <div class="header-content">
+                <p>Đơn ứng tuyển thành viên mới 2023</p>
+            </div>
+        </header>
+        
+        <div class="progress-bar">
+            <div class="step active" id="step1">
+                <div class="step-number">1</div>
+                <div class="step-label">Thông tin cá nhân</div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-number">2</div>
+                <div class="step-label">Vị trí ứng tuyển</div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-number">3</div>
+                <div class="step-label">Chi tiết ứng tuyển</div>
+            </div>
+            <div class="step" id="step4">
+                <div class="step-number">4</div>
+                <div class="step-label">Xác nhận</div>
+            </div>
+        </div>
+        
+        <div class="form-container">
+            <form id="recruitmentForm">
+                <!-- Section 1: Personal Information -->
+                <div class="form-section active" id="section1">
+                    <h2><i class="fas fa-user-circle"></i> Thông tin cá nhân</h2>
+                    
+                    <div class="form-group">
+                        <label for="fullname" class="required">Họ và tên</label>
+                        <input type="text" id="fullname" name="fullname" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email" class="required">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone" class="required">Số điện thoại</label>
+                        <input type="tel" id="phone" name="phone" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="birthdate">Ngày sinh</label>
+                        <input type="date" id="birthdate" name="birthdate">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="faculty" class="required">Khoa</label>
+                        <select id="faculty" name="faculty" required>
+                            <option value="">-- Chọn khoa --</option>
+                            <option value="QTKD">Quản trị kinh doanh</option>
+                            <option value="KT">Kế toán</option>
+                            <option value="TC">Tài chính</option>
+                            <option value="NH">Ngân hàng</option>
+                            <option value="KHQT">Kinh doanh quốc tế</option>
+                            <option value="KTQT">Kế toán kiểm toán</option>
+                            <option value="NN">Ngôn ngữ</option>
+                        </select>
+                    </div>
+                    
+                    <div class="buttons">
+                        <div></div>
+                        <button type="button" class="btn-next" onclick="nextSection(1)">
+                            Tiếp theo <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Section 2: Position Application -->
+                <div class="form-section" id="section2">
+                    <h2><i class="fas fa-briefcase"></i> Vị trí ứng tuyển</h2>
+                    
+                    <div class="position-container">
+                        <div class="position-box">
+                            <h3><i class="fas fa-star"></i> Phân ban ưu tiên <span class="required"></span></h3>
+                            <div class="form-group">
+                                <label for="priority_position" class="required">Phân ban mong muốn nhất</label>
+                                <select id="priority_position" name="priority_position" required onchange="updateSecondaryOptions()">
+                                    <option value="">-- Chọn vị trí --</option>
+                                    <option value="MD">Ban Truyền thông</option>
+                                    <option value="HR">Ban Nhân sự</option>
+                                    <option value="ER">Ban Đối ngoại</option>
+                                    <option value="PD">Ban Nội dung</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="position-box">
+                            <h3><i class="fas fa-clock"></i> Phân ban dự bị (không bắt buộc)</h3>
+                            <div class="form-group">
+                                <label for="secondary_position">Phân ban quan tâm khác</label>
+                                <select id="secondary_position" name="secondary_position">
+                                    <option value="">-- Chọn vị trí --</option>
+                                    <option value="None">Không chọn</option>
+                                    <option value="MD">Ban Truyền thông</option>
+                                    <option value="HR">Ban Nhân sự</option>
+                                    <option value="ER">Ban Đối ngoại</option>
+                                    <option value="PD">Ban Nội dung</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="availability" class="required">Bạn có thể dành bao nhiêu thời gian cho Enactus?</label>
+                        <select id="availability" name="availability" required>
+                            <option value="">-- Chọn mức độ --</option>
+                            <option value="5-10">5-10 giờ/tuần</option>
+                            <option value="10-15">10-15 giờ/tuần</option>
+                            <option value="15-20">15-20 giờ/tuần</option>
+                            <option value="20+">Trên 20 giờ/tuần</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="motivation">Tại sao bạn muốn tham gia Enactus?</label>
+                        <textarea id="motivation" name="motivation" rows="4" placeholder="Hãy chia sẻ lý do bạn muốn trở thành thành viên của Enactus FTU Hanoi..."></textarea>
+                    </div>
+                    
+                    <div class="buttons">
+                        <button type="button" class="btn-prev" onclick="prevSection(2)">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </button>
+                        <button type="button" class="btn-next" onclick="nextSection(2)">
+                            Tiếp theo <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Section 3: Experience and Skills -->
+                <div class="form-section" id="section3">
+                    <h2><i class="fas fa-tasks"></i> Chi tiết ứng tuyển</h2>
+                    
+                    <div class="sub-section" id="priority-section">
+                        <h3><i class="fas fa-star"></i> Chi tiết ứng tuyển cho vị trí ưu tiên: <span id="priorityPositionName"></span></h3>
+                        
+                        <div class="form-group">
+                            <label for="priority_experience" class="required">Kinh nghiệm và hiểu biết về vị trí này</label>
+                            <textarea id="priority_experience" name="priority_experience" rows="4" placeholder="Hãy mô tả kinh nghiệm, hiểu biết của bạn về vị trí này và tại sao bạn phù hợp..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="priority_motivation" class="required">Động lực ứng tuyển vị trí này</label>
+                            <textarea id="priority_motivation" name="priority_motivation" rows="4" placeholder="Tại sao bạn chọn vị trí này làm ưu tiên hàng đầu?..." required></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- THÊM PHẦN NÀY: Câu hỏi cụ thể theo phân ban -->
+                    <div class="sub-section">
+                        <h3><i class="fas fa-question-circle"></i> Câu hỏi dành riêng cho phân ban <span id="ban-name"></span></h3>
+                        <div id="ban-specific-questions">
+                            <!-- Câu hỏi sẽ được tự động thêm vào đây bằng JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="sub-section" id="secondary-section">
+                        <h3><i class="fas fa-clock"></i> Chi tiết ứng tuyển cho vị trí dự bị: <span id="secondaryPositionName"></span></h3>
+                        
+                        <div class="form-group">
+                            <label for="secondary_experience">Kinh nghiệm và hiểu biết về vị trí dự bị (nếu có)</label>
+                            <textarea id="secondary_experience" name="secondary_experience" rows="4" placeholder="Nếu bạn đã chọn vị trí dự bị, hãy chia sẻ kinh nghiệm và hiểu biết của bạn về vị trí này..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="secondary_motivation">Lý do chọn vị trí dự bị này</label>
+                            <textarea id="secondary_motivation" name="secondary_motivation" rows="4" placeholder="Tại sao bạn chọn vị trí này làm dự bị?..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="skills">Kỹ năng thành thạo</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="skill1" name="skills" value="Design">
+                                <label for="skill1">Thiết kế đồ họa</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="skill2" name="skills" value="Content">
+                                <label for="skill2">Viết content</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="skill3" name="skills" value="Marketing">
+                                <label for="skill3">Marketing</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="skill4" name="skills" value="Programming">
+                                <label for="skill4">Lập trình</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="skill5" name="skills" value="Event">
+                                <label for="skill5">Tổ chức sự kiện</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="intro">Giới thiệu bản thân</label>
+                        <textarea id="intro" name="intro" rows="4" placeholder="Mô tả ngắn gọn về bản thân, tính cách, điểm mạnh và mong muốn của bạn..."></textarea>
+                    </div>
+                    
+                    <div class="buttons">
+                        <button type="button" class="btn-prev" onclick="prevSection(3)">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </button>
+                        <button type="button" class="btn-next" onclick="nextSection(3)">
+                            Tiếp theo <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Section 4: Confirmation -->
+                <div class="form-section" id="section4">
+                    <h2><i class="fas fa-check-circle"></i> Xác nhận thông tin</h2>
+                    
+                    <div class="form-group">
+                        <p>Vui lòng kiểm tra lại thông tin trước khi gửi:</p>
+                        <div id="summary" style="background: #f9f9f9; padding: 25px; border-radius: 10px; margin-top: 20px; border-left: 4px solid var(--primary);"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="checkbox-item" style="background: transparent; padding: 0;">
+                            <input type="checkbox" id="agree" name="agree" required>
+                            <label for="agree" class="required">Tôi xác nhận rằng tất cả thông tin trên là chính xác</label>
+                        </div>
+                    </div>
+                    
+                    <div class="buttons">
+                        <button type="button" class="btn-prev" onclick="prevSection(4)">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </button>
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-paper-plane"></i> Gửi đơn ứng tuyển
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- Success Message -->
+            <div class="success-message" id="successMessage">
+                <i class="fas fa-check-circle"></i>
+                <h2>Đơn ứng tuyển đã được gửi thành công!</h2>
+                <p>Cảm ơn bạn đã nộp đơn ứng tuyển đến Enactus FTU Hanoi. Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất qua email hoặc số điện thoại bạn đã cung cấp.</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2025 Enactus FTU Hanoi - All rights reserved</p>
+        </footer>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAOP2j0qV0Ge-q2-Y9zo9Qc3eLmgtVOK3k",
+            authDomain: "recruitment-enactusftuhanoi.firebaseapp.com",
+            projectId: "recruitment-enactusftuhanoi",
+            storageBucket: "recruitment-enactusftuhanoi.firebasestorage.app",
+            messagingSenderId: "658928769643",
+            appId: "1:658928769643:web:ef4e26633b7c41c922ef2e",
+            measurementId: "G-BJT7ZPKYE3"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Định nghĩa bộ câu hỏi cho từng phân ban
+        const banQuestions = {
+            'MD': [ // Ban Truyền thông
+                {
+                    type: 'textarea',
+                    id: 'md_design_exp',
+                    question: 'Bạn đã có kinh nghiệm với phần mềm thiết kế nào?',
+                    placeholder: 'Mô tả kinh nghiệm với Photoshop, Illustrator, Figma, Canva...',
+                    required: true
+                },
+                {
+                    type: 'checkbox',
+                    id: 'md_platforms',
+                    question: 'Bạn có kinh nghiệm với nền tảng mạng xã hội nào?',
+                    options: ['Facebook', 'Instagram', 'TikTok', 'YouTube', 'LinkedIn'],
+                    required: true
+                },
+                {
+                    type: 'radio',
+                    id: 'md_experience_level',
+                    question: 'Mức độ kinh nghiệm của bạn trong lĩnh vực truyền thông?',
+                    options: ['Mới bắt đầu', 'Có một ít kinh nghiệm', 'Khá thành thạo', 'Rất thành thạo'],
+                    required: true
+                },
+                {
+                    type: 'scale',
+                    id: 'md_creativity',
+                    question: 'Đánh giá khả năng sáng tạo của bạn (1-10)',
+                    min: 1,
+                    max: 10,
+                    required: true
+                }
+            ],
+            'HR': [ // Ban Nhân sự
+                {
+                    type: 'textarea',
+                    id: 'hr_organization',
+                    question: 'Bạn đã từng tổ chức sự kiện nào chưa? Mô tả ngắn gọn.',
+                    placeholder: 'Mô tả kinh nghiệm tổ chức sự kiện...',
+                    required: false
+                },
+                {
+                    type: 'dropdown',
+                    id: 'hr_team_size',
+                    question: 'Quy mô nhóm lớn nhất bạn từng quản lý?',
+                    options: ['Dưới 5 người', '5-10 người', '10-20 người', 'Trên 20 người'],
+                    required: true
+                },
+                {
+                    type: 'checkbox',
+                    id: 'hr_skills',
+                    question: 'Kỹ năng nào bạn có thể đóng góp cho ban Nhân sự?',
+                    options: ['Giao tiếp', 'Quản lý thời gian', 'Giải quyết vấn đề', 'Lập kế hoạch', 'Đàm phán'],
+                    required: true
+                }
+            ],
+            'ER': [ // Ban Đối ngoại
+                {
+                    type: 'textarea',
+                    id: 'er_negotiation',
+                    question: 'Kể về kinh nghiệm đàm phán/thương lượng của bạn',
+                    placeholder: 'Mô tả tình huống bạn đã đàm phán thành công...',
+                    required: true
+                },
+                {
+                    type: 'radio',
+                    id: 'er_partner_type',
+                    question: 'Bạn muốn làm việc với đối tác thuộc lĩnh vực nào?',
+                    options: ['Doanh nghiệp', 'Tổ chức giáo dục', 'Tổ chức phi chính phủ', 'Cá nhân influencers'],
+                    required: true
+                },
+                {
+                    type: 'date',
+                    id: 'er_availability',
+                    question: 'Bạn có thể bắt đầu tham gia từ khi nào?',
+                    required: true
+                }
+            ],
+            'PD': [ // Ban Nội dung
+                {
+                    type: 'textarea',
+                    id: 'pd_writing_samples',
+                    question: 'Mô tả các loại nội dung bạn đã từng sáng tạo',
+                    placeholder: 'Bài blog, kịch bản video, nội dung MXH, bài PR...',
+                    required: true
+                },
+                {
+                    type: 'radio',
+                    id: 'pd_content_type',
+                    question: 'Bạn hứng thú nhất với loại nội dung nào?',
+                    options: ['Nội dung viết (blog, article)', 'Nội dung hình ảnh (infographic)', 'Nội dung video', 'Nội dung truyền thông xã hội'],
+                    required: true
+                },
+                {
+                    type: 'scale',
+                    id: 'pd_research_skill',
+                    question: 'Đánh giá kỹ năng nghiên cứu và tổng hợp thông tin của bạn (1-10)',
+                    min: 1,
+                    max: 10,
+                    required: true
+                }
+            ]
+        };
+      
+        // Hàm hiển thị câu hỏi theo phân ban
+        function renderBanQuestions(banCode) {
+            const questionsContainer = document.getElementById('ban-specific-questions');
+            questionsContainer.innerHTML = '';
+            
+            // Lấy câu hỏi cho phân ban cụ thể
+            const questions = banQuestions[banCode] || [];
+            
+            if (questions.length === 0) {
+                questionsContainer.innerHTML = '<p class="no-questions">Không có câu hỏi cụ thể cho phân ban này.</p>';
+                return;
+            }
+            
+            // Tạo HTML cho các câu hỏi
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'form-group question-item';
+                
+                let questionHTML = `<label for="${q.id}" ${q.required ? 'class="required"' : ''}>${q.question}</label>`;
+                
+                switch (q.type) {
+                    case 'textarea':
+                        questionHTML += `<textarea id="${q.id}" name="${q.id}" rows="3" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}></textarea>`;
+                        break;
+                        
+                    case 'checkbox':
+                        questionHTML += `<div class="checkbox-group">`;
+                        q.options.forEach((option, optIndex) => {
+                            questionHTML += `
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="${q.id}_${optIndex}" name="${q.id}[]" value="${option}" ${q.required ? 'required' : ''}>
+                                    <label for="${q.id}_${optIndex}">${option}</label>
+                                </div>
+                            `;
+                        });
+                        questionHTML += `</div>`;
+                        break;
+                        
+                    case 'radio':
+                        questionHTML += `<div class="radio-group">`;
+                        q.options.forEach((option, optIndex) => {
+                            questionHTML += `
+                                <div class="radio-item">
+                                    <input type="radio" id="${q.id}_${optIndex}" name="${q.id}" value="${option}" ${q.required && optIndex === 0 ? 'required' : ''}>
+                                    <label for="${q.id}_${optIndex}">${option}</label>
+                                </div>
+                            `;
+                        });
+                        questionHTML += `</div>`;
+                        break;
+                        
+                    case 'dropdown':
+                        questionHTML += `<select id="${q.id}" name="${q.id}" ${q.required ? 'required' : ''}>`;
+                        questionHTML += `<option value="">-- Chọn --</option>`;
+                        q.options.forEach(option => {
+                            questionHTML += `<option value="${option}">${option}</option>`;
+                        });
+                        questionHTML += `</select>`;
+                        break;
+                        
+                    case 'scale':
+                        questionHTML += `
+                            <div class="scale-container">
+                                <input type="range" id="${q.id}" name="${q.id}" min="${q.min}" max="${q.max}" value="${Math.round((q.min + q.max)/2)}" ${q.required ? 'required' : ''}>
+                                <div class="scale-labels">
+                                    <span>${q.min} (Thấp nhất)</span>
+                                    <span>${q.max} (Cao nhất)</span>
+                                </div>
+                                <output for="${q.id}" id="${q.id}_value">${Math.round((q.min + q.max)/2)}</output>
+                            </div>
+                        `;
+                        break;
+                        
+                    case 'date':
+                        questionHTML += `<input type="date" id="${q.id}" name="${q.id}" ${q.required ? 'required' : ''}>`;
+                        break;
+                        
+                    case 'time':
+                        questionHTML += `<input type="time" id="${q.id}" name="${q.id}" ${q.required ? 'required' : ''}>`;
+                        break;
+                        
+                    case 'datetime':
+                        questionHTML += `<input type="datetime-local" id="${q.id}" name="${q.id}" ${q.required ? 'required' : ''}>`;
+                        break;
+                        
+                    default:
+                        questionHTML += `<input type="text" id="${q.id}" name="${q.id}" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}>`;
+                }
+                
+                questionDiv.innerHTML = questionHTML;
+                questionsContainer.appendChild(questionDiv);
+            });
+            
+            // Thêm sự kiện cho các input dạng range để hiển thị giá trị
+            questions.forEach(q => {
+                if (q.type === 'scale') {
+                    const rangeInput = document.getElementById(q.id);
+                    const output = document.getElementById(`${q.id}_value`);
+                    if (rangeInput && output) {
+                        rangeInput.addEventListener('input', () => {
+                            output.value = rangeInput.value;
+                        });
+                    }
+                }
+            });
+        }
+        let currentSection = 1;
+        const totalSections = 4;
+        
+        function updateProgressBar() {
+            // Reset all steps
+            for (let i = 1; i <= totalSections; i++) {
+                document.getElementById(`step${i}`).className = 'step';
+            }
+            
+            // Mark previous steps as completed and current as active
+            for (let i = 1; i < currentSection; i++) {
+                document.getElementById(`step${i}`).className = 'step completed';
+            }
+            
+            document.getElementById(`step${currentSection}`).className = 'step active';
+        }
+        
+        function showSection(sectionNumber) {
+            // Hide all sections
+            for (let i = 1; i <= totalSections; i++) {
+                document.getElementById(`section${i}`).style.display = 'none';
+            }
+            
+            // Show current section
+            document.getElementById(`section${sectionNumber}`).style.display = 'block';
+            currentSection = sectionNumber;
+            updateProgressBar();
+            
+            // If it's the confirmation section, generate summary
+            if (sectionNumber === 4) {
+                generateSummary();
+            }
+            
+            // If it's the experience section, update position names
+            if (sectionNumber === 3) {
+                updatePositionNames();
+            }
+        }
+        
+        function updateSecondaryOptions() {
+            const prioritySelect = document.getElementById('priority_position');
+            const secondarySelect = document.getElementById('secondary_position');
+            const priorityValue = prioritySelect.value;
+            
+            // Enable all options first
+            for (let i = 0; i < secondarySelect.options.length; i++) {
+                secondarySelect.options[i].disabled = false;
+            }
+            
+            // Disable the selected priority option in secondary select
+            if (priorityValue) {
+                for (let i = 0; i < secondarySelect.options.length; i++) {
+                    if (secondarySelect.options[i].value === priorityValue) {
+                        secondarySelect.options[i].disabled = true;
+                        if (secondarySelect.value === priorityValue) {
+                            secondarySelect.value = "";
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        
+        function updatePositionNames() {
+            const prioritySelect = document.getElementById('priority_position');
+            const secondarySelect = document.getElementById('secondary_position');
+            
+            const priorityPositionName = prioritySelect.options[prioritySelect.selectedIndex].text;
+            const secondaryPositionName = secondarySelect.options[secondarySelect.selectedIndex].text;
+            
+            document.getElementById('priorityPositionName').textContent = priorityPositionName;
+            document.getElementById('secondaryPositionName').textContent = secondaryPositionName;
+            document.getElementById('ban-name').textContent = priorityPositionName;
+            
+            // Hiển thị câu hỏi theo phân ban đã chọn
+            renderBanQuestions(prioritySelect.value);
+            
+            // Hide secondary section if not selected or "None" is selected
+            if (secondarySelect.value === "" || secondarySelect.value === "None") {
+                document.getElementById('secondary-section').style.display = 'none';
+            } else {
+                document.getElementById('secondary-section').style.display = 'block';
+            }
+        }
+        
+        function nextSection(current) {
+            // Basic validation
+            let valid = true;
+            const currentSection = document.getElementById(`section${current}`);
+            const requiredInputs = currentSection.querySelectorAll('input[required], select[required], textarea[required]');
+            
+            requiredInputs.forEach(input => {
+                // Kiểm tra radio buttons và checkboxes
+                if (input.type === 'radio' || input.type === 'checkbox') {
+                    const name = input.name;
+                    const checked = currentSection.querySelectorAll(`input[name="${name}"]:checked`).length > 0;
+                    
+                    if (!checked) {
+                        valid = false;
+                        // Highlight nhóm câu hỏi
+                        const group = input.closest('.radio-group, .checkbox-group');
+                        if (group) {
+                            group.style.border = '1px solid var(--error)';
+                            group.style.padding = '10px';
+                            group.style.borderRadius = '8px';
+                        }
+                    }
+                } 
+                // Kiểm tra các input khác
+                else if (!input.value) {
+                    valid = false;
+                    input.style.borderColor = 'var(--error)';
+                    // Add shake animation for error
+                    input.style.animation = 'shake 0.5s';
+                    setTimeout(() => {
+                        input.style.animation = '';
+                    }, 500);
+                } else {
+                    input.style.borderColor = 'var(--border)';
+                }
+            });
+            
+            if (valid) {
+                showSection(current + 1);
+            } else {
+                alert('Vui lòng điền đầy đủ các thông tin bắt buộc.');
+            }
+        }
+        
+        function prevSection(current) {
+            showSection(current - 1);
+        }
+        
+        function generateSummary() {
+            const form = document.getElementById('recruitmentForm');
+            const summaryDiv = document.getElementById('summary');
+            
+            // Get position names from options
+            const priorityPositionText = form.priority_position.options[form.priority_position.selectedIndex].text;
+            const secondaryPositionText = form.secondary_position.options[form.secondary_position.selectedIndex].text;
+            
+            // Get selected skills
+            const selectedSkills = [];
+            document.querySelectorAll('input[name="skills"]:checked').forEach(skill => {
+                selectedSkills.push(skill.nextElementSibling.textContent);
+            });
+            
+            let summaryHTML = `
+                <p><strong>Họ và tên:</strong> ${form.fullname.value}</p>
+                <p><strong>Email:</strong> ${form.email.value}</p>
+                <p><strong>Số điện thoại:</strong> ${form.phone.value}</p>
+                <p><strong>Khoa:</strong> ${form.faculty.options[form.faculty.selectedIndex].text}</p>
+                <p><strong>Vị trí ưu tiên:</strong> ${priorityPositionText}</p>
+                <p><strong>Vị trí dự bị:</strong> ${secondaryPositionText === "-- Chọn vị trí --" ? "Không chọn" : secondaryPositionText}</p>
+            `;
+            
+            summaryDiv.innerHTML = summaryHTML;
+        }
+        
+        // Handle form submission
+        document.getElementById('recruitmentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Check if agreement is checked
+            if (!document.getElementById('agree').checked) {
+                alert('Vui lòng xác nhận rằng tất cả thông tin bạn cung cấp là chính xác.');
+                return;
+            }
+            
+            const form = document.getElementById('recruitmentForm');
+            const formData = new FormData(form);
+            
+            // Convert form data to object
+            const formObject = {};
+            for (let [key, value] of formData.entries()) {
+                if (key === 'skills') {
+                    if (!formObject[key]) formObject[key] = [];
+                    formObject[key].push(value);
+                } else {
+                    formObject[key] = value;
+                }
+            }
+            
+            // Add timestamp
+            formObject.timestamp = new Date();
+            
+            // Show loading state
+            const submitBtn = form.querySelector('.btn-submit');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
+            submitBtn.disabled = true;
+            
+            try {
+                // Save to Firebase
+                await db.collection('applications').add(formObject);
+                
+                // Hide form and show success message
+                form.style.display = 'none';
+                document.getElementById('successMessage').style.display = 'block';
+                
+                console.log('Application submitted successfully:', formObject);
+            } catch (error) {
+                console.error('Error submitting application:', error);
+                alert('Có lỗi xảy ra khi gửi đơn ứng tuyển. Vui lòng thử lại sau.');
+                
+                // Reset button state
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi đơn ứng tuyển';
+                submitBtn.disabled = false;
+            }
+        });
+        
+        // Update position names when they change
+        document.getElementById('priority_position').addEventListener('change', updatePositionNames);
+        document.getElementById('secondary_position').addEventListener('change', updatePositionNames);
+        
+        // Initialize the form
+        updateProgressBar();
+        updateSecondaryOptions();
+        
+        // Add shake animation for error states
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
+        // Gọi hàm này khi trang được tải và khi vị trí thay đổi
+        document.getElementById('priority_position').addEventListener('change', updatePositionNames);
+        
+        // Khởi tạo câu hỏi khi trang được tải
+        window.addEventListener('DOMContentLoaded', () => {
+            updateSecondaryOptions();
+            // Nếu đã chọn phân ban từ trước, hiển thị câu hỏi
+            const prioritySelect = document.getElementById('priority_position');
+            if (prioritySelect.value) {
+                updatePositionNames();
+            }
+        });
+    </script>
+</body>
+</html>
