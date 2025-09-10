@@ -1017,31 +1017,47 @@
                         break;
                         
                     case 'checkbox':
-                        questionHTML += `<div class="checkbox-group">`;
+                        questionHTML += `<div class="checkbox-group" id="${prefixedId}_group">`;
                         q.options.forEach((option, optIndex) => {
                             const optionId = `${prefixedId}_${optIndex}`;
                             questionHTML += `
                                 <div class="checkbox-item">
-                                    <input type="checkbox" id="${optionId}" name="${prefixedId}[]" value="${option}" ${q.required ? 'required' : ''}>
+                                    <input type="checkbox" id="${optionId}" name="${prefixedId}[]" value="${option}">
                                     <label for="${optionId}">${option}</label>
                                 </div>
                             `;
                         });
                         questionHTML += `</div>`;
+                        
+                        // Thêm hidden input để validation
+                        if (q.required) {
+                            questionHTML += `
+                                <input type="hidden" name="${prefixedId}_required" value="true" 
+                                       data-required-message="Vui lòng chọn ít nhất một tùy chọn">
+                            `;
+                        }
                         break;
                         
                     case 'radio':
-                        questionHTML += `<div class="radio-group">`;
+                        questionHTML += `<div class="radio-group" id="${prefixedId}_group">`;
                         q.options.forEach((option, optIndex) => {
                             const optionId = `${prefixedId}_${optIndex}`;
                             questionHTML += `
                                 <div class="radio-item">
-                                    <input type="radio" id="${optionId}" name="${prefixedId}" value="${option}" ${q.required && optIndex === 0 ? 'required' : ''}>
+                                    <input type="radio" id="${optionId}" name="${prefixedId}" value="${option}">
                                     <label for="${optionId}">${option}</label>
                                 </div>
                             `;
                         });
                         questionHTML += `</div>`;
+                        
+                        // Thêm hidden input để validation
+                        if (q.required) {
+                            questionHTML += `
+                                <input type="hidden" name="${prefixedId}_required" value="true" 
+                                       data-required-message="Vui lòng chọn một tùy chọn">
+                            `;
+                        }
                         break;
                         
                     case 'dropdown':
@@ -1195,6 +1211,58 @@
             }
         }
         
+        // Hàm validation tùy chỉnh cho checkbox và radio groups
+        function validateFormSection(section) {
+            let isValid = true;
+            
+            // Tìm tất cả các hidden required fields
+            const requiredHiddenInputs = section.querySelectorAll('input[type="hidden"][name$="_required"]');
+            
+            requiredHiddenInputs.forEach(hiddenInput => {
+                const fieldName = hiddenInput.name.replace('_required', '');
+                const fieldType = hiddenInput.name.includes('checkbox') ? 'checkbox' : 'radio';
+                
+                // Kiểm tra xem có ít nhất một checkbox/radio được chọn không
+                let isChecked = false;
+                if (fieldType === 'checkbox') {
+                    const checkboxes = section.querySelectorAll(`input[type="checkbox"][name="${fieldName}[]"]`);
+                    isChecked = Array.from(checkboxes).some(cb => cb.checked);
+                } else {
+                    const radios = section.querySelectorAll(`input[type="radio"][name="${fieldName}"]`);
+                    isChecked = Array.from(radios).some(radio => radio.checked);
+                }
+                
+                if (!isChecked) {
+                    isValid = false;
+                    // Highlight nhóm
+                    const group = section.querySelector(`#${fieldName}_group`);
+                    if (group) {
+                        group.style.border = '1px solid var(--error)';
+                        group.style.padding = '10px';
+                        group.style.borderRadius = '8px';
+                    }
+                }
+            });
+            
+            // Validate các trường required thông thường
+            const requiredInputs = section.querySelectorAll('input[required], select[required], textarea[required]');
+            
+            requiredInputs.forEach(input => {
+                if (input.offsetParent !== null && !input.value) { // Chỉ validate các trường visible
+                    isValid = false;
+                    input.style.borderColor = 'var(--error)';
+                    input.style.animation = 'shake 0.5s';
+                    setTimeout(() => {
+                        input.style.animation = '';
+                    }, 500);
+                } else {
+                    input.style.borderColor = 'var(--border)';
+                }
+            });
+            
+            return isValid;
+        }
+        
         function nextSection(current) {
             // Basic validation
             let valid = true;
@@ -1268,6 +1336,131 @@
             summaryDiv.innerHTML = summaryHTML;
         }
         
+        // Hàm thu thập tất cả dữ liệu form
+        function collectFormData() {
+            const formObject = {
+                // Thông tin cá nhân
+                fullname: document.getElementById('fullname').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                birthdate: document.getElementById('birthdate').value,
+                faculty: document.getElementById('faculty').value,
+                
+                // Vị trí ứng tuyển
+                priority_position: document.getElementById('priority_position').value,
+                secondary_position: document.getElementById('secondary_position').value,
+                availability: document.getElementById('availability').value,
+                motivation: document.getElementById('motivation').value,
+                
+                // Chi tiết ứng tuyển
+                intro: document.getElementById('intro').value,
+                priority_experience: document.getElementById('priority_experience').value,
+                priority_motivation: document.getElementById('priority_motivation').value,
+                secondary_experience: document.getElementById('secondary_experience')?.value || '',
+                secondary_motivation: document.getElementById('secondary_motivation')?.value || '',
+                
+                // Câu hỏi phân ban ưu tiên
+                ...collectBanQuestions('priority'),
+                
+                // Câu hỏi phân ban dự bị (nếu có)
+                ...collectBanQuestions('secondary'),
+                
+                // Timestamp
+                timestamp: new Date()
+            };
+            
+            return formObject;
+        }
+        
+        // Hàm thu thập câu hỏi theo phân ban
+        function collectBanQuestions(type) {
+            const prefix = `${type}_`;
+            const questionsData = {};
+            
+            const containerId = type === 'priority' ? 'ban-specific-questions' : 'secondary-ban-specific-questions';
+            const container = document.getElementById(containerId);
+            
+            if (!container) return questionsData;
+            
+            const inputs = container.querySelectorAll('input, select, textarea');
+            
+            inputs.forEach(input => {
+                // Bỏ qua các hidden required fields
+                if (input.name && input.name.startsWith(prefix) && !input.name.endsWith('_required')) {
+                    const key = input.name;
+                    
+                    if (input.type === 'checkbox') {
+                        // Xử lý checkbox
+                        if (!questionsData[key]) questionsData[key] = [];
+                        if (input.checked) {
+                            questionsData[key].push(input.value);
+                        }
+                    } else if (input.type === 'radio') {
+                        // Xử lý radio - chỉ lấy giá trị được chọn
+                        if (input.checked) {
+                            questionsData[key] = input.value;
+                        }
+                    } else {
+                        // Xử lý các input khác
+                        questionsData[key] = input.value;
+                    }
+                }
+            });
+            
+            return questionsData;
+        }
+        
+        // Hàm lưu dữ liệu tạm vào localStorage
+        function saveFormData() {
+            try {
+                const formData = collectFormData();
+                localStorage.setItem('enactus_form_data', JSON.stringify(formData));
+                console.log('Form data saved temporarily');
+            } catch (error) {
+                console.error('Error saving form data:', error);
+            }
+        }
+        
+        // Hàm khôi phục dữ liệu từ localStorage
+        function loadFormData() {
+            try {
+                const savedData = localStorage.getItem('enactus_form_data');
+                if (savedData) {
+                    const formData = JSON.parse(savedData);
+                    
+                    // Khôi phục thông tin cá nhân
+                    if (formData.fullname) document.getElementById('fullname').value = formData.fullname;
+                    if (formData.email) document.getElementById('email').value = formData.email;
+                    if (formData.phone) document.getElementById('phone').value = formData.phone;
+                    if (formData.birthdate) document.getElementById('birthdate').value = formData.birthdate;
+                    if (formData.faculty) document.getElementById('faculty').value = formData.faculty;
+                    
+                    // Khôi phục vị trí ứng tuyển
+                    if (formData.priority_position) {
+                        document.getElementById('priority_position').value = formData.priority_position;
+                        updateSecondaryOptions();
+                    }
+                    if (formData.secondary_position) document.getElementById('secondary_position').value = formData.secondary_position;
+                    if (formData.availability) document.getElementById('availability').value = formData.availability;
+                    if (formData.motivation) document.getElementById('motivation').value = formData.motivation;
+                    
+                    // Khôi phục chi tiết ứng tuyển
+                    if (formData.intro) document.getElementById('intro').value = formData.intro;
+                    if (formData.priority_experience) document.getElementById('priority_experience').value = formData.priority_experience;
+                    if (formData.priority_motivation) document.getElementById('priority_motivation').value = formData.priority_motivation;
+                    if (formData.secondary_experience) document.getElementById('secondary_experience').value = formData.secondary_experience;
+                    if (formData.secondary_motivation) document.getElementById('secondary_motivation').value = formData.secondary_motivation;
+                    
+                    // Cập nhật tên phân ban và câu hỏi
+                    updatePositionNames();
+                    
+                    console.log('Form data loaded from temporary storage');
+                }
+            } catch (error) {
+                console.error('Error loading form data:', error);
+            }
+        }
+        
         // Handle form submission
         document.getElementById('recruitmentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -1279,30 +1472,22 @@
             }
             
             const form = document.getElementById('recruitmentForm');
-            const formData = new FormData(form);
-            
-            // Convert form data to object
-            const formObject = {};
-            for (let [key, value] of formData.entries()) {
-                if (key === 'skills') {
-                    if (!formObject[key]) formObject[key] = [];
-                    formObject[key].push(value);
-                } else {
-                    formObject[key] = value;
-                }
-            }
-            
-            // Add timestamp
-            formObject.timestamp = new Date();
             
             // Show loading state
             const submitBtn = form.querySelector('.btn-submit');
+            const originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
             submitBtn.disabled = true;
             
             try {
+                // Lấy tất cả dữ liệu từ form
+                const formObject = collectFormData();
+                
                 // Save to Firebase
                 await db.collection('applications').add(formObject);
+                
+                // Xóa dữ liệu tạm sau khi gửi thành công
+                localStorage.removeItem('enactus_form_data');
                 
                 // Hide form and show success message
                 form.style.display = 'none';
@@ -1311,12 +1496,23 @@
                 console.log('Application submitted successfully:', formObject);
             } catch (error) {
                 console.error('Error submitting application:', error);
-                alert('Có lỗi xảy ra khi gửi đơn ứng tuyển. Vui lòng thử lại sau.');
+                alert('Có lỗi xảy ra khi gửi đơn ứng tuyển. Vui lòng thử lại sau. Chi tiết lỗi: ' + error.message);
                 
                 // Reset button state
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi đơn ứng tuyển';
+                submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
             }
+        });
+        
+        // Thêm sự kiện lưu dữ liệu khi người dùng rời khỏi trang
+        window.addEventListener('beforeunload', function(e) {
+            saveFormData();
+        });
+        
+        // Thêm sự kiện lưu dữ liệu khi người dùng thay đổi thông tin
+        document.querySelectorAll('input, select, textarea').forEach(element => {
+            element.addEventListener('input', saveFormData);
+            element.addEventListener('change', saveFormData);
         });
         
         // Update position names when they change
@@ -1326,6 +1522,18 @@
         // Initialize the form
         updateProgressBar();
         updateSecondaryOptions();
+        
+        // Tải dữ liệu đã lưu khi trang được tải
+        window.addEventListener('DOMContentLoaded', function() {
+            updateSecondaryOptions();
+            loadFormData();
+            
+            // Nếu đã chọn phân ban từ trước, hiển thị câu hỏi
+            const prioritySelect = document.getElementById('priority_position');
+            if (prioritySelect.value) {
+                updatePositionNames();
+            }
+        });
         
         // Add shake animation for error states
         const style = document.createElement('style');
@@ -1337,18 +1545,6 @@
             }
         `;
         document.head.appendChild(style);
-        // Gọi hàm này khi trang được tải và khi vị trí thay đổi
-        document.getElementById('priority_position').addEventListener('change', updatePositionNames);
-        
-        // Khởi tạo câu hỏi khi trang được tải
-        window.addEventListener('DOMContentLoaded', () => {
-            updateSecondaryOptions();
-            // Nếu đã chọn phân ban từ trước, hiển thị câu hỏi
-            const prioritySelect = document.getElementById('priority_position');
-            if (prioritySelect.value) {
-                updatePositionNames();
-            }
-        });
     </script>
 </body>
 </html>
