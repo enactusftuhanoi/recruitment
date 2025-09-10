@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đơn ứng tuyển - Enactus FTU Hanoi</title>
+    <title>Application form | Enactus FTU Hanoi</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -631,7 +631,7 @@
                 <h1>Enactus FTU Hanoi</h1>
             </div>
             <div class="header-content">
-                <p>Đơn ứng tuyển thành viên mới 2023</p>
+                <p>18th Gen Membership Recruitment</p>
             </div>
         </header>
         
@@ -767,6 +767,12 @@
                 <div class="form-section" id="section3">
                     <h2><i class="fas fa-tasks"></i> Chi tiết ứng tuyển</h2>
                     
+                    <div class="form-group">
+                        <label for="intro">Giới thiệu bản thân</label>
+                        <textarea id="intro" name="intro" rows="4" placeholder="Mô tả ngắn gọn về bản thân, tính cách, điểm mạnh và mong muốn của bạn..."></textarea>
+                    </div>
+                    
+                    <!--
                     <div class="sub-section" id="priority-section">
                         <h3><i class="fas fa-star"></i> Chi tiết ứng tuyển cho vị trí ưu tiên: <span id="priorityPositionName"></span></h3>
                         
@@ -779,9 +785,10 @@
                             <label for="priority_motivation" class="required">Động lực ứng tuyển vị trí này</label>
                             <textarea id="priority_motivation" name="priority_motivation" rows="4" placeholder="Tại sao bạn chọn vị trí này làm ưu tiên hàng đầu?..." required></textarea>
                         </div>
-                    </div>
+                    </div> 
+                    -->
                     
-                    <!-- THÊM PHẦN NÀY: Câu hỏi cụ thể theo phân ban -->
+                    <!-- Câu hỏi dành riêng cho phân ban ưu tiên -->
                     <div class="sub-section">
                         <h3><i class="fas fa-question-circle"></i> Câu hỏi dành riêng cho phân ban <span id="ban-name"></span></h3>
                         <div id="ban-specific-questions">
@@ -789,6 +796,7 @@
                         </div>
                     </div>
                     
+                    <!--
                     <div class="sub-section" id="secondary-section">
                         <h3><i class="fas fa-clock"></i> Chi tiết ứng tuyển cho vị trí dự bị: <span id="secondaryPositionName"></span></h3>
                         
@@ -802,7 +810,17 @@
                             <textarea id="secondary_motivation" name="secondary_motivation" rows="4" placeholder="Tại sao bạn chọn vị trí này làm dự bị?..."></textarea>
                         </div>
                     </div>
+                    -->
                     
+                    <!-- Câu hỏi dành riêng cho phân ban dự bị -->
+                    <div class="sub-section" id="secondary-ban-questions-section" style="display: none;">
+                        <h3><i class="fas fa-question-circle"></i> Câu hỏi dành riêng cho phân ban dự bị: <span id="secondary-ban-name"></span></h3>
+                        <div id="secondary-ban-specific-questions">
+                            <!-- Câu hỏi sẽ được tự động thêm vào đây bằng JavaScript -->
+                        </div>
+                    </div>
+
+                    <!--
                     <div class="form-group">
                         <label for="skills">Kỹ năng thành thạo</label>
                         <div class="checkbox-group">
@@ -828,11 +846,7 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="intro">Giới thiệu bản thân</label>
-                        <textarea id="intro" name="intro" rows="4" placeholder="Mô tả ngắn gọn về bản thân, tính cách, điểm mạnh và mong muốn của bạn..."></textarea>
-                    </div>
+                    -->
                     
                     <div class="buttons">
                         <button type="button" class="btn-prev" onclick="prevSection(3)">
@@ -1005,8 +1019,10 @@
         };
       
         // Hàm hiển thị câu hỏi theo phân ban
-        function renderBanQuestions(banCode) {
-            const questionsContainer = document.getElementById('ban-specific-questions');
+        function renderBanQuestions(banCode, type) {
+            // Xác định container dựa trên type
+            const containerId = type === 'priority' ? 'ban-specific-questions' : 'secondary-ban-specific-questions';
+            const questionsContainer = document.getElementById(containerId);
             questionsContainer.innerHTML = '';
             
             // Lấy câu hỏi cho phân ban cụ thể
@@ -1022,20 +1038,24 @@
                 const questionDiv = document.createElement('div');
                 questionDiv.className = 'form-group question-item';
                 
-                let questionHTML = `<label for="${q.id}" ${q.required ? 'class="required"' : ''}>${q.question}</label>`;
+                // Thêm tiền tố cho ID để tránh trùng lặp giữa priority và secondary
+                const prefixedId = `${type}_${q.id}`;
+                
+                let questionHTML = `<label for="${prefixedId}" ${q.required ? 'class="required"' : ''}>${q.question}</label>`;
                 
                 switch (q.type) {
                     case 'textarea':
-                        questionHTML += `<textarea id="${q.id}" name="${q.id}" rows="3" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}></textarea>`;
+                        questionHTML += `<textarea id="${prefixedId}" name="${prefixedId}" rows="3" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}></textarea>`;
                         break;
                         
                     case 'checkbox':
                         questionHTML += `<div class="checkbox-group">`;
                         q.options.forEach((option, optIndex) => {
+                            const optionId = `${prefixedId}_${optIndex}`;
                             questionHTML += `
                                 <div class="checkbox-item">
-                                    <input type="checkbox" id="${q.id}_${optIndex}" name="${q.id}[]" value="${option}" ${q.required ? 'required' : ''}>
-                                    <label for="${q.id}_${optIndex}">${option}</label>
+                                    <input type="checkbox" id="${optionId}" name="${prefixedId}[]" value="${option}" ${q.required ? 'required' : ''}>
+                                    <label for="${optionId}">${option}</label>
                                 </div>
                             `;
                         });
@@ -1045,10 +1065,11 @@
                     case 'radio':
                         questionHTML += `<div class="radio-group">`;
                         q.options.forEach((option, optIndex) => {
+                            const optionId = `${prefixedId}_${optIndex}`;
                             questionHTML += `
                                 <div class="radio-item">
-                                    <input type="radio" id="${q.id}_${optIndex}" name="${q.id}" value="${option}" ${q.required && optIndex === 0 ? 'required' : ''}>
-                                    <label for="${q.id}_${optIndex}">${option}</label>
+                                    <input type="radio" id="${optionId}" name="${prefixedId}" value="${option}" ${q.required && optIndex === 0 ? 'required' : ''}>
+                                    <label for="${optionId}">${option}</label>
                                 </div>
                             `;
                         });
@@ -1056,7 +1077,7 @@
                         break;
                         
                     case 'dropdown':
-                        questionHTML += `<select id="${q.id}" name="${q.id}" ${q.required ? 'required' : ''}>`;
+                        questionHTML += `<select id="${prefixedId}" name="${prefixedId}" ${q.required ? 'required' : ''}>`;
                         questionHTML += `<option value="">-- Chọn --</option>`;
                         q.options.forEach(option => {
                             questionHTML += `<option value="${option}">${option}</option>`;
@@ -1067,30 +1088,30 @@
                     case 'scale':
                         questionHTML += `
                             <div class="scale-container">
-                                <input type="range" id="${q.id}" name="${q.id}" min="${q.min}" max="${q.max}" value="${Math.round((q.min + q.max)/2)}" ${q.required ? 'required' : ''}>
+                                <input type="range" id="${prefixedId}" name="${prefixedId}" min="${q.min}" max="${q.max}" value="${Math.round((q.min + q.max)/2)}" ${q.required ? 'required' : ''}>
                                 <div class="scale-labels">
                                     <span>${q.min} (Thấp nhất)</span>
                                     <span>${q.max} (Cao nhất)</span>
                                 </div>
-                                <output for="${q.id}" id="${q.id}_value">${Math.round((q.min + q.max)/2)}</output>
+                                <output for="${prefixedId}" id="${prefixedId}_value">${Math.round((q.min + q.max)/2)}</output>
                             </div>
                         `;
                         break;
                         
                     case 'date':
-                        questionHTML += `<input type="date" id="${q.id}" name="${q.id}" ${q.required ? 'required' : ''}>`;
+                        questionHTML += `<input type="date" id="${prefixedId}" name="${prefixedId}" ${q.required ? 'required' : ''}>`;
                         break;
                         
                     case 'time':
-                        questionHTML += `<input type="time" id="${q.id}" name="${q.id}" ${q.required ? 'required' : ''}>`;
+                        questionHTML += `<input type="time" id="${prefixedId}" name="${prefixedId}" ${q.required ? 'required' : ''}>`;
                         break;
                         
                     case 'datetime':
-                        questionHTML += `<input type="datetime-local" id="${q.id}" name="${q.id}" ${q.required ? 'required' : ''}>`;
+                        questionHTML += `<input type="datetime-local" id="${prefixedId}" name="${prefixedId}" ${q.required ? 'required' : ''}>`;
                         break;
                         
                     default:
-                        questionHTML += `<input type="text" id="${q.id}" name="${q.id}" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}>`;
+                        questionHTML += `<input type="text" id="${prefixedId}" name="${prefixedId}" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}>`;
                 }
                 
                 questionDiv.innerHTML = questionHTML;
@@ -1100,8 +1121,9 @@
             // Thêm sự kiện cho các input dạng range để hiển thị giá trị
             questions.forEach(q => {
                 if (q.type === 'scale') {
-                    const rangeInput = document.getElementById(q.id);
-                    const output = document.getElementById(`${q.id}_value`);
+                    const prefixedId = `${type}_${q.id}`;
+                    const rangeInput = document.getElementById(prefixedId);
+                    const output = document.getElementById(`${prefixedId}_value`);
                     if (rangeInput && output) {
                         rangeInput.addEventListener('input', () => {
                             output.value = rangeInput.value;
@@ -1110,6 +1132,7 @@
                 }
             });
         }
+        
         let currentSection = 1;
         const totalSections = 4;
         
@@ -1184,8 +1207,17 @@
             document.getElementById('secondaryPositionName').textContent = secondaryPositionName;
             document.getElementById('ban-name').textContent = priorityPositionName;
             
-            // Hiển thị câu hỏi theo phân ban đã chọn
-            renderBanQuestions(prioritySelect.value);
+            // Hiển thị câu hỏi theo phân ban ưu tiên đã chọn
+            renderBanQuestions(prioritySelect.value, 'priority');
+            
+            // Hiển thị câu hỏi theo phân ban dự bị đã chọn (nếu có)
+            if (secondarySelect.value && secondarySelect.value !== "None") {
+                document.getElementById('secondary-ban-questions-section').style.display = 'block';
+                document.getElementById('secondary-ban-name').textContent = secondaryPositionName;
+                renderBanQuestions(secondarySelect.value, 'secondary');
+            } else {
+                document.getElementById('secondary-ban-questions-section').style.display = 'none';
+            }
             
             // Hide secondary section if not selected or "None" is selected
             if (secondarySelect.value === "" || secondarySelect.value === "None") {
@@ -1261,7 +1293,6 @@
                 <p><strong>Họ và tên:</strong> ${form.fullname.value}</p>
                 <p><strong>Email:</strong> ${form.email.value}</p>
                 <p><strong>Số điện thoại:</strong> ${form.phone.value}</p>
-                <p><strong>Khoa:</strong> ${form.faculty.options[form.faculty.selectedIndex].text}</p>
                 <p><strong>Vị trí ưu tiên:</strong> ${priorityPositionText}</p>
                 <p><strong>Vị trí dự bị:</strong> ${secondaryPositionText === "-- Chọn vị trí --" ? "Không chọn" : secondaryPositionText}</p>
             `;
