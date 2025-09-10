@@ -412,6 +412,21 @@
             font-size: 20px;
         }
         
+        .sub-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        
+        .sub-section h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        
         @media (max-width: 900px) {
             .progress-bar {
                 padding: 20px 30px;
@@ -505,6 +520,11 @@
             }
         }
     </style>
+    
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <div class="container">
@@ -594,7 +614,7 @@
                             <h3><i class="fas fa-star"></i> Vị trí ưu tiên <span class="required"></span></h3>
                             <div class="form-group">
                                 <label for="priority_position" class="required">Vị trí mong muốn nhất</label>
-                                <select id="priority_position" name="priority_position" required>
+                                <select id="priority_position" name="priority_position" required onchange="updateSecondaryOptions()">
                                     <option value="">-- Chọn vị trí --</option>
                                     <option value="Design">Thiết kế đồ họa</option>
                                     <option value="Content">Content Writer</option>
@@ -656,19 +676,31 @@
                 <div class="form-section" id="section3">
                     <h2><i class="fas fa-tasks"></i> Chi tiết ứng tuyển</h2>
                     
-                    <div class="position-detail">
-                        <h4><i class="fas fa-star"></i> Chi tiết vị trí ưu tiên: <span id="priorityPositionName"></span></h4>
+                    <div class="sub-section" id="priority-section">
+                        <h3><i class="fas fa-star"></i> Chi tiết ứng tuyển cho vị trí ưu tiên: <span id="priorityPositionName"></span></h3>
+                        
                         <div class="form-group">
-                            <label for="experience1">Kinh nghiệm và hiểu biết về vị trí này</label>
-                            <textarea id="experience1" name="experience1" rows="4" placeholder="Hãy mô tả kinh nghiệm, hiểu biết của bạn về vị trí này và tại sao bạn phù hợp..."></textarea>
+                            <label for="priority_experience" class="required">Kinh nghiệm và hiểu biết về vị trí này</label>
+                            <textarea id="priority_experience" name="priority_experience" rows="4" placeholder="Hãy mô tả kinh nghiệm, hiểu biết của bạn về vị trí này và tại sao bạn phù hợp..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="priority_motivation" class="required">Động lực ứng tuyển vị trí này</label>
+                            <textarea id="priority_motivation" name="priority_motivation" rows="4" placeholder="Tại sao bạn chọn vị trí này làm ưu tiên hàng đầu?..." required></textarea>
                         </div>
                     </div>
                     
-                    <div class="position-detail" id="secondaryPositionDetail">
-                        <h4><i class="fas fa-clock"></i> Chi tiết vị trí dự bị: <span id="secondaryPositionName"></span></h4>
+                    <div class="sub-section" id="secondary-section">
+                        <h3><i class="fas fa-clock"></i> Chi tiết ứng tuyển cho vị trí dự bị: <span id="secondaryPositionName"></span></h3>
+                        
                         <div class="form-group">
-                            <label for="experience2">Kinh nghiệm và hiểu biết về vị trí dự bị (nếu có)</label>
-                            <textarea id="experience2" name="experience2" rows="4" placeholder="Nếu bạn đã chọn vị trí dự bị, hãy chia sẻ kinh nghiệm và hiểu biết của bạn về vị trí này..."></textarea>
+                            <label for="secondary_experience">Kinh nghiệm và hiểu biết về vị trí dự bị (nếu có)</label>
+                            <textarea id="secondary_experience" name="secondary_experience" rows="4" placeholder="Nếu bạn đã chọn vị trí dự bị, hãy chia sẻ kinh nghiệm và hiểu biết của bạn về vị trí này..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="secondary_motivation">Lý do chọn vị trí dự bị này</label>
+                            <textarea id="secondary_motivation" name="secondary_motivation" rows="4" placeholder="Tại sao bạn chọn vị trí này làm dự bị?..."></textarea>
                         </div>
                     </div>
                     
@@ -754,6 +786,21 @@
     </div>
 
     <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAOP2j0qV0Ge-q2-Y9zo9Qc3eLmgtVOK3k",
+            authDomain: "recruitment-enactusftuhanoi.firebaseapp.com",
+            projectId: "recruitment-enactusftuhanoi",
+            storageBucket: "recruitment-enactusftuhanoi.firebasestorage.app",
+            messagingSenderId: "658928769643",
+            appId: "1:658928769643:web:ef4e26633b7c41c922ef2e",
+            measurementId: "G-BJT7ZPKYE3"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
         let currentSection = 1;
         const totalSections = 4;
         
@@ -793,6 +840,30 @@
             }
         }
         
+        function updateSecondaryOptions() {
+            const prioritySelect = document.getElementById('priority_position');
+            const secondarySelect = document.getElementById('secondary_position');
+            const priorityValue = prioritySelect.value;
+            
+            // Enable all options first
+            for (let i = 0; i < secondarySelect.options.length; i++) {
+                secondarySelect.options[i].disabled = false;
+            }
+            
+            // Disable the selected priority option in secondary select
+            if (priorityValue) {
+                for (let i = 0; i < secondarySelect.options.length; i++) {
+                    if (secondarySelect.options[i].value === priorityValue) {
+                        secondarySelect.options[i].disabled = true;
+                        if (secondarySelect.value === priorityValue) {
+                            secondarySelect.value = "";
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        
         function updatePositionNames() {
             const prioritySelect = document.getElementById('priority_position');
             const secondarySelect = document.getElementById('secondary_position');
@@ -803,11 +874,11 @@
             document.getElementById('priorityPositionName').textContent = priorityPositionName;
             document.getElementById('secondaryPositionName').textContent = secondaryPositionName;
             
-            // Hide secondary position detail if not selected
+            // Hide secondary section if not selected or "None" is selected
             if (secondarySelect.value === "" || secondarySelect.value === "None") {
-                document.getElementById('secondaryPositionDetail').style.display = 'none';
+                document.getElementById('secondary-section').style.display = 'none';
             } else {
-                document.getElementById('secondaryPositionDetail').style.display = 'block';
+                document.getElementById('secondary-section').style.display = 'block';
             }
         }
         
@@ -815,7 +886,7 @@
             // Basic validation
             let valid = true;
             const currentSection = document.getElementById(`section${current}`);
-            const requiredInputs = currentSection.querySelectorAll('input[required], select[required]');
+            const requiredInputs = currentSection.querySelectorAll('input[required], select[required], textarea[required]');
             
             requiredInputs.forEach(input => {
                 if (!input.value) {
@@ -850,6 +921,12 @@
             const priorityPositionText = form.priority_position.options[form.priority_position.selectedIndex].text;
             const secondaryPositionText = form.secondary_position.options[form.secondary_position.selectedIndex].text;
             
+            // Get selected skills
+            const selectedSkills = [];
+            document.querySelectorAll('input[name="skills"]:checked').forEach(skill => {
+                selectedSkills.push(skill.nextElementSibling.textContent);
+            });
+            
             let summaryHTML = `
                 <p><strong>Họ và tên:</strong> ${form.fullname.value}</p>
                 <p><strong>Email:</strong> ${form.email.value}</p>
@@ -858,13 +935,14 @@
                 <p><strong>Vị trí ưu tiên:</strong> ${priorityPositionText}</p>
                 <p><strong>Vị trí dự bị:</strong> ${secondaryPositionText === "-- Chọn vị trí --" ? "Không chọn" : secondaryPositionText}</p>
                 <p><strong>Thời gian tham gia:</strong> ${form.availability.options[form.availability.selectedIndex].text}</p>
+                <p><strong>Kỹ năng:</strong> ${selectedSkills.join(', ') || 'Không có'}</p>
             `;
             
             summaryDiv.innerHTML = summaryHTML;
         }
         
         // Handle form submission
-        document.getElementById('recruitmentForm').addEventListener('submit', function(e) {
+        document.getElementById('recruitmentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             // Check if agreement is checked
@@ -873,27 +951,45 @@
                 return;
             }
             
-            // Simulate form submission to Google Sheets
             const form = document.getElementById('recruitmentForm');
             const formData = new FormData(form);
+            
+            // Convert form data to object
+            const formObject = {};
+            for (let [key, value] of formData.entries()) {
+                if (key === 'skills') {
+                    if (!formObject[key]) formObject[key] = [];
+                    formObject[key].push(value);
+                } else {
+                    formObject[key] = value;
+                }
+            }
+            
+            // Add timestamp
+            formObject.timestamp = new Date();
             
             // Show loading state
             const submitBtn = form.querySelector('.btn-submit');
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
             submitBtn.disabled = true;
             
-            // Simulate API call
-            setTimeout(() => {
+            try {
+                // Save to Firebase
+                await db.collection('applications').add(formObject);
+                
                 // Hide form and show success message
                 form.style.display = 'none';
                 document.getElementById('successMessage').style.display = 'block';
                 
-                // In a real implementation, you would send data to Google Apps Script
-                console.log('Form data to be sent to Google Sheets:');
-                for (let [key, value] of formData.entries()) {
-                    console.log(`${key}: ${value}`);
-                }
-            }, 2000);
+                console.log('Application submitted successfully:', formObject);
+            } catch (error) {
+                console.error('Error submitting application:', error);
+                alert('Có lỗi xảy ra khi gửi đơn ứng tuyển. Vui lòng thử lại sau.');
+                
+                // Reset button state
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi đơn ứng tuyển';
+                submitBtn.disabled = false;
+            }
         });
         
         // Update position names when they change
@@ -902,6 +998,7 @@
         
         // Initialize the form
         updateProgressBar();
+        updateSecondaryOptions();
         
         // Add shake animation for error states
         const style = document.createElement('style');
