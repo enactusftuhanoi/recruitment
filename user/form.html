@@ -17,6 +17,7 @@
             --success: #4caf50;
             --error: #f44336;
             --border: #ddd;
+            --light-blue: #e8f0fe;
         }
         
         * {
@@ -32,22 +33,38 @@
             line-height: 1.6;
             min-height: 100vh;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         .container {
             max-width: 1000px;
-            margin: 0 auto;
+            width: 100%;
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
         
         header {
-            background: var(--primary);
+            background: linear-gradient(120deg, var(--primary), var(--primary-dark));
             color: white;
-            padding: 25px;
+            padding: 30px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(30deg);
         }
         
         .logo {
@@ -55,73 +72,85 @@
             justify-content: center;
             align-items: center;
             margin-bottom: 15px;
+            position: relative;
         }
         
         .logo i {
-            font-size: 36px;
+            font-size: 42px;
             margin-right: 15px;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         
         .logo h1 {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
+            letter-spacing: 0.5px;
         }
         
         .header-content p {
             font-size: 18px;
             margin-top: 10px;
             opacity: 0.9;
+            font-weight: 300;
         }
         
         .progress-bar {
             display: flex;
             justify-content: space-between;
-            padding: 20px 40px;
+            padding: 25px 50px;
             background: var(--secondary);
             border-bottom: 1px solid var(--border);
+            position: relative;
         }
         
         .step {
             text-align: center;
             position: relative;
             flex: 1;
+            z-index: 2;
         }
         
         .step:not(:last-child):after {
             content: '';
             position: absolute;
-            top: 15px;
+            top: 22px;
             right: -50%;
             width: 100%;
-            height: 2px;
+            height: 3px;
             background: var(--border);
             z-index: 1;
+            transition: all 0.3s ease;
         }
         
         .step-number {
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             background: white;
             border: 2px solid var(--border);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 0 auto 8px;
+            margin: 0 auto 10px;
             position: relative;
             z-index: 2;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
         
         .step.active .step-number {
             background: var(--primary);
             color: white;
             border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3);
         }
         
         .step.completed .step-number {
             background: var(--success);
             color: white;
             border-color: var(--success);
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
         }
         
         .step.completed:after {
@@ -131,15 +160,17 @@
         .step-label {
             font-size: 14px;
             color: var(--text-light);
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
         
         .step.active .step-label {
             color: var(--primary);
-            font-weight: 500;
+            font-weight: 600;
         }
         
         .form-container {
-            padding: 30px;
+            padding: 35px;
         }
         
         .form-section {
@@ -152,41 +183,61 @@
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
         h2 {
             color: var(--primary);
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--secondary);
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light-blue);
+            font-size: 24px;
+            position: relative;
+        }
+        
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 70px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px;
         }
         
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-weight: 500;
             color: var(--text);
+            font-size: 15px;
         }
         
         input, select, textarea {
             width: 100%;
-            padding: 14px;
+            padding: 16px;
             border: 1px solid var(--border);
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 16px;
-            transition: border 0.3s;
+            transition: all 0.3s;
+            font-family: 'Roboto', sans-serif;
         }
         
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 120px;
         }
         
         .required:after {
@@ -204,27 +255,38 @@
         .checkbox-item {
             display: flex;
             align-items: center;
+            background: #f9f9f9;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .checkbox-item:hover {
+            background: #f0f0f0;
         }
         
         .checkbox-item input {
             width: auto;
-            margin-right: 8px;
+            margin-right: 10px;
         }
         
         .buttons {
             display: flex;
             justify-content: space-between;
-            margin-top: 30px;
+            margin-top: 35px;
         }
         
         button {
-            padding: 14px 28px;
+            padding: 16px 32px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .btn-prev {
@@ -234,50 +296,169 @@
         
         .btn-prev:hover {
             background: #e2e2e2;
+            transform: translateX(-3px);
         }
         
         .btn-next, .btn-submit {
             background: var(--primary);
             color: white;
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.25);
         }
         
         .btn-next:hover, .btn-submit:hover {
             background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(26, 115, 232, 0.35);
         }
         
         .success-message {
             text-align: center;
-            padding: 40px;
+            padding: 50px 40px;
             display: none;
+            animation: fadeIn 0.8s ease;
         }
         
         .success-message i {
-            font-size: 60px;
+            font-size: 70px;
             color: var(--success);
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            animation: scaleUp 0.5s ease;
+        }
+        
+        @keyframes scaleUp {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
         
         .success-message h2 {
             color: var(--success);
             border: none;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        
+        .success-message h2::after {
+            display: none;
+        }
+        
+        .success-message p {
+            font-size: 17px;
+            line-height: 1.6;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
         }
         
         footer {
             text-align: center;
-            padding: 20px;
+            padding: 25px;
             background: var(--secondary);
             color: var(--text-light);
             font-size: 14px;
+            border-top: 1px solid var(--border);
         }
         
-        @media (max-width: 768px) {
+        .position-container {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .position-box {
+            flex: 1;
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #f9f9f9;
+            transition: all 0.3s;
+        }
+        
+        .position-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .position-box h3 {
+            margin-bottom: 18px;
+            color: var(--primary);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .position-box h3 i {
+            font-size: 20px;
+        }
+        
+        .position-detail {
+            background: var(--light-blue);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .position-detail h4 {
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .position-detail h4 i {
+            font-size: 20px;
+        }
+        
+        @media (max-width: 900px) {
             .progress-bar {
-                padding: 15px 20px;
+                padding: 20px 30px;
             }
             
             .step:not(:last-child):after {
-                right: -30%;
+                right: -40%;
+            }
+            
+            .form-container {
+                padding: 25px;
+            }
+            
+            .position-container {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .container {
+                border-radius: 12px;
+            }
+            
+            header {
+                padding: 25px 20px;
+            }
+            
+            .logo h1 {
+                font-size: 26px;
+            }
+            
+            .progress-bar {
+                padding: 15px 20px;
+                flex-wrap: wrap;
+            }
+            
+            .step {
+                flex: 0 0 50%;
+                margin-bottom: 20px;
+            }
+            
+            .step:not(:last-child):after {
+                display: none;
             }
             
             .form-container {
@@ -286,10 +467,40 @@
             
             .buttons {
                 flex-direction: column;
-                gap: 10px;
+                gap: 12px;
             }
             
             button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            h2 {
+                font-size: 22px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .step {
+                flex: 0 0 100%;
+            }
+            
+            .logo {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .logo i {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+            
+            .checkbox-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .checkbox-item {
                 width: 100%;
             }
         }
@@ -299,7 +510,7 @@
     <div class="container">
         <header>
             <div class="logo">
-                <i class="fas fa-users"></i>
+                <i class="fas fa-handshake"></i>
                 <h1>Enactus FTU Hanoi</h1>
             </div>
             <div class="header-content">
@@ -318,7 +529,7 @@
             </div>
             <div class="step" id="step3">
                 <div class="step-number">3</div>
-                <div class="step-label">Kinh nghiệm & Kỹ năng</div>
+                <div class="step-label">Chi tiết ứng tuyển</div>
             </div>
             <div class="step" id="step4">
                 <div class="step-number">4</div>
@@ -330,7 +541,7 @@
             <form id="recruitmentForm">
                 <!-- Section 1: Personal Information -->
                 <div class="form-section active" id="section1">
-                    <h2>Thông tin cá nhân</h2>
+                    <h2><i class="fas fa-user-circle"></i> Thông tin cá nhân</h2>
                     
                     <div class="form-group">
                         <label for="fullname" class="required">Họ và tên</label>
@@ -367,27 +578,52 @@
                     </div>
                     
                     <div class="buttons">
-                        <div></div> <!-- Empty div for alignment -->
-                        <button type="button" class="btn-next" onclick="nextSection(1)">Tiếp theo <i class="fas fa-arrow-right"></i></button>
+                        <div></div>
+                        <button type="button" class="btn-next" onclick="nextSection(1)">
+                            Tiếp theo <i class="fas fa-arrow-right"></i>
+                        </button>
                     </div>
                 </div>
                 
                 <!-- Section 2: Position Application -->
                 <div class="form-section" id="section2">
-                    <h2>Vị trí ứng tuyển</h2>
+                    <h2><i class="fas fa-briefcase"></i> Vị trí ứng tuyển</h2>
                     
-                    <div class="form-group">
-                        <label for="position" class="required">Vị trí mong muốn</label>
-                        <select id="position" name="position" required>
-                            <option value="">-- Chọn vị trí --</option>
-                            <option value="Design">Thiết kế đồ họa</option>
-                            <option value="Content">Content Writer</option>
-                            <option value="Marketing">Digital Marketing</option>
-                            <option value="PR">Quan hệ công chúng</option>
-                            <option value="Event">Tổ chức sự kiện</option>
-                            <option value="HR">Nhân sự</option>
-                            <option value="IT">Công nghệ thông tin</option>
-                        </select>
+                    <div class="position-container">
+                        <div class="position-box">
+                            <h3><i class="fas fa-star"></i> Vị trí ưu tiên <span class="required"></span></h3>
+                            <div class="form-group">
+                                <label for="priority_position" class="required">Vị trí mong muốn nhất</label>
+                                <select id="priority_position" name="priority_position" required>
+                                    <option value="">-- Chọn vị trí --</option>
+                                    <option value="Design">Thiết kế đồ họa</option>
+                                    <option value="Content">Content Writer</option>
+                                    <option value="Marketing">Digital Marketing</option>
+                                    <option value="PR">Quan hệ công chúng</option>
+                                    <option value="Event">Tổ chức sự kiện</option>
+                                    <option value="HR">Nhân sự</option>
+                                    <option value="IT">Công nghệ thông tin</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="position-box">
+                            <h3><i class="fas fa-clock"></i> Vị trí dự bị (không bắt buộc)</h3>
+                            <div class="form-group">
+                                <label for="secondary_position">Vị trí quan tâm khác</label>
+                                <select id="secondary_position" name="secondary_position">
+                                    <option value="">-- Chọn vị trí --</option>
+                                    <option value="Design">Thiết kế đồ họa</option>
+                                    <option value="Content">Content Writer</option>
+                                    <option value="Marketing">Digital Marketing</option>
+                                    <option value="PR">Quan hệ công chúng</option>
+                                    <option value="Event">Tổ chức sự kiện</option>
+                                    <option value="HR">Nhân sự</option>
+                                    <option value="IT">Công nghệ thông tin</option>
+                                    <option value="None">Không chọn</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="form-group">
@@ -403,22 +639,37 @@
                     
                     <div class="form-group">
                         <label for="motivation">Tại sao bạn muốn tham gia Enactus?</label>
-                        <textarea id="motivation" name="motivation" rows="4"></textarea>
+                        <textarea id="motivation" name="motivation" rows="4" placeholder="Hãy chia sẻ lý do bạn muốn trở thành thành viên của Enactus FTU Hanoi..."></textarea>
                     </div>
                     
                     <div class="buttons">
-                        <button type="button" class="btn-prev" onclick="prevSection(3)"><i class="fas fa-arrow-left"></i> Quay lại</button>
-                        <button type="button" class="btn-next" onclick="nextSection(3)">Tiếp theo <i class="fas fa-arrow-right"></i></button>
+                        <button type="button" class="btn-prev" onclick="prevSection(2)">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </button>
+                        <button type="button" class="btn-next" onclick="nextSection(2)">
+                            Tiếp theo <i class="fas fa-arrow-right"></i>
+                        </button>
                     </div>
                 </div>
-              
+                
                 <!-- Section 3: Experience and Skills -->
                 <div class="form-section" id="section3">
-                    <h2>Kinh nghiệm & Kỹ năng</h2>
+                    <h2><i class="fas fa-tasks"></i> Chi tiết ứng tuyển</h2>
                     
-                    <div class="form-group">
-                        <label for="experience">Kinh nghiệm làm việc (nếu có)</label>
-                        <textarea id="experience" name="experience" rows="4"></textarea>
+                    <div class="position-detail">
+                        <h4><i class="fas fa-star"></i> Chi tiết vị trí ưu tiên: <span id="priorityPositionName"></span></h4>
+                        <div class="form-group">
+                            <label for="experience1">Kinh nghiệm và hiểu biết về vị trí này</label>
+                            <textarea id="experience1" name="experience1" rows="4" placeholder="Hãy mô tả kinh nghiệm, hiểu biết của bạn về vị trí này và tại sao bạn phù hợp..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="position-detail" id="secondaryPositionDetail">
+                        <h4><i class="fas fa-clock"></i> Chi tiết vị trí dự bị: <span id="secondaryPositionName"></span></h4>
+                        <div class="form-group">
+                            <label for="experience2">Kinh nghiệm và hiểu biết về vị trí dự bị (nếu có)</label>
+                            <textarea id="experience2" name="experience2" rows="4" placeholder="Nếu bạn đã chọn vị trí dự bị, hãy chia sẻ kinh nghiệm và hiểu biết của bạn về vị trí này..."></textarea>
+                        </div>
                     </div>
                     
                     <div class="form-group">
@@ -446,36 +697,45 @@
                             </div>
                         </div>
                     </div>
+                    
                     <div class="form-group">
                         <label for="intro">Giới thiệu bản thân</label>
-                        <textarea id="intro" name="intro" rows="4" placeholder="Mô tả ngắn gọn về bản thân và điểm mạnh của bạn..."></textarea>
+                        <textarea id="intro" name="intro" rows="4" placeholder="Mô tả ngắn gọn về bản thân, tính cách, điểm mạnh và mong muốn của bạn..."></textarea>
                     </div>
                     
                     <div class="buttons">
-                        <button type="button" class="btn-prev" onclick="prevSection(2)"><i class="fas fa-arrow-left"></i> Quay lại</button>
-                        <button type="button" class="btn-next" onclick="nextSection(2)">Tiếp theo <i class="fas fa-arrow-right"></i></button>
+                        <button type="button" class="btn-prev" onclick="prevSection(3)">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </button>
+                        <button type="button" class="btn-next" onclick="nextSection(3)">
+                            Tiếp theo <i class="fas fa-arrow-right"></i>
+                        </button>
                     </div>
                 </div>
-              
+                
                 <!-- Section 4: Confirmation -->
                 <div class="form-section" id="section4">
-                    <h2>Xác nhận thông tin</h2>
+                    <h2><i class="fas fa-check-circle"></i> Xác nhận thông tin</h2>
                     
                     <div class="form-group">
                         <p>Vui lòng kiểm tra lại thông tin trước khi gửi:</p>
-                        <div id="summary" style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-top: 15px;"></div>
+                        <div id="summary" style="background: #f9f9f9; padding: 25px; border-radius: 10px; margin-top: 20px; border-left: 4px solid var(--primary);"></div>
                     </div>
                     
                     <div class="form-group">
-                        <div class="checkbox-item">
+                        <div class="checkbox-item" style="background: transparent; padding: 0;">
                             <input type="checkbox" id="agree" name="agree" required>
                             <label for="agree" class="required">Tôi xác nhận rằng tất cả thông tin trên là chính xác</label>
                         </div>
                     </div>
                     
                     <div class="buttons">
-                        <button type="button" class="btn-prev" onclick="prevSection(4)"><i class="fas fa-arrow-left"></i> Quay lại</button>
-                        <button type="submit" class="btn-submit">Gửi đơn ứng tuyển</button>
+                        <button type="button" class="btn-prev" onclick="prevSection(4)">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </button>
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-paper-plane"></i> Gửi đơn ứng tuyển
+                        </button>
                     </div>
                 </div>
             </form>
@@ -484,12 +744,12 @@
             <div class="success-message" id="successMessage">
                 <i class="fas fa-check-circle"></i>
                 <h2>Đơn ứng tuyển đã được gửi thành công!</h2>
-                <p>Cảm ơn bạn đã nộp đơn ứng tuyển đến Enactus FTU Hanoi. Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.</p>
+                <p>Cảm ơn bạn đã nộp đơn ứng tuyển đến Enactus FTU Hanoi. Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất qua email hoặc số điện thoại bạn đã cung cấp.</p>
             </div>
         </div>
         
         <footer>
-            <p>© 2023 Enactus FTU Hanoi - All rights reserved</p>
+            <p>© 2025 Enactus FTU Hanoi - All rights reserved</p>
         </footer>
     </div>
 
@@ -526,6 +786,29 @@
             if (sectionNumber === 4) {
                 generateSummary();
             }
+            
+            // If it's the experience section, update position names
+            if (sectionNumber === 3) {
+                updatePositionNames();
+            }
+        }
+        
+        function updatePositionNames() {
+            const prioritySelect = document.getElementById('priority_position');
+            const secondarySelect = document.getElementById('secondary_position');
+            
+            const priorityPositionName = prioritySelect.options[prioritySelect.selectedIndex].text;
+            const secondaryPositionName = secondarySelect.options[secondarySelect.selectedIndex].text;
+            
+            document.getElementById('priorityPositionName').textContent = priorityPositionName;
+            document.getElementById('secondaryPositionName').textContent = secondaryPositionName;
+            
+            // Hide secondary position detail if not selected
+            if (secondarySelect.value === "" || secondarySelect.value === "None") {
+                document.getElementById('secondaryPositionDetail').style.display = 'none';
+            } else {
+                document.getElementById('secondaryPositionDetail').style.display = 'block';
+            }
         }
         
         function nextSection(current) {
@@ -538,6 +821,11 @@
                 if (!input.value) {
                     valid = false;
                     input.style.borderColor = 'var(--error)';
+                    // Add shake animation for error
+                    input.style.animation = 'shake 0.5s';
+                    setTimeout(() => {
+                        input.style.animation = '';
+                    }, 500);
                 } else {
                     input.style.borderColor = 'var(--border)';
                 }
@@ -558,12 +846,18 @@
             const form = document.getElementById('recruitmentForm');
             const summaryDiv = document.getElementById('summary');
             
+            // Get position names from options
+            const priorityPositionText = form.priority_position.options[form.priority_position.selectedIndex].text;
+            const secondaryPositionText = form.secondary_position.options[form.secondary_position.selectedIndex].text;
+            
             let summaryHTML = `
                 <p><strong>Họ và tên:</strong> ${form.fullname.value}</p>
                 <p><strong>Email:</strong> ${form.email.value}</p>
                 <p><strong>Số điện thoại:</strong> ${form.phone.value}</p>
                 <p><strong>Khoa:</strong> ${form.faculty.options[form.faculty.selectedIndex].text}</p>
-                <p><strong>Vị trí ứng tuyển:</strong> ${form.position.options[form.position.selectedIndex].text}</p>
+                <p><strong>Vị trí ưu tiên:</strong> ${priorityPositionText}</p>
+                <p><strong>Vị trí dự bị:</strong> ${secondaryPositionText === "-- Chọn vị trí --" ? "Không chọn" : secondaryPositionText}</p>
+                <p><strong>Thời gian tham gia:</strong> ${form.availability.options[form.availability.selectedIndex].text}</p>
             `;
             
             summaryDiv.innerHTML = summaryHTML;
@@ -573,8 +867,13 @@
         document.getElementById('recruitmentForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
+            // Check if agreement is checked
+            if (!document.getElementById('agree').checked) {
+                alert('Vui lòng xác nhận rằng tất cả thông tin bạn cung cấp là chính xác.');
+                return;
+            }
+            
             // Simulate form submission to Google Sheets
-            // In a real implementation, this would use Google Apps Script
             const form = document.getElementById('recruitmentForm');
             const formData = new FormData(form);
             
@@ -597,8 +896,23 @@
             }, 2000);
         });
         
+        // Update position names when they change
+        document.getElementById('priority_position').addEventListener('change', updatePositionNames);
+        document.getElementById('secondary_position').addEventListener('change', updatePositionNames);
+        
         // Initialize the form
         updateProgressBar();
+        
+        // Add shake animation for error states
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
