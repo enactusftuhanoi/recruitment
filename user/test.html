@@ -1935,11 +1935,16 @@
         
         // Tải dữ liệu đã lưu khi trang được tải
         window.addEventListener('DOMContentLoaded', function() {
-            updateSecondaryOptions();
-            loadFormData();
+            // Render general questions first so their elements exist
             renderGeneralQuestions();
-            
-            // Nếu đã chọn phân ban từ trước, hiển thị câu hỏi
+        
+            // Set up secondary options display depending on select (no harm)
+            updateSecondaryOptions();
+        
+            // Load saved data (khôi phục select + sẽ gọi updatePositionNames() bên trong)
+            loadFormData();
+        
+            // Nếu cần, cập nhật hiển thị tab/tiểu ban
             const prioritySelect = document.getElementById('priority_position');
             if (prioritySelect.value) {
                 updatePositionNames();
