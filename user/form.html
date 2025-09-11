@@ -181,12 +181,6 @@
             display: block;
             animation: fadeIn 0.5s ease;
         }
-
-        .error-message {
-            color: var(--error);
-            font-size: 14px;
-            margin-top: 5px;
-        }
         
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(15px); }
@@ -1352,27 +1346,6 @@
             `;
             
             summaryDiv.innerHTML = summaryHTML;
-        }
-
-        // Tạo một hàm hiển thị lỗi
-        function showError(input, message) {
-            const formGroup = input.closest('.form-group');
-            let error = formGroup.querySelector('.error-message');
-            
-            if (!error) {
-                error = document.createElement('div');
-                error.className = 'error-message';
-                formGroup.appendChild(error);
-            }
-            
-            error.textContent = message;
-            input.style.borderColor = 'var(--error)';
-        }
-        
-        // Trong validation, thay vì alert chung
-        if (!input.value) {
-            showError(input, 'Trường này là bắt buộc');
-            valid = false;
         }
         
         // Hàm thu thập tất cả dữ liệu form
