@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>18th Gen Membership Reruitment | Enactus FTU Hanoi</title>
+<title>Reruitment | Enactus FTU Hanoi</title>
 <link rel="icon" href="/favicon.ico" type="image/x-icon">
 <link rel="canonical" href="https://recruitment.enactusftuhanoi.id.vn" />
     
@@ -22,39 +22,29 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet"/>
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<style>
-    /* Reset cơ bản */
+  <style>
     * {margin:0; padding:0; box-sizing:border-box;}
 
     /* Background cố định */
     body {
-      font-family: Arial, sans-serif;
+      height: 100vh;
       background: url("/assets/background.png") no-repeat center center fixed;
       background-size: cover;
-      height: 100vh;
-    }
-
-    /* Hero section chiếm toàn màn hình */
-    .hero {
-      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      text-align: center;
     }
 
-    /* Ảnh PNG giữa màn hình */
-    .hero img {
-      max-width: 80%;
-      max-height: 80%;
+    /* Hero image giữa màn hình */
+    .hero-img {
+      width: 90vw;   /* chiếm 90% chiều rộng màn hình */
+      height: auto;
+      max-height: 90vh; /* không vượt quá chiều cao màn hình */
       object-fit: contain;
     }
   </style>
 </head>
 <body>
-  <section class="hero">
-    <!-- Thay hero.png = ảnh không nền của bạn -->
-    <img src="/assets/hero.png" alt="Hero image">
-  </section>
+  <img src="/assets/hero.png" alt="Hero" class="hero-img">
 </body>
 </html>
