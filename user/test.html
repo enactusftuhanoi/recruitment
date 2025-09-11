@@ -944,9 +944,9 @@
                     
                     <div class="tab-container">
                         <div class="tab-buttons">
-                            <button type="button" class="tab-button active" onclick="showTab('general')">Thông tin chung</button>
-                            <button type="button" class="tab-button" onclick="showTab('priority')" id="priority-tab-btn">Vị trí ưu tiên</button>
-                            <button type="button" class="tab-button" onclick="showTab('secondary')" id="secondary-tab-btn" style="display: none;">Vị trí dự bị</button>
+                            <button type="button" class="tab-button active" onclick="showTab('general')">Câu hỏi chung</button>
+                            <button type="button" class="tab-button" onclick="showTab('priority')" id="priority-tab-btn">Câu hỏi dành cho ban ... (Ưu tiên)</button>
+                            <button type="button" class="tab-button" onclick="showTab('secondary')" id="secondary-tab-btn" style="display: none;">Câu hỏi dành cho ban ... (Dự bị)</button>
                         </div>
                         
                         <div class="tab-content active" id="tab-general">
@@ -1064,38 +1064,57 @@
         const db = firebase.firestore();
 
         // Định nghĩa bộ câu hỏi cho từng phân ban
-        const banQuestions = {
-            'MD': [ // Ban Truyền thông
+       const banQuestions = {
+            'MD': { // Ban Truyền thông phân ra 2 tiểu ban
+              'Design': [
                 {
-                    type: 'textarea',
-                    id: 'md_design_exp',
-                    question: 'Bạn đã có kinh nghiệm với phần mềm thiết kế nào?',
-                    placeholder: 'Mô tả kinh nghiệm với Photoshop, Illustrator, Figma, Canva...',
-                    required: true
+                  type: 'textarea',
+                  id: 'design_exp',
+                  question: 'Bạn đã có kinh nghiệm với phần mềm thiết kế nào?',
+                  placeholder: 'Mô tả kinh nghiệm với Photoshop, Illustrator, Figma, Canva...',
+                  required: true
                 },
                 {
-                    type: 'checkbox',
-                    id: 'md_platforms',
-                    question: 'Bạn có kinh nghiệm với nền tảng mạng xã hội nào?',
-                    options: ['Facebook', 'Instagram', 'TikTok', 'YouTube', 'LinkedIn'],
-                    required: true
+                  type: 'scale',
+                  id: 'creativity',
+                  question: 'Đánh giá khả năng sáng tạo của bạn (1-10)',
+                  min: 1,
+                  max: 10,
+                  required: true
                 },
                 {
-                    type: 'radio',
-                    id: 'md_experience_level',
-                    question: 'Mức độ kinh nghiệm của bạn trong lĩnh vực truyền thông?',
-                    options: ['Mới bắt đầu', 'Có một ít kinh nghiệm', 'Khá thành thạo', 'Rất thành thạo'],
-                    required: true
-                },
-                {
-                    type: 'scale',
-                    id: 'md_creativity',
-                    question: 'Đánh giá khả năng sáng tạo của bạn (1-10)',
-                    min: 1,
-                    max: 10,
-                    required: true
+                  type: 'radio',
+                  id: 'design_level',
+                  question: 'Mức độ kinh nghiệm thiết kế của bạn?',
+                  options: ['Mới bắt đầu', 'Có một ít kinh nghiệm', 'Khá thành thạo', 'Rất thành thạo'],
+                  required: true
                 }
-            ],
+              ],
+              'Content': [
+                {
+                  type: 'checkbox',
+                  id: 'platforms',
+                  question: 'Bạn có kinh nghiệm với nền tảng mạng xã hội nào?',
+                  options: ['Facebook', 'Instagram', 'TikTok', 'YouTube', 'LinkedIn'],
+                  required: true
+                },
+                {
+                  type: 'radio',
+                  id: 'content_level',
+                  question: 'Mức độ kinh nghiệm của bạn trong nội dung/truyền thông?',
+                  options: ['Mới bắt đầu', 'Có một ít kinh nghiệm', 'Khá thành thạo', 'Rất thành thạo'],
+                  required: true
+                },
+                {
+                  type: 'scale',
+                  id: 'research_skill',
+                  question: 'Đánh giá khả năng nghiên cứu & lên ý tưởng nội dung (1-10)',
+                  min: 1,
+                  max: 10,
+                  required: true
+                }
+              ]
+            },
             'HR': [ // Ban Nhân sự
                 {
                     type: 'textarea',
@@ -1186,132 +1205,139 @@
         
         // Hàm hiển thị câu hỏi theo phân ban
         function renderBanQuestions(banCode, type) {
-            // Xác định container dựa trên type
+            // container: 'priority' -> ban-specific-questions ; 'secondary' -> secondary-ban-specific-questions
             const containerId = type === 'priority' ? 'ban-specific-questions' : 'secondary-ban-specific-questions';
             const questionsContainer = document.getElementById(containerId);
             questionsContainer.innerHTML = '';
-            
-            // Lấy câu hỏi cho phân ban cụ thể
+        
+            if (!banCode) {
+                questionsContainer.innerHTML = '<p class="no-questions">Vui lòng chọn ban để hiển thị câu hỏi phù hợp.</p>';
+                return;
+            }
+        
+            // Helper để render 1 câu hỏi (q) với prefixedId
+            function renderQuestion(q, prefixedId) {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'form-group question-item';
+        
+                let html = `<label for="${prefixedId}" ${q.required ? 'class="required"' : ''}>${q.question}</label>`;
+        
+                switch (q.type) {
+                    case 'textarea':
+                        html += `<textarea id="${prefixedId}" name="${prefixedId}" rows="3" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}></textarea>`;
+                        break;
+        
+                    case 'checkbox':
+                        html += `<div class="checkbox-group" id="${prefixedId}_group">`;
+                        q.options.forEach((option, idx) => {
+                            const optionId = `${prefixedId}_${idx}`;
+                            html += `<div class="checkbox-item">
+                                        <input type="checkbox" id="${optionId}" name="${prefixedId}[]" value="${option}">
+                                        <label for="${optionId}">${option}</label>
+                                     </div>`;
+                        });
+                        html += `</div>`;
+                        if (q.required) {
+                            html += `<input type="hidden" name="${prefixedId}_required" value="true" data-required-message="Vui lòng chọn ít nhất một tùy chọn">`;
+                        }
+                        break;
+        
+                    case 'radio':
+                        html += `<div class="radio-group" id="${prefixedId}_group">`;
+                        q.options.forEach((option, idx) => {
+                            const optionId = `${prefixedId}_${idx}`;
+                            html += `<div class="radio-item">
+                                        <input type="radio" id="${optionId}" name="${prefixedId}" value="${option}">
+                                        <label for="${optionId}">${option}</label>
+                                     </div>`;
+                        });
+                        html += `</div>`;
+                        if (q.required) {
+                            html += `<input type="hidden" name="${prefixedId}_required" value="true" data-required-message="Vui lòng chọn một tùy chọn">`;
+                        }
+                        break;
+        
+                    case 'dropdown':
+                        html += `<select id="${prefixedId}" name="${prefixedId}" ${q.required ? 'required' : ''}>`;
+                        html += `<option value="">-- Chọn --</option>`;
+                        q.options.forEach(opt => {
+                            html += `<option value="${opt}">${opt}</option>`;
+                        });
+                        html += `</select>`;
+                        break;
+        
+                    case 'scale':
+                        const mid = Math.round((q.min + q.max) / 2);
+                        html += `<div class="scale-container">
+                                    <input type="range" id="${prefixedId}" name="${prefixedId}" min="${q.min}" max="${q.max}" value="${mid}" ${q.required ? 'required' : ''}>
+                                    <div class="scale-labels"><span>${q.min}</span><span>${q.max}</span></div>
+                                    <output for="${prefixedId}" id="${prefixedId}_value">${mid}</output>
+                                 </div>`;
+                        break;
+        
+                    case 'date':
+                        html += `<input type="date" id="${prefixedId}" name="${prefixedId}" ${q.required ? 'required' : ''}>`;
+                        break;
+        
+                    default:
+                        html += `<input type="text" id="${prefixedId}" name="${prefixedId}" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}>`;
+                }
+        
+                questionDiv.innerHTML = html;
+                questionsContainer.appendChild(questionDiv);
+        
+                // Nếu là scale, add listener để cập nhật output
+                if (q.type === 'scale') {
+                    const range = document.getElementById(prefixedId);
+                    const out = document.getElementById(`${prefixedId}_value`);
+                    if (range && out) {
+                        range.addEventListener('input', () => { out.value = range.value; });
+                    }
+                }
+            }
+        
+            // --- Nếu ban là MD: dùng tiểu ban (Design / Content) để quyết định bộ câu hỏi ---
+            if (banCode === 'MD') {
+                const designCheckbox = document.getElementById(type === 'priority' ? 'md_design' : 'md_design_secondary');
+                const contentCheckbox = document.getElementById(type === 'priority' ? 'md_content' : 'md_content_secondary');
+        
+                const selected = [];
+                if (designCheckbox && designCheckbox.checked) selected.push('Design');
+                if (contentCheckbox && contentCheckbox.checked) selected.push('Content');
+        
+                if (selected.length === 0) {
+                    questionsContainer.innerHTML = '<p class="no-questions">Vui lòng chọn tiểu ban Design hoặc Content để hiển thị câu hỏi.</p>';
+                    return;
+                }
+        
+                selected.forEach(sub => {
+                    // tiêu đề phụ cho từng tiểu ban
+                    const subtitle = document.createElement('div');
+                    subtitle.className = 'sub-section';
+                    subtitle.innerHTML = `<h3>Tiểu ban ${sub}</h3>`;
+                    questionsContainer.appendChild(subtitle);
+        
+                    const questions = (banQuestions['MD'] && banQuestions['MD'][sub]) || [];
+                    questions.forEach(q => {
+                        // prefixedId: "priority_design_design_exp" hoặc "secondary_content_platforms", tránh trùng
+                        const prefixedId = `${type}_${sub.toLowerCase()}_${q.id}`;
+                        renderQuestion(q, prefixedId);
+                    });
+                });
+        
+                return; // xong MD
+            }
+        
+            // --- Non-MD: render như cũ (mỗi ban có 1 mảng câu hỏi) ---
             const questions = banQuestions[banCode] || [];
-            
-            if (questions.length === 0) {
+            if (!questions.length) {
                 questionsContainer.innerHTML = '<p class="no-questions">Không có câu hỏi cụ thể cho phân ban này.</p>';
                 return;
             }
-            
-            // Tạo HTML cho các câu hỏi
-            questions.forEach((q, index) => {
-                const questionDiv = document.createElement('div');
-                questionDiv.className = 'form-group question-item';
-                
-                // Thêm tiền tố cho ID để tránh trùng lặp giữa priority và secondary
-                const prefixedId = `${type}_${q.id}`;
-                
-                let questionHTML = `<label for="${prefixedId}" ${q.required ? 'class="required"' : ''}>${q.question}</label>`;
-                
-                switch (q.type) {
-                    case 'textarea':
-                        questionHTML += `<textarea id="${prefixedId}" name="${prefixedId}" rows="3" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}></textarea>`;
-                        break;
-                        
-                    case 'checkbox':
-                        questionHTML += `<div class="checkbox-group" id="${prefixedId}_group">`;
-                        q.options.forEach((option, optIndex) => {
-                            const optionId = `${prefixedId}_${optIndex}`;
-                            questionHTML += `
-                                <div class="checkbox-item">
-                                    <input type="checkbox" id="${optionId}" name="${prefixedId}[]" value="${option}">
-                                    <label for="${optionId}">${option}</label>
-                                </div>
-                            `;
-                        });
-                        questionHTML += `</div>`;
-                        
-                        // Thêm hidden input để validation
-                        if (q.required) {
-                            questionHTML += `
-                                <input type="hidden" name="${prefixedId}_required" value="true" 
-                                       data-required-message="Vui lòng chọn ít nhất một tùy chọn">
-                            `;
-                        }
-                        break;
-                        
-                    case 'radio':
-                        questionHTML += `<div class="radio-group" id="${prefixedId}_group">`;
-                        q.options.forEach((option, optIndex) => {
-                            const optionId = `${prefixedId}_${optIndex}`;
-                            questionHTML += `
-                                <div class="radio-item">
-                                    <input type="radio" id="${optionId}" name="${prefixedId}" value="${option}">
-                                    <label for="${optionId}">${option}</label>
-                                </div>
-                            `;
-                        });
-                        questionHTML += `</div>`;
-                        
-                        // Thêm hidden input để validation
-                        if (q.required) {
-                            questionHTML += `
-                                <input type="hidden" name="${prefixedId}_required" value="true" 
-                                       data-required-message="Vui lòng chọn một tùy chọn">
-                            `;
-                        }
-                        break;
-                        
-                    case 'dropdown':
-                        questionHTML += `<select id="${prefixedId}" name="${prefixedId}" ${q.required ? 'required' : ''}>`;
-                        questionHTML += `<option value="">-- Chọn --</option>`;
-                        q.options.forEach(option => {
-                            questionHTML += `<option value="${option}">${option}</option>`;
-                        });
-                        questionHTML += `</select>`;
-                        break;
-                        
-                    case 'scale':
-                        questionHTML += `
-                            <div class="scale-container">
-                                <input type="range" id="${prefixedId}" name="${prefixedId}" min="${q.min}" max="${q.max}" value="${Math.round((q.min + q.max)/2)}" ${q.required ? 'required' : ''}>
-                                <div class="scale-labels">
-                                    <span>${q.min} (Thấp nhất)</span>
-                                    <span>${q.max} (Cao nhất)</span>
-                                </div>
-                                <output for="${prefixedId}" id="${prefixedId}_value">${Math.round((q.min + q.max)/2)}</output>
-                            </div>
-                        `;
-                        break;
-                        
-                    case 'date':
-                        questionHTML += `<input type="date" id="${prefixedId}" name="${prefixedId}" ${q.required ? 'required' : ''}>`;
-                        break;
-                        
-                    case 'time':
-                        questionHTML += `<input type="time" id="${prefixedId}" name="${prefixedId}" ${q.required ? 'required' : ''}>`;
-                        break;
-                        
-                    case 'datetime':
-                        questionHTML += `<input type="datetime-local" id="${prefixedId}" name="${prefixedId}" ${q.required ? 'required' : ''}>`;
-                        break;
-                        
-                    default:
-                        questionHTML += `<input type="text" id="${prefixedId}" name="${prefixedId}" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}>`;
-                }
-                
-                questionDiv.innerHTML = questionHTML;
-                questionsContainer.appendChild(questionDiv);
-            });
-            
-            // Thêm sự kiện cho các input dạng range để hiển thị giá trị
+        
             questions.forEach(q => {
-                if (q.type === 'scale') {
-                    const prefixedId = `${type}_${q.id}`;
-                    const rangeInput = document.getElementById(prefixedId);
-                    const output = document.getElementById(`${prefixedId}_value`);
-                    if (rangeInput && output) {
-                        rangeInput.addEventListener('input', () => {
-                            output.value = rangeInput.value;
-                        });
-                    }
-                }
+                const prefixedId = `${type}_${q.id}`;
+                renderQuestion(q, prefixedId);
             });
         }
         
@@ -1398,24 +1424,41 @@
         function updatePositionNames() {
             const prioritySelect = document.getElementById('priority_position');
             const secondarySelect = document.getElementById('secondary_position');
-            
+        
             const priorityPositionName = prioritySelect.options[prioritySelect.selectedIndex].text;
             const secondaryPositionName = secondarySelect.options[secondarySelect.selectedIndex].text;
-            
-            document.getElementById('ban-name').textContent = priorityPositionName;
-            
-            // Hiển thị câu hỏi theo phân ban ưu tiên đã chọn
-            renderBanQuestions(prioritySelect.value, 'priority');
-            
-            // Hiển thị câu hỏi theo phân ban dự bị đã chọn (nếu có)
+        
+            // UPDATE: đổi label của các tab
+            // Tab chung
+            const generalTabBtn = document.querySelector(`.tab-button[onclick="showTab('general')"]`);
+            if (generalTabBtn) generalTabBtn.textContent = 'Câu hỏi chung';
+        
+            // Tab ưu tiên
+            const priorityTabBtn = document.getElementById('priority-tab-btn');
+            if (priorityTabBtn) priorityTabBtn.textContent = `Câu hỏi dành cho ban ${priorityPositionName} (Ưu tiên)`;
+        
+            // Tab dự bị
+            const secondaryTabBtn = document.getElementById('secondary-tab-btn');
             if (secondarySelect.value && secondarySelect.value !== "None") {
-                document.getElementById('secondary-tab-btn').style.display = 'block';
-                document.getElementById('secondary-ban-name').textContent = secondaryPositionName;
-                renderBanQuestions(secondarySelect.value, 'secondary');
+                if (secondaryTabBtn) {
+                    secondaryTabBtn.style.display = 'inline-block';
+                    secondaryTabBtn.textContent = `Câu hỏi dành cho ban ${secondaryPositionName} (Dự bị)`;
+                }
             } else {
-                document.getElementById('secondary-tab-btn').style.display = 'none';
+                if (secondaryTabBtn) secondaryTabBtn.style.display = 'none';
+            }
+        
+            // Update header inside các sub-section
+            document.getElementById('ban-name').textContent = `${priorityPositionName} (Ưu tiên)`;
+            document.getElementById('secondary-ban-name').textContent = secondarySelect.value && secondarySelect.value !== "None" ? `${secondaryPositionName} (Dự bị)` : 'vị trí dự bị';
+        
+            // Render câu hỏi tương ứng
+            renderBanQuestions(prioritySelect.value, 'priority');
+            if (secondarySelect.value && secondarySelect.value !== "None") {
+                renderBanQuestions(secondarySelect.value, 'secondary');
             }
         }
+
         
         // Hàm hiển thị tab
         function showTab(tabName) {
@@ -1828,6 +1871,19 @@
             element.addEventListener('change', saveFormData);
         });
         
+        // Khi tick/un-tick tiểu ban trong MD thì render lại câu hỏi tương ứng
+        ['md_design','md_content','md_design_secondary','md_content_secondary'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('change', () => {
+                    // render lại cả hai vị trí ưu tiên/dự bị nếu cần
+                    renderBanQuestions(document.getElementById('priority_position').value, 'priority');
+                    renderBanQuestions(document.getElementById('secondary_position').value, 'secondary');
+                    saveFormData();
+                });
+            }
+        });
+
         // Update position names when they change
         document.getElementById('priority_position').addEventListener('change', updatePositionNames);
         document.getElementById('secondary_position').addEventListener('change', updatePositionNames);
