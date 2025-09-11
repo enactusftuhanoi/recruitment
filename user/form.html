@@ -181,6 +181,12 @@
             display: block;
             animation: fadeIn 0.5s ease;
         }
+
+        .error-message {
+            color: var(--error);
+            font-size: 14px;
+            margin-top: 5px;
+        }
         
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(15px); }
@@ -1335,7 +1341,7 @@
             
             let summaryHTML = `
                 <p><strong>Họ và tên:</strong> ${form.fullname.value}</p>
-                <p><strong>Ngày/tháng/năm sinh:</strong> ${form.birthdaydate.value}</p>
+                <p><strong>Ngày/tháng/năm sinh:</strong> ${form.birthdate.value}</p>
                 <p><strong>Giới tính:</strong> ${form.gender.value}</p>
                 <p><strong>Trường</strong> ${form.school.value}</p>
                 <p><strong>Khóa/Chuyên ngành đang theo học</strong> ${form.major.value}</p>
@@ -1346,6 +1352,27 @@
             `;
             
             summaryDiv.innerHTML = summaryHTML;
+        }
+
+        // Tạo một hàm hiển thị lỗi
+        function showError(input, message) {
+            const formGroup = input.closest('.form-group');
+            let error = formGroup.querySelector('.error-message');
+            
+            if (!error) {
+                error = document.createElement('div');
+                error.className = 'error-message';
+                formGroup.appendChild(error);
+            }
+            
+            error.textContent = message;
+            input.style.borderColor = 'var(--error)';
+        }
+        
+        // Trong validation, thay vì alert chung
+        if (!input.value) {
+            showError(input, 'Trường này là bắt buộc');
+            valid = false;
         }
         
         // Hàm thu thập tất cả dữ liệu form
