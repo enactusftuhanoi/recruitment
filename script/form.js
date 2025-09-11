@@ -79,7 +79,20 @@
                 questionDiv.className = 'form-group question-item';
         
                 let html = `<label for="${prefixedId}" ${q.required ? 'class="required"' : ''}>${q.question}</label>`;
-        
+
+                // Nếu có media kèm theo
+                if (q.media) {
+                    if (q.media.type === 'image') {
+                        html += `<div class="question-media">
+                                    <img src="${q.media.url}" alt="${q.media.alt || ''}" style="max-width:300px; margin:10px 0; display:block;">
+                                 </div>`;
+                    } else if (q.media.type === 'video') {
+                        html += `<div class="question-media">
+                                    <video src="${q.media.url}" controls style="max-width:400px; margin:10px 0; display:block;"></video>
+                                 </div>`;
+                    }
+                }
+                
                 switch (q.type) {
                     case 'textarea':
                         html += `<textarea id="${prefixedId}" name="${prefixedId}" rows="3" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}></textarea>`;
