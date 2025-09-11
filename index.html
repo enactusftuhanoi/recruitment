@@ -43,45 +43,76 @@
     justify-content: flex-start;
     align-items: center;
     position: relative;
+    font-family: 'Bricolage Grotesque', sans-serif;
   }
 
-  /* Hero image */
+  /* Hero wrapper để nút bám vào */
+  .hero-container {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+  }
+
   .hero-img {
-    width: 100vw;
+    width: 100%;
     height: auto;
-    max-height: 100vh;
-    object-fit: contain;
+    display: block;
   }
 
-  /* Button */
+  /* Button gốc - SỬA LẠI CHO RESPONSIVE */
   .apply-btn {
     position: absolute;
-    bottom: 6.5cm; /* dịch lên 5cm */
-    padding: 16px 42px;
-    font-size: 1.3rem;
-    font-weight: 700;
-    font-family: 'Bricolage Grotesque', sans-serif;
+    bottom: 15%; /* Giữ giá trị phần trăm */
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.7vw 2vw; /* Sử dụng đơn vị viewport width để co giãn tốt hơn */
+    font-size: clamp(0.9rem, 2vw, 1.3rem); /* Kích thước chữ linh hoạt */
+    font-weight: 900;
     color: #fbfbd6;
     background: #7c77df;
-    border: 5px solid #638efe; /* viền dày hơn */
-    border-radius: 40px; /* bo tròn mạnh */
+    border: 0.3vw solid #638efe; /* Border co giãn theo viewport */
+    border-radius: 40px;
     cursor: pointer;
     text-decoration: none;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    white-space: nowrap;
+    text-align: center;
+    min-width: 160px; /* Đảm bảo nút không quá nhỏ */
   }
   .apply-btn:hover {
-    transform: translateY(-3px);
+    transform: translateX(-50%) translateY(-3px);
     box-shadow: 0 6px 16px rgba(0,0,0,0.25);
   }
-</style>
 
+  /* Responsive: mobile & tablet */
+  @media (max-width: 768px) {
+    .apply-btn {
+      bottom: 12%;
+      padding: 1.2vw 3vw;
+      font-size: clamp(0.8rem, 3vw, 1.1rem);
+      min-width: 140px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .apply-btn {
+      bottom: 10%;
+      padding: 1.5vw 4vw;
+      font-size: clamp(0.7rem, 3.5vw, 1rem);
+      min-width: 120px;
+      border-width: 0.5vw;
+    }
+  }
+</style>
 </head>
 <body>
-  <img src="/assets/hero.png" alt="Hero" class="hero-img">
+  <div class="hero-container">
+    <img src="/assets/hero.png" alt="Hero" class="hero-img">
 
-  <!-- Button Apply -->
-  <a href="/user/form.html" target="_blank" class="apply-btn">
-    ĐĂNG KÝ NGAY
-  </a>
+    <!-- Button Apply -->
+    <a href="/user/form.html" target="_blank" class="apply-btn">
+      ĐĂNG KÝ NGAY
+    </a>
+  </div>
 </body>
 </html>
