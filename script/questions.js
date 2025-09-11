@@ -38,7 +38,7 @@ const generalQuestions = [
                   question: 'Mức độ kinh nghiệm thiết kế của bạn?',
                   options: ['Mới bắt đầu', 'Có một ít kinh nghiệm', 'Khá thành thạo', 'Rất thành thạo'],
                   required: true
-                }
+                },
           {
               type: 'scale',
               id: 'design_image_rating',
@@ -51,7 +51,7 @@ const generalQuestions = [
                 url: 'https://i.pinimg.com/1200x/0f/6d/dc/0f6ddca124dcde255c26786f23fb50d3.jpg',
                 alt: 'Ảnh ví dụ để chấm điểm'
               }
-            }
+            },
               ],
               'Content': [
                 {
