@@ -39,6 +39,19 @@ const generalQuestions = [
                   options: ['Mới bắt đầu', 'Có một ít kinh nghiệm', 'Khá thành thạo', 'Rất thành thạo'],
                   required: true
                 }
+          {
+              type: 'scale',
+              id: 'design_image_rating',
+              question: 'Đánh giá bức ảnh sau trên thang điểm 1–10',
+              min: 1,
+              max: 10,
+              required: true,
+              media: {
+                type: 'image',
+                url: 'https://i.pinimg.com/1200x/0f/6d/dc/0f6ddca124dcde255c26786f23fb50d3.jpg',
+                alt: 'Ảnh ví dụ để chấm điểm'
+              }
+            }
               ],
               'Content': [
                 {
