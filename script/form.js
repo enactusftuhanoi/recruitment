@@ -20,6 +20,11 @@
         
         // Hàm chọn hình thức ứng tuyển
         function selectApplicationType(type) {
+            if (type === 'interview') {
+                alert("Chức năng phỏng vấn thay đơn đang khóa");
+                return; // không cho chọn
+            }
+
             applicationType = type;
             document.getElementById('application_type').value = type;
             
@@ -29,6 +34,7 @@
             });
             document.getElementById(`type-${type}`).classList.add('selected');
         }
+
         
         // Hàm hiển thị câu hỏi chung
         function renderGeneralQuestions() {
@@ -786,3 +792,15 @@
             }
         `;
         document.head.appendChild(style);
+        
+        // Ghi đè alert bằng SweetAlert2
+        window.alert = function(message) {
+          Swal.fire({
+            icon: 'warning',
+            title: '⚠️ Cảnh báo',
+            text: message,
+            confirmButtonText: 'OK'
+        });
+        };
+
+
