@@ -503,9 +503,8 @@
         // Hàm thu thập tất cả dữ liệu form
         function collectFormData() {
             const formObject = {
-                // Hình thức ứng tuyển
                 application_type: applicationType,
-                
+        
                 // Thông tin cá nhân
                 fullname: document.getElementById('fullname').value,
                 birthdate: document.getElementById('birthdate').value,
@@ -515,37 +514,33 @@
                 school: document.getElementById('school').value,
                 major: document.getElementById('major').value,
                 facebook: document.getElementById('facebook').value,
-                
+        
                 // Vị trí ứng tuyển
                 priority_position: document.getElementById('priority_position').value,
                 secondary_position: document.getElementById('secondary_position').value,
                 availability: document.getElementById('availability').value,
                 motivation: document.getElementById('motivation').value,
-                
-                // Chi tiết ứng tuyển
-                intro: document.getElementById('intro').value,
-                priority_experience: document.getElementById('priority_experience').value,
-                priority_motivation: document.getElementById('priority_motivation').value,
-                secondary_experience: document.getElementById('secondary_experience')?.value || '',
-                secondary_motivation: document.getElementById('secondary_motivation')?.value || '',
-                
-                // Tiểu ban Truyền thông
+        
+                // Câu hỏi chung
+                general_intro: document.getElementById('general_intro')?.value || '',
+        
+                // Tiểu ban truyền thông
                 md_sub_departments: Array.from(document.querySelectorAll('input[name="md_sub_departments[]"]:checked')).map(cb => cb.value),
                 md_sub_departments_secondary: Array.from(document.querySelectorAll('input[name="md_sub_departments_secondary[]"]:checked')).map(cb => cb.value),
-                
+        
                 // Câu hỏi phân ban ưu tiên
                 ...collectBanQuestions('priority'),
-                
-                // Câu hỏi phân ban dự bị (nếu có)
+        
+                // Câu hỏi phân ban dự bị
                 ...collectBanQuestions('secondary'),
-                
+        
                 // Timestamp
                 timestamp: new Date()
             };
-            
+        
             return formObject;
         }
-        
+
         // Hàm thu thập câu hỏi theo phân ban
         function collectBanQuestions(type) {
             const prefix = `${type}_`;
