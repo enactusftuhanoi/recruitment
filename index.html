@@ -22,9 +22,39 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet"/>
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<style>
+    /* Reset cơ bản */
+    * {margin:0; padding:0; box-sizing:border-box;}
 
+    /* Background cố định */
+    body {
+      font-family: Arial, sans-serif;
+      background: url("background.jpg") no-repeat center center fixed;
+      background-size: cover;
+      height: 100vh;
+    }
+
+    /* Hero section chiếm toàn màn hình */
+    .hero {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    /* Ảnh PNG giữa màn hình */
+    .hero img {
+      max-width: 80%;
+      max-height: 80%;
+      object-fit: contain;
+    }
+  </style>
 </head>
 <body>
-
+  <section class="hero">
+    <!-- Thay hero.png = ảnh không nền của bạn -->
+    <img src="hero.png" alt="Hero image">
+  </section>
 </body>
 </html>
