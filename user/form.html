@@ -664,7 +664,19 @@
                         <label for="fullname" class="required">Họ và tên</label>
                         <input type="text" id="fullname" name="fullname" required>
                     </div>
-                    
+                    <div class="form-group">
+                        <label for="birthdate" class="required">Ngày/tháng/năm sinh</label>
+                        <input type="date" id="birthdate" name="birthdate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gender" class="required">Giới tính</label>
+                        <select id="gender" name="gender" required>
+                            <option value="">-- Chọn giới tính --</option>
+                            <option value="Male">Nam</option>
+                            <option value="Female">Nữ</option>
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label for="email" class="required">Email</label>
                         <input type="email" id="email" name="email" required>
@@ -674,24 +686,20 @@
                         <label for="phone" class="required">Số điện thoại</label>
                         <input type="tel" id="phone" name="phone" required>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="birthdate">Ngày sinh</label>
-                        <input type="date" id="birthdate" name="birthdate">
+                        <label for="school" class="required">Trường đang theo học</label>
+                        <input type="text" id="school" name="school" required>
                     </div>
                     
                     <div class="form-group">
-                        <label for="faculty" class="required">Khoa</label>
-                        <select id="faculty" name="faculty" required>
-                            <option value="">-- Chọn khoa --</option>
-                            <option value="QTKD">Quản trị kinh doanh</option>
-                            <option value="KT">Kế toán</option>
-                            <option value="TC">Tài chính</option>
-                            <option value="NH">Ngân hàng</option>
-                            <option value="KHQT">Kinh doanh quốc tế</option>
-                            <option value="KTQT">Kế toán kiểm toán</option>
-                            <option value="NN">Ngôn ngữ</option>
-                        </select>
+                        <label for="major" class="required">Khóa/Chuyên ngành đang theo học</label>
+                        <input type="text" id="major" name="major" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="facebook" class="required">Link Facebook</label>
+                        <input type="url" id="facebook" name="facebook" placeholder="https://facebook.com/username" required>
                     </div>
                     
                     <div class="buttons">
@@ -1327,10 +1335,15 @@
             
             let summaryHTML = `
                 <p><strong>Họ và tên:</strong> ${form.fullname.value}</p>
+                <p><strong>Ngày/tháng/năm sinh:</strong> ${form.birthdaydate.value}</p>
+                <p><strong>Giới tính:</strong> ${form.gender.value}</p>
+                <p><strong>Trường</strong> ${form.school.value}</p>
+                <p><strong>Khóa/Chuyên ngành đang theo học</strong> ${form.major.value}</p>
+                <p><strong>Số điện thoại:</strong> ${form.phone.value}</p>
                 <p><strong>Email:</strong> ${form.email.value}</p>
                 <p><strong>Số điện thoại:</strong> ${form.phone.value}</p>
-                <p><strong>Vị trí ưu tiên:</strong> ${priorityPositionText}</p>
-                <p><strong>Vị trí dự bị:</strong> ${secondaryPositionText === "-- Chọn vị trí --" ? "Không chọn" : secondaryPositionText}</p>
+                <p><strong>Bạn muốn đăng ký vào ban:</strong> ${priorityPositionText}</p>
+                <p><strong>Bạn có nguyện vọng đăng ký vào ban:</strong> ${secondaryPositionText === "-- Chọn vị trí --" ? "Không chọn" : secondaryPositionText}</p>
             `;
             
             summaryDiv.innerHTML = summaryHTML;
@@ -1341,10 +1354,13 @@
             const formObject = {
                 // Thông tin cá nhân
                 fullname: document.getElementById('fullname').value,
+                birthdate: document.getElementById('birthdate').value,
+                gender: document.getElementById('gender').value,
                 email: document.getElementById('email').value,
                 phone: document.getElementById('phone').value,
-                birthdate: document.getElementById('birthdate').value,
-                faculty: document.getElementById('faculty').value,
+                school: document.getElementById('school').value,
+                major: document.getElementById('major').value,
+                facebook: document.getElementById('facebook').value,
                 
                 // Vị trí ứng tuyển
                 priority_position: document.getElementById('priority_position').value,
@@ -1430,10 +1446,13 @@
                     
                     // Khôi phục thông tin cá nhân
                     if (formData.fullname) document.getElementById('fullname').value = formData.fullname;
+                    if (formData.birthdate) document.getElementById('birthdate').value = formData.birthdate;
+                    if (formData.gender) document.getElementById('gender').value = formData.gender;
                     if (formData.email) document.getElementById('email').value = formData.email;
                     if (formData.phone) document.getElementById('phone').value = formData.phone;
-                    if (formData.birthdate) document.getElementById('birthdate').value = formData.birthdate;
-                    if (formData.faculty) document.getElementById('faculty').value = formData.faculty;
+                    if (formData.school) document.getElementById('school').value = formData.school;
+                    if (formData.major) document.getElementById('major').value = formData.major;
+                    if (formData.facebook) document.getElementById('facebook').value = formData.facebook;
                     
                     // Khôi phục vị trí ứng tuyển
                     if (formData.priority_position) {
