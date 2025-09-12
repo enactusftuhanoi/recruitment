@@ -12,9 +12,30 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth(); // <-- Auth instance
 
 let applications = [];
 let currentApplicationId = null;
+
+// CHÚ Ý: không gọi loadApplications trực tiếp khi load trang.
+// Thay vào đó, lắng nghe auth state để đảm bảo chỉ load khi user đã đăng nhập.
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        // Nếu bạn muốn thêm kiểm tra bổ sung (ví dụ: chỉ cho phép email domain nào...) 
+        // có thể kiểm tra user.email ở đây.
+        loadApplications(); // gọi tải dữ liệu khi user đã auth
+    } else {
+        // Nếu không login -> chuyển về trang login
+        // Thay đường dẫn nếu login.html của bạn đặt ở folder khác (vd: '/admin/login.html')
+        window.location.href = 'login.html';
+    }
+});
+// Kiểm tra session
+const userEmail = sessionStorage.getItem("email");
+if (!userEmail) {
+  window.location.href = "login.html"; 
+}
+
 
 // Hàm tải danh sách ứng viên
 async function loadApplications() {
