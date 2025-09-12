@@ -1,210 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hiệu ứng cuộn mượt mà</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --background-color: #0d0f11;
-            --primary-color: #f1f2f3;
-            --accent-color: #00ff66;
-            --transition-speed: 0.5s;
-        }
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Recruitment | Enactus FTU Hanoi</title>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<link rel="canonical" href="https://recruitment.enactusftuhanoi.id.vn" />
+    
+<!-- SEO Meta -->
+<meta name="description" content="Enactus FTU Hanoi chính thức mở đơn tuyển thành viên Gen 18.0! Hãy gia nhập CLB duy nhất tại FTU thực hiện các dự án xã hội, khởi nghiệp bền vững và tạo tác động tích cực.">
+<meta name="keywords" content="tuyển thành viên Enactus FTU Hanoi, tuyển dụng CLB FTU, recruitment FTU, câu lạc bộ xã hội FTU, Enactus, tuyển thành viên ngoại thương, CLB FTU Hanoi">
+<meta name="author" content="Enactus FTU Hanoi">
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Space Grotesk', sans-serif;
-            cursor: none;
-        }
+<!-- Open Graph (Facebook, Zalo, LinkedIn) -->
+<meta property="og:title" content="18th Gen Membership Recruitment | Enactus FTU Hanoi">
+<meta property="og:description" content="Đừng bỏ lỡ cơ hội trở thành một phần của Enactus FTU Hanoi - CLB duy nhất tại FTU triển khai các dự án xã hội và khởi nghiệp bền vững. Ứng tuyển ngay hôm nay!">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://recruitment.enactusftuhanoi.id.vn">
+<meta property="og:image" content="/assets/recruitment.png">
 
-        body {
-            background-color: var(--background-color);
-            color: var(--primary-color);
-            height: auto;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-            position: relative;
-            z-index: 0;
-        }
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="18th Gen Membership Recruitment | Enactus FTU Hanoi">
+<meta name="twitter:description" content="Enactus FTU Hanoi mở đơn tuyển thành viên mới! Cùng tạo tác động xã hội tích cực qua các dự án bền vững.">
+<meta name="twitter:image" content="/assets/recruitment.png">
 
-        .background-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('/assets/background.png') no-repeat center center/cover;
-            z-index: -1;
-            
-        }
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700&display=swap" rel="stylesheet">
 
-        .scrollable-content {
-            width: 100%;
-            min-height: 200vh;
-            padding-top: 15vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 1;
-            position: relative;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-            
-        }
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet"/>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<style>
+  * {margin:0; padding:0; box-sizing:border-box;}
 
-        .main-elements {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            
-        }
-        
-        .main-image {
-            width: 1600px;
-            height: 1600px;
-            margin-top: 600px;
-            object-fit: contain;
-            position: absolute;
-            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
-            z-index: 10;
-        }
+  body {
+    min-height: 100vh;
+    background: url("/assets/background.png") no-repeat center top fixed;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
+    font-family: 'Bricolage Grotesque', sans-serif;
+  }
 
-        .sub-image {
-            width: 500px;
-            height: auto;
-            object-fit: contain;
-            position: absolute;
-            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
-            z-index: 9;
-            
-        }
-        
-        .logo-image {
-            width: 250px;
-            height: auto;
-            object-fit: contain;
-            position: absolute;
-            top: -50px;
-            z-index: 11;
-            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
-        }
+  /* Hero wrapper để nút bám vào */
+  .hero-container {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+  }
 
-        .section {
-            width: 100%;
-            padding: 2rem;
-            min-height: 100vh;
-            background-color: rgba(0, 0, 0, 0.5);
-            color: var(--primary-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 2rem;
-            text-align: center;
-            opacity: 1;
-            transition: opacity 0.5s ease-in-out;
-        }
+  .hero-img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
 
-        .cursor-follower {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 50px;
-            height: 50px;
-            background-color: var(--accent-color);
-            border-radius: 50%;
-            pointer-events: none;
-            mix-blend-mode: exclusion;
-            transform: translate(-50%, -50%) scale(0.5);
-            transition: transform var(--transition-speed) cubic-bezier(0.17, 0.67, 0.83, 0.67), width 0.3s, height 0.3s;
-            z-index: 100;
-        }
-        
-        .scrollable-content:hover .cursor-follower {
-            transform: translate(-50%, -50%) scale(1);
-        }
+  /* Button gốc - SỬA LẠI CHO RESPONSIVE */
+  .apply-btn {
+    position: absolute;
+    bottom: 15%; /* Giữ giá trị phần trăm */
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.7vw 2vw; /* Sử dụng đơn vị viewport width để co giãn tốt hơn */
+    font-size: clamp(0.9rem, 2vw, 1.3rem); /* Kích thước chữ linh hoạt */
+    font-weight: 900;
+    color: #fbfbd6;
+    background: #7c77df;
+    border: 0.3vw solid #638efe; /* Border co giãn theo viewport */
+    border-radius: 40px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    white-space: nowrap;
+    text-align: center;
+    min-width: 160px; /* Đảm bảo nút không quá nhỏ */
+  }
+  .apply-btn:hover {
+    transform: translateX(-50%) translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+  }
 
-        @media (max-width: 768px) {
-            .main-image {
-                width: 350px;
-            }
-            .sub-image {
-                width: 250px;
-            }
-            .logo-image {
-                width: 150px;
-                top: -100px;
-            }
-            .section {
-                font-size: 1.5rem;
-            }
-        }
-    </style>
+  /* Responsive: mobile & tablet */
+  @media (max-width: 768px) {
+    .apply-btn {
+      bottom: 12%;
+      padding: 1.2vw 3vw;
+      font-size: clamp(0.8rem, 3vw, 1.1rem);
+      min-width: 140px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .apply-btn {
+      bottom: 10%;
+      padding: 1.5vw 4vw;
+      font-size: clamp(0.7rem, 3.5vw, 1rem);
+      min-width: 120px;
+      border-width: 0.5vw;
+    }
+  }
+</style>
 </head>
 <body>
-    <div class="background-container"></div>
-    <div class="scrollable-content" >
-        <div class="main-elements" height="5000px">
-            <img class="main-image" id="main-image" src="/assets/hero.png" alt="Main Image">
-            <img class="logo-image" id="logo-image" src="/assets/logo_trắng.png" alt="Logo Image">
-        </div>
-        
-    </div>
-    
-    <div class="cursor-follower" id="cursor-follower"></div>
+  <div class="hero-container">
+    <img src="/assets/hero.png" alt="Hero" class="hero-img">
 
-    
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const cursorFollower = document.getElementById('cursor-follower');
-            const mainImage = document.getElementById('main-image');
-            const subImage = document.getElementById('sub-image');
-            const logoImage = document.getElementById('logo-image');
-            const section1 = document.getElementById('section-1');
-
-            // Hiệu ứng con trỏ tùy chỉnh
-            document.addEventListener('mousemove', (e) => {
-                cursorFollower.style.left = `${e.clientX}px`;
-                cursorFollower.style.top = `${e.clientY}px`;
-            });
-            
-            // Hiệu ứng cuộn và biến mất
-            window.addEventListener('scroll', () => {
-                const scrollY = window.scrollY;
-                const windowHeight = window.innerHeight;
-                
-                // Tính toán tiến trình cuộn, từ 0 đến 1
-                const scrollProgress = Math.min(1, scrollY / (windowHeight * 0.5));
-
-                // Các phần tử di chuyển ra khỏi màn hình
-                const imageTranslateX = -scrollProgress * 1000;
-                const subImageTranslateX = scrollProgress * 1000;
-                const opacity = 1 - scrollProgress;
-
-                // Áp dụng kiểu cho các phần tử hình ảnh
-                mainImage.style.transform = `translateX(${imageTranslateX}px)`;
-                mainImage.style.opacity = opacity;
-                
-                subImage.style.transform = `translateX(${subImageTranslateX}px)`;
-                subImage.style.opacity = opacity;
-
-                logoImage.style.transform = `translateY(${imageTranslateX}px)`;
-                logoImage.style.opacity = opacity;
-            });
-        });
-    </script>
+    <!-- Button Apply -->
+    <a href="/user/form.html" target="_blank" class="apply-btn">
+      ĐĂNG KÝ NGAY
+    </a>
+  </div>
 </body>
 </html>
-
