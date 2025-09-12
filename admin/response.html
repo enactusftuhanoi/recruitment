@@ -82,9 +82,14 @@
             <div class="application-detail-view" id="application-detail">
                 <div class="detail-view-header">
                     <h2 id="detail-applicant-name">Thông tin ứng viên</h2>
-                    <button class="back-button" onclick="hideDetailView()">
-                        <i class="fas fa-arrow-left"></i> Quay lại danh sách
-                    </button>
+                    <div class="header-actions">
+                        <button class="mark-reviewed-btn" onclick="markAsReviewed()">
+                            <i class="fas fa-eye"></i> Đánh dấu đã xem
+                        </button>
+                        <button class="back-button" onclick="hideDetailView()">
+                            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="detail-sections" id="detail-sections">

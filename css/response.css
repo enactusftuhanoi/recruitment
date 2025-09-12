@@ -196,34 +196,75 @@
         }
         
         .application-status {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
             font-weight: 500;
+            display: inline-block;
         }
-        
-        .status-new {
-            background-color: #e3f2fd;
+
+        /* Mới */
+        .application-status.status-new {
+            background-color: #e3f2fd;   /* xanh nhạt */
             color: var(--primary);
         }
-        
-        .status-reviewed {
-            background-color: #e8f5e9;
-            color: var(--success);
+
+        /* Đã xem */
+        .application-status.status-reviewed {
+            background-color: #fff7ed;   /* cam nhạt */
+            color: #f59e0b;             /* cam đậm */
+            border: 1px solid #f59e0b;
         }
-        
-        .status-rejected {
-            background-color: #ffebee;
-            color: var(--error);
-        }
-        
-        .status-accepted {
+
+        /* Chấp nhận */
+        .application-status.status-accepted {
             background-color: #e8f5e9;
             color: var(--success);
             border: 1px solid var(--success);
         }
+
+        /* Từ chối */
+        .application-status.status-rejected {
+            background-color: #ffebee;
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
         
+        .status-indicator {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        /* Mới */
+        .status-indicator.status-new {
+            background-color: #e3f2fd;
+            color: var(--primary);
+        }
+
+        /* Đã xem */
+        .status-indicator.status-reviewed {
+            background-color: #fff7ed;
+            color: #f59e0b;
+            border: 1px solid #f59e0b;
+        }
+
+        /* Chấp nhận */
+        .status-indicator.status-accepted {
+            background-color: #e8f5e9;
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        /* Từ chối */
+        .status-indicator.status-rejected {
+            background-color: #ffebee;
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
         .application-detail-view {
             display: none;
             background: white;
@@ -597,16 +638,35 @@
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         }
 
-        .btn-reviewed {
-        background: #007bff;
-        color: #fff;
-        border: none;
-        padding: 6px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        
+        .mark-reviewed-btn {
+            background-color: #3b82f6; /* xanh dương */
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.2s ease, transform 0.2s ease;
         }
-        .btn-reviewed:hover {
-            background: #0056b3;
+
+        .mark-reviewed-btn i {
+            font-size: 15px;
         }
+
+        .mark-reviewed-btn:hover {
+            background-color: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
 

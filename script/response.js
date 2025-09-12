@@ -155,6 +155,27 @@ function getStatusInfo(status) {
     }
 }
 
+// Hàm đánh dấu ứng viên đã xem
+async function markAsReviewed() {
+    if (!currentApplicationId) return;
+
+    const application = applications.find(app => app.id === currentApplicationId);
+    if (!application || application.status !== 'new') return;
+
+    await db.collection('applications').doc(currentApplicationId).update({
+        status: 'reviewed',
+        updatedAt: new Date()
+    });
+
+    const appIndex = applications.findIndex(app => app.id === currentApplicationId);
+    if (appIndex !== -1) {
+        applications[appIndex].status = 'reviewed';
+    }
+
+    renderApplications();
+    showApplicationDetail(currentApplicationId);
+}
+
 // Hàm hiển thị chi tiết ứng viên
 function showApplicationDetail(appId) {
     const application = applications.find(app => app.id === appId);
@@ -173,24 +194,6 @@ function showApplicationDetail(appId) {
     // Thông tin cá nhân (đã bổ sung đầy đủ)
     const personalInfoSection = document.createElement('div');
     personalInfoSection.className = 'detail-section';
-
-    // Tạo nút "Đánh dấu đã xem"
-    const markReviewedBtn = document.createElement('button');
-    markReviewedBtn.className = 'btn-reviewed';
-    markReviewedBtn.innerHTML = `<i class="fas fa-eye"></i> Đánh dấu đã xem`;
-    markReviewedBtn.onclick = () => {
-        db.collection('applications').doc(currentApplicationId).update({ status: 'reviewed' });
-        renderApplications();
-        showApplicationDetail(currentApplicationId);
-    };
-
-    // Thêm container header chứa nút
-    const headerDiv = document.createElement('div');
-    headerDiv.style.textAlign = 'right';
-    headerDiv.appendChild(markReviewedBtn);
-
-    // Gắn header vào đầu section
-    personalInfoSection.appendChild(headerDiv);
     
     let personalInfoHTML = `
         <h3><i class="fas fa-user"></i> Thông tin cá nhân</h3>
@@ -250,27 +253,9 @@ function showApplicationDetail(appId) {
         `;
     }
     
-    if (application.student_id) {
-        personalInfoHTML += `
-            <div class="detail-item">
-                <span class="detail-label">Mã sinh viên</span>
-                <span class="detail-value">${application.student_id || 'Chưa cung cấp'}</span>
-            </div>
-        `;
-    }
-    
-    if (application.school_year) {
-        personalInfoHTML += `
-            <div class="detail-item">
-                <span class="detail-label">Năm học</span>
-                <span class="detail-value">${application.school_year || 'Chưa cung cấp'}</span>
-            </div>
-        `;
-    }
-    
-    personalInfoHTML += `</div>`;
     personalInfoSection.innerHTML = personalInfoHTML;
     detailSections.appendChild(personalInfoSection);
+    personalInfoHTML += `</div>`;
     
     // Thông tin ứng tuyển (sắp xếp lại logic)
     const applicationInfoSection = document.createElement('div');
@@ -642,8 +627,13 @@ async function acceptDepartment(departmentType) {
             }
             
             // Cập nhật trạng thái tổng nếu cả hai ban đều được chấp nhận
-            if ((updateData.priorityAccepted && application.secondaryAccepted) || 
-                (updateData.secondaryAccepted && application.priorityAccepted)) {
+            // Accept
+            if (departmentType === 'priority' && (!application.secondary_position || application.secondary_position === 'None')) {
+                updateData.status = 'accepted';
+            } else if (departmentType === 'secondary' && (!application.priority_position || application.priority_position === 'None')) {
+                updateData.status = 'accepted';
+            } else if ((updateData.priorityAccepted && application.secondaryAccepted) || 
+                    (updateData.secondaryAccepted && application.priorityAccepted)) {
                 updateData.status = 'accepted';
             }
             
@@ -733,10 +723,16 @@ async function rejectDepartment(departmentType) {
             }
             
             // Cập nhật trạng thái tổng nếu cả hai ban đều bị từ chối
-            if ((updateData.priorityRejected && application.secondaryRejected) || 
-                (updateData.secondaryRejected && application.priorityRejected)) {
+            // Reject
+            if (departmentType === 'priority' && (!application.secondary_position || application.secondary_position === 'None')) {
+                updateData.status = 'rejected';
+            } else if (departmentType === 'secondary' && (!application.priority_position || application.priority_position === 'None')) {
+                updateData.status = 'rejected';
+            } else if ((updateData.priorityRejected && application.secondaryRejected) || 
+                    (updateData.secondaryRejected && application.priorityRejected)) {
                 updateData.status = 'rejected';
             }
+
             
             // Cập nhật trạng thái trong Firestore
             await db.collection('applications').doc(currentApplicationId).update(updateData);
