@@ -108,31 +108,30 @@
                         html += `<div class="checkbox-group" id="${prefixedId}_group">`;
                         q.options.forEach((option, idx) => {
                             const optionId = `${prefixedId}_${idx}`;
+                            // Thêm required vào checkbox đầu tiên nếu câu hỏi là bắt buộc
+                            const requiredAttr = (q.required && idx === 0) ? 'required' : '';
                             html += `<div class="checkbox-item">
-                                        <input type="checkbox" id="${optionId}" name="${prefixedId}[]" value="${option}">
+                                        <input type="checkbox" id="${optionId}" name="${prefixedId}[]" value="${option}" ${requiredAttr}>
                                         <label for="${optionId}">${option}</label>
-                                     </div>`;
+                                    </div>`;
                         });
                         html += `</div>`;
-                        if (q.required) {
-                            html += `<input type="hidden" name="${prefixedId}_required" value="true" data-required-message="Vui lòng chọn ít nhất một tùy chọn">`;
-                        }
                         break;
         
                     case 'radio':
                         html += `<div class="radio-group" id="${prefixedId}_group">`;
                         q.options.forEach((option, idx) => {
                             const optionId = `${prefixedId}_${idx}`;
+                            // Thêm required vào radio đầu tiên nếu câu hỏi là bắt buộc
+                            const requiredAttr = (q.required && idx === 0) ? 'required' : '';
                             html += `<div class="radio-item">
-                                        <input type="radio" id="${optionId}" name="${prefixedId}" value="${option}">
+                                        <input type="radio" id="${optionId}" name="${prefixedId}" value="${option}" ${requiredAttr}>
                                         <label for="${optionId}">${option}</label>
-                                     </div>`;
+                                    </div>`;
                         });
                         html += `</div>`;
-                        if (q.required) {
-                            html += `<input type="hidden" name="${prefixedId}_required" value="true" data-required-message="Vui lòng chọn một tùy chọn">`;
-                        }
                         break;
+
         
                     case 'dropdown':
                         html += `<select id="${prefixedId}" name="${prefixedId}" ${q.required ? 'required' : ''}>`;
