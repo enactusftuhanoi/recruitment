@@ -419,6 +419,33 @@
                 return;
             }
             
+            if (current === 3) {
+                const section = document.getElementById('section3');
+                const tabs = ['general', 'priority', 'secondary'];
+                for (let tab of tabs) {
+                    const tabContent = document.getElementById(`tab-${tab}`);
+                    if (tabContent && tabContent.style.display !== 'none') {
+                        const requiredInputs = tabContent.querySelectorAll('input[required], select[required], textarea[required]');
+                        for (let input of requiredInputs) {
+                            if (!input.value) {
+                                // Nếu có lỗi -> highlight + chuyển tab
+                                input.style.borderColor = 'var(--error)';
+                                input.style.animation = 'shake 0.5s';
+                                setTimeout(() => { input.style.animation = ''; }, 500);
+                                showTab(tab);
+                                alert('Vui lòng điền đầy đủ các thông tin trong tab này trước khi tiếp tục.');
+                                return; // Dừng không sang section 4
+                            } else {
+                                input.style.borderColor = 'var(--border)';
+                            }
+                        }
+                    }
+                }
+                // Nếu qua hết vòng lặp mà không lỗi → sang section 4
+                showSection(4);
+                return;
+            }
+
             // Basic validation
             let valid = true;
             const currentSection = document.getElementById(`section${current}`);
