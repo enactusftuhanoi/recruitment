@@ -727,8 +727,15 @@
                     });
                 }
                 
+                // Trước khi lưu vào Firebase
+                formObject.all_departments = [
+                    formObject.priority_position,
+                    formObject.secondary_position
+                ].filter(p => p && p !== "None");
+
                 // Save to Firebase
                 await db.collection('applications').add(formObject);
+
                 
                 // Xóa dữ liệu tạm sau khi gửi thành công
                 localStorage.removeItem('enactus_form_data');

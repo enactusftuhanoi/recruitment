@@ -668,5 +668,105 @@
             gap: 10px;
             align-items: center;
         }
+        .user-info-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #fff;
+            border: 1px solid #eee;
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            font-size: 14px;
+            color: #333;
+            z-index: 9999;
+            width: 240px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            }
+
+            .user-info-box .name {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 4px;
+            color: #222;
+            }
+
+            .user-info-box .email {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+            word-break: break-all;
+            }
+
+            .user-info-box .role {
+            font-size: 13px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            }
+
+            .user-info-box .role.superadmin {
+            background: #fff7d1;
+            color: #b58900;
+            }
+
+            .user-info-box .role.admin {
+            background: #e0f2f1;
+            color: #00796b;
+            }
+
+            .user-info-box .role.member {
+            background: #e3f2fd;
+            color: #1976d2;
+            }
+
+            .user-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            }
+
+            .icon-badge {
+            font-size: 24px;       /* to hơn */
+            color: #f39c12;        /* vàng quyền lực */
+            cursor: pointer;
+            transition: transform 0.2s ease, color 0.2s ease;
+            }
+
+            .icon-badge:hover {
+            transform: scale(1.2); /* hover phóng to nhẹ */
+            color: #e67e22;        /* cam đậm hơn khi hover */
+            }
+
+            /* logout icon */
+            .user-info-footer {
+            display: flex;
+            justify-content: space-between; /* role bên trái, logout bên phải */
+            align-items: center;
+            margin-top: 6px;
+            }
+
+            .logout-badge {
+            font-size: 18px;
+            color: #dc3545; /* đỏ cảnh báo */
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
+            }
+
+            .logout-badge:hover {
+            background: rgba(220, 53, 69, 0.1);
+            transform: scale(1.1);
+            color: #b71c1c;
+            }
+
+
+
+
+
+
+
 
 

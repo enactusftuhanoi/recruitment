@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản trị tài khoản</title>
+  <link rel="stylesheet" href="/css/accounts.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>👑 Quản trị tài khoản</h1>
+      <button onclick="logout()">Đăng xuất</button>
+    </header>
+
+    <button onclick="showAddAccountForm()">➕ Thêm tài khoản</button>
+
+    <table id="accounts-table" border="1" cellspacing="0" cellpadding="5">
+      <thead>
+        <tr>
+          <th>Họ tên (ID)</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Department</th>
+          <th>Note</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- Modal form -->
+    <div id="account-form-modal" style="display:none;">
+      <form id="account-form">
+        <input type="hidden" id="account-id">
+        <label>Họ tên (ID)</label>
+        <input type="text" id="account-name" required>
+        <label>Email</label>
+        <input type="email" id="account-email" required>
+        <label>Role</label>
+        <select id="account-role">
+          <option value="superadmin">Super Admin</option>
+          <option value="admin">Admin</option>
+          <option value="member">Member</option>
+        </select>
+        <label>Department</label>
+        <select id="account-department">
+          <option value="">--Chọn ban--</option>
+          <option value="HR">Nhân sự</option>
+          <option value="MD">Truyền thông</option>
+          <option value="ER">Đối ngoại</option>
+          <option value="PD">Nội dung</option>
+        </select>
+        <label>Note</label>
+        <textarea id="account-note"></textarea>
+        <button type="submit">Lưu</button>
+        <button type="button" onclick="closeForm()">Hủy</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+
+  <!-- Config -->
+  <script src="/script/config.js"></script>
+  <!-- Logic quản trị -->
+  <script src="/script/accounts.js"></script>
+</body>
+</html>

@@ -410,17 +410,20 @@
         const email = user.email;
 
         try {
-          // 🔎 Kiểm tra email trong collection "account"
           const querySnapshot = await db.collection("account")
-                                       .where("email", "==", email)
-                                       .get();
+                                      .where("email", "==", email)
+                                      .get();
 
           if (!querySnapshot.empty) {
-            // ✅ Tìm thấy -> lưu session và chuyển sang response.html
+            const accountData = querySnapshot.docs[0].data();
+
+            // Lưu session: email + role + department
             sessionStorage.setItem("email", email);
+            sessionStorage.setItem("role", accountData.role || "member");
+            sessionStorage.setItem("department", accountData.department || "");
+
             window.location.href = "response.html";
           } else {
-            // ❌ Không tìm thấy -> signOut
             await auth.signOut();
             loginError.textContent = "Email chưa được cấp quyền trong hệ thống.";
             loginError.style.display = 'block';

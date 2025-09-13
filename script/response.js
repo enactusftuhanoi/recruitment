@@ -14,53 +14,214 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth(); // <-- Auth instance
 
+// ==== Global State ====
+const userEmail = sessionStorage.getItem("email");
+let userRole = sessionStorage.getItem("role") || null;
+let userDept = sessionStorage.getItem("department") || null;
+
 let applications = [];
 let currentApplicationId = null;
 
+if (!userEmail || !userRole) {
+  window.location.href = "login.html";
+}
+
+
 // CHÚ Ý: không gọi loadApplications trực tiếp khi load trang.
 // Thay vào đó, lắng nghe auth state để đảm bảo chỉ load khi user đã đăng nhập.
-auth.onAuthStateChanged((user) => {
-    if (user) {
-        // Nếu bạn muốn thêm kiểm tra bổ sung (ví dụ: chỉ cho phép email domain nào...) 
-        // có thể kiểm tra user.email ở đây.
-        loadApplications(); // gọi tải dữ liệu khi user đã auth
-    } else {
-        // Nếu không login -> chuyển về trang login
-        // Thay đường dẫn nếu login.html của bạn đặt ở folder khác (vd: '/admin/login.html')
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    try {
+      const snap = await db.collection('account')
+                           .where('email', '==', user.email)
+                           .limit(1)
+                           .get();
+
+      if (!snap.empty) {
+        const doc = snap.docs[0];
+        const data = doc.data();
+
+        userRole = data.role || userRole;
+        userDept = data.department || userDept;
+
+        // 👉 Lấy fullname từ document ID
+        window.currentUserFullname = doc.id;  
+
+        // Lưu session
+        sessionStorage.setItem("role", userRole);
+        sessionStorage.setItem("department", userDept);
+
+        // 👉 Gọi 2 hàm sau khi đã xác định role và fullname
+        applyRoleUIRules();
+        renderUserInfoBox(window.currentUserFullname);
+
+        // 👉 Gắn listener export sau khi UI đã sẵn sàng
+        attachExportDepartmentListener();
+
+
+      } else {
+        // account không tồn tại
+        await auth.signOut();
         window.location.href = 'login.html';
+        return;
+      }
+    } catch (e) {
+      console.error('Lỗi khi lấy account:', e);
     }
+
+    loadApplications();
+  } else {
+    window.location.href = 'login.html';
+  }
 });
-// Kiểm tra session
-const userEmail = sessionStorage.getItem("email");
-if (!userEmail) {
-  window.location.href = "login.html"; 
+
+
+function renderUserInfoBox(fullname) {
+  const box = document.getElementById('user-info-box');
+  if (!box) return;
+
+  const email = sessionStorage.getItem("email") || "";
+  const role = (sessionStorage.getItem("role") || "").toLowerCase();
+  const dept = sessionStorage.getItem("department") || "";
+
+  const name = fullname || email.split("@")[0];
+
+  let roleDisplay = "";
+  if (role === "superadmin") {
+    roleDisplay = `<i class="fa-solid fa-crown" style="color:#f1c40f; margin-right:6px;"></i>Super Admin`;
+  } else if (role === "admin") {
+    roleDisplay = `Admin${dept ? " | " + dept : ""}`;
+  } else if (role === "member") {
+    roleDisplay = `Member${dept ? " | " + dept : ""}`;
+  }
+
+  const adminBadge =
+    role === "superadmin"
+      ? `<a href="accounts.html" class="icon-badge" title="Quản trị">
+           <i class="fa-solid fa-shield-halved"></i>
+         </a>`
+      : `<div class="icon-badge">
+           <i class="fa-solid fa-users" title="Thành viên"></i>
+         </div>`;
+
+  box.innerHTML = `
+    <div class="user-info-header">
+      <div class="name">${name}</div>
+      ${adminBadge}
+    </div>
+    <div class="email">${email}</div>
+    <div class="user-info-footer">
+      <div class="role ${role}">${roleDisplay}</div>
+      <div class="logout-badge" id="logout-btn" title="Đăng xuất">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </div>
+    </div>
+  `;
+}
+
+
+function canActOnDepartment(application, departmentType) {
+  if (!application) return false;
+  if (userRole === 'superadmin') return true;
+  if (userRole === 'admin') {
+    const deptCode = departmentType === 'priority' ? application.priority_position : application.secondary_position;
+    return deptCode === userDept;
+  }
+  return false;
+}
+
+function applyRoleUIRules() {
+  // --- Nút export ---
+  const exportAllBtn = document.getElementById('export-all-btn');
+  const exportByCandidateBtn = document.getElementById('export-by-candidate-btn');
+  const exportDeptSelect = document.getElementById('export-department');
+
+  if (userRole === 'superadmin') {
+    if (exportAllBtn) exportAllBtn.style.display = 'inline-block';
+    if (exportByCandidateBtn) exportByCandidateBtn.style.display = 'inline-block';
+    if (exportDeptSelect) exportDeptSelect.disabled = false;
+  } else if (userRole === 'admin') {
+    if (exportAllBtn) exportAllBtn.style.display = 'none';
+    if (exportByCandidateBtn) exportByCandidateBtn.style.display = 'inline-block';
+    if (exportDeptSelect) {
+      exportDeptSelect.disabled = false;
+      Array.from(exportDeptSelect.options).forEach(opt => {
+        opt.disabled = opt.value !== userDept;
+      });
+      exportDeptSelect.value = userDept;
+    }
+  } else { // member
+    if (exportAllBtn) exportAllBtn.style.display = 'none';
+    if (exportByCandidateBtn) exportByCandidateBtn.style.display = 'none';
+    if (exportDeptSelect) exportDeptSelect.disabled = true;
+  }
+
+  // --- Menu khác (nếu có) ---
+  const systemMenu = document.getElementById('system-settings-menu');
+  if (systemMenu) {
+    systemMenu.style.display = (userRole === 'superadmin') ? 'block' : 'none';
+  }
+
+  // --- Các nút hành động khác ---
+  if (userRole === 'member') {
+    document.querySelectorAll('.action-button, .export-btn, .mark-reviewed-btn, .export-option-btn')
+            .forEach(e => e.style.display = 'none');
+  } else if (userRole === 'superadmin') {
+    document.querySelectorAll('.export-option-btn, .export-btn, .action-button, .mark-reviewed-btn')
+            .forEach(e => e.style.display = 'inline-block');
+  }
 }
 
 
 // Hàm tải danh sách ứng viên
 async function loadApplications() {
-    try {
-        const snapshot = await db.collection('applications')
-            .orderBy('timestamp', 'desc')
-            .get();
-        
+  try {
+    let snapshot;
+
+    if (userRole === 'superadmin') {
+      snapshot = await db.collection('applications')
+                         .orderBy('timestamp', 'desc')
+                         .get();
+    } else if (userRole === 'admin' || userRole === 'member') {
+      // Admin + Member chỉ xem ứng viên thuộc ban của mình
+      try {
+        snapshot = await db.collection('applications')
+                           .where('all_departments', 'array-contains', userDept)
+                           .orderBy('timestamp', 'desc')
+                           .get();
+      } catch (err) {
+        console.warn('Không query được bằng all_departments, fallback filter client-side', err);
+        const allSnap = await db.collection('applications').orderBy('timestamp','desc').get();
+        // Fallback: filter theo ban client-side
         applications = [];
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            applications.push({
-                id: doc.id,
-                // Đảm bảo mọi ứng viên đều có trường status
-                status: data.status || 'new',
-                ...data
-            });
+        allSnap.forEach(doc => {
+          const data = doc.data();
+          if (data.priority_position === userDept || data.secondary_position === userDept) {
+            applications.push({ id: doc.id, status: data.status || 'new', ...data });
+          }
         });
-        
         renderApplications();
-    } catch (error) {
-        console.error('Error loading applications:', error);
-        Swal.fire('Lỗi', 'Không thể tải danh sách ứng viên: ' + error.message, 'error');
+        return;
+      }
     }
+
+    applications = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      applications.push({
+        id: doc.id,
+        status: data.status || 'new',
+        ...data
+      });
+    });
+
+    renderApplications();
+  } catch (error) {
+    console.error('Error loading applications:', error);
+    Swal.fire('Lỗi', 'Không thể tải danh sách ứng viên: ' + error.message, 'error');
+  }
 }
+
 
 // Hàm hiển thị danh sách ứng viên
 function renderApplications() {
@@ -126,7 +287,9 @@ function renderApplications() {
             minute: '2-digit'
         });
 
-        const statusInfo = getStatusInfo(app.status);
+        const overallStatus = computeOverallStatus(app);
+        const statusInfo = getStatusInfo(overallStatus);
+
         
         // Hiển thị cả ban ưu tiên và dự bị (nếu có)
         let departmentInfo = getDepartmentName(app.priority_position);
@@ -179,9 +342,22 @@ function getStatusInfo(status) {
 // Hàm đánh dấu ứng viên đã xem
 async function markAsReviewed() {
     if (!currentApplicationId) return;
-
     const application = applications.find(app => app.id === currentApplicationId);
-    if (!application || application.status !== 'new') return;
+    if (!application) return;
+
+    // Chỉ superadmin hoặc admin của ít nhất 1 ban của ứng viên mới mark reviewed
+    const canMark = (userRole === 'superadmin') ||
+                    (userRole === 'admin' && (
+                        application.priority_position === userDept ||
+                        application.secondary_position === userDept
+                    ));
+    if (!canMark) {
+        Swal.fire('Không có quyền', 'Bạn không có quyền đánh dấu ứng viên này là đã xem.', 'error');
+        return;
+    }
+
+    // chỉ mark khi status là 'new'
+    if (application.status !== 'new') return;
 
     await db.collection('applications').doc(currentApplicationId).update({
         status: 'reviewed',
@@ -197,18 +373,28 @@ async function markAsReviewed() {
     showApplicationDetail(currentApplicationId);
 }
 
+function canActOnDepartment(application, departmentType) {
+    if (!application) return false;
+    // Super admin: làm gì cũng được
+    if (userRole === 'superadmin') return true;
+    // Admin: chỉ nếu ban ứng viên trùng với ban admin
+    if (userRole === 'admin') {
+        const deptCode = departmentType === 'priority' ? application.priority_position : application.secondary_position;
+        return deptCode === userDept;
+    }
+    // Member: không có quyền hành động
+    return false;
+}
+
 // Hàm hiển thị chi tiết ứng viên
 function showApplicationDetail(appId) {
     const application = applications.find(app => app.id === appId);
-    
     if (!application) return;
-    
+
     currentApplicationId = appId;
-    
-    // Hiển thị tên ứng viên
+
     document.getElementById('detail-applicant-name').textContent = application.fullname || 'Ứng viên';
-    
-    // Tạo nội dung chi tiết
+
     const detailSections = document.getElementById('detail-sections');
     detailSections.innerHTML = '';
     
@@ -313,11 +499,12 @@ function showApplicationDetail(appId) {
             <div class="detail-item">
                 <span class="detail-label">Trạng thái tổng</span>
                 <span class="detail-value">
-                    <span class="status-indicator ${getStatusInfo(application.status || 'new').class}">
-                        ${getStatusInfo(application.status || 'new').text}
+                    <span class="status-indicator ${getStatusInfo(computeOverallStatus(application)).class}">
+                        ${getStatusInfo(computeOverallStatus(application)).text}
                     </span>
                 </span>
             </div>
+
     `;
 
     // Hiển thị trạng thái từng nguyện vọng nếu ứng viên có 2 nguyện vọng
@@ -343,18 +530,7 @@ function showApplicationDetail(appId) {
     }
 
     // Xác định ban được chấp nhận dựa trên trạng thái từng nguyện vọng
-    let acceptedDepartments = [];
-
-    if (application.priorityAccepted) {
-        acceptedDepartments.push(getDepartmentName(application.priority_position));
-    }
-    if (application.secondaryAccepted) {
-        acceptedDepartments.push(getDepartmentName(application.secondary_position));
-    }
-
-    let acceptedText = acceptedDepartments.length > 0 
-        ? acceptedDepartments.join(' / ') 
-        : 'Không có';
+    let acceptedText = getAcceptedDepartments(application) || 'Không có';
 
     applicationInfoHTML += `
         <div class="detail-item">
@@ -411,74 +587,72 @@ function showApplicationDetail(appId) {
         detailSections.appendChild(generalAnswersSection);
     }
     
-    // Câu trả lời theo phân ban ưu tiên
+      // --- Câu trả lời theo ban ưu tiên ---
     if (application.priority_position) {
         const priorityAnswersSection = document.createElement('div');
         priorityAnswersSection.className = 'detail-section';
-        
-        // Hiển thị thông báo nếu ban ưu tiên bị từ chối
+
         let priorityTitle = `<h3><i class="fas fa-star"></i> Câu trả lời cho ${getDepartmentName(application.priority_position)} (Ưu tiên)</h3>`;
         if (application.priorityRejected) {
-            priorityTitle = `<h3><i class="fas fa-star" style="color: var(--error);"></i> Câu trả lời cho ${getDepartmentName(application.priority_position)} (Ưu tiên - Đã từ chối)</h3>`;
+        priorityTitle = `<h3><i class="fas fa-star" style="color: var(--error);"></i> Câu trả lời cho ${getDepartmentName(application.priority_position)} (Ưu tiên - Đã từ chối)</h3>`;
         } else if (application.acceptedDepartment === application.priority_position) {
-            priorityTitle = `<h3><i class="fas fa-star" style="color: var(--success);"></i> Câu trả lời cho ${getDepartmentName(application.priority_position)} (Ưu tiên - Đã chấp nhận)</h3>`;
+        priorityTitle = `<h3><i class="fas fa-star" style="color: var(--success);"></i> Câu trả lời cho ${getDepartmentName(application.priority_position)} (Ưu tiên - Đã chấp nhận)</h3>`;
         }
-        
         priorityAnswersSection.innerHTML = priorityTitle;
-        
-        // Câu hỏi đặc thù của ban
+
         renderBanSpecificAnswers(application, 'priority', priorityAnswersSection);
-        
-        // Thêm nút hành động riêng cho ban ưu tiên
+
+        // 👉 chỉ thêm nút nếu có quyền
+        if (canActOnDepartment(application, 'priority')) {
         const priorityActions = document.createElement('div');
         priorityActions.className = 'action-buttons';
         priorityActions.innerHTML = `
             <button class="action-button btn-accept" onclick="acceptDepartment('priority')">
-                <i class="fas fa-check"></i> Chấp nhận ban ưu tiên
+            <i class="fas fa-check"></i> Chấp nhận ban ưu tiên
             </button>
             <button class="action-button btn-reject" onclick="rejectDepartment('priority')">
-                <i class="fas fa-times"></i> Từ chối ban ưu tiên
+            <i class="fas fa-times"></i> Từ chối ban ưu tiên
             </button>
         `;
         priorityAnswersSection.appendChild(priorityActions);
-        
+        }
+
         detailSections.appendChild(priorityAnswersSection);
     }
-    
-    // Câu trả lời theo phân ban dự bị
+
+    // --- Câu trả lời theo ban dự bị ---
     if (application.secondary_position && application.secondary_position !== 'None') {
         const secondaryAnswersSection = document.createElement('div');
         secondaryAnswersSection.className = 'detail-section';
-        
-        // Hiển thị thông báo nếu ban dự bị được chấp nhận
+
         let secondaryTitle = `<h3><i class="fas fa-clock"></i> Câu trả lời cho ${getDepartmentName(application.secondary_position)} (Dự bị)</h3>`;
         if (application.acceptedDepartment === application.secondary_position) {
-            secondaryTitle = `<h3><i class="fas fa-clock" style="color: var(--success);"></i> Câu trả lời cho ${getDepartmentName(application.secondary_position)} (Dự bị - Đã chấp nhận)</h3>`;
+        secondaryTitle = `<h3><i class="fas fa-clock" style="color: var(--success);"></i> Câu trả lời cho ${getDepartmentName(application.secondary_position)} (Dự bị - Đã chấp nhận)</h3>`;
         } else if (application.secondaryRejected) {
-            secondaryTitle = `<h3><i class="fas fa-clock" style="color: var(--error);"></i> Câu trả lời cho ${getDepartmentName(application.secondary_position)} (Dự bị - Đã từ chối)</h3>`;
+        secondaryTitle = `<h3><i class="fas fa-clock" style="color: var(--error);"></i> Câu trả lời cho ${getDepartmentName(application.secondary_position)} (Dự bị - Đã từ chối)</h3>`;
         }
-        
         secondaryAnswersSection.innerHTML = secondaryTitle;
-        
-        // Câu hỏi đặc thù của ban
+
         renderBanSpecificAnswers(application, 'secondary', secondaryAnswersSection);
-        
-        // Thêm nút hành động riêng cho ban dự bị
+
+        // 👉 chỉ thêm nút nếu có quyền
+        if (canActOnDepartment(application, 'secondary')) {
         const secondaryActions = document.createElement('div');
         secondaryActions.className = 'action-buttons';
         secondaryActions.innerHTML = `
             <button class="action-button btn-accept" onclick="acceptDepartment('secondary')">
-                <i class="fas fa-check"></i> Chấp nhận ban dự bị
+            <i class="fas fa-check"></i> Chấp nhận ban dự bị
             </button>
             <button class="action-button btn-reject" onclick="rejectDepartment('secondary')">
-                <i class="fas fa-times"></i> Từ chối ban dự bị
+            <i class="fas fa-times"></i> Từ chối ban dự bị
             </button>
         `;
         secondaryAnswersSection.appendChild(secondaryActions);
-        
+        }
+
         detailSections.appendChild(secondaryAnswersSection);
     }
-    
+
     // Hiển thị view chi tiết
     document.getElementById('applications-list').style.display = 'none';
     document.getElementById('application-detail').style.display = 'block';
@@ -543,111 +717,101 @@ function hideDetailView() {
 }
 
 // Chấp nhận từng ban riêng biệt
+// Chấp nhận từng ban riêng biệt
 async function acceptDepartment(departmentType) {
-    if (!currentApplicationId) return;
+  if (!currentApplicationId) return;
 
-    try {
-        const application = applications.find(app => app.id === currentApplicationId);
-        if (!application) return;
+  const application = applications.find(app => app.id === currentApplicationId);
+  if (!application) return;
 
-        const { value: note } = await Swal.fire({
-            title: `Xác nhận chấp nhận ${departmentType === 'priority' ? 'ban ưu tiên' : 'ban dự bị'}`,
-            input: 'textarea',
-            inputLabel: 'Ghi chú (nếu có)',
-            inputPlaceholder: 'Nhập ghi chú về ứng viên...',
-            showCancelButton: true,
-            confirmButtonText: 'Chấp nhận',
-            cancelButtonText: 'Hủy'
-        });
+  // 👉 Check quyền
+  if (!canActOnDepartment(application, departmentType)) {
+    Swal.fire('Không có quyền', 'Bạn không có quyền chấp nhận ứng viên cho ban này.', 'error');
+    return;
+  }
 
-        if (note !== undefined) {
-            Swal.fire({ title: 'Đang cập nhật...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+  const confirmResult = await Swal.fire({
+    title: 'Xác nhận',
+    text: `Bạn có chắc chắn muốn CHẤP NHẬN ứng viên này cho ban ${departmentType === 'priority' ? 'ưu tiên' : 'dự bị'}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Có, chấp nhận',
+    cancelButtonText: 'Hủy'
+  });
 
-            let updateData = { updatedAt: new Date() };
+  if (!confirmResult.isConfirmed) return;
 
-            if (departmentType === 'priority') {
-                updateData.priorityAccepted = true;
-                updateData.priorityRejected = false;
-                updateData.acceptedDepartment = application.priority_position;
-            } else {
-                updateData.secondaryAccepted = true;
-                updateData.secondaryRejected = false;
-                updateData.acceptedDepartment = application.secondary_position;
-            }
-
-            if (note) updateData.note = note;
-
-            // ✅ Cập nhật trạng thái tổng
-            updateData.status = computeOverallStatus({ ...application, ...updateData });
-
-            await db.collection('applications').doc(currentApplicationId).update(updateData);
-
-            // update local
-            const idx = applications.findIndex(app => app.id === currentApplicationId);
-            if (idx !== -1) applications[idx] = { ...applications[idx], ...updateData };
-
-            Swal.close();
-            Swal.fire({ icon: 'success', title: 'Thành công', text: 'Đã cập nhật' });
-            showApplicationDetail(currentApplicationId);
-            renderApplications();
-        }
-    } catch (error) {
-        console.error(error);
-        Swal.fire('Lỗi', 'Có lỗi xảy ra khi chấp nhận: ' + error.message, 'error');
+  try {
+    const updateData = {};
+    if (departmentType === 'priority') {
+      updateData.priorityAccepted = true;
+      updateData.priorityRejected = false;
+    } else {
+      updateData.secondaryAccepted = true;
+      updateData.secondaryRejected = false;
     }
-}
 
+    await db.collection('applications').doc(currentApplicationId).update(updateData);
+
+    Swal.fire('Thành công', 'Ứng viên đã được CHẤP NHẬN.', 'success');
+
+    // 👉 Load lại danh sách và sau đó mở lại detail
+    await loadApplications();
+    showApplicationDetail(currentApplicationId);
+
+  } catch (err) {
+    console.error(err);
+    Swal.fire('Lỗi', 'Không thể cập nhật trạng thái: ' + err.message, 'error');
+  }
+}
 
 // Từ chối từng ban riêng biệt
 async function rejectDepartment(departmentType) {
-    if (!currentApplicationId) return;
+  if (!currentApplicationId) return;
 
-    try {
-        const application = applications.find(app => app.id === currentApplicationId);
-        if (!application) return;
+  const application = applications.find(app => app.id === currentApplicationId);
+  if (!application) return;
 
-        const { value: reason } = await Swal.fire({
-            title: `Xác nhận từ chối ${departmentType === 'priority' ? 'ban ưu tiên' : 'ban dự bị'}`,
-            input: 'textarea',
-            inputLabel: 'Lý do từ chối',
-            inputPlaceholder: 'Nhập lý do từ chối...',
-            showCancelButton: true,
-            confirmButtonText: 'Từ chối',
-            cancelButtonText: 'Hủy',
-            inputValidator: (v) => !v && 'Vui lòng nhập lý do từ chối'
-        });
+  // 👉 Check quyền
+  if (!canActOnDepartment(application, departmentType)) {
+    Swal.fire('Không có quyền', 'Bạn không có quyền từ chối ứng viên cho ban này.', 'error');
+    return;
+  }
 
-        if (reason) {
-            Swal.fire({ title: 'Đang cập nhật...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+  const { value: reason } = await Swal.fire({
+    title: 'Nhập lý do từ chối',
+    input: 'text',
+    inputPlaceholder: 'Ví dụ: Không phù hợp với ban',
+    showCancelButton: true,
+    confirmButtonText: 'Từ chối',
+    cancelButtonText: 'Hủy'
+  });
 
-            let updateData = { updatedAt: new Date(), rejectionReason: reason };
+  const updateData = { rejectionReason: reason || 'Không có' };
 
-            if (departmentType === 'priority') {
-                updateData.priorityRejected = true;
-                updateData.priorityAccepted = false;
-            } else {
-                updateData.secondaryRejected = true;
-                updateData.secondaryAccepted = false;
-            }
 
-            // ✅ Cập nhật trạng thái tổng
-            updateData.status = computeOverallStatus({ ...application, ...updateData });
-
-            await db.collection('applications').doc(currentApplicationId).update(updateData);
-
-            // update local
-            const idx = applications.findIndex(app => app.id === currentApplicationId);
-            if (idx !== -1) applications[idx] = { ...applications[idx], ...updateData };
-
-            Swal.close();
-            Swal.fire({ icon: 'success', title: 'Thành công', text: 'Đã cập nhật' });
-            showApplicationDetail(currentApplicationId);
-            renderApplications();
-        }
-    } catch (error) {
-        console.error(error);
-        Swal.fire('Lỗi', 'Có lỗi xảy ra khi từ chối: ' + error.message, 'error');
+  try {
+    const updateData = { rejectionReason: reason };
+    if (departmentType === 'priority') {
+      updateData.priorityRejected = true;
+      updateData.priorityAccepted = false;
+    } else {
+      updateData.secondaryRejected = true;
+      updateData.secondaryAccepted = false;
     }
+
+    await db.collection('applications').doc(currentApplicationId).update(updateData);
+
+    Swal.fire('Thành công', 'Ứng viên đã bị TỪ CHỐI.', 'success');
+
+    // 👉 Load lại danh sách và sau đó mở lại detail
+    await loadApplications();
+    showApplicationDetail(currentApplicationId);
+
+  } catch (err) {
+    console.error(err);
+    Swal.fire('Lỗi', 'Không thể cập nhật trạng thái: ' + err.message, 'error');
+  }
 }
 
 
@@ -675,9 +839,22 @@ function computeOverallStatus(app) {
 
 
 // Hiển thị modal export
+// Hiển thị modal export
 function showExportOptions() {
-    document.getElementById('export-modal').style.display = 'block';
+  const exportDeptSelect = document.getElementById('export-department');
+  if (exportDeptSelect) {
+    if (userRole === 'admin') {
+      exportDeptSelect.value = userDept;   // 👉 admin mặc định ban của mình
+    } else if (userRole === 'superadmin') {
+      if (!exportDeptSelect.value && exportDeptSelect.options.length > 0) {
+        exportDeptSelect.selectedIndex = 0; // 👉 superadmin mặc định option đầu
+      }
+    }
+  }
+
+  document.getElementById('export-modal').style.display = 'block';
 }
+
 
 // Đóng modal export
 function closeExportModal() {
@@ -698,8 +875,15 @@ function exportData(type) {
             exportResults();
             break;
         case 'byDepartment':
-            // Hiển thị lựa chọn ban
-            document.getElementById('department-filter').style.display = 'block';
+            if (userRole === 'admin') {
+                // tự động export ban của admin
+                document.getElementById('export-department').value = userDept;
+                document.getElementById('export-department')
+                        .dispatchEvent(new Event('change'));
+            } else {
+                // superadmin thì cho chọn
+                document.getElementById('department-filter').style.display = 'block';
+            }
             break;
         case 'byCandidate':
             exportByCandidate();
@@ -797,8 +981,8 @@ function normalizeApplicationForSummary(app, index = 0) {
         'Ban ưu tiên': getDepartmentName(app.priority_position),
         'Ban dự bị': app.secondary_position && app.secondary_position !== 'None' ? getDepartmentName(app.secondary_position) : 'Không có',
         'Thời gian dành cho Enactus': app.availability ?? '',
-        'Trạng thái': getStatusInfo(app.status || 'new').text,
-        'Ban được chấp nhận': app.acceptedDepartment ? getDepartmentName(app.acceptedDepartment) : '',
+        'Trạng thái': getStatusInfo(computeOverallStatus(app)).text,
+        'Ban được chấp nhận': getAcceptedDepartments(app),
         'Ghi chú': app.note ?? '',
         'Lý do từ chối': app.rejectionReason ?? '',
         'Ngày ứng tuyển': app.timestamp ? `'${formatDateValue(app.timestamp)}` : ''
@@ -999,45 +1183,117 @@ async function exportDataWithLayout(filename, apps, includeByDepartment = false,
 
 
 /* Export wrappers to call the unified exporter */
-function exportPersonalInfo() { exportDataWithLayout('enactus_thong_tin_ca_nhan.xlsx', applications, false); closeExportModal(); }
-function exportResults() {
-    if (!applications || applications.length === 0) {
-        Swal.fire('Thông báo', 'Không có dữ liệu để xuất', 'info');
-        closeExportModal();
-        return;
-    }
-
-    const rows = applications.map(app => {
-        // Ban trúng tuyển
-        let accepted = [];
-        if (app.priorityAccepted) accepted.push(getDepartmentName(app.priority_position));
-        if (app.secondaryAccepted) accepted.push(getDepartmentName(app.secondary_position));
-        const acceptedText = accepted.length > 0 ? accepted.join(' / ') : '';
-
-        // Ban bị từ chối
-        let rejected = [];
-        if (app.priorityRejected) rejected.push(getDepartmentName(app.priority_position));
-        if (app.secondaryRejected) rejected.push(getDepartmentName(app.secondary_position));
-        const rejectedText = rejected.length > 0 ? rejected.join(' / ') : '';
-
-        return {
-            'Họ và tên': app.fullname ?? '',
-            'Email': app.email ?? '',
-            'Số điện thoại': app.phone ?? '',
-            'Ban trúng tuyển': acceptedText,
-            'Ban bị từ chối': rejectedText
-        };
-    });
-
-    const ws = XLSX.utils.json_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Kết quả');
-
-    XLSX.writeFile(wb, 'enactus_ket_qua_ung_tuyen.xlsx');
+function exportPersonalInfo() {
+  if (userRole === 'member') {
+    Swal.fire('Không có quyền', 'Bạn không có quyền xuất dữ liệu.', 'error');
     closeExportModal();
+    return;
+  }
+
+  let exportApps = applications;
+
+  if (userRole === 'admin') {
+    exportApps = applications.filter(app =>
+      app.all_departments && app.all_departments.includes(userDept)
+    );
+  }
+
+  if (!exportApps || exportApps.length === 0) {
+    Swal.fire('Thông báo', 'Không có dữ liệu để xuất', 'info');
+    closeExportModal();
+    return;
+  }
+
+  exportDataWithLayout('enactus_thong_tin_ca_nhan.xlsx', exportApps, false);
+  closeExportModal();
 }
 
-function exportPersonalWithResults() { exportDataWithLayout('enactus_thong_tin_va_ket_qua.xlsx', applications, false); closeExportModal(); }
+function exportResults() {
+  if (userRole === 'member') {
+    Swal.fire('Không có quyền', 'Bạn không có quyền xuất dữ liệu.', 'error');
+    closeExportModal();
+    return;
+  }
+
+  let exportApps = applications;
+  if (userRole === 'admin') {
+    exportApps = applications.filter(app =>
+      app.all_departments && app.all_departments.includes(userDept)
+    );
+  }
+
+  if (!exportApps || exportApps.length === 0) {
+    Swal.fire('Thông báo', 'Không có dữ liệu để xuất', 'info');
+    closeExportModal();
+    return;
+  }
+
+  const rows = exportApps.map(app => {
+    // Ban trúng tuyển
+    let accepted = [];
+    if (app.priorityAccepted) accepted.push(getDepartmentName(app.priority_position));
+    if (app.secondaryAccepted) accepted.push(getDepartmentName(app.secondary_position));
+    const acceptedText = accepted.length > 0 ? accepted.join(' / ') : '';
+
+    // Ban bị từ chối
+    let rejected = [];
+    if (app.priorityRejected) rejected.push(getDepartmentName(app.priority_position));
+    if (app.secondaryRejected) rejected.push(getDepartmentName(app.secondary_position));
+    const rejectedText = rejected.length > 0 ? rejected.join(' / ') : '';
+
+    return {
+      'Họ và tên': app.fullname ?? '',
+      'Email': app.email ?? '',
+      'Số điện thoại': app.phone ?? '',
+      'Ban trúng tuyển': acceptedText,
+      'Ban bị từ chối': rejectedText
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Kết quả');
+
+  XLSX.writeFile(wb, 'enactus_ket_qua_ung_tuyen.xlsx');
+  closeExportModal();
+}
+
+function getAcceptedDepartments(app) {
+  const accepted = [];
+  if (app.priorityAccepted) {
+    accepted.push(getDepartmentName(app.priority_position));
+  }
+  if (app.secondaryAccepted) {
+    accepted.push(getDepartmentName(app.secondary_position));
+  }
+  return accepted.length > 0 ? accepted.join(' / ') : '';
+}
+
+
+function exportPersonalWithResults() {
+  if (userRole === 'member') {
+    Swal.fire('Không có quyền', 'Bạn không có quyền xuất dữ liệu.', 'error');
+    closeExportModal();
+    return;
+  }
+
+  let exportApps = applications;
+  if (userRole === 'admin') {
+    exportApps = applications.filter(app =>
+      app.all_departments && app.all_departments.includes(userDept)
+    );
+  }
+
+  if (!exportApps || exportApps.length === 0) {
+    Swal.fire('Thông báo', 'Không có dữ liệu để xuất', 'info');
+    closeExportModal();
+    return;
+  }
+
+  exportDataWithLayout('enactus_thong_tin_va_ket_qua.xlsx', exportApps, false);
+  closeExportModal();
+}
+
 async function exportByCandidate() {
     if (!currentApplicationId) { 
         Swal.fire('Thông báo', 'Vui lòng chọn một ứng viên để xuất dữ liệu', 'info'); 
@@ -1045,6 +1301,17 @@ async function exportByCandidate() {
         return; 
     }
     const app = applications.find(a => a.id === currentApplicationId);
+    if (userRole !== 'superadmin' && userRole !== 'admin') {
+        Swal.fire('Không có quyền', 'Bạn không có quyền xuất dữ liệu ứng viên này.', 'error');
+        closeExportModal();
+        return;
+    }
+    // nếu admin, kiểm tra ban ứng viên có khớp
+    if (userRole === 'admin' && !(app.priority_position === userDept || app.secondary_position === userDept)) {
+        Swal.fire('Không có quyền', 'Bạn chỉ có thể xuất ứng viên của ban mình.', 'error');
+        closeExportModal();
+        return;
+    }
     if (!app) return;
 
     const { value: mode } = await Swal.fire({
@@ -1071,7 +1338,16 @@ async function exportByCandidate() {
     closeExportModal();
 }
 
-function exportAllData() { exportDataWithLayout('enactus_toan_bo_du_lieu.xlsx', applications, true, false); closeExportModal(); }
+function exportAllData() {
+  if (userRole !== 'superadmin') {
+    Swal.fire('Không có quyền', 'Chỉ Super Admin được xuất toàn bộ dữ liệu.', 'error');
+    closeExportModal();
+    return;
+  }
+  exportDataWithLayout('enactus_toan_bo_du_lieu.xlsx', applications, true, false);
+  closeExportModal();
+}
+
 
 // Giữ lại fields chung và chỉ giữ phần "Ưu tiên" hoặc "Dự bị" tùy loại
 function filterExportData(data, type) {
@@ -1098,56 +1374,84 @@ function filterExportData(data, type) {
 
 /* Replace export-department listener: safe attach */
 (function attachExportDepartmentListener() {
-    const el = document.getElementById('export-department');
-    if (!el) return;
-    try { el.replaceWith(el.cloneNode(true)); } catch(e) {}
-    const elem = document.getElementById('export-department');
-    if (!elem) return;
+  const el = document.getElementById('export-department');
+  if (!el) return;
+  try { el.replaceWith(el.cloneNode(true)); } catch (e) {}
+  const elem = document.getElementById('export-department');
+  if (!elem) return;
 
-    elem.addEventListener('change', async function() {
-        const department = this.value;
-        const deptApps = applications.filter(app => 
-            app.priority_position === department || app.secondary_position === department
-        );
-        if (deptApps.length === 0) { 
-            Swal.fire('Thông báo', `Không có ứng viên nào trong ban ${getDepartmentName(department)}`, 'info'); 
-            return; 
-        }
+  elem.addEventListener('change', async function () {
+    let department = this.value;
 
-        // Hỏi layout
-        const { value: mode } = await Swal.fire({
-            title: 'Chọn kiểu xuất dữ liệu',
-            input: 'radio',
-            inputOptions: { vertical: 'Hàng ngang', horizontal: 'Hàng dọc' },
-            inputValidator: (v) => !v && 'Bạn phải chọn kiểu xuất!'
-        });
-        if (!mode) return;
+    // 👉 Nếu là admin thì luôn export theo ban của mình
+    if (userRole === 'admin') {
+      department = userDept;
+    }
 
-        const wb = XLSX.utils.book_new();
+    if (!department) return;
 
-        // Tách ứng viên thành 2 nhóm: Ưu tiên & Dự bị
-        const pri = deptApps
-            .filter(app => app.priority_position === department)
-            .map((app, i) => filterExportData(normalizeApplicationForExport(app, i), 'priority'));
-        const sec = deptApps
-            .filter(app => app.secondary_position === department)
-            .map((app, i) => filterExportData(normalizeApplicationForExport(app, i), 'secondary'));
+    const deptApps = applications.filter(app =>
+      app.all_departments && app.all_departments.includes(department)
+    );
 
-        if (pri.length > 0) {
-            const wsPri = (mode === 'vertical') ? buildVerticalSheet(pri) : buildHorizontalSheet(pri);
-            XLSX.utils.book_append_sheet(wb, wsPri, `${getDepartmentName(department)}_Ưu tiên`.substring(0, 31));
-        }
-        if (sec.length > 0) {
-            const wsSec = (mode === 'vertical') ? buildVerticalSheet(sec) : buildHorizontalSheet(sec);
-            XLSX.utils.book_append_sheet(wb, wsSec, `${getDepartmentName(department)}_Dự bị`.substring(0, 31));
-        }
+    if (deptApps.length === 0) {
+      Swal.fire(
+        'Thông báo',
+        `Không có ứng viên nào trong ban ${getDepartmentName(department)}`,
+        'info'
+      );
+      return;
+    }
 
-        XLSX.writeFile(wb, `enactus_ban_${getDepartmentName(department).replace(/\s+/g, '_')}.xlsx`);
-        closeExportModal();
+    // Hỏi layout
+    const { value: mode } = await Swal.fire({
+      title: 'Chọn kiểu xuất dữ liệu',
+      input: 'radio',
+      inputOptions: { vertical: 'Hàng ngang', horizontal: 'Hàng dọc' },
+      inputValidator: (v) => !v && 'Bạn phải chọn kiểu xuất!',
     });
+    if (!mode) return;
+
+    const wb = XLSX.utils.book_new();
+
+    // Tách ứng viên thành 2 nhóm: Ưu tiên & Dự bị
+    const pri = deptApps
+      .filter((app) => app.priority_position === department)
+      .map((app, i) =>
+        filterExportData(normalizeApplicationForExport(app, i), 'priority')
+      );
+    const sec = deptApps
+      .filter((app) => app.secondary_position === department)
+      .map((app, i) =>
+        filterExportData(normalizeApplicationForExport(app, i), 'secondary')
+      );
+
+    if (pri.length > 0) {
+      const wsPri =
+        mode === 'vertical' ? buildVerticalSheet(pri) : buildHorizontalSheet(pri);
+      XLSX.utils.book_append_sheet(
+        wb,
+        wsPri,
+        `${getDepartmentName(department)}_Ưu tiên`.substring(0, 31)
+      );
+    }
+    if (sec.length > 0) {
+      const wsSec =
+        mode === 'vertical' ? buildVerticalSheet(sec) : buildHorizontalSheet(sec);
+      XLSX.utils.book_append_sheet(
+        wb,
+        wsSec,
+        `${getDepartmentName(department)}_Dự bị`.substring(0, 31)
+      );
+    }
+
+    XLSX.writeFile(
+      wb,
+      `enactus_ban_${getDepartmentName(department).replace(/\s+/g, '_')}.xlsx`
+    );
+    closeExportModal();
+  });
 })();
-
-
 
 /* --------------------- END: Unified answer/export block --------------------- */
 
@@ -1168,4 +1472,4 @@ document.getElementById('filter-type').addEventListener('change', renderApplicat
 document.getElementById('search-input').addEventListener('input', renderApplications);
 
 // Tải ứng viên khi trang được tải
-window.addEventListener('load', loadApplications);
+//window.addEventListener('load', loadApplications);
