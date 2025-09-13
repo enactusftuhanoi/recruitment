@@ -247,8 +247,8 @@ function renderApplications() {
             return false;
         }
         
-        // Lọc theo trạng thái
-        if (statusFilter && app.status !== statusFilter) return false;
+        // Lọc theo trạng thái (dùng trạng thái tổng)
+        if (statusFilter && computeOverallStatus(app) !== statusFilter) return false;
         
         // Lọc theo hình thức
         if (typeFilter && app.application_type !== typeFilter) return false;
@@ -1464,6 +1464,16 @@ window.onclick = function(event) {
         closeExportModal();
     }
 };
+
+document.addEventListener("click", function (e) {
+  if (e.target.closest("#logout-btn")) {
+    auth.signOut().then(() => {
+      sessionStorage.clear();
+      window.location.href = "login.html";
+    });
+  }
+});
+
 
 // Lắng nghe sự kiện thay đổi bộ lọc
 document.getElementById('filter-department').addEventListener('change', renderApplications);
