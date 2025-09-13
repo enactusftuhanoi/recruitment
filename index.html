@@ -1,725 +1,780 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Recruitment | Enactus FTU Hanoi</title>
-<link rel="icon" href="/favicon.ico" type="image/x-icon">
-<link rel="canonical" href="https://recruitment.enactusftuhanoi.id.vn" />
-    
-<!-- SEO Meta -->
-<meta name="description" content="Enactus FTU Hanoi chính thức mở đơn tuyển thành viên Gen 18.0! Hãy gia nhập CLB duy nhất tại FTU thực hiện các dự án xã hội, khởi nghiệp bền vững và tạo tác động tích cực.">
-<meta name="keywords" content="tuyển thành viên Enactus FTU Hanoi, tuyển dụng CLB FTU, recruitment FTU, câu lạc bộ xã hội FTU, Enactus, tuyển thành viên ngoại thương, CLB FTU Hanoi">
-<meta name="author" content="Enactus FTU Hanoi">
-
-<!-- Open Graph (Facebook, Zalo, LinkedIn) -->
-<meta property="og:title" content="18th Gen Membership Recruitment | Enactus FTU Hanoi">
-<meta property="og:description" content="Đừng bỏ lỡ cơ hội trở thành một phần của Enactus FTU Hanoi - CLB duy nhất tại FTU triển khai các dự án xã hội và khởi nghiệp bền vững. Ứng tuyển ngay hôm nay!">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://recruitment.enactusftuhanoi.id.vn">
-<meta property="og:image" content="/assets/recruitment.png">
-
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="18th Gen Membership Recruitment | Enactus FTU Hanoi">
-<meta name="twitter:description" content="Enactus FTU Hanoi mở đơn tuyển thành viên mới! Cùng tạo tác động xã hội tích cực qua các dự án bền vững.">
-<meta name="twitter:image" content="/assets/recruitment.png">
-
-<!-- Font -->
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700&display=swap" rel="stylesheet">
-
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
-<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet"/>
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<style>
-  * {margin:0; padding:0; box-sizing:border-box;}
-
-  body {
-    min-height: 100vh;
-    background: url("/assets/background.png") no-repeat center top fixed;
-    background-size: cover;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    position: relative;
-    font-family: 'Bricolage Grotesque', sans-serif;
-  }
-
-  /* Preloader */
-  #preloader {
-    position: fixed;
-    inset: 0;
-    background: #ffffff; /* nền trắng */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    transition: opacity 0.8s ease, visibility 0.8s ease;
-  }
-
-  #preloader.hidden {
-    opacity: 0;
-    visibility: hidden;
-  }
-
-  .preloader-logo {
-    width: 150px; /* chỉnh kích thước logo */
-    height: auto;
-    animation: fadeBlink 2s infinite ease-in-out;
-  }
-
-  @keyframes fadeBlink {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 1; }
-  }
-
-.hero-container {
-  position: relative;
-  width: 100%;
-  height: 100vh;       /* hero cao đúng 1 màn hình */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.hero-img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain; /* đảm bảo không bị cắt */
-  display: block;
-}
-
-  /* Button gốc - SỬA LẠI CHO RESPONSIVE */
-  .apply-btn {
-    position: absolute;
-    bottom: 15%; /* Giữ giá trị phần trăm */
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 0.7vw 2vw; /* Sử dụng đơn vị viewport width để co giãn tốt hơn */
-    font-size: clamp(0.9rem, 2vw, 1.3rem); /* Kích thước chữ linh hoạt */
-    font-weight: 900;
-    color: #fbfbd6;
-    background: #7c77df;
-    border: 0.3vw solid #638efe; /* Border co giãn theo viewport */
-    border-radius: 40px;
-    cursor: pointer;
-    text-decoration: none;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    white-space: nowrap;
-    text-align: center;
-    min-width: 160px; /* Đảm bảo nút không quá nhỏ */
-  }
-  .apply-btn:hover {
-    transform: translateX(-50%) translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-  }
-  /* Countdown style - giống layout bạn gửi */
-  .countdown {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    gap: 34px;
-    /* tăng khoảng cách trên dưới */
-    margin: 300px 0 300px;
-    padding: 0 20px;
-    box-sizing: border-box;
-    pointer-events: auto;
-    font-family: 'Montserrat', sans-serif;
-  }
-
-  /* Hộp chính */
-  .time-box {
-    position: relative;
-    width: 170px;
-    height: 170px;
-    border-radius: 34px;
-    background: rgba(158, 182, 255, 0.60); /* #9eb6ff @ 60% */
-    border: 4px solid #82a3fa;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: visible;
-    box-shadow:
-      0 8px 0 0 rgba(130,163,250,0.10),
-      0 10px 20px rgba(0,0,0,0.06);
-  }
-
-  /* Tạo vòng viền phụ */
-  .time-box::before {
-    content: "";
-    position: absolute;
-    inset: -6px;
-    border-radius: 40px;
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  /* Số (font = Bricolage Grotesque) */
-  .time-box span {
-    display: block;
-    font-family: 'Bricolage Grotesque', sans-serif; /* đổi font */
-    font-size: 4.4rem;
-    line-height: 1;
-    color: #fbfbd6;
-    font-weight: 700; /* đậm vừa phải cho giống ảnh */
-    letter-spacing: 2px;
-    transform: translateY(-12px);
-    text-align: center;
-  }
-
-  /* Label dưới (font = Montserrat) */
-  .time-box p {
-    position: absolute;
-    bottom: 22px;
-    width: 100%;
-    margin: 0;
-    font-size: 1.1rem;
-    color: #eeecff;
-    font-family: 'Montserrat', sans-serif; /* giữ Montserrat */
-    font-weight: 400;
-    text-align: center;
-    opacity: 0.95;
-    letter-spacing: 0.6px;
-  }
-
-  /* Responsive */
-  @media (max-width: 880px) {
-    .time-box { width: 150px; height: 150px; border-radius: 28px; }
-    .countdown { gap: 22px; margin: 70px 10px 100px; }
-    .time-box span { font-size: 3.2rem; transform: translateY(-10px); }
-    .time-box p { font-size: 1.05rem; bottom: 18px; }
-  }
-
-  @media (max-width: 420px) {
-    .time-box { width: 120px; height: 120px; border-radius: 20px; }
-    .time-box span { font-size: 2.2rem; transform: translateY(-6px); }
-    .time-box p { font-size: 0.95rem; bottom: 10px; }
-    .countdown { gap: 12px; margin: 40px 8px 60px; }
-  }
-
-  /* FAQ Section */
-  .faq-section {
-    width: 100%;
-    margin: 100px auto 140px;
-    padding: 0 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .faq-title img {
-    width: 600px;
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 0 auto 50px;
-  }
-
-  /* Container */
-  .faq-container {
-    width: 100%;
-    max-width: 1000px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .faq-answer p {
-    margin-bottom: 12px;
-    line-height: 1.6;
-  }
-
-  /* Item */
-  .faq-item {
-    background: rgba(158, 182, 255, 0.35);
-    border: 2px solid rgba(130, 163, 250, 0.6);
-    border-radius: 24px;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
-
-  /* nút câu hỏi */
-  .faq-question {
-    width: 100%;
-    padding: 18px 24px;
-    background: transparent;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    font-family: 'Bricolage Grotesque', sans-serif; /* đổi font */
-    font-weight: 700; /* Bold */
-    color: #ffffff;   /* màu câu hỏi */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    text-align: left;
-    letter-spacing: 0.5px;
-  }
-
-  /* icon mũi tên */
-  .arrow {
-    font-size: 1.1rem;
-    color: #c1e6ff;
-    transition: transform 0.3s;
-    margin-left: 10px;
-  }
-
-  /* câu trả lời */
-  .faq-answer {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease, padding 0.3s ease;
-    padding: 0 24px;
-    font-size: 1rem;
-    font-family: 'Montserrat', sans-serif; /* font Montserrat */
-    font-weight: 300; /* Light */
-    color: #ffffff;  /* màu câu trả lời */
-    line-height: 1.5;
-  }
-
-  .faq-item.active .faq-answer {
-    max-height: 400px;
-    padding: 12px 24px 20px;
-  }
-
-  .faq-item.active .arrow {
-    transform: rotate(90deg); /* ▶ xoay thành ▼ */
-  }
-
-  .footer {
-    position: relative;
-    width: 100%;
-    background: url("/assets/footer-bg.png") no-repeat center bottom / cover;
-    color: #fff;
-    font-family: 'Montserrat', sans-serif;
-    padding: 60px 20px 25px;
-  }
-
-  /* Overlay phủ full */
-  .footer::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      to top,
-      rgba(124, 119, 223, 0.85) 0%,
-      rgba(130, 163, 250, 0.75) 60%,
-      rgba(158, 182, 255, 0.5) 100%
-    );
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    z-index: 0;
-  }
-
-  .footer-container {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    justify-content: space-between; /* tự căn cách đều 2 cột */
-    align-items: flex-start;
-    max-width: 1200px;
-    margin: auto;
-    flex-wrap: wrap;
-    gap: 100px; /* khoảng cách cố định giữa các cột */
-  }
-
-  .footer-col:first-child {
-    flex: 0 0 350px; /* cột 1 chỉ rộng ~320px */
-  }
-
-  .footer-col {
-    flex: 1;
-    min-width: 250px;
-  }
-
-  .footer-logo {
-    width: 140px;
-    margin-bottom: 16px;
-  }
-
-  .footer h3 {
-    font-family: 'Bricolage Grotesque', sans-serif;
-    font-size: 1.3rem;
-    margin-bottom: 14px;
-    color: #ffd84d;
-  }
-
-  .footer p,
-  .footer a {
-    margin: 6px 0;
-    font-size: 0.95rem;
-    color: #f0f0f0;
-    line-height: 1.5;
-  }
-
-  .footer-right {
-    display: flex;
-    gap: 60px; /* khoảng cách giữa Ban Chủ Tịch và Kết nối */
-    align-items: flex-start;
-  }
-
-  /* person row: icon | text-block */
-  .footer .person {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;            /* khoảng cách icon - text */
-    margin: 8px 0;
-  }
-
-  /* SVG icon */
-  .footer .person svg {
-    width: 36px;     /* chỉnh vừa phải */
-    height: 36px;
-    flex-shrink: 0;  /* không co icon */
-    color: #c1e6ff;
-    opacity: 1;
-    margin-top: 2px; /* cho icon cân với text-block */
-  }
-
-  /* Text block = label trên, name dưới */
-  .footer .person .text-block {
-    display: flex;
-    flex-direction: column; /* label trên, name dưới */
-    line-height: 1.4;
-  }
-
-  /* phần "Chức vụ:" */
-  .footer .person .label {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1rem;
-    font-weight: 400;
-    color: #fff9aa;
-    line-height: 1.3;
-  }
-
-  /* phần tên */
-  .footer .person .name {
-    font-family: 'Bricolage Grotesque', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #ffffff;
-    line-height: 1.3;
-  }
-
-  /* Email/link row: cho phép wrap nhẹ (nếu cần) */
-  .footer .person a {
-    color: #f0f0f0;
-    text-decoration: none;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.95rem;
-    line-height: 1.4;
-  }
-
-  .bct-row {
-    display: flex;
-    gap: 50px; /* khoảng cách giữa từng người */
-    flex-wrap: wrap; /* cho responsive, nếu hẹp thì xuống hàng */
-    margin-top: 10px;
-  }
-
-  .bct-row .person {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* Mobile: nếu màn quá chật thì vẫn giữ block dọc, icon trên - text dưới */
-  @media (max-width: 520px) {
-    .footer .person {
-      gap: 10px;
-    }
-    .footer .person svg {
-      width: 32px;
-      height: 32px;
-    }
-  }
-
-  .social-links {
-    margin-top: 10px;
-  }
-  .social-links a {
-    font-size: 1.5rem;
-    margin-right: 16px;
-    color: #ffffff;
-    transition: color 0.3s, transform 0.2s;
-  }
-  .social-links a:hover {
-    color: #ffd84d;
-    transform: translateY(-2px);
-  }
-
-  .footer-bottom {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    padding-top: 20px;
-    border-top: 1px solid rgba(255,255,255,0.25);
-    margin-top: 40px;
-    font-size: 0.9rem;
-    color: #e6e6e6;
-  }
-
-  /* Responsive: mobile & tablet */
-  @media (max-width: 768px) {
-    .apply-btn {
-      bottom: 12%;
-      padding: 1.2vw 3vw;
-      font-size: clamp(0.8rem, 3vw, 1.1rem);
-      min-width: 140px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .apply-btn {
-      bottom: 10%;
-      padding: 1.5vw 4vw;
-      font-size: clamp(0.7rem, 3.5vw, 1rem);
-      min-width: 120px;
-      border-width: 0.5vw;
-    }
-  }
-
-</style>
-</head>
-<body>
-  <!-- Preloader -->
-  <div id="preloader">
-    <img src="/assets/logo_den.png" alt="Enactus FTU Hanoi" class="preloader-logo">
-  </div>
-
-  <div class="hero-container">
-    <img src="/assets/hero.png" alt="Hero" class="hero-img">
-
-    <!-- Button Apply -->
-    <a href="/user/form.html" target="_blank" class="apply-btn">
-      ĐĂNG KÝ NGAY
-    </a>
-  </div>
-
-  <!-- Countdown Section -->
-  <section id="countdown" class="countdown">
-    <div class="time-box">
-      <span id="days">00</span>
-      <p>Ngày</p>
-    </div>
-    <div class="time-box">
-      <span id="hours">00</span>
-      <p>Giờ</p>
-    </div>
-    <div class="time-box">
-      <span id="minutes">00</span>
-      <p>Phút</p>
-    </div>
-    <div class="time-box">
-      <span id="seconds">00</span>
-      <p>Giây</p>
-    </div>
-  </section>
-
-  <!-- FAQ Section -->
-  <section id="faq" class="faq-section">
-    <!-- Tiêu đề bằng ảnh -->
-    <div class="faq-title">
-      <img src="/assets/q&a.png" alt="Câu hỏi thường gặp">
-    </div>
-
-    <!-- Danh sách câu hỏi -->
-    <div class="faq-container">
-      <div class="faq-item">
-        <button class="faq-question">
-          Sinh viên trường Đại học khác có tham gia tuyển thành viên được không ?
-          <span class="arrow">▼</span>
-        </button>
-        <div class="faq-answer">
-          <p>
-            🌟 Không chỉ dành riêng cho sinh viên Ngoại thương, Enactus FTU Hanoi luôn chào đón tất cả các bạn sinh viên từ mọi trường đại học trong khu vực Hà Nội. 
-            Chúng mình hoàn toàn hỗ trợ hình thức làm việc online, ngoài ra còn tổ chức các hoạt động bonding như đi chơi, trải nghiệm, workdate,... để xóa tan khoảng cách địa lý và đồng hành cùng nhau trên hành trình tạo nên những giá trị bền vững.
-          </p>
-          <p>
-            🌟 Dù xuất phát điểm khác nhau, các thành viên Enactus đều có chung một ngọn lửa đam mê với khởi nghiệp xã hội và khát khao tạo nên tác động tích cực cho cộng đồng. 
-            Nếu bạn cũng mang trong mình khát khao đó, đừng ngần ngại điền đơn – hành trình của bạn có thể bắt đầu từ chính nơi đây, cùng Enactus FTU Hanoi.
-          </p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
-          Mình có thể đăng ký nhiều ban cùng một lúc không?
-          <span class="arrow">▼</span>
-        </button>
-        <div class="faq-answer">
-          <p>
-            🌟 Câu trả lời chắc chắn là có. Tuy nhiên chúng mình gợi ý bạn có thể chọn một ban chính để phát triển chuyên sâu và vẫn có cơ hội hỗ trợ các ban khác nếu muốn học hỏi thêm nhiều kỹ năng. 
-            Tại Enactus, chúng mình luôn khuyến khích các bạn khám phá bản thân và thử sức ở những lĩnh vực mình yêu thích.
-          </p>
-          <p>
-            🌟 Chẳng hạn như, một thành viên từ ban khác hoàn toàn có thể sang ban Truyền thông để học hỏi kiến thức và thực hành các công việc liên quan đến marketing, truyền thông. Vậy nên, hãy tìm hiểu thật kỹ, lắng nghe trái tim và lựa chọn một nơi phù hợp nhất với mình bởi vì Enactus FTU Hanoi luôn chào đón bạn.
-          </p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
-          Mình học ngành Công nghệ thông tin/Kỹ thuật thì có thể tham gia CLB không?
-          <span class="arrow">▼</span>
-        </button>
-        <div class="faq-answer">
-          <p>
-            🌟 Hoàn toàn được! Enactus FTU Hanoi luôn chào đón sinh viên từ mọi ngành học, trong đó có cả các bạn theo học Công nghệ thông tin và các ngành kỹ thuật.
-          </p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
-          Không có kinh nghiệm làm design, edit ảnh và video hay tạo content, có thể apply vào ban Truyền thông không ?
-          <span class="arrow">▼</span>
-        </button>
-        <div class="faq-answer">
-          <p>
-            🌟 Những kỹ năng như design hay viết content đều được đánh giá là những kỹ năng quan trọng và cần thiết của các thành viên trong ban Truyền thông.
-            Tuy nhiên, chỉ cần các bạn kiên trì và nỗ lực theo đuổi thì hoàn toàn có thể rèn luyện được những kỹ năng này.
-          </p>
-          <p>
-            🌟 Bên cạnh đó, khi vào ban Truyền thông các bạn sẽ được các anh chị training nhiệt tình về các mảng design và content đúng với từng tiểu ban. 
-            Chỉ sau hơn một năm ở CLB, thành viên của ban Truyền thông đều có thể nhận ra sự thay đổi rõ rệt của mình về mảng truyền thông nói chung cũng như các mảng design, content nói riêng. 
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-container">
-      <!-- Cột trái: logo + địa chỉ + email -->
-      <div class="footer-col">
-        <img src="/assets/logo_trang.png" alt="Enactus FTU Hanoi" class="footer-logo">
-
-        <!-- Địa chỉ -->
-        <div class="person">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="size-5">
-            <path fill-rule="evenodd"
-              d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-              clip-rule="evenodd" />
-          </svg>
-          <p>Đại học Ngoại thương<br>91 Chùa Láng, Phường Láng, Hà Nội</p>
-        </div>
-
-        <!-- Email -->
-        <div class="person">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="size-5">
-            <path
-              d="M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3 3 0 0 1-3.144 0L1.5 8.67Z" />
-            <path
-              d="M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908Z" />
-          </svg>
-          <a href="mailto:enactusftuhanoi@gmail.com">enactusftuhanoi.bct@gmail.com</a>
-        </div>
-      </div>
-
-      <!-- Cột phải: Ban Chủ Tịch + Kết nối -->
-     <div class="footer-col">
-        <h3>Ban Chủ Tịch</h3>
-        <div class="bct-row">
-          <div class="person">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24">
-              <path fill-rule="evenodd"
-                d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
-                clip-rule="evenodd" />
-            </svg>
-            <div class="text-block">
-              <span class="label">Chủ tịch</span>
-              <span class="name">Nguyễn Trung Hải</span>
-            </div>
-          </div>
-
-          <div class="person">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24">
-              <path fill-rule="evenodd"
-                d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
-                clip-rule="evenodd" />
-            </svg>
-            <div class="text-block">
-              <span class="label">Phó chủ tịch</span>
-              <span class="name">Vũ Yến Nhi</span>
-            </div>
-          </div>
-
-          <div class="person">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24">
-              <path fill-rule="evenodd"
-                d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
-                clip-rule="evenodd" />
-            </svg>
-            <div class="text-block">
-              <span class="label">Phó chủ tịch</span>
-              <span class="name">Hoàng Phương Dung</span>
-            </div>
-          </div>
-        </div>
-
-        <h3 style="margin-top: 40px;">Kết nối</h3>
-        <div class="social-links">
-          <a href="#"><i class="fab fa-facebook"></i></a>
-          <a href="#"><i class="fab fa-instagram"></i></a>
-          <a href="#"><i class="fab fa-linkedin"></i></a>
-          <a href="#"><i class="fab fa-tiktok"></i></a>
-          <a href="#"><i class="fa-brands fa-threads"></i></a>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <p>© 2025 Enactus FTU Hanoi. All rights reserved.</p>
-    </div>
-  </footer>
-
-  <script>
-  window.addEventListener("load", () => {
-    const preloader = document.getElementById("preloader");
-    setTimeout(() => { 
-      preloader.classList.add("hidden"); 
-    }, 500); // delay nhẹ để logo fade đẹp hơn
-  });
-
-  const targetDate = new Date("2025-10-01T00:00:00").getTime();
-
-  function updateCountdown() {
-    const now = new Date().getTime();
-    const distance = targetDate - now;
-
-    if (distance < 0) return;
-
-    document.getElementById("days").innerText    = Math.floor(distance / (1000*60*60*24));
-    document.getElementById("hours").innerText   = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
-    document.getElementById("minutes").innerText = Math.floor((distance % (1000*60*60)) / (1000*60));
-    document.getElementById("seconds").innerText = Math.floor((distance % (1000*60)) / 1000);
-  }
-
-  setInterval(updateCountdown, 1000);
-  updateCountdown();
-
-  document.querySelectorAll('.faq-question').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const item = btn.parentElement;
-      const allItems = document.querySelectorAll('.faq-item');
-
-      // Đóng tất cả các item khác
-      allItems.forEach(el => {
-        if (el !== item) {
-          el.classList.remove('active');
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <title>Recruitment | Enactus FTU Hanoi</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="canonical" href="https://recruitment.enactusftuhanoi.id.vn" />
+    <!-- SEO Meta -->
+    <meta
+      name="description"
+      content="Enactus FTU Hanoi chính thức mở đơn tuyển thành viên Gen 18.0! Hãy gia nhập CLB duy nhất tại FTU thực hiện các dự án xã hội, khởi nghiệp bền vững và tạo tác động tích cực."
+    />
+    <meta
+      name="keywords"
+      content="tuyển thành viên Enactus FTU Hanoi, tuyển dụng CLB FTU, recruitment FTU, câu lạc bộ xã hội FTU, Enactus, tuyển thành viên ngoại thương, CLB FTU Hanoi"
+    />
+    <meta name="author" content="Enactus FTU Hanoi" />
+    <!-- Open Graph (Facebook, Zalo, LinkedIn) -->
+    <meta
+      property="og:title"
+      content="18th Gen Membership Recruitment | Enactus FTU Hanoi"
+    />
+    <meta
+      property="og:description"
+      content="Đừng bỏ lỡ cơ hội trở thành một phần của Enactus FTU Hanoi - CLB duy nhất tại FTU triển khai các dự án xã hội và khởi nghiệp bền vững. Ứng tuyển ngay hôm nay!"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://recruitment.enactusftuhanoi.id.vn"
+    />
+    <meta property="og:image" content="/assets/recruitment.png" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="18th Gen Membership Recruitment | Enactus FTU Hanoi"
+    />
+    <meta
+      name="twitter:description"
+      content="Enactus FTU Hanoi mở đơn tuyển thành viên mới! Cùng tạo tác động xã hội tích cực qua các dự án bền vững."
+    />
+    <meta name="twitter:image" content="/assets/recruitment.png" />
+    <!-- Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        min-height: 100vh;
+        background: url("/assets/background.webp") no-repeat center top fixed;
+        background-size: cover;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        position: relative;
+        font-family: "Bricolage Grotesque", sans-serif;
+      } /* Preloader */
+      #preloader {
+        position: fixed;
+        inset: 0;
+        background: #ffffff; /* nền trắng */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.8s ease, visibility 0.8s ease;
+      }
+      #preloader.hidden {
+        opacity: 0;
+        visibility: hidden;
+      }
+      .preloader-logo {
+        width: 150px; /* chỉnh kích thước logo */
+        height: auto;
+        animation: fadeBlink 2s infinite ease-in-out;
+      }
+      @keyframes fadeBlink {
+        0%,
+        100% {
+          opacity: 0.3;
         }
-      });
+        50% {
+          opacity: 1;
+        }
+      }
+      .hero-container {
+        position: relative;
+        width: 100%;
+        height: 100vh; /* hero cao đúng 1 màn hình */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .hero-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain; /* đảm bảo không bị cắt */
+        display: block;
+      }
+      /* Chỉ áp dụng cho màn hình nhỏ hơn 600px (mobile) */
+    @media (max-width: 600px) {
+    .hero-container {
+        position: relative;
+        height: auto; /* co theo ảnh, không ép 100vh nữa */
+    }
 
-      // Toggle item hiện tại
-      item.classList.toggle('active');
+    .hero-img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    .apply-btn {
+        bottom: 8%;   /* bám gần ảnh hơn */
+        transform: translateX(-50%);
+    }
+    }
+ 
+      /* Button gốc - SỬA LẠI CHO RESPONSIVE */
+      .apply-btn {
+        position: absolute;
+        bottom: 15%; /* Giữ giá trị phần trăm */
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0.7vw 2vw; /* Sử dụng đơn vị viewport width để co giãn tốt hơn */
+        font-size: clamp(0.9rem, 2vw, 1.3rem); /* Kích thước chữ linh hoạt */
+        font-weight: 900;
+        color: #fbfbd6;
+        background: #7c77df;
+        border: 0.3vw solid #638efe; /* Border co giãn theo viewport */
+        border-radius: 40px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        white-space: nowrap;
+        text-align: center;
+        min-width: 160px; /* Đảm bảo nút không quá nhỏ */
+      }
+      .apply-btn:hover {
+        transform: translateX(-50%) translateY(-3px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      } /* Countdown style - giống layout bạn gửi */
+      .countdown {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        gap: 34px; /* tăng khoảng cách trên dưới */
+        margin: 300px 0 300px;
+        padding: 0 20px;
+        box-sizing: border-box;
+        pointer-events: auto;
+        font-family: "Montserrat", sans-serif;
+      } /* Hộp chính */
+      .time-box {
+        position: relative;
+        width: 170px;
+        height: 170px;
+        border-radius: 34px;
+        background: rgba(158, 182, 255, 0.6); /* #9eb6ff @ 60% */
+        border: 4px solid #82a3fa;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: visible;
+        box-shadow: 0 8px 0 0 rgba(130, 163, 250, 0.1),
+          0 10px 20px rgba(0, 0, 0, 0.06);
+      } /* Tạo vòng viền phụ */
+      .time-box::before {
+        content: "";
+        position: absolute;
+        inset: -6px;
+        border-radius: 40px;
+        pointer-events: none;
+        z-index: -1;
+      } /* Số (font = Bricolage Grotesque) */
+      .time-box span {
+        display: block;
+        font-family: "Bricolage Grotesque", sans-serif; /* đổi font */
+        font-size: 4.4rem;
+        line-height: 1;
+        color: #fbfbd6;
+        font-weight: 700; /* đậm vừa phải cho giống ảnh */
+        letter-spacing: 2px;
+        transform: translateY(-12px);
+        text-align: center;
+      } /* Label dưới (font = Montserrat) */
+      .time-box p {
+        position: absolute;
+        bottom: 22px;
+        width: 100%;
+        margin: 0;
+        font-size: 1.1rem;
+        color: #eeecff;
+        font-family: "Montserrat", sans-serif; /* giữ Montserrat */
+        font-weight: 400;
+        text-align: center;
+        opacity: 0.95;
+        letter-spacing: 0.6px;
+      } 
+      /* Responsive */
+      @media (max-width: 880px) {
+        .time-box {
+            width: 110px;
+            height: 130px;
+            border-radius: 22px;
+        }
+
+        .countdown {
+            gap: 16px;
+            margin: 60px 10px 80px;
+        }
+
+        .time-box span {
+            font-size: 2.6rem;
+            transform: translateY(-8px);
+        }
+
+        .time-box p {
+            font-size: 0.9rem;
+            bottom: 14px;
+        }
+        }
+
+        @media (max-width: 420px) {
+        .time-box {
+            width: 80px;
+            height: 100px;
+            border-radius: 16px;
+        }
+
+        .time-box span {
+            font-size: 1.8rem;
+            transform: translateY(-4px);
+        }
+
+        .time-box p {
+            font-size: 0.75rem;
+            bottom: 6px;
+        }
+
+        .countdown {
+            gap: 8px;
+            margin: 40px 5px 50px;
+        }
+        }
+
+       /* FAQ Section */
+      .faq-section {
+        width: 100%;
+        margin: 100px auto 140px;
+        padding: 0 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .faq-title img {
+        width: 600px;
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto 50px;
+      } /* Container */
+      .faq-container {
+        width: 100%;
+        max-width: 1000px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .faq-answer p {
+        margin-bottom: 12px;
+        line-height: 1.6;
+      } /* Item */
+      .faq-item {
+        background: rgba(158, 182, 255, 0.35);
+        border: 2px solid rgba(130, 163, 250, 0.6);
+        border-radius: 24px;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        overflow: hidden;
+        transition: all 0.3s ease;
+      } /* nút câu hỏi */
+      .faq-question {
+        width: 100%;
+        padding: 18px 24px;
+        background: transparent;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        font-size: 1.2rem;
+        font-family: "Bricolage Grotesque", sans-serif; /* đổi font */
+        font-weight: 700; /* Bold */
+        color: #ffffff; /* màu câu hỏi */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+        letter-spacing: 0.5px;
+      } /* icon mũi tên */
+      .arrow {
+        font-size: 1.1rem;
+        color: #c1e6ff;
+        transition: transform 0.3s;
+        margin-left: 10px;
+      } /* câu trả lời */
+      .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease, padding 0.3s ease;
+        padding: 0 24px;
+        font-size: 1rem;
+        font-family: "Montserrat", sans-serif; /* font Montserrat */
+        font-weight: 300; /* Light */
+        color: #ffffff; /* màu câu trả lời */
+        line-height: 1.5;
+      }
+      .faq-item.active .faq-answer {
+        max-height: 400px;
+        padding: 12px 24px 20px;
+      }
+      .faq-item.active .arrow {
+        transform: rotate(90deg); /* ▶ xoay thành ▼ */
+      }
+      .footer {
+        position: relative;
+        width: 100%;
+        color: #fff;
+        font-family: "Montserrat", sans-serif;
+        padding: 60px 20px 25px;
+      } /* Overlay phủ full */
+      .footer::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to top,
+          rgba(124, 119, 223, 0.85) 0%,
+          rgba(130, 163, 250, 0.75) 60%,
+          rgba(158, 182, 255, 0.5) 100%
+        );
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 0;
+      }
+      .footer-container {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between; /* tự căn cách đều 2 cột */
+        align-items: flex-start;
+        max-width: 1200px;
+        margin: auto;
+        flex-wrap: wrap;
+        gap: 100px; /* khoảng cách cố định giữa các cột */
+      }
+      .footer-col:first-child {
+        flex: 0 0 350px; /* cột 1 chỉ rộng ~320px */
+      }
+      .footer-col {
+        flex: 1;
+        min-width: 250px;
+      }
+      .footer-logo {
+        width: 140px;
+        margin-bottom: 16px;
+      }
+      .footer h3 {
+        font-family: "Bricolage Grotesque", sans-serif;
+        font-size: 1.3rem;
+        margin-bottom: 14px;
+        color: #ffd84d;
+      }
+      .footer p,
+      .footer a {
+        margin: 6px 0;
+        font-size: 0.95rem;
+        color: #f0f0f0;
+        line-height: 1.5;
+      }
+      .footer-right {
+        display: flex;
+        gap: 60px; /* khoảng cách giữa Ban Chủ Tịch và Kết nối */
+        align-items: flex-start;
+      } /* person row: icon | text-block */
+      .footer .person {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px; /* khoảng cách icon - text */
+        margin: 8px 0;
+      } /* SVG icon */
+      .footer .person svg {
+        width: 36px; /* chỉnh vừa phải */
+        height: 36px;
+        flex-shrink: 0; /* không co icon */
+        color: #c1e6ff;
+        opacity: 1;
+        margin-top: 2px; /* cho icon cân với text-block */
+      } /* Text block = label trên, name dưới */
+      .footer .person .text-block {
+        display: flex;
+        flex-direction: column; /* label trên, name dưới */
+        line-height: 1.4;
+      } /* phần "Chức vụ:" */
+      .footer .person .label {
+        font-family: "Montserrat", sans-serif;
+        font-size: 1rem;
+        font-weight: 400;
+        color: #fff9aa;
+        line-height: 1.3;
+      } /* phần tên */
+      .footer .person .name {
+        font-family: "Bricolage Grotesque", sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #ffffff;
+        line-height: 1.3;
+      } /* Email/link row: cho phép wrap nhẹ (nếu cần) */
+      .footer .person a {
+        color: #f0f0f0;
+        text-decoration: none;
+        font-family: "Montserrat", sans-serif;
+        font-size: 0.95rem;
+        line-height: 1.4;
+      }
+      .bct-row {
+        display: flex;
+        gap: 50px; /* khoảng cách giữa từng người */
+        flex-wrap: wrap; /* cho responsive, nếu hẹp thì xuống hàng */
+        margin-top: 10px;
+      }
+      .bct-row .person {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      } /* Mobile: nếu màn quá chật thì vẫn giữ block dọc, icon trên - text dưới */
+      @media (max-width: 520px) {
+        .footer .person {
+          gap: 10px;
+        }
+        .footer .person svg {
+          width: 32px;
+          height: 32px;
+        }
+      }
+      .social-links {
+        margin-top: 10px;
+      }
+      .social-links a {
+        font-size: 1.5rem;
+        margin-right: 16px;
+        color: #ffffff;
+        transition: color 0.3s, transform 0.2s;
+      }
+      .social-links a:hover {
+        color: #ffd84d;
+        transform: translateY(-2px);
+      }
+      .footer-bottom {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.25);
+        margin-top: 40px;
+        font-size: 0.9rem;
+        color: #e6e6e6;
+      } /* Responsive: mobile & tablet */
+      @media (max-width: 768px) {
+        .apply-btn {
+          bottom: 12%;
+          padding: 1.2vw 3vw;
+          font-size: clamp(0.8rem, 3vw, 1.1rem);
+          min-width: 140px;
+        }
+      }
+      @media (max-width: 480px) {
+        .apply-btn {
+          bottom: 10%;
+          padding: 1.5vw 4vw;
+          font-size: clamp(0.7rem, 3.5vw, 1rem);
+          min-width: 120px;
+          border-width: 0.5vw;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Preloader -->
+    <div id="preloader">
+      <img
+        src="/assets/logo_den.png"
+        alt="Enactus FTU Hanoi"
+        class="preloader-logo"
+      />
+    </div>
+    <div class="hero-container">
+      <img src="/assets/hero.webp" alt="Hero" class="hero-img" />
+      <!-- Button Apply -->
+      <a href="/user/form.html" target="_blank" class="apply-btn">
+        ĐĂNG KÝ NGAY
+      </a>
+    </div>
+    <!-- Countdown Section -->
+    <section id="countdown" class="countdown">
+      <div class="time-box">
+        <span id="days">00</span>
+        <p>Ngày</p>
+      </div>
+      <div class="time-box">
+        <span id="hours">00</span>
+        <p>Giờ</p>
+      </div>
+      <div class="time-box">
+        <span id="minutes">00</span>
+        <p>Phút</p>
+      </div>
+      <div class="time-box">
+        <span id="seconds">00</span>
+        <p>Giây</p>
+      </div>
+    </section>
+    <!-- FAQ Section -->
+    <section id="faq" class="faq-section">
+      <!-- Tiêu đề bằng ảnh -->
+      <div class="faq-title">
+        <img src="/assets/q&a.png" alt="Câu hỏi thường gặp" />
+      </div>
+      <!-- Danh sách câu hỏi -->
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">
+            Sinh viên trường Đại học khác có tham gia tuyển thành viên được
+            không ? <span class="arrow">▼</span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              🌟 Không chỉ dành riêng cho sinh viên Ngoại thương, Enactus FTU
+              Hanoi luôn chào đón tất cả các bạn sinh viên từ mọi trường đại học
+              trong khu vực Hà Nội. Chúng mình hoàn toàn hỗ trợ hình thức làm
+              việc online, ngoài ra còn tổ chức các hoạt động bonding như đi
+              chơi, trải nghiệm, workdate,... để xóa tan khoảng cách địa lý và
+              đồng hành cùng nhau trên hành trình tạo nên những giá trị bền
+              vững.
+            </p>
+            <p>
+              🌟 Dù xuất phát điểm khác nhau, các thành viên Enactus đều có
+              chung một ngọn lửa đam mê với khởi nghiệp xã hội và khát khao tạo
+              nên tác động tích cực cho cộng đồng. Nếu bạn cũng mang trong mình
+              khát khao đó, đừng ngần ngại điền đơn – hành trình của bạn có thể
+              bắt đầu từ chính nơi đây, cùng Enactus FTU Hanoi.
+            </p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            Mình có thể đăng ký nhiều ban cùng một lúc không?
+            <span class="arrow">▼</span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              🌟 Câu trả lời chắc chắn là có. Tuy nhiên chúng mình gợi ý bạn có
+              thể chọn một ban chính để phát triển chuyên sâu và vẫn có cơ hội
+              hỗ trợ các ban khác nếu muốn học hỏi thêm nhiều kỹ năng. Tại
+              Enactus, chúng mình luôn khuyến khích các bạn khám phá bản thân và
+              thử sức ở những lĩnh vực mình yêu thích.
+            </p>
+            <p>
+              🌟 Chẳng hạn như, một thành viên từ ban khác hoàn toàn có thể sang
+              ban Truyền thông để học hỏi kiến thức và thực hành các công việc
+              liên quan đến marketing, truyền thông. Vậy nên, hãy tìm hiểu thật
+              kỹ, lắng nghe trái tim và lựa chọn một nơi phù hợp nhất với mình
+              bởi vì Enactus FTU Hanoi luôn chào đón bạn.
+            </p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            Mình học ngành Công nghệ thông tin/Kỹ thuật thì có thể tham gia CLB
+            không? <span class="arrow">▼</span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              🌟 Hoàn toàn được! Enactus FTU Hanoi luôn chào đón sinh viên từ
+              mọi ngành học, trong đó có cả các bạn theo học Công nghệ thông tin
+              và các ngành kỹ thuật.
+            </p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            Không có kinh nghiệm làm design, edit ảnh và video hay tạo content,
+            có thể apply vào ban Truyền thông không ?
+            <span class="arrow">▼</span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              🌟 Những kỹ năng như design hay viết content đều được đánh giá là
+              những kỹ năng quan trọng và cần thiết của các thành viên trong ban
+              Truyền thông. Tuy nhiên, chỉ cần các bạn kiên trì và nỗ lực theo
+              đuổi thì hoàn toàn có thể rèn luyện được những kỹ năng này.
+            </p>
+            <p>
+              🌟 Bên cạnh đó, khi vào ban Truyền thông các bạn sẽ được các anh
+              chị training nhiệt tình về các mảng design và content đúng với
+              từng tiểu ban. Chỉ sau hơn một năm ở CLB, thành viên của ban
+              Truyền thông đều có thể nhận ra sự thay đổi rõ rệt của mình về
+              mảng truyền thông nói chung cũng như các mảng design, content nói
+              riêng.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-container">
+        <!-- Cột trái: logo + địa chỉ + email -->
+        <div class="footer-col">
+          <img
+            src="/assets/logo_trang.png"
+            alt="Enactus FTU Hanoi"
+            class="footer-logo"
+          />
+          <!-- Địa chỉ -->
+          <div class="person">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="white"
+              class="size-5"
+            >
+              <path
+                fill-rule="evenodd"
+                d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <p>Đại học Ngoại thương<br />91 Chùa Láng, Phường Láng, Hà Nội</p>
+          </div>
+          <!-- Email -->
+          <div class="person">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="white"
+              class="size-5"
+            >
+              <path
+                d="M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3 3 0 0 1-3.144 0L1.5 8.67Z"
+              />
+              <path
+                d="M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908Z"
+              />
+            </svg>
+            <a href="mailto:enactusftuhanoi@gmail.com"
+              >enactusftuhanoi.bct@gmail.com</a
+            >
+          </div>
+        </div>
+        <!-- Cột phải: Ban Chủ Tịch + Kết nối -->
+        <div class="footer-col">
+          <h3>Ban Chủ Tịch</h3>
+          <div class="bct-row">
+            <div class="person">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="white"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <div class="text-block">
+                <span class="label">Chủ tịch</span>
+                <span class="name">Nguyễn Trung Hải</span>
+              </div>
+            </div>
+            <div class="person">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="white"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <div class="text-block">
+                <span class="label">Phó chủ tịch</span>
+                <span class="name">Vũ Yến Nhi</span>
+              </div>
+            </div>
+            <div class="person">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="white"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <div class="text-block">
+                <span class="label">Phó chủ tịch</span>
+                <span class="name">Hoàng Phương Dung</span>
+              </div>
+            </div>
+          </div>
+          <h3 style="margin-top: 40px">Kết nối</h3>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-linkedin"></i></a>
+            <a href="#"><i class="fab fa-tiktok"></i></a>
+            <a href="#"><i class="fa-brands fa-threads"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Enactus FTU Hanoi. All rights reserved.</p>
+      </div>
+    </footer>
+    <script>
+    window.addEventListener("load", () => { 
+        const preloader = document.getElementById("preloader"); 
+        setTimeout(() => { 
+        preloader.classList.add("hidden"); 
+        }, 500); // delay nhẹ để logo fade đẹp hơn 
+    }); const targetDate = new Date("2025-10-01T00:00:00").getTime(); 
+    function updateCountdown() { 
+        const now = new Date().getTime(); 
+        const distance = targetDate - now; 
+        if (distance < 0) return; 
+        document.getElementById("days").innerText = Math.floor(distance / (1000*60*60*24)); 
+        document.getElementById("hours").innerText = Math.floor((distance % (1000*60*60*24)) / (1000*60*60)); 
+        document.getElementById("minutes").innerText = Math.floor((distance % (1000*60*60)) / (1000*60)); 
+        document.getElementById("seconds").innerText = Math.floor((distance % (1000*60)) / 1000); 
+    } 
+    setInterval(updateCountdown, 1000); 
+    updateCountdown(); 
+    document.querySelectorAll('.faq-question').forEach(btn => { 
+        btn.addEventListener('click', () => { 
+        const item = btn.parentElement; 
+        const allItems = document.querySelectorAll('.faq-item'); 
+        // Đóng tất cả các item khác 
+        allItems.forEach(el => { 
+            if (el !== item) { 
+            el.classList.remove('active'); 
+            } 
+        }); 
+        // Toggle item hiện tại 
+        item.classList.toggle('active'); 
+        }); 
     });
-  });
-</script>
-</body>
+    </script>
+  </body>
 </html>
