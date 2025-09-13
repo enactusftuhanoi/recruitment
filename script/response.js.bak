@@ -426,6 +426,27 @@ function showApplicationDetail(appId) {
         
         priorityAnswersSection.innerHTML = priorityTitle;
         
+        // Kinh nghiệm và động lực
+        if (application.priority_experience) {
+            const experienceItem = document.createElement('div');
+            experienceItem.className = 'question-item';
+            experienceItem.innerHTML = `
+                <div class="question-text">Kinh nghiệm và hiểu biết về vị trí này</div>
+                <div class="answer-text">${application.priority_experience}</div>
+            `;
+            priorityAnswersSection.appendChild(experienceItem);
+        }
+        
+        if (application.priority_motivation) {
+            const motivationItem = document.createElement('div');
+            motivationItem.className = 'question-item';
+            motivationItem.innerHTML = `
+                <div class="question-text">Động lực ứng tuyển vị trí này</div>
+                <div class="answer-text">${application.priority_motivation}</div>
+            `;
+            priorityAnswersSection.appendChild(motivationItem);
+        }
+        
         // Câu hỏi đặc thù của ban
         renderBanSpecificAnswers(application, 'priority', priorityAnswersSection);
         
@@ -459,6 +480,27 @@ function showApplicationDetail(appId) {
         }
         
         secondaryAnswersSection.innerHTML = secondaryTitle;
+        
+        // Kinh nghiệm và động lực
+        if (application.secondary_experience) {
+            const experienceItem = document.createElement('div');
+            experienceItem.className = 'question-item';
+            experienceItem.innerHTML = `
+                <div class="question-text">Kinh nghiệm và hiểu biết về vị trí dự bị (nếu có)</div>
+                <div class="answer-text">${application.secondary_experience}</div>
+            `;
+            secondaryAnswersSection.appendChild(experienceItem);
+        }
+        
+        if (application.secondary_motivation) {
+            const motivationItem = document.createElement('div');
+            motivationItem.className = 'question-item';
+            motivationItem.innerHTML = `
+                <div class="question-text">Lý do chọn vị trí dự bị này</div>
+                <div class="answer-text">${application.secondary_motivation}</div>
+            `;
+            secondaryAnswersSection.appendChild(motivationItem);
+        }
         
         // Câu hỏi đặc thù của ban
         renderBanSpecificAnswers(application, 'secondary', secondaryAnswersSection);
@@ -545,11 +587,11 @@ function hideDetailView() {
 // Chấp nhận từng ban riêng biệt
 async function acceptDepartment(departmentType) {
     if (!currentApplicationId) return;
-
+    
     try {
         const application = applications.find(app => app.id === currentApplicationId);
         if (!application) return;
-
+        
         const { value: note } = await Swal.fire({
             title: `Xác nhận chấp nhận ${departmentType === 'priority' ? 'ban ưu tiên' : 'ban dự bị'}`,
             input: 'textarea',
@@ -559,54 +601,91 @@ async function acceptDepartment(departmentType) {
             confirmButtonText: 'Chấp nhận',
             cancelButtonText: 'Hủy'
         });
-
+        
         if (note !== undefined) {
-            Swal.fire({ title: 'Đang cập nhật...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-            let updateData = { updatedAt: new Date() };
-
+            // Hiển thị loading
+            Swal.fire({
+                title: 'Đang cập nhật...',
+                text: 'Vui lòng chờ trong giây lát',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            let updateData = {
+                updatedAt: new Date()
+            };
+            
             if (departmentType === 'priority') {
                 updateData.priorityAccepted = true;
                 updateData.priorityRejected = false;
                 updateData.acceptedDepartment = application.priority_position;
+                updateData.acceptedDepartmentName = getDepartmentName(application.priority_position);
             } else {
                 updateData.secondaryAccepted = true;
                 updateData.secondaryRejected = false;
                 updateData.acceptedDepartment = application.secondary_position;
+                updateData.acceptedDepartmentName = getDepartmentName(application.secondary_position);
             }
-
-            if (note) updateData.note = note;
-
-            // ✅ Cập nhật trạng thái tổng
-            updateData.status = computeOverallStatus({ ...application, ...updateData });
-
+            
+            // Cập nhật trạng thái tổng nếu cả hai ban đều được chấp nhận
+            // Accept
+            if (departmentType === 'priority' && (!application.secondary_position || application.secondary_position === 'None')) {
+                updateData.status = 'accepted';
+            } else if (departmentType === 'secondary' && (!application.priority_position || application.priority_position === 'None')) {
+                updateData.status = 'accepted';
+            } else if ((updateData.priorityAccepted && application.secondaryAccepted) || 
+                    (updateData.secondaryAccepted && application.priorityAccepted)) {
+                updateData.status = 'accepted';
+            }
+            
+            // Thêm ghi chú nếu có
+            if (note) {
+                updateData.note = note;
+            }
+            
+            // Cập nhật trạng thái trong Firestore
             await db.collection('applications').doc(currentApplicationId).update(updateData);
-
-            // update local
-            const idx = applications.findIndex(app => app.id === currentApplicationId);
-            if (idx !== -1) applications[idx] = { ...applications[idx], ...updateData };
-
+            
+            // Cập nhật local data
+            const appIndex = applications.findIndex(app => app.id === currentApplicationId);
+            if (appIndex !== -1) {
+                applications[appIndex] = {
+                    ...applications[appIndex],
+                    ...updateData
+                };
+            }
+            
+            // Ẩn loading và hiển thị thông báo thành công
             Swal.close();
-            Swal.fire({ icon: 'success', title: 'Thành công', text: 'Đã cập nhật' });
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công',
+                text: `Đã chấp nhận ${departmentType === 'priority' ? 'ban ưu tiên' : 'ban dự bị'}`
+            });
+            
+            // Cập nhật lại giao diện chi tiết
             showApplicationDetail(currentApplicationId);
+            
+            // Cập nhật lại danh sách
             renderApplications();
         }
     } catch (error) {
-        console.error(error);
+        console.error('Error accepting department:', error);
         Swal.fire('Lỗi', 'Có lỗi xảy ra khi chấp nhận: ' + error.message, 'error');
     }
 }
 
-
 // Từ chối từng ban riêng biệt
 async function rejectDepartment(departmentType) {
     if (!currentApplicationId) return;
-
+    
     try {
         const application = applications.find(app => app.id === currentApplicationId);
         if (!application) return;
-
-        const { value: reason } = await Swal.fire({
+        
+        const { value: rejectionReason } = await Swal.fire({
             title: `Xác nhận từ chối ${departmentType === 'priority' ? 'ban ưu tiên' : 'ban dự bị'}`,
             input: 'textarea',
             inputLabel: 'Lý do từ chối',
@@ -614,14 +693,30 @@ async function rejectDepartment(departmentType) {
             showCancelButton: true,
             confirmButtonText: 'Từ chối',
             cancelButtonText: 'Hủy',
-            inputValidator: (v) => !v && 'Vui lòng nhập lý do từ chối'
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Vui lòng nhập lý do từ chối';
+                }
+                return null;
+            }
         });
-
-        if (reason) {
-            Swal.fire({ title: 'Đang cập nhật...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-            let updateData = { updatedAt: new Date(), rejectionReason: reason };
-
+        
+        if (rejectionReason) {
+            // Hiển thị loading
+            Swal.fire({
+                title: 'Đang cập nhật...',
+                text: 'Vui lòng chờ trong giây lát',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            let updateData = {
+                updatedAt: new Date(),
+                rejectionReason: rejectionReason
+            };
+            
             if (departmentType === 'priority') {
                 updateData.priorityRejected = true;
                 updateData.priorityAccepted = false;
@@ -629,27 +724,50 @@ async function rejectDepartment(departmentType) {
                 updateData.secondaryRejected = true;
                 updateData.secondaryAccepted = false;
             }
+            
+            // Cập nhật trạng thái tổng nếu cả hai ban đều bị từ chối
+            // Reject
+            if (departmentType === 'priority' && (!application.secondary_position || application.secondary_position === 'None')) {
+                updateData.status = 'rejected';
+            } else if (departmentType === 'secondary' && (!application.priority_position || application.priority_position === 'None')) {
+                updateData.status = 'rejected';
+            } else if ((updateData.priorityRejected && application.secondaryRejected) || 
+                    (updateData.secondaryRejected && application.priorityRejected)) {
+                updateData.status = 'rejected';
+            }
 
-            // ✅ Cập nhật trạng thái tổng
-            updateData.status = computeOverallStatus({ ...application, ...updateData });
-
+            
+            // Cập nhật trạng thái trong Firestore
             await db.collection('applications').doc(currentApplicationId).update(updateData);
-
-            // update local
-            const idx = applications.findIndex(app => app.id === currentApplicationId);
-            if (idx !== -1) applications[idx] = { ...applications[idx], ...updateData };
-
+            
+            // Cập nhật local data
+            const appIndex = applications.findIndex(app => app.id === currentApplicationId);
+            if (appIndex !== -1) {
+                applications[appIndex] = {
+                    ...applications[appIndex],
+                    ...updateData
+                };
+            }
+            
+            // Ẩn loading và hiển thị thông báo thành công
             Swal.close();
-            Swal.fire({ icon: 'success', title: 'Thành công', text: 'Đã cập nhật' });
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công',
+                text: `Đã từ chối ${departmentType === 'priority' ? 'ban ưu tiên' : 'ban dự bị'}`
+            });
+            
+            // Cập nhật lại giao diện chi tiết
             showApplicationDetail(currentApplicationId);
+            
+            // Cập nhật lại danh sách
             renderApplications();
         }
     } catch (error) {
-        console.error(error);
+        console.error('Error rejecting department:', error);
         Swal.fire('Lỗi', 'Có lỗi xảy ra khi từ chối: ' + error.message, 'error');
     }
 }
-
 
 // Lấy tên ban từ mã
 function getDepartmentName(code) {
@@ -662,17 +780,6 @@ function getDepartmentName(code) {
     
     return departments[code] || code;
 }
-
-function computeOverallStatus(app) {
-    if (app.priorityAccepted || app.secondaryAccepted) return 'accepted';
-    if ((app.priorityRejected && (!app.secondary_position || app.secondaryRejected)) ||
-        (app.secondaryRejected && (!app.priority_position || app.priorityRejected))) {
-        return 'rejected';
-    }
-    if (app.priorityRejected || app.secondaryRejected) return 'reviewed';
-    return 'new';
-}
-
 
 // Hiển thị modal export
 function showExportOptions() {
@@ -819,6 +926,9 @@ function normalizeApplicationForExport(app, index = 0) {
 
     // priority-specific:
     if (app.priority_position) {
+        data['Kinh nghiệm ban ưu tiên'] = app.priority_experience ?? '';
+        data['Động lực ban ưu tiên'] = app.priority_motivation ?? '';
+
         const code = app.priority_position;
         if (code === 'MD') {
             const subs = app.md_sub_departments || [];
@@ -840,6 +950,9 @@ function normalizeApplicationForExport(app, index = 0) {
 
     // secondary-specific:
     if (app.secondary_position && app.secondary_position !== 'None') {
+        data['Kinh nghiệm ban dự bị'] = app.secondary_experience ?? '';
+        data['Động lực ban dự bị'] = app.secondary_motivation ?? '';
+
         const code = app.secondary_position;
         if (code === 'MD') {
             const subs = app.md_sub_departments_secondary || [];
@@ -934,7 +1047,7 @@ function buildHorizontalSheet(apps) {
 }
 
 /* Main exporter: prompt for layout, create 'Tổng hợp' + per-department sheets (app may appear in both) */
-async function exportDataWithLayout(filename, apps, includeByDepartment = false, splitPrioritySecondary = false) {
+async function exportDataWithLayout(filename, apps, includeByDepartment = false) {
     if (!apps || apps.length === 0) {
         Swal.fire('Thông báo', 'Không có dữ liệu để xuất', 'info');
         return;
@@ -950,151 +1063,48 @@ async function exportDataWithLayout(filename, apps, includeByDepartment = false,
 
     const wb = XLSX.utils.book_new();
 
-    // 1) Sheet tổng hợp (luôn có)
+    // 1) Tổng hợp sheet (summary only)
     const summaryData = apps.map((a, i) => normalizeApplicationForSummary(a, i));
     const wsAll = (mode === 'vertical') ? buildVerticalSheet(summaryData) : buildHorizontalSheet(summaryData);
     XLSX.utils.book_append_sheet(wb, wsAll, 'Tổng hợp');
 
-    // 2) Nếu includeByDepartment = true => xuất mỗi ban 1 sheet
+    // 2) per-department sheets
     if (includeByDepartment) {
         const grouped = {};
         apps.forEach((app, idx) => {
+            const norm = normalizeApplicationForExport(app, idx);
             if (app.priority_position) {
-                grouped[app.priority_position] = grouped[app.priority_position] || { priority: [], secondary: [] };
-                grouped[app.priority_position].priority.push(normalizeApplicationForExport(app, idx));
+                grouped[app.priority_position] = grouped[app.priority_position] || [];
+                grouped[app.priority_position].push(norm);
             }
             if (app.secondary_position && app.secondary_position !== 'None') {
-                grouped[app.secondary_position] = grouped[app.secondary_position] || { priority: [], secondary: [] };
-                grouped[app.secondary_position].secondary.push(normalizeApplicationForExport(app, idx));
+                grouped[app.secondary_position] = grouped[app.secondary_position] || [];
+                grouped[app.secondary_position].push(norm);
             }
         });
 
         Object.keys(grouped).forEach(dept => {
-            const deptName = getDepartmentName(dept);
-            const group = grouped[dept];
-
-            if (splitPrioritySecondary) {
-                // Xuất 2 sheet riêng: Ưu tiên & Dự bị
-                if (group.priority.length > 0) {
-                    const wsPri = (mode === 'vertical') ? buildVerticalSheet(group.priority) : buildHorizontalSheet(group.priority);
-                    XLSX.utils.book_append_sheet(wb, wsPri, `${deptName}_Ưu tiên`.substring(0, 31));
-                }
-                if (group.secondary.length > 0) {
-                    const wsSec = (mode === 'vertical') ? buildVerticalSheet(group.secondary) : buildHorizontalSheet(group.secondary);
-                    XLSX.utils.book_append_sheet(wb, wsSec, `${deptName}_Dự bị`.substring(0, 31));
-                }
-            } else {
-                // Xuất gộp chung
-                const combined = [...group.priority, ...group.secondary];
-                if (combined.length > 0) {
-                    const ws = (mode === 'vertical') ? buildVerticalSheet(combined) : buildHorizontalSheet(combined);
-                    XLSX.utils.book_append_sheet(wb, ws, deptName.substring(0, 31));
-                }
-            }
+            const sheetData = grouped[dept];
+            const ws = (mode === 'vertical') ? buildVerticalSheet(sheetData) : buildHorizontalSheet(sheetData);
+            const sheetName = String(getDepartmentName(dept)).substring(0, 31);
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
         });
     }
 
     XLSX.writeFile(wb, filename);
 }
 
-
 /* Export wrappers to call the unified exporter */
 function exportPersonalInfo() { exportDataWithLayout('enactus_thong_tin_ca_nhan.xlsx', applications, false); closeExportModal(); }
-function exportResults() {
-    if (!applications || applications.length === 0) {
-        Swal.fire('Thông báo', 'Không có dữ liệu để xuất', 'info');
-        closeExportModal();
-        return;
-    }
-
-    const rows = applications.map(app => {
-        // Ban trúng tuyển
-        let accepted = [];
-        if (app.priorityAccepted) accepted.push(getDepartmentName(app.priority_position));
-        if (app.secondaryAccepted) accepted.push(getDepartmentName(app.secondary_position));
-        const acceptedText = accepted.length > 0 ? accepted.join(' / ') : '';
-
-        // Ban bị từ chối
-        let rejected = [];
-        if (app.priorityRejected) rejected.push(getDepartmentName(app.priority_position));
-        if (app.secondaryRejected) rejected.push(getDepartmentName(app.secondary_position));
-        const rejectedText = rejected.length > 0 ? rejected.join(' / ') : '';
-
-        return {
-            'Họ và tên': app.fullname ?? '',
-            'Email': app.email ?? '',
-            'Số điện thoại': app.phone ?? '',
-            'Ban trúng tuyển': acceptedText,
-            'Ban bị từ chối': rejectedText
-        };
-    });
-
-    const ws = XLSX.utils.json_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Kết quả');
-
-    XLSX.writeFile(wb, 'enactus_ket_qua_ung_tuyen.xlsx');
-    closeExportModal();
-}
-
+function exportResults() { exportDataWithLayout('enactus_ket_qua_ung_tuyen.xlsx', applications, false); closeExportModal(); }
 function exportPersonalWithResults() { exportDataWithLayout('enactus_thong_tin_va_ket_qua.xlsx', applications, false); closeExportModal(); }
-async function exportByCandidate() {
-    if (!currentApplicationId) { 
-        Swal.fire('Thông báo', 'Vui lòng chọn một ứng viên để xuất dữ liệu', 'info'); 
-        closeExportModal(); 
-        return; 
-    }
-    const app = applications.find(a => a.id === currentApplicationId);
-    if (!app) return;
-
-    const { value: mode } = await Swal.fire({
-        title: 'Chọn kiểu xuất dữ liệu',
-        input: 'radio',
-        inputOptions: { 
-            vertical: 'Hàng ngang', 
-            horizontal: 'Hàng dọc' 
-        },
-        inputValidator: (v) => !v && 'Bạn phải chọn kiểu xuất!'
-    });
-    if (!mode) return;
-
-    const wb = XLSX.utils.book_new();
-    const data = [ normalizeApplicationForExport(app, 0) ];
-
-    const ws = (mode === 'vertical') 
-        ? buildVerticalSheet(data) 
-        : buildHorizontalSheet(data);
-
-    XLSX.utils.book_append_sheet(wb, ws, app.fullname || 'Ứng viên');
-
-    XLSX.writeFile(wb, `enactus_ung_vien_${(app.fullname || 'ung_vien').replace(/\s+/g, '_')}.xlsx`);
+function exportByCandidate() {
+    if (!currentApplicationId) { Swal.fire('Thông báo', 'Vui lòng chọn một ứng viên để xuất dữ liệu', 'info'); closeExportModal(); return; }
+    const app = applications.find(a => a.id === currentApplicationId); if (!app) return;
+    exportDataWithLayout(`enactus_ung_vien_${(app.fullname || 'ung_vien').replace(/\s+/g, '_')}.xlsx`, [app], false);
     closeExportModal();
 }
-
-function exportAllData() { exportDataWithLayout('enactus_toan_bo_du_lieu.xlsx', applications, true, false); closeExportModal(); }
-
-// Giữ lại fields chung và chỉ giữ phần "Ưu tiên" hoặc "Dự bị" tùy loại
-function filterExportData(data, type) {
-    const filtered = {};
-    Object.keys(data).forEach(key => {
-        const isPriority = key.startsWith('Ưu tiên');
-        const isSecondary = key.startsWith('Dự bị');
-
-        // Luôn giữ các trường chung (không bắt đầu bằng 'Ưu tiên' hoặc 'Dự bị')
-        if (!isPriority && !isSecondary) {
-            filtered[key] = data[key];
-            return;
-        }
-
-        // Giữ phần riêng theo type
-        if (type === 'priority' && isPriority) {
-            filtered[key] = data[key];
-        } else if (type === 'secondary' && isSecondary) {
-            filtered[key] = data[key];
-        }
-    });
-    return filtered;
-}
+function exportAllData() { exportDataWithLayout('enactus_toan_bo_du_lieu.xlsx', applications, true); closeExportModal(); }
 
 /* Replace export-department listener: safe attach */
 (function attachExportDepartmentListener() {
@@ -1103,51 +1113,14 @@ function filterExportData(data, type) {
     try { el.replaceWith(el.cloneNode(true)); } catch(e) {}
     const elem = document.getElementById('export-department');
     if (!elem) return;
-
-    elem.addEventListener('change', async function() {
+    elem.addEventListener('change', function() {
         const department = this.value;
-        const deptApps = applications.filter(app => 
-            app.priority_position === department || app.secondary_position === department
-        );
-        if (deptApps.length === 0) { 
-            Swal.fire('Thông báo', `Không có ứng viên nào trong ban ${getDepartmentName(department)}`, 'info'); 
-            return; 
-        }
-
-        // Hỏi layout
-        const { value: mode } = await Swal.fire({
-            title: 'Chọn kiểu xuất dữ liệu',
-            input: 'radio',
-            inputOptions: { vertical: 'Hàng ngang', horizontal: 'Hàng dọc' },
-            inputValidator: (v) => !v && 'Bạn phải chọn kiểu xuất!'
-        });
-        if (!mode) return;
-
-        const wb = XLSX.utils.book_new();
-
-        // Tách ứng viên thành 2 nhóm: Ưu tiên & Dự bị
-        const pri = deptApps
-            .filter(app => app.priority_position === department)
-            .map((app, i) => filterExportData(normalizeApplicationForExport(app, i), 'priority'));
-        const sec = deptApps
-            .filter(app => app.secondary_position === department)
-            .map((app, i) => filterExportData(normalizeApplicationForExport(app, i), 'secondary'));
-
-        if (pri.length > 0) {
-            const wsPri = (mode === 'vertical') ? buildVerticalSheet(pri) : buildHorizontalSheet(pri);
-            XLSX.utils.book_append_sheet(wb, wsPri, `${getDepartmentName(department)}_Ưu tiên`.substring(0, 31));
-        }
-        if (sec.length > 0) {
-            const wsSec = (mode === 'vertical') ? buildVerticalSheet(sec) : buildHorizontalSheet(sec);
-            XLSX.utils.book_append_sheet(wb, wsSec, `${getDepartmentName(department)}_Dự bị`.substring(0, 31));
-        }
-
-        XLSX.writeFile(wb, `enactus_ban_${getDepartmentName(department).replace(/\s+/g, '_')}.xlsx`);
+        const deptApps = applications.filter(app => app.priority_position === department || app.secondary_position === department);
+        if (deptApps.length === 0) { Swal.fire('Thông báo', `Không có ứng viên nào trong ban ${getDepartmentName(department)}`, 'info'); return; }
+        exportDataWithLayout(`enactus_ban_${getDepartmentName(department).replace(/\s+/g, '_')}.xlsx`, deptApps, false);
         closeExportModal();
     });
 })();
-
-
 
 /* --------------------- END: Unified answer/export block --------------------- */
 

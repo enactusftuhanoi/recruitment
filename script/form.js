@@ -564,7 +564,6 @@
                 priority_position: document.getElementById('priority_position').value,
                 secondary_position: document.getElementById('secondary_position').value,
                 availability: document.getElementById('availability').value,
-                motivation: document.getElementById('motivation').value,
         
                 // Câu hỏi chung
                 general_intro: document.getElementById('general_intro')?.value || '',
@@ -665,7 +664,6 @@
                     }
                     if (formData.secondary_position) document.getElementById('secondary_position').value = formData.secondary_position;
                     if (formData.availability) document.getElementById('availability').value = formData.availability;
-                    if (formData.motivation) document.getElementById('motivation').value = formData.motivation;
                     
                     // Khôi phục tiểu ban Truyền thông
                     if (formData.md_sub_departments) {
@@ -684,10 +682,6 @@
                     
                     // Khôi phục chi tiết ứng tuyển
                     if (formData.intro) document.getElementById('intro').value = formData.intro;
-                    if (formData.priority_experience) document.getElementById('priority_experience').value = formData.priority_experience;
-                    if (formData.priority_motivation) document.getElementById('priority_motivation').value = formData.priority_motivation;
-                    if (formData.secondary_experience) document.getElementById('secondary_experience').value = formData.secondary_experience;
-                    if (formData.secondary_motivation) document.getElementById('secondary_motivation').value = formData.secondary_motivation;
                     
                     // Cập nhật tên phân ban và câu hỏi
                     updatePositionNames();
@@ -724,10 +718,6 @@
                 // Nếu là hình thức phỏng vấn, xóa dữ liệu section 3
                 if (applicationType === 'interview') {
                     delete formObject.intro;
-                    delete formObject.priority_experience;
-                    delete formObject.priority_motivation;
-                    delete formObject.secondary_experience;
-                    delete formObject.secondary_motivation;
                     
                     // Xóa tất cả câu hỏi phân ban
                     Object.keys(formObject).forEach(key => {
