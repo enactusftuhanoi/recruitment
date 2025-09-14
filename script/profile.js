@@ -1,23 +1,29 @@
+// profile.js (replaced) - đọc dữ liệu từ collection "applications" và dùng Google avatar
+
 // Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { 
-  getAuth, 
+import {
+  getAuth,
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { 
-  getFirestore, 
-  doc, 
-  getDoc,
-  setDoc,
-  updateDoc
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Firebase configuration
+// === Firebase config (same project as response.js / config.js) ===
 const firebaseConfig = {
-  apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
-  authDomain: "enactusftuhanoi-tracuu.firebaseapp.com",
-  projectId: "enactusftuhanoi-tracuu",
+  apiKey: "AIzaSyAOP2j0qV0Ge-q2-Y9zo9Qc3eLmgtVOK3k",
+  authDomain: "recruitment-enactusftuhanoi.firebaseapp.com",
+  projectId: "recruitment-enactusftuhanoi",
+  storageBucket: "recruitment-enactusftuhanoi.firebasestorage.app",
+  messagingSenderId: "658928769643",
+  appId: "1:658928769643:web:ef4e26633b7c41c922ef2e",
+  measurementId: "G-BJT7ZPKYE3"
 };
 
 // Initialize Firebase
@@ -25,616 +31,344 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Toastr configuration
-toastr.options = {
-  closeButton: true,
-  debug: false,
-  newestOnTop: true,
-  progressBar: true,
-  positionClass: 'toast-bottom-right',
-  preventDuplicates: false,
-  onclick: null,
-  showDuration: '300',
-  hideDuration: '1000',
-  timeOut: '3000',
-  extendedTimeOut: '1000',
-  showEasing: 'swing',
-  hideEasing: 'linear',
-  showMethod: 'fadeIn',
-  hideMethod: 'fadeOut'
-};
+// === Small UI helpers / Toastr (optional) ===
+if (typeof toastr !== 'undefined') {
+  toastr.options = {
+    closeButton: true,
+    progressBar: true,
+    positionClass: 'toast-bottom-right',
+    timeOut: 3000
+  };
+}
 
-// DOM elements
+// === DOM elements (from profile.html) ===
 const logoutBtn = document.getElementById('logoutBtn');
 const refreshBtn = document.getElementById('refreshBtn');
 const editProfileBtn = document.getElementById('editProfileBtn');
 const startOnboardingBtn = document.getElementById('startOnboardingBtn');
-const editModal = document.getElementById('editModal');
-const onboardingModal = document.getElementById('onboardingModal');
-const closeModalButtons = document.querySelectorAll('.close-modal');
-const editForm = document.getElementById('editForm');
-const onboardingForm = document.getElementById('onboardingForm');
 
-// Current user data
-let currentUser = null;
-let currentUserId = null;
+const profileSection = document.getElementById('profileSection');
+const onboardingSection = document.getElementById('onboardingSection');
+const roundSection = document.getElementById('roundSection');
 
-// ========== HELPER FUNCTIONS ==========
-function getInitials(name) {
-  if (!name) return 'US';
-  const names = name.trim().split(' ');
-  let initials = names[0].substring(0, 1).toUpperCase();
-  
-  if (names.length > 1) {
-    initials += names[names.length - 1].substring(0, 1).toUpperCase();
-  }
-  
-  return initials || 'US';
+const userAvatarEl = document.getElementById('userAvatar');
+
+// Profile fields
+const elFullName = document.getElementById('userFullName');
+const elGender = document.getElementById('userGender');
+const elEmail = document.getElementById('userEmail');
+const elPhone = document.getElementById('userPhone');
+const elDob = document.getElementById('userDob');
+const elSchool = document.getElementById('userSchool');
+const elFaculty = document.getElementById('userFaculty');
+const elStudentId = document.getElementById('userStudentId');
+const elDepartment = document.getElementById('userDepartment');
+const elCurrentRound = document.getElementById('userCurrentRound');
+const elStatusBadge = document.getElementById('userStatus');
+
+// Round detail elements (if present in HTML)
+const progressBar = document.getElementById('progressBar');
+
+// hide edit button (profile is read-only, data comes from applications)
+if (editProfileBtn) editProfileBtn.style.display = 'none';
+
+// === utility functions ===
+function safeText(value, fallback = 'Chưa cập nhật') {
+  if (value === undefined || value === null || value === '') return fallback;
+  return value;
 }
 
-function generateColorFromName(name) {
-  if (!name) return '#3b82f6';
-  
-  const colors = [
-    '#3b82f6', '#4caf50', '#f59e0b', '#9c27b0', 
-    '#ef4444', '#06b6d4', '#84cc16', '#f97316'
-  ];
-  
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  
-  return colors[Math.abs(hash) % colors.length];
-}
+function setAvatarFromGoogle(photoURL) {
+  if (!userAvatarEl) return;
+  userAvatarEl.innerHTML = '';
+  userAvatarEl.style.backgroundSize = 'cover';
+  userAvatarEl.style.backgroundPosition = 'center';
+  userAvatarEl.style.borderRadius = '50%';
+  userAvatarEl.style.display = 'block';
 
-function formatInterviewTime(dateStr, slotNumber, startTime, endTime) {
-  if (!dateStr) return 'Chưa cập nhật';
-  
-  try {
-    // Try to parse date string (could be in different formats)
-    let formattedDate = dateStr;
-    const date = new Date(dateStr);
-    if (!isNaN(date.getTime())) {
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const year = date.getFullYear();
-      formattedDate = `${day}/${month}/${year}`;
-    }
-    
-    return `Ca ${slotNumber} (${startTime} - ${endTime}) ngày ${formattedDate}`;
-  } catch (e) {
-    return `Ca ${slotNumber} (${startTime} - ${endTime}) ngày ${dateStr}`;
-  }
-}
-
-// ========== AVATAR FUNCTIONS ==========
-function updateUserAvatar(user) {
-  const avatarImg = document.getElementById('userAvatar');
-  if (!avatarImg) {
-    console.error('Avatar element not found');
-    return;
-  }
-
-  // Reset styles
-  avatarImg.innerHTML = '';
-  avatarImg.style.backgroundImage = '';
-  avatarImg.style.backgroundColor = '';
-  avatarImg.style.color = 'white';
-  avatarImg.style.display = 'flex';
-  avatarImg.style.alignItems = 'center';
-  avatarImg.style.justifyContent = 'center';
-  avatarImg.style.borderRadius = '50%';
-  avatarImg.style.width = '200px';
-  avatarImg.style.height = '200px';
-  avatarImg.style.fontSize = '40px';
-  avatarImg.style.fontWeight = 'bold';
-  avatarImg.style.border = '3px solid white';
-  avatarImg.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-
-  // Try to use photo URL if available
-  let photoUrl = user.photoURL;
-  if (photoUrl && typeof photoUrl === 'string') {
-    // Improve Google photo quality
-    if (photoUrl.includes('googleusercontent.com')) {
-      photoUrl = photoUrl.replace(/=s\d+(-c)?/, '=s400-c');
-    }
-
+  if (photoURL && typeof photoURL === 'string') {
+    const url = photoURL.includes('googleusercontent.com') ? photoURL.replace(/=s\d+(-c)?/, '=s400-c') : photoURL;
+    // Preload to avoid broken background
     const img = new Image();
-    img.src = photoUrl;
-    
     img.onload = () => {
-      avatarImg.style.backgroundImage = `url(${photoUrl})`;
-      avatarImg.style.backgroundSize = 'cover';
-      avatarImg.style.backgroundPosition = 'center';
+      userAvatarEl.style.backgroundImage = `url(${url})`;
     };
-    
     img.onerror = () => {
-      showInitialsAvatar(user);
+      // fallback: initials
+      const initials = getInitialsFromName(document.getElementById('userFullName')?.textContent || '');
+      userAvatarEl.style.backgroundImage = 'none';
+      userAvatarEl.textContent = initials;
+      userAvatarEl.style.display = 'flex';
+      userAvatarEl.style.alignItems = 'center';
+      userAvatarEl.style.justifyContent = 'center';
+      userAvatarEl.style.color = 'white';
+      userAvatarEl.style.fontSize = '40px';
+      userAvatarEl.style.backgroundColor = '#3b82f6';
     };
+    img.src = url;
   } else {
-    showInitialsAvatar(user);
+    // no photo => initials
+    const initials = getInitialsFromName(document.getElementById('userFullName')?.textContent || '');
+    userAvatarEl.style.backgroundImage = 'none';
+    userAvatarEl.textContent = initials;
+    userAvatarEl.style.display = 'flex';
+    userAvatarEl.style.alignItems = 'center';
+    userAvatarEl.style.justifyContent = 'center';
+    userAvatarEl.style.color = 'white';
+    userAvatarEl.style.fontSize = '40px';
+    userAvatarEl.style.backgroundColor = '#3b82f6';
   }
 }
 
-function showInitialsAvatar(user) {
-  const avatarImg = document.getElementById('userAvatar');
-  if (!avatarImg) return;
-
-  const name = user.fullname || user.displayName || user.email || 'User';
-  const initials = getInitials(name);
-  
-  avatarImg.innerHTML = initials;
-  avatarImg.style.backgroundColor = generateColorFromName(name);
-  avatarImg.style.backgroundImage = 'none';
+function getInitialsFromName(name) {
+  if (!name) return 'US';
+  const parts = name.trim().split(/\s+/);
+  const first = parts[0]?.charAt(0) || '';
+  const last = (parts.length > 1 ? parts[parts.length - 1].charAt(0) : '');
+  return (first + last).toUpperCase() || 'US';
 }
 
-// ========== USER PROFILE FUNCTIONS ==========
-async function loadUserData(userId, email) {
-  try {
-    const auth = getAuth();
-    const user = auth.currentUser;
-    
-    console.log('Loading user data for:', userId);
-    console.log('Current auth user:', user);
-
-    const userDoc = await getDoc(doc(db, "users", userId));
-    
-    if (userDoc.exists()) {
-      currentUser = userDoc.data();
-      currentUserId = userId;
-      
-      console.log('User document data:', currentUser);
-
-      // Update avatar with combined data
-      updateUserAvatar({
-        ...currentUser,
-        photoURL: user?.photoURL || currentUser.photoURL,
-        fullname: currentUser.fullname || user?.displayName,
-        email: currentUser.email || user?.email
-      });
-
-      // Automatically update round4 if there are votes
-      if (currentUser.votes && typeof currentUser.votes === 'object') {
-        const scheduleId = Object.keys(currentUser.votes)[0];
-        if (scheduleId) {
-          try {
-            const scheduleDoc = await getDoc(doc(db, "schedules", scheduleId));
-            if (scheduleDoc.exists()) {
-              const scheduleData = scheduleDoc.data();
-              const voteData = currentUser.votes[scheduleId];
-              
-              currentUser.round_4 = {
-                status: "Đã đăng ký",
-                scheduleId: scheduleId,
-                slots: Array.isArray(voteData.slots) ? voteData.slots : [],
-                scheduleData: scheduleData, // Store full schedule data
-                scheduleTitle: scheduleData.title || 'Không có tiêu đề',
-                date: scheduleData.date || 'Chưa cập nhật',
-                location: scheduleData.location || 'Chưa cập nhật',
-                type: scheduleData.type || 'Chưa xác định',
-                members: Array.isArray(scheduleData.members) ? scheduleData.members.join(', ') : '',
-                updatedAt: new Date().toISOString()
-              };
-              
-              // Update in Firestore
-              await updateDoc(doc(db, "users", userId), {
-                round_4: currentUser.round_4
-              });
-            }
-          } catch (error) {
-            console.error('Error loading schedule data:', error);
-          }
-        }
-      }
-      
-      // Update UI
-      document.getElementById('profileSection').style.display = 'block';
-      document.getElementById('roundSection').style.display = 'block';
-      document.getElementById('onboardingSection').style.display = 'none';
-      
-      updateProfileUI(currentUser);
-      updateRoundProgress(currentUser.current_round || 1);
-      showRoundDetails(currentUser.current_round || 1);
-      
-    } else {
-      // New user - show onboarding
-      console.log('New user, showing onboarding');
-      document.getElementById('profileSection').style.display = 'none';
-      document.getElementById('roundSection').style.display = 'none';
-      document.getElementById('onboardingSection').style.display = 'block';
-      
-      currentUserId = userId;
-      
-      if (email) {
-        document.getElementById('onboardEmail').value = email;
-      }
-      
-      // Show Google photo in onboarding if available
-      const onboardingAvatar = document.getElementById('onboardingAvatar');
-      if (user?.photoURL && onboardingAvatar) {
-        onboardingAvatar.style.backgroundImage = `url(${user.photoURL.replace(/=s\d+(-c)?/, '=s400-c')})`;
-        onboardingAvatar.style.backgroundSize = 'cover';
-        onboardingAvatar.style.backgroundPosition = 'center';
-        onboardingAvatar.style.borderRadius = '50%';
-        onboardingAvatar.style.width = '100px';
-        onboardingAvatar.style.height = '100px';
-      }
-    }
-  } catch (error) {
-    console.error('Error loading user data:', error);
-    toastr.error('Lỗi khi tải dữ liệu người dùng');
-  }
+function mapStatusToRound(status) {
+  // Customize mapping if you have more detailed statuses
+  // Default simple mapping:
+  // new -> vòng đơn (1)
+  // reviewed -> vòng đơn (1)
+  // interview -> vòng 2
+  // challenge -> vòng 3
+  // final -> vòng 4
+  // accepted -> hoàn thành
+  // rejected -> từ chối
+  const s = (status || '').toString().toLowerCase();
+  if (s === 'new' || s === 'reviewed') return 1;
+  if (s.includes('interview') || s === 'interview' || s === 'phỏng vấn') return 2;
+  if (s.includes('challenge') || s === 'thử thách') return 3;
+  if (s === 'final' || s.includes('final') || s.includes('phỏng vấn cá nhân')) return 4;
+  if (s === 'accepted' || s === 'chấp nhận' || s === 'đã duyệt') return 5;
+  if (s === 'rejected' || s === 'từ chối') return 0;
+  return 1;
 }
 
-function updateProfileUI(user) {
-  if (!user) return;
-
-  // Basic info
-  document.getElementById('userFullName').textContent = user.fullname || 'Chưa cập nhật';
-  document.getElementById('userGender').textContent = user.gender || 'Chưa cập nhật';
-  document.getElementById('userEmail').textContent = user.email || 'Chưa cập nhật';
-  document.getElementById('userPhone').textContent = user.phone || 'Chưa cập nhật';
-  document.getElementById('userDob').textContent = user.dob || 'Chưa cập nhật';
-  document.getElementById('userSchool').textContent = user.school || 'Chưa cập nhật';
-  document.getElementById('userFaculty').textContent = user.faculty || 'Chưa cập nhật';
-  document.getElementById('userStudentId').textContent = user.studentId || 'Chưa cập nhật';
-  document.getElementById('userDepartment').textContent = user.department || 'Chưa chọn';
-  
-  // Status info
-  document.getElementById('userCurrentRound').textContent = getRoundText(user.current_round || 1);
-  
-  const statusBadge = document.getElementById('userStatus');
-  if (statusBadge) {
-    statusBadge.textContent = user.status || 'Chưa xác định';
-    statusBadge.className = 'badge ';
-    if (user.status === 'Đã duyệt') {
-      statusBadge.classList.add('badge-success');
-    } else if (user.status === 'Từ chối') {
-      statusBadge.classList.add('badge-danger');
-    } else {
-      statusBadge.classList.add('badge-warning');
-    }
-  }
-}
-
-function getRoundText(round) {
-  const rounds = [
-    'Vòng đơn',
-    'Phỏng vấn nhóm',
-    'Thử thách',
-    'Phỏng vấn cá nhân',
-    'Hoàn thành'
-  ];
-  
-  if (!round || round < 1) return 'Chưa bắt đầu';
-  if (round <= 4) return `Vòng ${round}: ${rounds[round-1]}`;
-  return rounds[4];
-}
-
-function updateRoundProgress(currentRound) {
+function updateProgressBarByRound(roundNumber) {
+  if (!progressBar) return;
+  const valid = Math.max(0, Math.min(5, roundNumber));
+  progressBar.style.width = valid > 0 ? `${((valid - 1) / 4) * 100}%` : '0%';
+  // set step classes if .step exist
   const steps = document.querySelectorAll('.step');
-  const progressBar = document.getElementById('progressBar');
-  
-  if (!steps.length || !progressBar) return;
-
-  // Reset all steps
-  steps.forEach(step => {
-    step.classList.remove('active', 'completed');
-  });
-  
-  // Validate current round
-  if (currentRound > 5) currentRound = 5;
-  if (currentRound < 1) currentRound = 0;
-  
-  // Update steps
-  for (let i = 0; i < currentRound; i++) {
-    if (i < steps.length) {
+  if (steps && steps.length) {
+    steps.forEach(s => s.classList.remove('active', 'completed'));
+    for (let i = 0; i < (roundNumber > 0 ? Math.min(roundNumber, steps.length) : 0); i++) {
       steps[i].classList.add('completed');
     }
-  }
-  
-  // Set active step
-  if (currentRound > 0 && currentRound <= 5) {
-    steps[currentRound - 1].classList.add('active');
-  }
-  
-  // Update progress bar
-  progressBar.style.width = currentRound > 0 ? `${((currentRound - 1) / 4) * 100}%` : '0%';
-}
-
-function showRoundDetails(currentRound) {
-  const roundCards = document.querySelectorAll('.round-card');
-  if (!roundCards.length) return;
-
-  // Hide all cards first
-  roundCards.forEach(card => {
-    card.style.display = 'none';
-  });
-  
-  // Show relevant cards
-  for (let i = 1; i <= currentRound; i++) {
-    const roundCard = document.getElementById(`round${i}Details`);
-    if (roundCard) {
-      roundCard.style.display = 'block';
-      updateRoundStatus(i);
-    }
+    if (roundNumber > 0 && steps[roundNumber - 1]) steps[roundNumber - 1].classList.add('active');
   }
 }
 
-function updateRoundStatus(roundNumber) {
-  if (!currentUser || !roundNumber) return;
-  
-  const roundData = currentUser[`round_${roundNumber}`] || {};
-  const statusElement = document.getElementById(`round${roundNumber}Status`);
-  const statusTextElement = document.getElementById(`round${roundNumber}StatusText`);
-  
-  if (statusElement && statusTextElement) {
-    const status = roundData.status || 'Chưa bắt đầu';
-    statusElement.textContent = status;
-    statusTextElement.textContent = status;
-    
-    statusElement.className = 'badge ';
-    if (status === 'Đã duyệt') {
-      statusElement.classList.add('badge-success');
-    } else if (status === 'Từ chối') {
-      statusElement.classList.add('badge-danger');
-    } else if (status === 'Đang chờ' || status === 'Đang thực hiện' || status === 'Đã đăng ký') {
-      statusElement.classList.add('badge-primary');
-    } else {
-      statusElement.classList.add('badge-warning');
-    }
-  }
-  
-  // Update round-specific details
-  switch(roundNumber) {
-    case 1:
-      document.getElementById('round1Deadline').textContent = roundData.deadline || 'Chưa cập nhật';
-      document.getElementById('round1Guide').textContent = roundData.guide || 'Chưa cập nhật';
-      break;
-    case 2:
-      document.getElementById('round2Time').textContent = roundData.time || 'Chưa cập nhật';
-      document.getElementById('round2Location').textContent = roundData.location || 'Chưa cập nhật';
-      document.getElementById('round2Members').textContent = roundData.members || 'Chưa cập nhật';
-      break;
-    case 3:
-      document.getElementById('round3Challenge').textContent = roundData.challenge || 'Chưa cập nhật';
-      document.getElementById('round3Deadline').textContent = roundData.deadline || 'Chưa cập nhật';
-      document.getElementById('round3Materials').textContent = roundData.materials || 'Chưa cập nhật';
-      break;
-    case 4:
-      if (roundData.slots && Array.isArray(roundData.slots) && roundData.slots.length > 0) {
-        // Get first slot info (or can display all slots)
-        const firstSlotIndex = roundData.slots[0];
-        const slot = roundData.scheduleData?.slots?.[firstSlotIndex];
-        
-        if (slot) {
-          const timeText = formatInterviewTime(
-            roundData.date, 
-            firstSlotIndex + 1, 
-            slot.start, 
-            slot.end
-          );
-          
-          document.getElementById('round4Time').innerHTML = `<strong>${timeText}</strong>`;
-          document.getElementById('round4Location').textContent = 
-            `${roundData.location || 'Chưa cập nhật'} (${roundData.type || 'Chưa xác định'})`;
-          document.getElementById('round4Interviewer').textContent = 
-            roundData.members || 'Chưa cập nhật';
-        } else {
-          document.getElementById('round4Time').textContent = 'Chưa cập nhật thời gian';
-          document.getElementById('round4Location').textContent = 'Chưa cập nhật';
-          document.getElementById('round4Interviewer').textContent = 'Chưa cập nhật';
-        }
-      } else {
-        document.getElementById('round4Time').textContent = 'Chưa đăng ký ca phỏng vấn';
-        document.getElementById('round4Location').textContent = 'Chưa cập nhật';
-        document.getElementById('round4Interviewer').textContent = 'Chưa cập nhật';
-      }
-      break;
-  }
+function formatRoundTextByStatus(status) {
+  if (!status) return 'Vòng 1: Vòng đơn';
+  const s = status.toString();
+  // translate a few common values to nicer labels
+  if (s.toLowerCase() === 'new') return 'Vòng 1: Vòng đơn';
+  if (s.toLowerCase() === 'reviewed') return 'Vòng 1: Đã xem đơn';
+  if (s.toLowerCase().includes('interview')) return 'Vòng 2: Phỏng vấn';
+  if (s.toLowerCase().includes('challenge') || s.toLowerCase().includes('thử thách')) return 'Vòng 3: Thử thách';
+  if (s.toLowerCase().includes('final') || s.toLowerCase().includes('phỏng vấn cá nhân')) return 'Vòng 4: Phỏng vấn cá nhân';
+  if (s.toLowerCase() === 'accepted' || s.toLowerCase().includes('đã duyệt')) return 'Hoàn thành: Đã được chấp nhận';
+  if (s.toLowerCase() === 'rejected' || s.toLowerCase().includes('từ chối')) return 'Đã từ chối';
+  return `Trạng thái: ${s}`;
 }
 
-// ========== MODAL FUNCTIONS ==========
-function showEditModal() {
-  if (!currentUser) return;
-  
-  document.getElementById('editFullName').value = currentUser.fullname || '';
-  document.getElementById('editEmail').value = currentUser.email || '';
-  document.getElementById('editPhone').value = currentUser.phone || '';
-  
-  const gender = currentUser.gender || 'Nam';
-  const genderRadio = document.querySelector(`input[name="gender"][value="${gender}"]`);
-  if (genderRadio) genderRadio.checked = true;
-  
-  document.getElementById('editDob').value = currentUser.dob || '';
-  document.getElementById('editSchool').value = currentUser.school || '';
-  document.getElementById('editFaculty').value = currentUser.faculty || '';
-  document.getElementById('editStudentId').value = currentUser.studentId || '';
-  
-  editModal.style.display = 'block';
-}
-
-async function saveProfile(e) {
-  e.preventDefault();
-  
-  if (!currentUserId) return;
-  
+// === Main: load profile from applications by email ===
+async function loadProfileForEmail(email, googleUser) {
   try {
-    const genderRadio = document.querySelector('input[name="gender"]:checked');
-    const gender = genderRadio ? genderRadio.value : 'Nam';
-    
-    const updatedData = {
-      fullname: document.getElementById('editFullName').value.trim(),
-      email: document.getElementById('editEmail').value.trim(),
-      phone: document.getElementById('editPhone').value.trim(),
-      gender: gender,
-      dob: document.getElementById('editDob').value.trim(),
-      school: document.getElementById('editSchool').value.trim(),
-      faculty: document.getElementById('editFaculty').value.trim(),
-      studentId: document.getElementById('editStudentId').value.trim(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    await updateDoc(doc(db, "users", currentUserId), updatedData);
-    
-    currentUser = { ...currentUser, ...updatedData };
-    updateProfileUI(currentUser);
-    updateUserAvatar(currentUser);
-    
-    editModal.style.display = 'none';
-    toastr.success('Cập nhật hồ sơ thành công');
-  } catch (error) {
-    console.error('Error updating profile:', error);
-    toastr.error('Cập nhật hồ sơ thất bại');
+    // Query applications collection for this email
+    const q = query(collection(db, "applications"), where("email", "==", email));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      // No application -> show onboarding only
+      if (profileSection) profileSection.style.display = 'none';
+      if (roundSection) roundSection.style.display = 'none';
+      if (onboardingSection) onboardingSection.style.display = 'block';
+
+      // Make startOnboardingBtn redirect to application form (adjust path if needed)
+      if (startOnboardingBtn) {
+        startOnboardingBtn.onclick = () => {
+          // Replace 'application.html' with actual form path if different
+          window.location.href = 'application.html';
+        };
+      }
+
+      if (typeof toastr !== 'undefined') toastr.info('Bạn chưa nộp đơn - vui lòng điền form ứng tuyển');
+      return;
+    }
+
+    // Use the FIRST matching application (should be unique)
+    const appDoc = snap.docs[0];
+    const data = appDoc.data();
+
+    // Display profile section
+    if (onboardingSection) onboardingSection.style.display = 'none';
+    if (profileSection) profileSection.style.display = 'block';
+    if (roundSection) roundSection.style.display = 'block';
+
+    // Fill fields - ensure mapping to your app schema
+    elFullName && (elFullName.textContent = safeText(data.fullname || data.name || data.full_name));
+    elGender && (elGender.textContent = safeText(data.gender));
+    elEmail && (elEmail.textContent = safeText(data.email || email));
+    elPhone && (elPhone.textContent = safeText(data.phone));
+    elDob && (elDob.textContent = safeText(data.birthdate || data.dob));
+    elSchool && (elSchool.textContent = safeText(data.school));
+    // major / faculty - some forms call it 'major' or 'faculty'
+    elFaculty && (elFaculty.textContent = safeText(data.major || data.faculty));
+    elStudentId && (elStudentId.textContent = safeText(data.studentId || data.mssv || data.student_id));
+    // Department(s)
+    let deptText = safeText(data.priority_position || data.priority || data.department || 'Chưa chọn');
+    if (data.secondary_position && data.secondary_position !== 'None') {
+      deptText += ` / ${data.secondary_position}`;
+    } else if (data.secondary && data.secondary !== 'None') {
+      deptText += ` / ${data.secondary}`;
+    }
+    elDepartment && (elDepartment.textContent = deptText);
+
+    // Avatar: always take from Google
+    if (googleUser && googleUser.photoURL) {
+      setAvatarFromGoogle(googleUser.photoURL);
+    } else {
+      // If googleUser missing photo, still try application-stored photo if any
+      const photoFromApp = data.photoURL || data.avatar;
+      setAvatarFromGoogle(photoFromApp);
+    }
+
+    // Status & round
+    const appStatus = data.status || data.overall_status || data.application_status || 'new';
+    elCurrentRound && (elCurrentRound.textContent = formatRoundTextByStatus(appStatus));
+    if (elStatusBadge) {
+      elStatusBadge.textContent = (appStatus || 'Chưa xác định');
+      elStatusBadge.className = 'badge';
+      const sLower = (appStatus || '').toString().toLowerCase();
+      if (sLower.includes('accept') || sLower.includes('đã duyệt') || sLower.includes('accepted')) {
+        elStatusBadge.classList.add('badge-success');
+      } else if (sLower.includes('reject') || sLower.includes('từ chối') || sLower.includes('rejected')) {
+        elStatusBadge.classList.add('badge-danger');
+      } else if (sLower.includes('review') || sLower.includes('reviewed')) {
+        elStatusBadge.classList.add('badge-primary');
+      } else {
+        elStatusBadge.classList.add('badge-warning');
+      }
+    }
+
+    // Progress bar & round cards
+    const mappedRound = mapStatusToRound(appStatus);
+    updateProgressBarByRound(mappedRound);
+
+    // OPTIONAL: populate round-specific cards if your application doc includes round_1, round_2...
+    // We try to render round_i fields if exist to keep parity with old UI:
+    for (let i = 1; i <= 4; i++) {
+      const roundKey = `round_${i}`;
+      const roundCard = document.getElementById(`round${i}Details`);
+      if (!roundCard) continue;
+
+      // Hide all first, we'll show only up to mappedRound
+      roundCard.style.display = (i <= mappedRound) ? 'block' : 'none';
+
+      if (i <= mappedRound) {
+        // If doc has a block like round_1, use it
+        const rdata = data[roundKey] || {};
+        const statusEl = document.getElementById(`round${i}Status`);
+        const statusTextEl = document.getElementById(`round${i}StatusText`);
+        if (statusEl) statusEl.textContent = rdata.status || safeText(rdata.state || 'Chưa cập nhật');
+        if (statusTextEl) statusTextEl.textContent = rdata.status || rdata.state || 'Chưa cập nhật';
+
+        // Fill specific fields for rounds (best-effort)
+        if (i === 1) {
+          const dl = document.getElementById('round1Deadline');
+          const g = document.getElementById('round1Guide');
+          if (dl) dl.textContent = rdata.deadline || 'Chưa cập nhật';
+          if (g) g.textContent = rdata.guide || 'Hoàn thành form đăng ký';
+        }
+        if (i === 2) {
+          const t = document.getElementById('round2Time');
+          const loc = document.getElementById('round2Location');
+          const members = document.getElementById('round2Members');
+          if (t) t.textContent = rdata.time || 'Chưa cập nhật';
+          if (loc) loc.textContent = rdata.location || 'Chưa cập nhật';
+          if (members) members.textContent = (rdata.members || rdata.panel || 'Chưa cập nhật');
+        }
+        if (i === 3) {
+          const ch = document.getElementById('round3Challenge');
+          const dl = document.getElementById('round3Deadline');
+          const mats = document.getElementById('round3Materials');
+          if (ch) ch.textContent = rdata.challenge || rdata.task || 'Chưa cập nhật';
+          if (dl) dl.textContent = rdata.deadline || 'Chưa cập nhật';
+          if (mats) mats.textContent = rdata.materials || 'Chưa cập nhật';
+        }
+        if (i === 4) {
+          const t = document.getElementById('round4Time');
+          const loc = document.getElementById('round4Location');
+          const interviewer = document.getElementById('round4Interviewer');
+
+          // Round 4 could store scheduleData + slots as in old code - we try to display friendly text
+          if (rdata.slots && Array.isArray(rdata.slots) && rdata.slots.length > 0) {
+            const s = rdata.slots[0];
+            // try scheduleData.slots
+            const slotObj = rdata.scheduleData?.slots?.[s] || null;
+            if (slotObj) {
+              t && (t.innerHTML = `<strong>Ca ${s + 1}: ${slotObj.start} - ${slotObj.end} ngày ${rdata.date || rdata.scheduleDate || 'Chưa cập nhật'}</strong>`);
+            } else {
+              t && (t.textContent = 'Đã đăng ký ca phỏng vấn');
+            }
+          } else {
+            t && (t.textContent = rdata.time || 'Chưa đăng ký ca phỏng vấn');
+          }
+          loc && (loc.textContent = rdata.location || rdata.venue || 'Chưa cập nhật');
+          interviewer && (interviewer.textContent = rdata.members || rdata.interviewer || 'Chưa cập nhật');
+        }
+      }
+    }
+
+  } catch (err) {
+    console.error('Lỗi khi load profile từ applications:', err);
+    if (typeof toastr !== 'undefined') toastr.error('Lỗi khi tải hồ sơ: ' + err.message);
   }
 }
 
-async function saveOnboardingData(e) {
-  e.preventDefault();
-  
-  const auth = getAuth();
-  const user = auth.currentUser;
-  
+// === Auth handling ===
+onAuthStateChanged(auth, (user) => {
   if (!user) {
-    toastr.error('Người dùng chưa đăng nhập');
+    // not logged in -> redirect to login
+    window.location.href = 'login.html';
     return;
   }
-  
-  try {
-    const genderRadio = document.querySelector('input[name="onboardGender"]:checked');
-    const gender = genderRadio ? genderRadio.value : 'Nam';
-    const department = document.getElementById('onboardDepartment').value || 'Chưa chọn';
-    
-    const userData = {
-      fullname: document.getElementById('onboardFullName').value.trim(),
-      email: document.getElementById('onboardEmail').value.trim(),
-      phone: document.getElementById('onboardPhone').value.trim(),
-      gender: gender,
-      dob: document.getElementById('onboardDob').value.trim(),
-      school: document.getElementById('onboardSchool').value.trim(),
-      faculty: document.getElementById('onboardFaculty').value.trim(),
-      studentId: document.getElementById('onboardStudentId').value.trim(),
-      department: department,
-      status: "Chờ xử lý",
-      current_round: 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      round_1: {
-        status: "Chưa bắt đầu",
-        deadline: "15/07/2025",
-        guide: "Hoàn thành form đăng ký"
+
+  // When logged in, check applications
+  loadProfileForEmail(user.email, user);
+
+  // Wire logout
+  if (logoutBtn) {
+    logoutBtn.onclick = async () => {
+      try {
+        await signOut(auth);
+        window.location.href = 'login.html';
+      } catch (e) {
+        console.error('Logout failed', e);
+        if (typeof toastr !== 'undefined') toastr.error('Đăng xuất thất bại');
       }
     };
-    
-    await setDoc(doc(db, "users", user.uid), userData);
-    
-    currentUser = userData;
-    currentUserId = user.uid;
-    updateProfileUI(currentUser);
-    updateRoundProgress(1);
-    showRoundDetails(1);
-    updateUserAvatar({
-      ...currentUser,
-      photoURL: user.photoURL
-    });
-    
-    document.getElementById('profileSection').style.display = 'block';
-    document.getElementById('roundSection').style.display = 'block';
-    document.getElementById('onboardingSection').style.display = 'none';
-    onboardingModal.style.display = 'none';
-    
-    toastr.success('Đăng ký hồ sơ thành công!');
-  } catch (error) {
-    console.error('Lỗi khi lưu dữ liệu:', error);
-    toastr.error('Đăng ký hồ sơ thất bại: ' + error.message);
   }
-}
 
-// ========== AUTH FUNCTIONS ==========
-async function logout() {
-  try {
-    await signOut(auth);
-    window.location.href = '/index.html';
-  } catch (error) {
-    console.error('Logout error:', error);
-    toastr.error('Đăng xuất thất bại');
-  }
-}
-
-// ========== INITIALIZATION ==========
-function initEventListeners() {
-  // Logout button
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', logout);
-  }
-  
-  // Refresh button
+  // Refresh
   if (refreshBtn) {
-    refreshBtn.addEventListener('click', () => {
-      if (currentUserId) {
-        loadUserData(currentUserId);
-        toastr.info('Đang làm mới dữ liệu...');
-      }
-    });
-  }
-  
-  // Edit profile button
-  if (editProfileBtn) {
-    editProfileBtn.addEventListener('click', showEditModal);
-  }
-  
-  // Start onboarding button
-  if (startOnboardingBtn) {
-    startOnboardingBtn.addEventListener('click', () => {
-      if (onboardingModal) onboardingModal.style.display = 'block';
-    });
-  }
-  
-  // Close modal buttons
-  if (closeModalButtons.length) {
-    closeModalButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (editModal) editModal.style.display = 'none';
-        if (onboardingModal) onboardingModal.style.display = 'none';
-      });
-    });
-  }
-  
-  // Close modal when clicking outside
-  window.addEventListener('click', (event) => {
-    if (editModal && event.target === editModal) {
-      editModal.style.display = 'none';
-    }
-    if (onboardingModal && event.target === onboardingModal) {
-      onboardingModal.style.display = 'none';
-    }
-  });
-  
-  // Form submissions
-  if (editForm) {
-    editForm.addEventListener('submit', (e) => saveProfile(e));
-  }
-  
-  if (onboardingForm) {
-    onboardingForm.addEventListener('submit', (e) => saveOnboardingData(e));
-  }
-}
-
-// Auth state listener
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log('User signed in:', user);
-    currentUserId = user.uid;
-    loadUserData(user.uid, user.email);
-  } else {
-    console.log('No user signed in, redirecting...');
-    window.location.href = '/index.html';
+    refreshBtn.onclick = () => {
+      // reload data
+      loadProfileForEmail(user.email, user);
+      if (typeof toastr !== 'undefined') toastr.info('Đang làm mới dữ liệu...');
+    };
   }
 });
 
-// Initialize when DOM is loaded
+// safety: if DOM loaded and no auth yet, still hide sections
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM fully loaded');
-  initEventListeners();
+  if (profileSection) profileSection.style.display = 'none';
+  if (roundSection) roundSection.style.display = 'none';
+  if (onboardingSection) onboardingSection.style.display = 'none';
 });

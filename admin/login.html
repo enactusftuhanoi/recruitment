@@ -390,7 +390,6 @@
   const auth = firebase.auth();
   const db = firebase.firestore();
 
-  // Google Auth Provider
   const provider = new firebase.auth.GoogleAuthProvider();
 
   // Login button
@@ -411,18 +410,31 @@
 
         try {
           const querySnapshot = await db.collection("account")
-                                      .where("email", "==", email)
-                                      .get();
+            .where("email", "==", email)
+            .get();
 
           if (!querySnapshot.empty) {
             const accountData = querySnapshot.docs[0].data();
 
-            // Lưu session: email + role + department
+            // Lưu session
             sessionStorage.setItem("email", email);
             sessionStorage.setItem("role", accountData.role || "member");
+            sessionStorage.setItem("fullname", accountData.fullname || user.displayName || "");
             sessionStorage.setItem("department", accountData.department || "");
 
-            window.location.href = "response.html";
+            // Điều hướng theo role
+            if (accountData.role === "member") {
+              window.location.href = "response.html";
+            } else if (accountData.role === "admin" || accountData.role === "superadmin") {
+              window.location.href = "dashboard.html";
+            } else {
+              await auth.signOut();
+              loginError.textContent = "Tài khoản không có quyền truy cập.";
+              loginError.style.display = 'block';
+              btnText.textContent = 'Login with Google';
+              loginBtn.disabled = false;
+            }
+
           } else {
             await auth.signOut();
             loginError.textContent = "Email chưa được cấp quyền trong hệ thống.";

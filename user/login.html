@@ -387,22 +387,25 @@
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script> <!-- cần có -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
   <script>
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
-      authDomain: "enactusftuhanoi-tracuu.firebaseapp.com",
-      projectId: "enactusftuhanoi-tracuu",
-      storageBucket: "enactusftuhanoi-tracuu",
-      messagingSenderId: "611356979403",
-      appId: "1:611356979403:web:2c9a4cffb2b323ce3deb4e"
-    };
+  // --- Firebase config ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyAOP2j0qV0Ge-q2-Y9zo9Qc3eLmgtVOK3k",
+    authDomain: "recruitment-enactusftuhanoi.firebaseapp.com",
+    projectId: "recruitment-enactusftuhanoi",
+    storageBucket: "recruitment-enactusftuhanoi.firebasestorage.app",
+    messagingSenderId: "658928769643",
+    appId: "1:658928769643:web:ef4e26633b7c41c922ef2e",
+    measurementId: "G-BJT7ZPKYE3"
+  };
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
+    const db = firebase.firestore();
 
     // Google Auth Provider
     const provider = new firebase.auth.GoogleAuthProvider();
@@ -418,17 +421,33 @@
       loginBtn.disabled = true;
       
       firebase.auth()
-        .signInWithPopup(provider)
-        .then((result) => {
-          const user = result.user;
-          showUserProfile(user);
-        })
-        .catch((error) => {
-          loginError.textContent = error.message;
-          loginError.style.display = 'block';
-          btnText.textContent = 'Login with Google';
-          loginBtn.disabled = false;
-        });
+      .signInWithPopup(provider)
+      .then((result) => {
+        const user = result.user;
+        showUserProfile(user);
+
+        // 🔽 thêm đoạn check ứng viên
+        db.collection("applications")
+          .where("email", "==", user.email)
+          .get()
+          .then((snap) => {
+            if (!snap.empty) {
+              // đã nộp đơn → profile
+              window.location.href = "/user/profile.html";
+            } else {
+              // chưa nộp đơn → form
+              window.location.href = "/user/form.html";
+            }
+          })
+          .catch((err) => {
+            console.error("Error checking applications:", err);
+            alert("Lỗi khi kiểm tra thông tin ứng viên");
+          });
+      })
+      .catch((error) => {
+        console.error("Login failed:", error);
+        alert("Login failed: " + error.message);
+      });
     });
 
     // Logout
