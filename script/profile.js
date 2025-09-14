@@ -46,6 +46,8 @@ const logoutBtn = document.getElementById('logoutBtn');
 const refreshBtn = document.getElementById('refreshBtn');
 const editProfileBtn = document.getElementById('editProfileBtn');
 const startOnboardingBtn = document.getElementById('startOnboardingBtn');
+const calendarBtn = document.getElementById('calendarBtn');
+
 
 const profileSection = document.getElementById('profileSection');
 const onboardingSection = document.getElementById('onboardingSection');
@@ -61,7 +63,7 @@ const elPhone = document.getElementById('userPhone');
 const elDob = document.getElementById('userDob');
 const elSchool = document.getElementById('userSchool');
 const elFaculty = document.getElementById('userFaculty');
-const elStudentId = document.getElementById('userStudentId');
+const elFacebook = document.getElementById('userFacebook');
 const elDepartment = document.getElementById('userDepartment');
 const elCurrentRound = document.getElementById('userCurrentRound');
 const elStatusBadge = document.getElementById('userStatus');
@@ -71,6 +73,13 @@ const progressBar = document.getElementById('progressBar');
 
 // hide edit button (profile is read-only, data comes from applications)
 if (editProfileBtn) editProfileBtn.style.display = 'none';
+
+// Calendar redirect
+if (calendarBtn) {
+  calendarBtn.onclick = () => {
+    window.location.href = 'calendar.html'; // đổi đường dẫn nếu file khác
+  };
+}
 
 // === utility functions ===
 function safeText(value, fallback = 'Chưa cập nhật') {
@@ -220,7 +229,7 @@ async function loadProfileForEmail(email, googleUser) {
     elSchool && (elSchool.textContent = safeText(data.school));
     // major / faculty - some forms call it 'major' or 'faculty'
     elFaculty && (elFaculty.textContent = safeText(data.major || data.faculty));
-    elStudentId && (elStudentId.textContent = safeText(data.studentId || data.mssv || data.student_id));
+    elFacebook && (elFacebook.textContent = safeText(data.Facebook || data.facebook));
     // Department(s)
     let deptText = safeText(data.priority_position || data.priority || data.department || 'Chưa chọn');
     if (data.secondary_position && data.secondary_position !== 'None') {
