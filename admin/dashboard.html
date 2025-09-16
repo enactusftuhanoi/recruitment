@@ -431,6 +431,23 @@
             color: var(--gray-500);
         }
 
+        .app-input {
+          width: 100%;
+          padding: 6px 10px;
+          border: 1px solid var(--gray-300);
+          border-radius: var(--border-radius);
+          font-size: 14px;
+        }
+
+        .app-select {
+          width: 100%;
+          padding: 6px 10px;
+          border: 1px solid var(--gray-300);
+          border-radius: var(--border-radius);
+          font-size: 14px;
+          background: #fff;
+        }
+
         .department-badge {
             display: inline-block;
             padding: 4px 8px;
@@ -448,6 +465,28 @@
         .department-secondary {
             background-color: var(--gray-100);
             color: var(--gray-600);
+        }
+
+        /* Department badge color by status */
+        .department-badge.status-pass {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+        .department-badge.status-not-pass {
+            background-color: var(--error-light);
+            color: var(--error);
+        }
+        .department-badge.status-pending {
+            background-color: var(--warning-light);
+            color: var(--warning);
+        }
+        .department-badge.status-voted {
+            background-color: var(--primary);
+            color: var(--gray-800);
+        }
+        .department-badge.status-interviewed {
+            background-color: var(--info-light);
+            color: var(--info);
         }
 
         .status-badge {
@@ -486,6 +525,14 @@
         .status-voted {
             background-color: var(--primary);
             color: var(--gray-800);
+        }
+        
+        .status-success {
+          background-color: rgb(252, 217, 15);
+          color: rgba(30, 30, 30, 0.692);
+          font-weight: bold;
+          padding: 4px 8px;
+          border-radius: 12px;
         }
 
         .action-btn {
@@ -587,6 +634,24 @@
 
         .modal-body {
             padding: 24px;
+        }
+
+        .row-disabled {
+          opacity: 0.55;
+          pointer-events: auto; /* vẫn cho copy text, nhưng inputs bên trong disabled */
+          background: #fafafa;
+        }
+
+        /* đảm bảo input disabled trông khác */
+        .row-disabled .app-input[disabled],
+        .row-disabled .app-select[disabled] {
+          background: #f5f5f5;
+          color: #888;
+          border-color: #e5e5e5;
+        }
+        .row-disabled .save-btn[disabled] {
+          opacity: 0.6;
+          cursor: not-allowed;
         }
 
         /* Responsive */
@@ -780,12 +845,13 @@
                     <label class="filter-label">Trạng thái</label>
                     <select class="filter-select" id="filter-status">
                         <option value="">Tất cả trạng thái</option>
-                        <option value="new">Mới</option>
-                        <option value="pending">Đang chờ</option>
+                        <option value="new">New</option>
+                        <option value="pending">Pending</option>
                         <option value="pass">Pass</option>
                         <option value="not-pass">Not pass</option>
-                        <option value="interviewed">Đã phỏng vấn</option>
-                        <option value="voted">Đã bình chọn</option>
+                        <option value="interviewed">Interviewed</option>
+                        <option value="voted">Voted</option>
+                        <option value="success">Success</option>
                     </select>
                 </div>
             </div>
@@ -808,6 +874,105 @@
                         <!-- Data will be populated by JavaScript -->
                     </tbody>
                 </table>
+            </div>
+            <!-- Round 1 Content -->
+            <div id="round1-content" class="round-content" style="display:none;">
+
+              <table class="applications-table">
+                <thead>
+                  <tr>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>SĐT</th>
+                    <th>Ban ứng tuyển</th>
+                    <th>Loại đơn</th>
+                    <th>Thời gian</th>
+                    <th>Link</th>
+                    <th>Ghi chú</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody id="round1-table-body"></tbody>
+              </table>
+            </div>
+            <!-- Round 2 Content -->
+            <div id="round2-content" class="round-content" style="display:none;">
+              <table class="applications-table">
+                <thead>
+                  <tr>
+                    <th>Họ tên</th>
+                    <th>Ban ứng tuyển</th>
+                    <th>Thời gian</th>
+                    <th>Địa điểm / Link</th>
+                    <th>Thành viên nhóm</th>
+                    <th>Hình thức</th>
+                    <th>Ghi chú</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody id="round2-table-body">
+                  <!-- Render ứng viên round2 -->
+                </tbody>
+              </table>
+            </div>
+            <!-- Round 3 Content -->
+            <div id="round3-content" class="round-content" style="display:none;">
+              <table class="applications-table">
+                <thead>
+                  <tr>
+                    <th>Họ tên</th>
+                    <th>Ban ứng tuyển</th>
+                    <th>Team</th>
+                    <th>Tên team</th>
+                    <th>Advisor</th>
+                    <th>Thành viên nhóm</th>
+                    <th>Pitching (thời gian)</th>
+                    <th>Pitching (địa điểm / link)</th>
+                    <th>Pitching (STT)</th>
+                    <th>Tài liệu</th>
+                    <th>Ghi chú</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody id="round3-table-body"></tbody>
+              </table>
+            </div>
+            <!-- Round 4 Content -->
+            <div id="round4-content" class="round-content" style="display:none;">
+              <table class="applications-table">
+                <thead>
+                  <tr>
+                    <th>Họ tên</th>
+                    <th>Ban ứng tuyển</th>
+                    <th>Thời gian</th>
+                    <th>Địa điểm / Link</th>
+                    <th>Người phỏng vấn</th>
+                    <th>Hình thức</th>
+                    <th>Ghi chú</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody id="round4-table-body"></tbody>
+              </table>
+            </div>
+            <!-- Success Content -->
+            <div id="success-content" class="round-content" style="display:none;">
+              <h2>Thành viên chính thức</h2>
+              <table class="applications-table success-table">
+                <thead>
+                  <tr>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>SĐT</th>
+                    <th>Ban chính thức</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody id="success-table-body"></tbody>
+              </table>
             </div>
         </div>
     </div>
@@ -942,76 +1107,85 @@
 
         // Apply UI rules based on role
         function applyRoleUIRules() {
-            // Show/hide system settings menu
-            const systemMenu = document.getElementById('system-settings-menu');
-            if (systemMenu) {
-                systemMenu.style.display = (userRole === 'superadmin') ? 'block' : 'none';
-            }
+          // system settings only visible to superadmin
+          const systemMenu = document.getElementById('system-settings-menu');
+          if (systemMenu) systemMenu.style.display = (userRole === 'superadmin') ? 'block' : 'none';
+
+          // Reset button only superadmin
+          const resetBtn = document.getElementById('reset-rounds-btn');
+          if (resetBtn) resetBtn.style.display = (userRole === 'superadmin') ? 'inline-flex' : 'none';
+
+          // Update-all (bulk) available to superadmin; admin can still use but will only affect their dept
+          // If you want to hide bulk update for admin, uncomment below:
+          // const updateAllBtn = document.getElementById('update-round-btn');
+          // if (updateAllBtn) updateAllBtn.style.display = (userRole === 'superadmin') ? 'inline-flex' : 'none';
+
+          // Members should be redirected out earlier; but if not:
+          if (userRole === 'member') {
+            // optional: block access in UI and redirect to response page
+            window.location.href = 'response.html';
+          }
         }
 
         // Load applications from Firestore
         async function loadApplications() {
+          try {
+            // 1) Lấy toàn bộ (orderBy timestamp nếu có index; nếu chưa có index, bỏ orderBy rồi sort client-side)
+            let snapshot;
             try {
-                let snapshot;
-
-                if (userRole === 'superadmin') {
-                    snapshot = await db.collection('applications')
-                                     .orderBy('timestamp', 'desc')
-                                     .get();
-                } else if (userRole === 'admin') {
-                    // Admin can only see applications from their department
-                    try {
-                        snapshot = await db.collection('applications')
-                                         .where('all_departments', 'array-contains', userDept)
-                                         .orderBy('timestamp', 'desc')
-                                         .get();
-                    } catch (err) {
-                        console.warn('Cannot query with all_departments, fallback to client-side filtering', err);
-                        const allSnap = await db.collection('applications').orderBy('timestamp','desc').get();
-                        // Fallback: filter by department client-side
-                        applications = [];
-                        allSnap.forEach(doc => {
-                            const data = doc.data();
-                            if (data.priority_position === userDept || data.secondary_position === userDept) {
-                                applications.push({ id: doc.id, status: data.status || 'new', ...data });
-                            }
-                        });
-                        renderApplications();
-                        updateStats();
-                        return;
-                    }
-                }
-
-                applications = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-
-                    // map trạng thái vòng 1 từ response
-                    const priority_status = data.priorityAccepted
-                        ? "pass"
-                        : (data.priorityRejected ? "not-pass" : null);
-
-                    const secondary_status = data.secondaryAccepted
-                        ? "pass"
-                        : (data.secondaryRejected ? "not-pass" : null);
-
-                    applications.push({
-                        id: doc.id,
-                        status: data.status || 'new',
-                        priority_position: data.priority_position || null,
-                        secondary_position: data.secondary_position || null,
-                        priority_status,
-                        secondary_status,
-                        ...data
-                    });
-                });
-
-                renderApplications();
-                updateStats();
-            } catch (error) {
-                console.error('Error loading applications:', error);
-                alert('Không thể tải danh sách ứng viên: ' + error.message);
+              // Try with orderBy (if index exists this is faster)
+              snapshot = await db.collection('applications').orderBy('timestamp', 'desc').get();
+            } catch (e) {
+              console.warn('OrderBy failed (index?), falling back to unsorted fetch', e);
+              snapshot = await db.collection('applications').get();
             }
+
+            // 2) Map documents -> ứng dụng
+            const allApps = [];
+            snapshot.forEach(doc => {
+              const data = doc.data();
+              allApps.push({
+                id: doc.id,
+                ...data,
+                // normalize commonly used flat status fields (fallbacks)
+                priority_status: data.priorityAccepted ? 'pass' : (data.priorityRejected ? 'not-pass' : (data.priority_status || null)),
+                secondary_status: data.secondaryAccepted ? 'pass' : (data.secondaryRejected ? 'not-pass' : (data.secondary_status || null)),
+                round2_priority_status: data.round2_priority_status || (data.round2 && data.round2.priority_status) || null,
+                round2_secondary_status: data.round2_secondary_status || (data.round2 && data.round2.secondary_status) || null,
+                round3_priority_status: data.round3_priority_status || (data.round3 && data.round3.priority_status) || null,
+                round3_secondary_status: data.round3_secondary_status || (data.round3 && data.round3.secondary_status) || null,
+                round4_priority_status: data.round4_priority_status || (data.round4 && data.round4.priority_status) || null,
+                round4_secondary_status: data.round4_secondary_status || (data.round4 && data.round4.secondary_status) || null,
+                current_round: data.current_round || 'round1'
+              });
+            });
+
+            // 3) Nếu fallback (không có orderBy), sort client-side by timestamp (tương thích)
+            if (!snapshot.query || !snapshot.query.explicitOrderBy) {
+              allApps.sort((a,b) => {
+                const ta = a.timestamp && a.timestamp.toMillis ? a.timestamp.toMillis() : (a.timestamp || 0);
+                const tb = b.timestamp && b.timestamp.toMillis ? b.timestamp.toMillis() : (b.timestamp || 0);
+                return tb - ta;
+              });
+            }
+
+            // 4) Filter theo role: admin chỉ thấy apps của ban mình; superadmin thấy tất cả
+            if (userRole === 'admin') {
+              applications = allApps.filter(app =>
+                app.priority_position === userDept || app.secondary_position === userDept ||
+                // nếu bạn có all_departments field
+                (Array.isArray(app.all_departments) && app.all_departments.includes(userDept))
+              );
+            } else {
+              applications = allApps; // superadmin / others (member redirected elsewhere)
+            }
+
+            renderApplications();
+            updateStats();
+          } catch (error) {
+            console.error('Error loading applications:', error);
+            alert('Không thể tải danh sách ứng viên: ' + error.message);
+          }
         }
 
         // Render applications to the table
@@ -1072,9 +1246,9 @@
                         </div>
                     </td>
                     <td>
-                        ${renderDepartment(app.priority_position, app.priority_status)}
+                        ${renderDepartment(app.priority_position, getDeptStatusForRound(app, 'priority'))}
                         ${app.secondary_position && app.secondary_position !== 'None' 
-                            ? renderDepartment(app.secondary_position, app.secondary_status) 
+                            ? renderDepartment(app.secondary_position, getDeptStatusForRound(app, 'secondary')) 
                             : ''}
                     </td>
                     <td>${app.email || 'Chưa cung cấp'}</td>
@@ -1102,6 +1276,308 @@
             });
         }
 
+        function renderRound1() {
+          const tbody = document.getElementById('round1-table-body');
+          tbody.innerHTML = '';
+
+          applications.forEach(app => {
+            if (app.current_round !== 'round1') return;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${app.fullname}</td>
+              <td>${app.email}</td>
+              <td>${app.phone || ''}</td>
+              <td>
+                ${renderDepartment(app.priority_position, app.priority_status)}
+                ${app.secondary_position && app.secondary_position !== 'None'
+                  ? renderDepartment(app.secondary_position, app.secondary_status)
+                  : ''}
+              </td>
+              <td>${app.application_type || 'form'}</td>
+              <td>${app.application_type !== 'form' ? (app.round1?.time || '') : ''}</td>
+              <td>${app.application_type !== 'form'
+                ? `<a href="${app.round1?.link || '#'}" target="_blank">Link</a>`
+                : ''}</td>
+              <td>${app.application_type !== 'form' ? (app.round1?.note || '') : ''}</td>
+              <td>
+                <a class="action-btn view-btn" href="/admin/response.html?id=${app.id}" target="_blank">Xem</a>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+
+        function renderRound2() {
+          const tbody = document.getElementById('round2-table-body');
+          tbody.innerHTML = '';
+
+          applications.forEach(app => {
+            if (app.current_round !== 'round2') return;
+
+            // chỉ giữ ban pass vòng 1 (từ response map)
+            const positions = [
+              { type: 'priority', dept: app.priority_position, prev: app.priority_status },
+              { type: 'secondary', dept: app.secondary_position, prev: app.secondary_status }
+            ].filter(pos => pos.dept && pos.dept !== 'null' && pos.prev === 'pass');
+
+            if (positions.length === 0) return;
+
+            positions.forEach((pos, idx) => {
+              if (userRole === 'admin' && pos.dept !== userDept) return;
+
+              const status = app[`round2_${pos.type}_status`] || 'pending';
+              const data = app.round2?.[pos.type] || {};
+
+              // trong renderRound2(), khi build tr.innerHTML
+              const canEditThisBan = canEditBan(app, pos.type); // pos.type = 'priority'|'secondary'
+              const rowClass = canEditThisBan ? '' : 'row-disabled';
+
+              const tr = document.createElement('tr');
+              tr.className = rowClass;
+
+              // nếu tên cần rowspan
+              if (idx === 0) {
+                tr.innerHTML += `<td rowspan="${positions.length}">${app.fullname}</td>`;
+              }
+
+              tr.innerHTML += `
+                <td>${pos.dept}</td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.time || ''}" data-field="${pos.type}.time"></td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.location || ''}" data-field="${pos.type}.location"></td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.members || ''}" data-field="${pos.type}.members"></td>
+                <td>
+                  <select class="app-select" ${!canEditThisBan ? 'disabled' : ''} data-field="${pos.type}.method">
+                    <option value="offline" ${data.method==='offline'?'selected':''}>Offline</option>
+                    <option value="online" ${data.method==='online'?'selected':''}>Online</option>
+                  </select>
+                </td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.note || ''}" data-field="${pos.type}.note"></td>
+                <td>
+                  <select class="app-select" ${!canEditThisBan ? 'disabled' : ''} data-field="${pos.type}.status">
+                    <option value="pending" ${status==='pending'?'selected':''}>Pending</option>
+                    <option value="pass" ${status==='pass'?'selected':''}>Pass</option>
+                    <option value="not-pass" ${status==='not-pass'?'selected':''}>Not pass</option>
+                  </select>
+                </td>
+                <td>
+                  <button class="action-btn save-btn" data-id="${app.id}" data-type="${pos.type}" ${!canEditThisBan ? 'disabled' : ''}>Lưu</button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          });
+
+          tbody.querySelectorAll('.save-btn').forEach(btn => {
+            btn.addEventListener('click', async (ev) => {
+              const id = btn.dataset.id;
+              const type = btn.dataset.type;
+              const row = btn.closest('tr');
+
+              // tìm app từ bộ nhớ applications
+              const app = applications.find(a => a.id === id);
+              if (!app) { alert('Ứng viên không tồn tại'); return; }
+
+              // kiểm tra quyền
+              if (!canEditBan(app, type)) {
+                alert('Bạn không có quyền chỉnh sửa ban này.');
+                return;
+              }
+
+              // Thu thập inputs
+              const inputs = row.querySelectorAll('[data-field]');
+              const updates = {};
+              inputs.forEach(input => {
+                const [banType, field] = input.dataset.field.split('.');
+                if (banType === type) updates[`round2.${type}.${field}`] = input.value;
+              });
+
+              // trạng thái riêng flat field
+              const statusSelect = row.querySelector('[data-field$=".status"]');
+              if (statusSelect) updates[`round2_${type}_status`] = statusSelect.value;
+
+              try {
+                await db.collection('applications').doc(id).update(updates);
+                alert('Đã lưu!');
+                loadApplications();
+              } catch (err) {
+                console.error(err);
+                alert('Lưu thất bại: ' + (err.message || err));
+              }
+            });
+          });
+        }
+
+        function renderRound3() {
+          const tbody = document.getElementById('round3-table-body');
+          tbody.innerHTML = '';
+
+          applications.forEach(app => {
+            if (app.current_round !== 'round3') return;
+
+            // chỉ giữ ban pass vòng 2
+            const positions = [
+              { type: 'priority', dept: app.priority_position, prev: app.round2_priority_status },
+              { type: 'secondary', dept: app.secondary_position, prev: app.round2_secondary_status }
+            ].filter(pos => pos.dept && pos.dept !== 'null' && pos.prev === 'pass');
+
+            if (positions.length === 0) return;
+
+            positions.forEach((pos, idx) => {
+              if (userRole === 'admin' && pos.dept !== userDept) return;
+
+              const status = app[`round3_${pos.type}_status`] || 'pending';
+              const data = app.round3?.[pos.type] || {};
+
+              const canEditThisBan = canEditBan(app, pos.type);
+              const rowClass = canEditThisBan ? '' : 'row-disabled';
+
+              const tr = document.createElement('tr');
+              tr.className = rowClass;
+
+              if (idx === 0) tr.innerHTML += `<td rowspan="${positions.length}">${app.fullname}</td>`;
+
+              tr.innerHTML += `
+                <td>${pos.dept}</td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.team || ''}" data-field="${pos.type}.team"></td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.teamName || ''}" data-field="${pos.type}.teamName"></td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.advisor || ''}" data-field="${pos.type}.advisor"></td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.members || ''}" data-field="${pos.type}.members"></td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.pitchTime || ''}" data-field="${pos.type}.pitchTime"></td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.pitchLocation || ''}" data-field="${pos.type}.pitchLocation"></td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.pitchOrder || ''}" data-field="${pos.type}.pitchOrder"></td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.document || ''}" data-field="${pos.type}.document"></td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.note || ''}" data-field="${pos.type}.note"></td>
+                <td>
+                  <select class="app-select" ${!canEditThisBan ? 'disabled' : ''} data-field="${pos.type}.status">
+                    <option value="pending" ${status==='pending'?'selected':''}>Pending</option>
+                    <option value="pass" ${status==='pass'?'selected':''}>Pass</option>
+                    <option value="not-pass" ${status==='not-pass'?'selected':''}>Not pass</option>
+                  </select>
+                </td>
+                <td><button class="action-btn save-btn" data-id="${app.id}" data-type="${pos.type}" ${!canEditThisBan ? 'disabled' : ''}>Lưu</button></td>
+              `;
+              tbody.appendChild(tr);
+            });
+          });
+
+          tbody.querySelectorAll('.save-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const id = btn.dataset.id;
+              const type = btn.dataset.type;
+              const row = btn.closest('tr');
+              const app = applications.find(a => a.id === id);
+              if (!app) { alert('Ứng viên không tồn tại'); return; }
+
+              // 🔒 Check quyền
+              if (!canEditBan(app, type)) {
+                alert('Bạn không có quyền chỉnh sửa ban này.');
+                return;
+              }
+
+              const inputs = row.querySelectorAll('[data-field]');
+              const updates = {};
+
+              inputs.forEach(input => {
+                const [banType, field] = input.dataset.field.split('.');
+                if (banType === type) updates[`round3.${type}.${field}`] = input.value;
+              });
+
+              const statusSelect = row.querySelector('[data-field$=".status"]');
+              if (statusSelect) updates[`round3_${type}_status`] = statusSelect.value;
+
+              await db.collection('applications').doc(id).update(updates);
+              alert(`✅ Đã lưu thay đổi vòng 3 (${type})`);
+            });
+          });
+        }
+
+        function renderRound4() {
+          const tbody = document.getElementById('round4-table-body');
+          tbody.innerHTML = '';
+
+          applications.forEach(app => {
+            if (app.current_round !== 'round4') return;
+
+            // chỉ giữ ban pass vòng 3
+            const positions = [
+              { type: 'priority', dept: app.priority_position, prev: app.round3_priority_status },
+              { type: 'secondary', dept: app.secondary_position, prev: app.round3_secondary_status }
+            ].filter(pos => pos.dept && pos.dept !== 'null' && pos.prev === 'pass');
+
+            if (positions.length === 0) return;
+
+            positions.forEach((pos, idx) => {
+              if (userRole === 'admin' && pos.dept !== userDept) return;
+
+              const status = app[`round4_${pos.type}_status`] || 'pending';
+              const data = app.round4?.[pos.type] || {};
+
+              const canEditThisBan = canEditBan(app, pos.type);
+              const rowClass = canEditThisBan ? '' : 'row-disabled';
+
+              const tr = document.createElement('tr');
+              tr.className = rowClass;
+
+              if (idx === 0) tr.innerHTML += `<td rowspan="${positions.length}">${app.fullname}</td>`;
+
+              tr.innerHTML += `
+                <td>${pos.dept}</td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.time || ''}" data-field="${pos.type}.time"></td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.location || ''}" data-field="${pos.type}.location"></td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.interviewer || ''}" data-field="${pos.type}.interviewer"></td>
+                <td>
+                  <select class="app-select" ${!canEditThisBan ? 'disabled' : ''} data-field="${pos.type}.method">
+                    <option value="offline" ${data.method==='offline'?'selected':''}>Offline</option>
+                    <option value="online" ${data.method==='online'?'selected':''}>Online</option>
+                  </select>
+                </td>
+                <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.note || ''}" data-field="${pos.type}.note"></td>
+                <td>
+                  <select class="app-select" ${!canEditThisBan ? 'disabled' : ''} data-field="${pos.type}.status">
+                    <option value="pending" ${status==='pending'?'selected':''}>Pending</option>
+                    <option value="interviewed" ${status==='interviewed'?'selected':''}>Interviewed</option>
+                    <option value="pass" ${status==='pass'?'selected':''}>Pass</option>
+                    <option value="not-pass" ${status==='not-pass'?'selected':''}>Not pass</option>
+                  </select>
+                </td>
+                <td><button class="action-btn save-btn" data-id="${app.id}" data-type="${pos.type}" ${!canEditThisBan ? 'disabled' : ''}>Lưu</button></td>
+              `;
+              tbody.appendChild(tr);
+            });
+          });
+
+          tbody.querySelectorAll('.save-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const id = btn.dataset.id;
+              const type = btn.dataset.type;
+              const row = btn.closest('tr');
+              const app = applications.find(a => a.id === id);
+              if (!app) { alert('Ứng viên không tồn tại'); return; }
+
+              // 🔒 Check quyền
+              if (!canEditBan(app, type)) {
+                alert('Bạn không có quyền chỉnh sửa ban này.');
+                return;
+              }
+
+              const inputs = row.querySelectorAll('[data-field]');
+              const updates = {};
+
+              inputs.forEach(input => {
+                const [banType, field] = input.dataset.field.split('.');
+                if (banType === type) updates[`round4.${type}.${field}`] = input.value;
+              });
+
+              const statusSelect = row.querySelector('[data-field$=".status"]');
+              if (statusSelect) updates[`round4_${type}_status`] = statusSelect.value;
+
+              await db.collection('applications').doc(id).update(updates);
+              alert(`✅ Đã lưu thay đổi vòng 4 (${type})`);
+            });
+          });
+        }
+
         // Update statistics
         function updateStats() {
             document.getElementById('total-applicants').textContent = applications.length;
@@ -1117,12 +1593,10 @@
         }
 
         function renderDepartment(code, status) {
-            let colorClass = "department-secondary"; // mặc định xám
-            if (status === "pass") colorClass = "status-pass";
-            if (status === "not-pass") colorClass = "status-not-pass";
-
+            // nếu có status -> map sang class màu đặc thù, nếu không -> default gray badge
+            const badgeClass = status ? `department-badge ${getStatusClass(status)}` : 'department-badge department-secondary';
             return `
-                <span class="department-badge ${colorClass}">
+                <span class="${badgeClass}">
                     ${getDepartmentName(code)}
                 </span>
             `;
@@ -1192,6 +1666,30 @@
         }
 
         // Helper functions
+        // Kiểm tra admin có quyền chỉnh cho ứng viên cụ thể không
+        function canEditApplication(app) {
+          if (userRole === 'superadmin') return true;
+          if (userRole === 'admin') {
+            // admin chỉ thao tác nếu là ban priority hoặc secondary hoặc all_departments chứa userDept
+            const p = app.priority_position;
+            const s = app.secondary_position;
+            const arr = Array.isArray(app.all_departments) ? app.all_departments : [];
+            return (p === userDept) || (s === userDept) || arr.includes(userDept);
+          }
+          return false; // member không được chỉnh
+        }
+
+        // Kiểm tra admin có quyền chỉnh riêng 1 ban (priority/secondary) không
+        function canEditBan(app, banType) { // banType = 'priority' hoặc 'secondary'
+          if (userRole === 'superadmin') return true;
+          if (userRole === 'admin') {
+            const dept = (banType === 'priority') ? app.priority_position : app.secondary_position;
+            const arr = Array.isArray(app.all_departments) ? app.all_departments : [];
+            return dept === userDept || arr.includes(userDept);
+          }
+          return false;
+        }
+
         function getDepartmentName(code) {
             switch(code) {
                 case 'MD': return 'Truyền thông';
@@ -1213,6 +1711,38 @@
             }
         }
 
+        function getDeptStatusForRound(app, type /* 'priority'|'secondary' */) {
+          // Trả về trạng thái per-dept theo vòng hiện tại nhưng fallback về vòng trước nếu không tồn tại
+          const round = app.current_round || 'round1';
+
+          // thứ tự ưu tiên lấy trạng thái (từ mới -> cũ)
+          let keys = [];
+          if (round === 'round4') {
+              keys = [`round4_${type}_status`, `round3_${type}_status`, `round2_${type}_status`, `${type}_status`];
+          } else if (round === 'round3') {
+              keys = [`round3_${type}_status`, `round2_${type}_status`, `${type}_status`];
+          } else if (round === 'round2') {
+              keys = [`round2_${type}_status`, `${type}_status`];
+          } else {
+              keys = [`${type}_status`];
+          }
+
+          for (const k of keys) {
+              if (app[k]) return app[k];
+          }
+
+          // Nếu code lưu trạng thái nested (ví dụ round2: { priority: { status: 'pass' } }), cố gắng đọc nested
+          try {
+              if (round === 'round2' && app.round2 && app.round2[type] && app.round2[type].status) return app.round2[type].status;
+              if (round === 'round3' && app.round3 && app.round3[type] && app.round3[type].status) return app.round3[type].status;
+              if (round === 'round4' && app.round4 && app.round4[type] && app.round4[type].status) return app.round4[type].status;
+          } catch (e) {
+              // ignore
+          }
+
+          return null;
+      }
+
         function getStatusClass(status) {
             switch(status) {
                 case 'new': return 'status-new';
@@ -1221,57 +1751,55 @@
                 case 'not-pass': return 'status-not-pass';
                 case 'interviewed': return 'status-interviewed';
                 case 'voted': return 'status-voted';
+                case "success": return "status-success"; // ✅ thêm mới
                 default: return 'status-pending';
             }
         }
 
         function getStatusText(status) {
             switch(status) {
-                case 'new': return 'Mới';
-                case 'pending': return 'Đang chờ';
+                case 'new': return 'New';
+                case 'pending': return 'Pending';
                 case 'pass': return 'Pass';
                 case 'not-pass': return 'Not pass';
-                case 'interviewed': return 'Đã phỏng vấn';
-                case 'voted': return 'Đã bình chọn';
+                case 'interviewed': return 'Interviewed';
+                case 'voted': return 'Voted';
+                case "success": return "Success"; 
                 default: return status;
             }
         }
 
         function computeOverallStatus(application) {
-            const round = application.current_round || "round1";
+          const round = application.current_round || "round1";
 
-            // Nếu đang ở round1 → dùng kết quả từ response
-            if (round === "round1") {
-                const p = application.priority_status;
-                const s = application.secondary_status;
+          // nếu đã là thành viên chính thức thì ưu tiên trả về success
+          if (round === "success" || application.status === "success") {
+              return "success";
+          }
 
-                if (p === "pass" || s === "pass") return "pass";
-                if (p === "not-pass" && (s === "not-pass" || !s)) return "not-pass";
-                return application.status || "new";
-            }
+          // lấy trạng thái per-dept theo vòng
+          const p = getDeptStatusForRound(application, "priority");
+          const s = getDeptStatusForRound(application, "secondary");
 
-            // Nếu ở round2 → check dữ liệu vòng 2, chưa có thì pending
-            if (round === "round2") {
-                return application.round2_status || "pending";
-            }
+          // trạng thái global/nested cho vòng hiện tại (round2.status, round3.status...)
+          const perRoundStatus = application[`${round}_status`] || null;
 
-            // Nếu ở round3 → check dữ liệu vòng 3
-            if (round === "round3") {
-                return application.round3_status || "pending";
-            }
+          // nếu có trạng thái đặc thù (voted/interviewed) -> trả trực tiếp
+          if (perRoundStatus === 'voted' || perRoundStatus === 'interviewed') return perRoundStatus;
 
-            // Nếu ở round4 → check dữ liệu vòng 4
-            if (round === "round4") {
-                return application.round4_status || "pending";
-            }
+          // nếu 1 trong 2 ban pass -> tổng là pass
+          if (p === "pass" || s === "pass") return "pass";
 
-            // Nếu đã success
-            if (round === "success") {
-                return "pass";
-            }
+          // nếu cả 2 ban not-pass -> tổng là not-pass
+          if ((p === "not-pass" && s === "not-pass") || (p === "not-pass" && !s) || (!p && s === "not-pass")) return "not-pass";
 
-            return "pending";
-        }
+          // nếu perRoundStatus explicit pass/not-pass -> dùng nó
+          if (perRoundStatus === "pass" || perRoundStatus === "not-pass") return perRoundStatus;
+
+          // default:
+          if (round === "round1") return application.status || "new";
+          return "pending";
+      }
 
         // Export data functions (simplified for demo)
         function exportData(type) {
@@ -1293,7 +1821,12 @@
             });
         });
 
-        document.getElementById('reset-rounds-btn').addEventListener('click', async () => {
+        document.getElementById('reset-rounds-btn')?.addEventListener('click', async () => {
+            if (userRole !== 'superadmin') {
+              alert('Chỉ superadmin mới có quyền reset dữ liệu vòng.');
+              return;
+            }
+
             if (!confirm("⚠️ Bạn có chắc muốn reset toàn bộ dữ liệu vòng? (Dữ liệu form ứng viên sẽ giữ nguyên)")) {
                 return;
             }
@@ -1333,44 +1866,103 @@
         });
 
         document.getElementById("update-round-btn")?.addEventListener("click", async () => {
-            const newRound = prompt("Bạn muốn chuyển tất cả ứng viên pass sang vòng mấy? (vd: 2, 3, 4)");
-            if (!newRound) return;
+          const newRoundStr = prompt("Bạn muốn chuyển tất cả ứng viên pass sang vòng mấy? (vd: 2,3,4, success)");
+          if (!newRoundStr) return;
 
-            if (!confirm(`⚠️ Bạn có chắc muốn chuyển TẤT CẢ ứng viên đã pass sang vòng ${newRound}?`)) return;
+          let newRound = newRoundStr.toLowerCase();
+          if (["2","3","4"].includes(newRound)) {
+            newRound = parseInt(newRound);
+          } else if (newRound !== "success") {
+            alert("Chỉ hỗ trợ nhập 2, 3, 4 hoặc success.");
+            return;
+          }
 
-            try {
-                const snapshot = await db.collection("applications").get();
-                const batch = db.batch();
+          if (!confirm(`⚠️ Bạn có chắc muốn chuyển TẤT CẢ ứng viên đã pass sang vòng ${newRound}?`)) return;
 
-                snapshot.forEach(doc => {
-                    const data = doc.data();
+          try {
+            const snapshot = await db.collection("applications").get();
+            const batch = db.batch();
+            let updatedCount = 0;
 
-                    // lấy trạng thái tổng
-                    const app = {
-                        ...data,
-                        priority_status: data.priorityAccepted ? "pass" : (data.priorityRejected ? "not-pass" : null),
-                        secondary_status: data.secondaryAccepted ? "pass" : (data.secondaryRejected ? "not-pass" : null),
-                    };
-                    const overallStatus = computeOverallStatus(app);
+            snapshot.forEach(doc => {
+              const data = doc.data();
 
-                    // chỉ pass mới được cập nhật
-                    if (overallStatus === "pass") {
-                        batch.update(doc.ref, {
-                            current_round: "round" + newRound,
-                            status: "in-progress"
-                        });
-                    }
-                });
+              // Nếu đang là admin, chỉ thao tác những app thuộc dept họ
+              if (userRole === 'admin') {
+                const belongs = (data.priority_position === userDept) ||
+                                (data.secondary_position === userDept) ||
+                                (Array.isArray(data.all_departments) && data.all_departments.includes(userDept));
+                if (!belongs) return; // skip
+              }
 
-                await batch.commit();
-                alert(`✅ Đã cập nhật vòng cho tất cả ứng viên pass sang vòng ${newRound}`);
-                loadApplications();
-            } catch (error) {
-                console.error("Lỗi khi cập nhật vòng:", error);
-                alert("❌ Lỗi khi cập nhật vòng: " + error.message);
-            }
+              const tempApp = {
+                ...data,
+                priority_status: data.priorityAccepted ? "pass" : (data.priorityRejected ? "not-pass" : (data.round1 && data.round1.priority_status) || null),
+                secondary_status: data.secondaryAccepted ? "pass" : (data.secondaryRejected ? "not-pass" : (data.round1 && data.round1.secondary_status) || null),
+                round2_priority_status: data.round2_priority_status || null,
+                round2_secondary_status: data.round2_secondary_status || null,
+                round3_priority_status: data.round3_priority_status || null,
+                round3_secondary_status: data.round3_secondary_status || null,
+                round4_priority_status: data.round4_priority_status || null,
+                round4_secondary_status: data.round4_secondary_status || null,
+                current_round: data.current_round || 'round1'
+              };
+
+              if (computeOverallStatus(tempApp) === "pass") {
+                const updates = {};
+
+                if (newRound === 2) {
+                  updates["current_round"] = "round2";
+                  updates["status"] = "in-progress";
+                  if (tempApp.priority_status === "pass") updates["round2_priority_status"] = "pending";
+                  if (tempApp.secondary_status === "pass") updates["round2_secondary_status"] = "pending";
+                }
+
+                if (newRound === 3) {
+                  updates["current_round"] = "round3";
+                  updates["status"] = "in-progress";
+                  if (tempApp.round2_priority_status === "pass") updates["round3_priority_status"] = "pending";
+                  if (tempApp.round2_secondary_status === "pass") updates["round3_secondary_status"] = "pending";
+                }
+
+                if (newRound === 4) {
+                  updates["current_round"] = "round4";
+                  updates["status"] = "in-progress";
+                  if (tempApp.round3_priority_status === "pass") updates["round4_priority_status"] = "pending";
+                  if (tempApp.round3_secondary_status === "pass") updates["round4_secondary_status"] = "pending";
+                }
+
+                if (newRound === "success") {
+                  let finalDept = null;
+                  if (tempApp.round4_priority_status === "pass") {
+                    finalDept = data.priority_position;
+                  } else if (tempApp.round4_secondary_status === "pass") {
+                    finalDept = data.secondary_position;
+                  }
+
+                  if (finalDept) {
+                    updates["current_round"] = "success";
+                    updates["status"] = "success";
+                    updates["final_department"] = finalDept;
+                  }
+                }
+
+                // chỉ update nếu có thay đổi hợp lệ
+                if (Object.keys(updates).length > 0) {
+                  batch.update(doc.ref, updates);
+                  updatedCount++;
+                }
+              }
+            });
+
+            await batch.commit();
+            alert(`✅ Đã cập nhật ${updatedCount} ứng viên pass sang vòng ${newRound}`);
+            loadApplications();
+          } catch (error) {
+            console.error("Lỗi khi cập nhật vòng:", error);
+            alert("❌ Lỗi khi cập nhật vòng: " + error.message);
+          }
         });
-
 
         document.getElementById('refresh-btn').addEventListener('click', () => {
             loadApplications();
@@ -1398,11 +1990,39 @@
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => {
                 const tab = item.getAttribute('data-tab');
-                if (tab) {
-                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                    item.classList.add('active');
-                    document.getElementById('page-title').textContent = item.querySelector('span').textContent;
-                    // In a full implementation, this would load the appropriate tab content
+                if (!tab) return;
+
+                // reset active
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+
+                // đổi tiêu đề
+                document.getElementById('page-title').textContent = item.querySelector('span').textContent;
+
+                // ẩn tất cả nội dung
+                document.querySelectorAll('.round-content').forEach(c => c.style.display = 'none');
+                document.querySelectorAll('.main-dashboard').forEach(c => c.style.display = 'none');
+
+                // hiển thị nội dung phù hợp
+                if (tab === 'dashboard') {
+                    document.querySelectorAll('.main-dashboard').forEach(c => c.style.display = 'block');
+                    renderApplications();
+                }
+                if (tab === 'round1') {
+                  document.getElementById('round1-content').style.display = 'block';
+                  renderRound1();
+                }
+                if (tab === 'round2') {
+                    document.getElementById('round2-content').style.display = 'block';
+                    renderRound2();
+                }
+                if (tab === 'round3') {
+                    document.getElementById('round3-content').style.display = 'block';
+                    renderRound3();
+                }
+                if (tab === 'round4') {
+                    document.getElementById('round4-content').style.display = 'block';
+                    renderRound4();
                 }
             });
         });
