@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin | Enactus FTU Hanoi</title>
-  <link rel="icon" href="assets/icon.png" type="image/png">
+  <link rel="favicon" href="/favicon.ico" type="image/png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css">
   <style>
@@ -633,38 +634,6 @@
   </style>
 </head>
 <body>
-  <!-- Login Section -->
-  <div id="loginBox">
-    <div class="app-container" style="max-width: 500px; margin-top: 100px;">
-      <div class="filter-section" style="text-align: center;">
-        <div class="logo" style="justify-content: center; margin-bottom: 20px;">
-          <div class="logo-icon">
-            <i class="fas fa-lock"></i>
-          </div>
-          <div class="logo-text">ENACTUS ADMIN</div>
-        </div>
-        
-        <h2 style="margin-bottom: 30px; color: var(--primary);">Đăng nhập quản trị</h2>
-        
-        <form id="loginForm">
-          <div class="filter-group" style="margin-bottom: 20px;">
-            <label class="filter-label">Email</label>
-            <input type="email" id="loginEmail" class="filter-input" placeholder="Nhập email quản trị" required>
-          </div>
-          
-          <div class="filter-group" style="margin-bottom: 30px;">
-            <label class="filter-label">Mật khẩu</label>
-            <input type="password" id="loginPassword" class="filter-input" placeholder="Nhập mật khẩu" required>
-          </div>
-          
-          <button type="button" id="loginButton" class="btn btn-primary" style="width: 100%; padding: 12px;">
-            <i class="fas fa-sign-in-alt"></i> Đăng nhập
-          </button>
-        </form>
-      </div>
-    </div>
-  </div>
-
   <!-- Admin Content (hidden until login) -->
   <div id="adminContent" style="display: none;">
     <!-- Header -->
@@ -725,12 +694,21 @@
         <button class="main-tab-btn" data-tab="roundsTab">
           <i class="fas fa-tasks"></i> Quản lý vòng
         </button>
-        <button class="main-tab-btn" data-tab="historyTab">
-          <i class="fas fa-history"></i> Lịch sử hoạt động
-        </button>
         <button class="main-tab-btn" data-tab="settingsTab">
-          <i class="fas fa-cog"></i> Cài đặt
+          <i class="fas fa-cog"></i> Cấp quyền
         </button>
+      </div>
+
+      <div class="mb-3">
+        <label for="round-select">Chuyển tất cả ứng viên pass sang vòng:</label>
+        <select id="round-select" class="form-select">
+          <option value="1">Vòng 1 - Vòng đơn</option>
+          <option value="2">Vòng 2 - Phỏng vấn nhóm</option>
+          <option value="3">Vòng 3 - Thử thách</option>
+          <option value="4">Vòng 4 - Phỏng vấn cá nhân</option>
+          <option value="5">Hoàn thành</option>
+        </select>
+        <button id="update-round-btn" class="btn btn-primary mt-2">Cập nhật vòng</button>
       </div>
       
       <!-- Candidates Tab -->
@@ -751,11 +729,10 @@
               <label class="filter-label">Ban ứng tuyển</label>
               <select id="departmentFilter" class="filter-input">
                 <option value="">Tất cả ban</option>
-                <option value="Nhân sự">Nhân sự</option>
-                <option value="Truyền thông">Truyền thông</option>
-                <option value="Đối ngoại">Đối ngoại</option>
-                <option value="Dự án">Dự án</option>
-                <option value="Sáng tạo">Sáng tạo</option>
+                <option value="HR">Nhân sự</option>
+                <option value="MD">Truyền thông</option>
+                <option value="ER">Đối ngoại</option>
+                <option value="PD">Dự án</option>
               </select>
             </div>
             
@@ -775,9 +752,10 @@
               <label class="filter-label">Trạng thái</label>
               <select id="statusFilter" class="filter-input">
                 <option value="">Tất cả trạng thái</option>
-                <option value="Chờ xử lý">Chờ xử lý</option>
-                <option value="Đã duyệt">Đã duyệt</option>
-                <option value="Từ chối">Từ chối</option>
+                <option value="pending">Pending</option>
+                <option value="pass">Pass</option>
+                <option value="not pass">Not pass</option>
+                <option value="voted">Voted</option>
               </select>
             </div>
           </div>
@@ -790,9 +768,9 @@
               <tr>
                 <th data-sort="fullname">Họ tên</th>
                 <th data-sort="department">Ban ứng tuyển</th>
-                <th data-sort="current_round">Vòng hiện tại</th>
                 <th data-sort="email">Email</th>
                 <th data-sort="phone">SĐT</th>
+                <th data-sort="current_round">Vòng hiện tại</th>
                 <th data-sort="status">Trạng thái</th>
                 <th>Hành động</th>
               </tr>
@@ -835,10 +813,6 @@
             <div class="form-group">
               <label class="form-label">Trạng thái</label>
               <select class="form-control" id="round1StatusSelect">
-                <option value="Chưa bắt đầu">Chưa bắt đầu</option>
-                <option value="Đã nộp">Đã nộp</option>
-                <option value="Đã duyệt">Đã duyệt</option>
-                <option value="Từ chối">Từ chối</option>
               </select>
             </div>
             <button class="btn btn-primary" id="saveRound1Btn">
@@ -846,192 +820,230 @@
             </button>
           </div>
           
-          <!-- Round 2 Content -->
+          <!-- Vòng 2 - Phỏng vấn nhóm -->
           <div id="round2Tab" class="round-tab-content">
+            <h4>Vòng 2: Phỏng vấn nhóm</h4>
+
+            <!-- Ban ưu tiên -->
+            <h5>Ban ưu tiên</h5>
             <div class="form-group">
-              <label class="form-label">Trạng thái</label>
-              <select class="form-control" id="round2StatusSelect">
-                <option value="Chưa bắt đầu">Chưa bắt đầu</option>
-                <option value="Đang chờ">Đang chờ</option>
-                <option value="Đã hoàn thành">Đã hoàn thành</option>
-                <option value="Đã duyệt">Đã duyệt</option>
-                <option value="Từ chối">Từ chối</option>
+              <label id="round2PriorityLabel">Trạng thái (Ban ưu tiên)</label>
+              <select id="round2PriorityStatusSelect" class="form-control">
+                <option value="pending">Pending</option>
+                <option value="pass">Pass</option>
+                <option value="not pass">Not pass</option>
+                <option value="voted">Voted</option>
               </select>
             </div>
-            
             <div class="form-group">
-              <label class="form-label">Thời gian</label>
-              <input type="text" class="form-control" id="round2Time" placeholder="VD: 14:00 - 16:00, Thứ 7 ngày 15/07">
+              <label>Thời gian</label>
+              <input type="datetime-local" id="round2PriorityTime" class="form-control">
             </div>
-            
             <div class="form-group">
-              <label class="form-label">Địa điểm</label>
-              <input type="text" class="form-control" id="round2Location" placeholder="Nhập địa điểm">
+              <label>Địa điểm</label>
+              <input type="text" id="round2PriorityLocation" class="form-control">
             </div>
-            
             <div class="form-group">
-              <label class="form-label">Thành viên nhóm</label>
-              <input type="text" class="form-control" id="round2Members" placeholder="Nhập tên thành viên, cách nhau bằng dấu phẩy">
+              <label>Thành viên nhóm</label>
+              <input type="text" id="round2PriorityMembers" class="form-control" placeholder="Nhập tên các thành viên">
             </div>
-            
             <div class="form-group">
-              <label class="form-label">Ghi chú</label>
-              <textarea class="form-control" id="round2Note" rows="3" placeholder="Nhập ghi chú"></textarea>
+              <label>Ghi chú</label>
+              <textarea id="round2PriorityNote" class="form-control"></textarea>
             </div>
-            
-            <button class="btn btn-primary" id="saveRound2Btn">
-              <i class="fas fa-save"></i> Lưu thông tin
-            </button>
+
+            <hr>
+
+            <!-- Ban dự bị -->
+            <h5>Ban dự bị</h5>
+            <div class="form-group">
+              <label id="round2SecondaryLabel">Trạng thái (Ban ưu tiên)</label>
+              <select id="round2SecondaryStatusSelect" class="form-control">
+                <option value="pending">Pending</option>
+                <option value="pass">Pass</option>
+                <option value="not pass">Not pass</option>
+                <option value="voted">Voted</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Thời gian</label>
+              <input type="datetime-local" id="round2SecondaryTime" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Địa điểm</label>
+              <input type="text" id="round2SecondaryLocation" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Thành viên nhóm</label>
+              <input type="text" id="round2SecondaryMembers" class="form-control" placeholder="Nhập tên các thành viên">
+            </div>
+            <div class="form-group">
+              <label>Ghi chú</label>
+              <textarea id="round2SecondaryNote" class="form-control"></textarea>
+            </div>
+
+            <button class="btn btn-primary mt-3" onclick="saveRoundData(2)">Lưu vòng 2</button>
           </div>
           
-          <!-- Round 3 Content -->
+          <!-- Vòng 3 - Thử thách -->
           <div id="round3Tab" class="round-tab-content">
+            <h4>Vòng 3: Thử thách</h4>
+
+            <!-- Ban ưu tiên -->
+            <h5>Ban ưu tiên</h5>
             <div class="form-group">
-              <label class="form-label">Trạng thái</label>
-              <select class="form-control" id="round3StatusSelect">
-                <option value="Chưa bắt đầu">Chưa bắt đầu</option>
-                <option value="Đang thực hiện">Đang thực hiện</option>
-                <option value="Đã nộp bài">Đã nộp bài</option>
-                <option value="Đã duyệt">Đã duyệt</option>
-                <option value="Từ chối">Từ chối</option>
+              <label id="round3PriorityLabel">Trạng thái (Ban ưu tiên)</label>
+              <select id="round3PriorityStatusSelect" class="form-control">
+                <option value="pending">Pending</option>
+                <option value="pass">Pass</option>
+                <option value="not pass">Not pass</option>
+                <option value="voted">Voted</option>
               </select>
             </div>
-            
             <div class="form-group">
-              <label class="form-label">Đề bài</label>
-              <textarea class="form-control" id="round3Challenge" rows="3" placeholder="Nhập đề bài thử thách"></textarea>
+              <label>Đề bài thử thách</label>
+              <input type="text" id="round3PriorityChallenge" class="form-control">
             </div>
-            
             <div class="form-group">
-              <label class="form-label">Tài liệu hướng dẫn</label>
-              <input type="text" class="form-control" id="round3Materials" placeholder="Link tài liệu">
+              <label>Tài liệu</label>
+              <input type="text" id="round3PriorityMaterials" class="form-control">
             </div>
-            
             <div class="form-group">
-              <label class="form-label">Hạn nộp bài</label>
-              <input type="text" class="form-control" id="round3Deadline" placeholder="DD/MM/YYYY HH:MM">
+              <label>Deadline</label>
+              <input type="datetime-local" id="round3PriorityDeadline" class="form-control">
             </div>
-            
             <div class="form-group">
-              <label class="form-label">Thông tin pitching</label>
-              <input type="text" class="form-control" id="round3Pitching" placeholder="Thời gian và địa điểm">
+              <label>Pitching</label>
+              <input type="text" id="round3PriorityPitching" class="form-control">
             </div>
-            
             <div class="form-group">
-              <label class="form-label">Advisor</label>
-              <input type="text" class="form-control" id="round3Advisor" placeholder="Tên advisor">
+              <label>Cố vấn</label>
+              <input type="text" id="round3PriorityAdvisor" class="form-control">
             </div>
-            
-            <button class="btn btn-primary" id="saveRound3Btn">
-              <i class="fas fa-save"></i> Lưu thông tin
-            </button>
+            <div class="form-group">
+              <label>Thành viên nhóm</label>
+              <input type="text" id="round3PriorityMembers" class="form-control" placeholder="Nhập tên các thành viên">
+            </div>
+            <div class="form-group">
+              <label>Ghi chú</label>
+              <textarea id="round3PriorityNote" class="form-control"></textarea>
+            </div>
+
+            <hr>
+
+            <!-- Ban dự bị -->
+            <h5>Ban dự bị</h5>
+            <div class="form-group">
+              <label id="round3SecondaryLabel">Trạng thái (Ban ưu tiên)</label>
+              <select id="round3SecondaryStatusSelect" class="form-control">
+                <option value="pending">Pending</option>
+                <option value="pass">Pass</option>
+                <option value="not pass">Not pass</option>
+                <option value="voted">Voted</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Đề bài thử thách</label>
+              <input type="text" id="round3SecondaryChallenge" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Tài liệu</label>
+              <input type="text" id="round3SecondaryMaterials" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Deadline</label>
+              <input type="datetime-local" id="round3SecondaryDeadline" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Pitching</label>
+              <input type="text" id="round3SecondaryPitching" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Cố vấn</label>
+              <input type="text" id="round3SecondaryAdvisor" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Thành viên nhóm</label>
+              <input type="text" id="round3SecondaryMembers" class="form-control" placeholder="Nhập tên các thành viên">
+            </div>
+            <div class="form-group">
+              <label>Ghi chú</label>
+              <textarea id="round3SecondaryNote" class="form-control"></textarea>
+            </div>
+
+            <button class="btn btn-primary mt-3" onclick="saveRoundData(3)">Lưu vòng 3</button>
           </div>
+
           
-          <!-- Round 4 Content -->
+          <!-- Vòng 4 - Phỏng vấn cá nhân -->
           <div id="round4Tab" class="round-tab-content">
+            <h4>Vòng 4: Phỏng vấn cá nhân</h4>
+
+            <!-- Ban ưu tiên -->
+            <h5>Ban ưu tiên</h5>
             <div class="form-group">
-              <label class="form-label">Trạng thái</label>
-              <select class="form-control" id="round4StatusSelect">
-                <option value="Chưa bắt đầu">Chưa bắt đầu</option>
-                <option value="Đang chờ">Đang chờ</option>
-                <option value="Đã hoàn thành">Đã hoàn thành</option>
-                <option value="Đã duyệt">Đã duyệt</option>
-                <option value="Từ chối">Từ chối</option>
+              <label id="round4PriorityLabel">Trạng thái (Ban ưu tiên)</label>
+              <select id="round4PriorityStatusSelect" class="form-control">
+                <option value="pending">Pending</option>
+                <option value="pass">Pass</option>
+                <option value="not pass">Not pass</option>
+                <option value="voted">Voted</option>
               </select>
             </div>
-            
             <div class="form-group">
-              <label class="form-label">Thời gian</label>
-              <input type="text" class="form-control" id="round4Time" placeholder="VD: 14:00 - 15:00, Thứ 3 ngày 20/07">
+              <label>Thời gian</label>
+              <input type="datetime-local" id="round4PriorityTime" class="form-control">
             </div>
-            
             <div class="form-group">
-              <label class="form-label">Địa điểm</label>
-              <input type="text" class="form-control" id="round4Location" placeholder="Nhập địa điểm">
+              <label>Địa điểm</label>
+              <input type="text" id="round4PriorityLocation" class="form-control">
             </div>
-            
             <div class="form-group">
-              <label class="form-label">Người phỏng vấn</label>
-              <input type="text" class="form-control" id="round4Interviewer" placeholder="Nhập tên người phỏng vấn">
+              <label>Người phỏng vấn</label>
+              <input type="text" id="round4PriorityInterviewer" class="form-control">
             </div>
-            
             <div class="form-group">
-              <label class="form-label">Ghi chú</label>
-              <textarea class="form-control" id="round4Note" rows="3" placeholder="Nhập ghi chú"></textarea>
+              <label>Ghi chú</label>
+              <textarea id="round4PriorityNote" class="form-control"></textarea>
             </div>
-            
-            <button class="btn btn-primary" id="saveRound4Btn">
-              <i class="fas fa-save"></i> Lưu thông tin
-            </button>
+
+            <hr>
+
+            <!-- Ban dự bị -->
+            <h5>Ban dự bị</h5>
+            <div class="form-group">
+              <label id="round4SecondaryLabel">Trạng thái (Ban ưu tiên)</label>
+              <select id="round4SecondaryStatusSelect" class="form-control">
+                <option value="pending">Pending</option>
+                <option value="pass">Pass</option>
+                <option value="not pass">Not pass</option>
+                <option value="voted">Voted</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Thời gian</label>
+              <input type="datetime-local" id="round4SecondaryTime" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Địa điểm</label>
+              <input type="text" id="round4SecondaryLocation" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Người phỏng vấn</label>
+              <input type="text" id="round4SecondaryInterviewer" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Ghi chú</label>
+              <textarea id="round4SecondaryNote" class="form-control"></textarea>
+            </div>
+
+            <button class="btn btn-primary mt-3" onclick="saveRoundData(4)">Lưu vòng 4</button>
           </div>
-        </div>
+
         
         <div id="noCandidateSelected" class="filter-section" style="text-align: center; padding: 50px;">
           <i class="fas fa-user-slash" style="font-size: 48px; color: var(--text-light); margin-bottom: 20px;"></i>
           <h3 style="color: var(--text-light);">Vui lòng chọn ứng viên để quản lý vòng tuyển dụng</h3>
-        </div>
-      </div>
-      
-      <!-- History Tab -->
-      <div id="historyTab" class="main-tab-content">
-        <div class="filter-section">
-          <h3 style="margin-bottom: 15px; color: var(--primary);">
-            <i class="fas fa-history"></i> Lịch sử hoạt động
-          </h3>
-          
-          <div class="filter-row">
-            <div class="filter-group">
-              <label class="filter-label">Chọn ứng viên</label>
-              <select id="historyCandidateSelect" class="filter-input">
-                <option value="">-- Chọn ứng viên --</option>
-              </select>
-            </div>
-            
-            <div class="filter-group">
-              <label class="filter-label">Loại hoạt động</label>
-              <select id="historyTypeFilter" class="filter-input">
-                <option value="">Tất cả hoạt động</option>
-                <option value="status">Thay đổi trạng thái</option>
-                <option value="round">Thay đổi vòng</option>
-                <option value="info">Thay đổi thông tin</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        
-        <div id="historyContent">
-          <div class="filter-section" style="text-align: center; padding: 50px;">
-            <i class="fas fa-clock" style="font-size: 48px; color: var(--text-light); margin-bottom: 20px;"></i>
-            <h3 style="color: var(--text-light);">Vui lòng chọn ứng viên để xem lịch sử hoạt động</h3>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Settings Tab -->
-      <div id="settingsTab" class="main-tab-content">
-        <div class="filter-section">
-          <h3 style="margin-bottom: 15px; color: var(--primary);">
-            <i class="fas fa-cog"></i> Cài đặt hệ thống
-          </h3>
-          
-          <div class="form-group">
-            <label class="form-label">Tên hệ thống</label>
-            <input type="text" class="form-control" id="systemName" value="Enactus FTU Hanoi Recruitment">
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">Thông báo tuyển dụng</label>
-            <textarea class="form-control" id="recruitmentNotice" rows="5" placeholder="Nhập thông báo tuyển dụng"></textarea>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">Thời gian tuyển dụng</label>
-            <input type="text" class="form-control" id="recruitmentPeriod" placeholder="VD: 01/08/2025 - 30/08/2025">
-          </div>
-          
-          <button class="btn btn-primary" id="saveSettingsBtn">
-            <i class="fas fa-save"></i> Lưu cài đặt
-          </button>
         </div>
       </div>
     </div>
@@ -1077,35 +1089,35 @@
           <div class="info-grid">
             <div class="info-card">
               <div class="info-label">Họ và tên</div>
-              <div class="info-value" id="modalFullName">Nguyễn Văn A</div>
+              <div class="info-value" id="modalFullName">Chưa có dữ liệu</div>
             </div>
             <div class="info-card">
               <div class="info-label">Giới tính</div>
-              <div class="info-value" id="modalGender">Nam</div>
+              <div class="info-value" id="modalGender">Chưa có dữ liệu</div>
             </div>
             <div class="info-card">
               <div class="info-label">Email</div>
-              <div class="info-value" id="modalEmail">example@ftu.edu.vn</div>
+              <div class="info-value" id="modalEmail">Chưa có dữ liệu</div>
             </div>
             <div class="info-card">
               <div class="info-label">Số điện thoại</div>
-              <div class="info-value" id="modalPhone">0123456789</div>
+              <div class="info-value" id="modalPhone">Chưa có dữ liệu</div>
             </div>
             <div class="info-card">
               <div class="info-label">Ngày sinh</div>
-              <div class="info-value" id="modalDob">01/01/2000</div>
+              <div class="info-value" id="modalBirthdate">Chưa có dữ liệu</div>
             </div>
             <div class="info-card">
               <div class="info-label">Trường</div>
-              <div class="info-value" id="modalSchool">FTU Hanoi</div>
+              <div class="info-value" id="modalSchool">Chưa có dữ liệu</div>
             </div>
             <div class="info-card">
               <div class="info-label">Khoa/Ngành</div>
-              <div class="info-value" id="modalFaculty">Kinh tế quốc tế</div>
+              <div class="info-value" id="modalMajor">Chưa có dữ liệu</div>
             </div>
             <div class="info-card">
-              <div class="info-label">MSSV</div>
-              <div class="info-value" id="modalStudentId">20201234</div>
+              <div class="info-label">Facebook</div>
+              <div class="info-value" id="modalFacebook">Chưa có dữ liệu</div>
             </div>
           </div>
         </div>
@@ -1146,7 +1158,6 @@
           <option value="Truyền thông">Truyền thông</option>
           <option value="Đối ngoại">Đối ngoại</option>
           <option value="Dự án">Dự án</option>
-          <option value="Sáng tạo">Sáng tạo</option>
         </select>
       </div>
       
@@ -1164,9 +1175,6 @@
       <div class="form-group">
         <label class="form-label">Trạng thái</label>
         <select class="form-control" id="editStatus">
-          <option value="Chờ xử lý">Chờ xử lý</option>
-          <option value="Đã duyệt">Đã duyệt</option>
-          <option value="Từ chối">Từ chối</option>
         </select>
       </div>
       
@@ -1178,6 +1186,12 @@
 
   <!-- Firebase and other scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
+  <!-- Firebase App (namespace version) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="/script/response.js"></script>
   <script type="module">
     // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -1194,12 +1208,13 @@
       doc, 
       updateDoc 
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    
 
     // Firebase configuration
     const firebaseConfig = {
-      apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
-      authDomain: "enactusftuhanoi-tracuu.firebaseapp.com",
-      projectId: "enactusftuhanoi-tracuu",
+        apiKey: "AIzaSyAOP2j0qV0Ge-q2-Y9zo9Qc3eLmgtVOK3k",
+        authDomain: "recruitment-enactusftuhanoi.firebaseapp.com",
+        projectId: "recruitment-enactusftuhanoi",
     };
 
     // Initialize Firebase
@@ -1242,7 +1257,6 @@
     }
 
     // DOM elements
-    const loginBox = document.getElementById('loginBox');
     const adminContent = document.getElementById('adminContent');
     const loginForm = document.getElementById('loginForm');
     const loginButton = document.getElementById('loginButton');
@@ -1289,35 +1303,13 @@
     let currentSortField = null;
     let currentSortDirection = 'asc';
 
-    // Login function
-    async function login() {
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value;
-      
-      if (!email || !password) {
-        showToast('warning', 'Vui lòng nhập email và mật khẩu');
-        return;
-      }
-      
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        loginBox.style.display = 'none';
-        adminContent.style.display = 'block';
-        loadCandidates();
-        showToast('success', 'Đăng nhập thành công');
-      } catch (error) {
-        console.error('Login error:', error);
-        showToast('error', 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin');
-      }
-    }
-
     // Logout function
     async function logout() {
       try {
         await signOut(auth);
         adminContent.style.display = 'none';
-        loginBox.style.display = 'block';
-        loginForm.reset();
+        // chuyển về trang login (an toàn hơn)
+        window.location.href = "/admin/login.html";
         showToast('info', 'Bạn đã đăng xuất');
       } catch (error) {
         console.error('Logout error:', error);
@@ -1325,35 +1317,48 @@
       }
     }
 
+
     // Load candidates from Firestore
     async function loadCandidates() {
       try {
-        const snapshot = await getDocs(collection(db, "users"));
-        candidatesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const snapshot = await getDocs(collection(db, "applications"));
+        candidatesData = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
         filteredCandidates = [...candidatesData];
-        
+
         updateStats();
         renderCandidates();
         populateCandidateSelects();
       } catch (error) {
         console.error('Error loading candidates:', error);
-        showToast('error', 'Không thể tải danh sách ứng viên');
       }
     }
 
+
     // Populate candidate select dropdowns
     function populateCandidateSelects() {
-      roundCandidateSelect.innerHTML = '<option value="">-- Chọn ứng viên --</option>';
-      historyCandidateSelect.innerHTML = '<option value="">-- Chọn ứng viên --</option>';
-      
+      const roundCandidateSelect = document.getElementById('roundCandidateSelect');
+      const historyCandidateSelect = document.getElementById('historyCandidateSelect');
+
+      if (roundCandidateSelect) {
+        roundCandidateSelect.innerHTML = '<option value="">-- Chọn ứng viên --</option>';
+      }
+      if (historyCandidateSelect) {
+        historyCandidateSelect.innerHTML = '<option value="">-- Chọn ứng viên --</option>';
+      }
+
       candidatesData.forEach(candidate => {
         const option = document.createElement('option');
         option.value = candidate.id;
-        option.textContent = `${candidate.fullname} (${candidate.email})`;
-        
-        roundCandidateSelect.appendChild(option.cloneNode(true));
-        historyCandidateSelect.appendChild(option);
+        option.textContent = `${candidate.fullname || '(Không tên)'} (${candidate.email || 'no-email'})`;
+
+        if (roundCandidateSelect) roundCandidateSelect.appendChild(option.cloneNode(true));
+        if (historyCandidateSelect) historyCandidateSelect.appendChild(option.cloneNode(true));
       });
+    }
+
+    function safeSetText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
     }
 
     // Update dashboard stats
@@ -1370,128 +1375,250 @@
       pendingCandidates.textContent = pending;
     }
 
+    function renderDepartmentBadge(department) {
+      let className = "badge-primary";
+      if (department === "Nhân sự") className = "badge-success";
+      else if (department === "Truyền thông") className = "badge-warning";
+      else if (department === "Đối ngoại") className = "badge-danger";
+      else if (department === "Dự án") className = "badge-info";
+
+      return `<span class="badge ${className}">${department}</span>`;
+    }
+
+    function getBanBadge(candidate, type = "priority") {
+      const position = candidate[`${type}_position`];
+      if (!position) return "";
+
+      let status = "pending";
+
+      // Duyệt qua các vòng để lấy trạng thái mới nhất
+      for (let i = 1; i <= (candidate.current_round || 1); i++) {
+        const roundData = candidate[`round_${i}`];
+        if (roundData && roundData[type] && roundData[type].status) {
+          status = roundData[type].status;
+          if (status === "not pass") break; // đã rớt thì chốt luôn
+        }
+      }
+
+      const badgeClass =
+        status === "pass" ? "badge-success"
+        : status === "not pass" ? "badge-danger"
+        : status === "voted" ? "badge-info"
+        : "badge-secondary";
+
+      return `<span class="badge ${badgeClass}">${position}</span>`;
+    }
+
     // Render candidates table
     function renderCandidates() {
-      candidateList.innerHTML = filteredCandidates.map(candidate => `
-        <tr>
-          <td>${candidate.fullname || 'Chưa cập nhật'}</td>
-          <td>
-            <span class="badge badge-primary">${candidate.department || 'Chưa chọn'}</span>
-          </td>
-          <td>
-            ${getRoundBadge(candidate.current_round)}
-          </td>
-          <td>${candidate.email || 'Chưa cập nhật'}</td>
-          <td>${candidate.phone || 'Chưa cập nhật'}</td>
-          <td>
-            ${getStatusBadge(candidate.status)}
-          </td>
-          <td>
-            <button class="action-btn btn-view" data-id="${candidate.id}">
-              <i class="fas fa-eye"></i> Xem
-            </button>
-            <button class="action-btn btn-edit action-btn-sm" data-id="${candidate.id}">
-              <i class="fas fa-edit"></i>
-            </button>
-          </td>
-        </tr>
-      `).join('');
-      
-      // Add event listeners to view buttons
+      candidateList.innerHTML = filteredCandidates.map(candidate => {
+        const currentRound = Number(candidate.current_round) || 1;
+
+        const roundNum = Number(candidate.current_round) || 1;
+        const status = resolveRoundStatus(candidate, roundNum);
+
+        // lấy status cho priority & secondary tại vòng hiện tại
+        const pStatus = resolveStatus(candidate, currentRound, 'priority');
+        const sStatus = resolveStatus(candidate, currentRound, 'secondary');
+
+        const badgeFor = (st) => {
+          if (st === 'pass') return 'badge-success';
+          if (st === 'not pass') return 'badge-danger';
+          if (st === 'voted') return 'badge-info';
+          return 'badge-secondary'; // mặc định: pending/chưa có kết quả
+        };
+
+        const pBadge = candidate.priority_position 
+          ? `<span class="badge ${badgeFor(pStatus)}">${candidate.priority_position}</span>` 
+          : '';
+
+        const sBadge = candidate.secondary_position 
+          ? `<span class="badge ${badgeFor(sStatus)}">${candidate.secondary_position}</span>` 
+          : '';
+
+        return `
+          <tr>
+            <td>${candidate.fullname || 'Chưa cập nhật'}</td>
+            <td>${pBadge} ${sBadge}</td>
+            <td>${candidate.email || 'Chưa cập nhật'}</td>
+            <td>${candidate.phone || 'Chưa cập nhật'}</td>
+            <td>${getRoundBadge(candidate)}</td>
+            <td>${getStatusBadge(candidate)}</td>
+            <td>
+              <button class="action-btn btn-view" data-id="${candidate.id}"><i class="fas fa-eye"></i> Xem</button>
+              <button class="action-btn btn-edit action-btn-sm" data-id="${candidate.id}"><i class="fas fa-edit"></i></button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // reattach listeners
       document.querySelectorAll('.btn-view').forEach(btn => {
         btn.addEventListener('click', function() {
-          const candidateId = this.getAttribute('data-id');
-          showCandidateDetail(candidateId);
+          showCandidateDetail(this.getAttribute('data-id'));
         });
       });
-      
-      // Add event listeners to edit buttons
       document.querySelectorAll('.btn-edit').forEach(btn => {
         btn.addEventListener('click', function() {
-          const candidateId = this.getAttribute('data-id');
-          showEditModal(candidateId);
+          showEditModal(this.getAttribute('data-id'));
         });
       });
     }
 
-    // Get round badge HTML
-    function getRoundBadge(round) {
-      if (!round) return '<span class="badge badge-warning">Chưa bắt đầu</span>';
-      
-      const rounds = [
-        'Vòng đơn',
-        'Phỏng vấn nhóm',
-        'Thử thách',
-        'Phỏng vấn cá nhân',
-        'Hoàn thành'
-      ];
-      
-      if (round <= 4) {
-        return `<span class="badge badge-primary">Vòng ${round}: ${rounds[round-1]}</span>`;
-      } else {
-        return `<span class="badge badge-success">${rounds[4]}</span>`;
-      }
-    }
 
-    // Get status badge HTML
-    function getStatusBadge(status) {
-      if (!status) return '<span class="badge badge-warning">Chưa xác định</span>';
-      
-      switch(status) {
-        case 'Đã duyệt':
-          return '<span class="badge badge-success">Đã duyệt</span>';
-        case 'Từ chối':
-          return '<span class="badge badge-danger">Từ chối</span>';
-        default:
-          return '<span class="badge badge-warning">Chờ xử lý</span>';
-      }
-    }
 
     // Show candidate detail modal
+    // --- showCandidateDetail (thay thế, sử dụng safeSetText) ---
     function showCandidateDetail(candidateId) {
       const candidate = candidatesData.find(c => c.id === candidateId);
       if (!candidate) return;
-      
+
       currentCandidateId = candidateId;
-      
-      // Update modal content
-      document.getElementById('modalCandidateName').textContent = candidate.fullname || 'Ứng viên';
-      document.getElementById('modalDepartment').textContent = candidate.department || 'Chưa chọn';
-      document.getElementById('modalCurrentRound').textContent = getRoundText(candidate.current_round);
-      document.getElementById('modalStatus').textContent = candidate.status || 'Chưa xác định';
-      
-      // Personal info
-      document.getElementById('modalFullName').textContent = candidate.fullname || 'Chưa cập nhật';
-      document.getElementById('modalGender').textContent = candidate.gender || 'Chưa cập nhật';
-      document.getElementById('modalEmail').textContent = candidate.email || 'Chưa cập nhật';
-      document.getElementById('modalPhone').textContent = candidate.phone || 'Chưa cập nhật';
-      document.getElementById('modalDob').textContent = candidate.dob || 'Chưa cập nhật';
-      document.getElementById('modalSchool').textContent = candidate.school || 'Chưa cập nhật';
-      document.getElementById('modalFaculty').textContent = candidate.faculty || 'Chưa cập nhật';
-      document.getElementById('modalStudentId').textContent = candidate.studentId || 'Chưa cập nhật';
-      
-      // Show modal
-      candidateModal.style.display = 'block';
+
+      safeSetText('modalCandidateName', candidate.fullname || 'Ứng viên');
+      safeSetText('modalDepartment', candidate.priority_position || candidate.department || 'Chưa chọn');
+      // current round: prefer candidate.current_round, fallback to mapStatusToRound if available
+      const roundText = (typeof getRoundText === 'function') ? getRoundText(candidate.current_round || (typeof mapStatusToRound === 'function' ? mapStatusToRound(candidate.status) : 1)) : 'Chưa xác định';
+      safeSetText('modalCurrentRound', roundText);
+      safeSetText('modalStatus', candidate.status || 'Chưa xác định');
+
+      safeSetText('modalFullName', candidate.fullname || 'Chưa cập nhật');
+      safeSetText('modalGender', candidate.gender || 'Chưa cập nhật');
+      safeSetText('modalEmail', candidate.email || 'Chưa cập nhật');
+      safeSetText('modalPhone', candidate.phone || 'Chưa cập nhật');
+      // birthdate/dob compatibility
+      safeSetText('modalBirthdate', candidate.birthdate || candidate.dob || 'Chưa cập nhật');
+      safeSetText('modalSchool', candidate.school || 'Chưa cập nhật');
+      safeSetText('modalMajor', candidate.major || candidate.faculty || 'Chưa cập nhật');
+      safeSetText('modalFacebook', candidate.facebook || 'Chưa cập nhật');
+
+      // Show modal only if it exists
+      const candidateModal = document.getElementById('candidateModal');
+      if (candidateModal) candidateModal.style.display = 'block';
     }
 
-    // Get round text
-    function getRoundText(round) {
-      if (!round) return 'Chưa bắt đầu';
-      
-      const rounds = [
-        'Vòng đơn',
-        'Phỏng vấn nhóm',
-        'Thử thách',
-        'Phỏng vấn cá nhân',
-        'Hoàn thành'
-      ];
-      
-      if (round <= 4) {
-        return `Vòng ${round}: ${rounds[round-1]}`;
-      } else {
-        return rounds[4];
-      }
+// --- chuẩn hoá trạng thái ---
+function normalizeStatus(raw) {
+  if (raw === null || raw === undefined) return 'pending';
+  const s = String(raw).trim().toLowerCase();
+  if (s === 'pass' || s.includes('duyệt') || s.includes('đã duyệt') || s.includes('passed')) return 'pass';
+  if (s === 'not pass' || s === 'notpass' || s.includes('từ chối') || s.includes('không đạt')) return 'not pass';
+  if (s === 'voted' || s.includes('voted') || s.includes('bỏ phiếu')) return 'voted';
+  if (s === 'pending' || s.includes('chờ') || s.includes('chưa')) return 'pending';
+  return 'pending';
+}
+
+// --- trả status cho 1 ban (priority/secondary) ở 1 vòng cụ thể ---
+function resolveStatus(candidate, round = 1, type = 'priority') {
+  const r = candidate && candidate[`round_${round}`] ? candidate[`round_${round}`] : {};
+  let status = null;
+
+  if (r[type] && r[type].status !== undefined && r[type].status !== null) status = r[type].status;
+  else if (r[`${type}Status`] !== undefined && r[`${type}Status`] !== null) status = r[`${type}Status`]; // legacy
+  else if (candidate && (candidate[`${type}Accepted`] === true || candidate[`${type}Accepted`] === 'true')) status = 'pass';
+  else if (candidate && (candidate[`${type}Rejected`] === true || candidate[`${type}Rejected`] === 'true')) status = 'not pass';
+  else status = 'pending'; // giữ nguyên
+
+  return normalizeStatus(status);
+}
+
+// --- trả trạng thái "của vòng" (kết hợp priority + secondary) ---
+function resolveRoundStatus(candidate, round = 1) {
+    const pStatus = resolveStatus(candidate, round, 'priority');
+    const sStatus = resolveStatus(candidate, round, 'secondary');
+    
+    const hasPriority = !!candidate.priority_position;
+    const hasSecondary = !!candidate.secondary_position;
+
+    // Kịch bản 1: Bị loại ngay lập tức
+    // Nếu bất kỳ ban nào ứng tuyển mà bị "not pass", thì cả vòng đó "not pass".
+    if ((hasPriority && pStatus === 'not pass') || (hasSecondary && sStatus === 'not pass')) {
+        // Nếu ứng tuyển cả 2 ban và cả 2 đều "not pass"
+        if (hasPriority && hasSecondary && pStatus === 'not pass' && sStatus === 'not pass') {
+            return 'not pass';
+        }
+        // Nếu chỉ ứng tuyển 1 ban và ban đó "not pass"
+        if (!hasSecondary && pStatus === 'not pass') return 'not pass';
+        if (!hasPriority && sStatus === 'not pass') return 'not pass';
+        
+        // Nếu ứng tuyển 2 ban, 1 not pass, 1 pass/pending -> Vẫn còn cơ hội ở ban kia, nên tạm coi là pending
+        // Trừ khi bạn muốn chính sách "rớt 1 ban là rớt cả vòng" thì bỏ if dưới và return 'not pass' ngay.
+        if (!((pStatus === 'pass' && sStatus === 'not pass') || (sStatus === 'pass' && pStatus === 'not pass'))) {
+            return 'not pass';
+        }
     }
+
+    // Kịch bản 2: Đã pass
+    // Nếu có ít nhất một ban "pass" và không có ban nào "not pass".
+    if ((hasPriority && pStatus === 'pass') || (hasSecondary && sStatus === 'pass')) {
+        return 'pass';
+    }
+
+    // Kịch bản 3: Các trường hợp còn lại (voted, pending) đều là "pending"
+    return 'pending';
+}
+
+function getRoundBadge(candidate) {
+  const roundNames = {
+    1: "Đơn",
+    2: "Phỏng vấn nhóm",
+    3: "Thử thách",
+    4: "Phỏng vấn cá nhân",
+    5: "Đã hoàn thành"
+  };
+  const round = Number(candidate.current_round) || 0;
+  if (!round || !roundNames[round]) {
+    return `<span class="badge badge-warning">Chưa bắt đầu</span>`;
+  }
+  return `<span class="badge badge-primary">${roundNames[round]}</span>`;
+}
+
+function getStatusBadge(candidate) {
+  const round = Number(candidate.current_round) || 1;
+
+  // round 1: xét priority + secondary ở round_1
+  if (round === 1) {
+    const p = resolveStatus(candidate, 1, 'priority');
+    const s = resolveStatus(candidate, 1, 'secondary');
+
+    if (p === 'pass' || s === 'pass') return `<span class="badge badge-success">Pass</span>`;
+    if (p === 'not pass' && s === 'not pass') return `<span class="badge badge-danger">Not pass</span>`;
+    if (p === 'voted' || s === 'voted') return `<span class="badge badge-info">Voted</span>`;
+    return `<span class="badge badge-warning">Đang xét</span>`;
+  }
+
+  // rounds 2..4: chỉ xét những ban được "up" từ vòng trước (hoặc fallback sang data vòng hiện tại nếu inconsistent)
+  const prevRound = Math.max(1, round - 1);
+  const prevP = resolveStatus(candidate, prevRound, 'priority');
+  const prevS = resolveStatus(candidate, prevRound, 'secondary');
+
+  const activeTypes = [];
+  if (prevP === 'pass') activeTypes.push('priority');
+  if (prevS === 'pass') activeTypes.push('secondary');
+
+  // lấy status cho các loại active (null nếu không active)
+  const pStatus = activeTypes.includes('priority') ? resolveStatus(candidate, round, 'priority') : null;
+  const sStatus = activeTypes.includes('secondary') ? resolveStatus(candidate, round, 'secondary') : null;
+
+  // quyết định hiển thị
+  if (pStatus === 'pass' || sStatus === 'pass') return `<span class="badge badge-success">Pass</span>`;
+
+  // nếu chỉ 1 active và nó not pass => not pass
+  if (activeTypes.length === 1) {
+    const only = activeTypes[0];
+    const st = only === 'priority' ? pStatus : sStatus;
+    if (st === 'not pass') return `<span class="badge badge-danger">Not pass</span>`;
+  }
+
+  // nếu 2 active và cả 2 not pass => not pass
+  if (activeTypes.length === 2 && pStatus === 'not pass' && sStatus === 'not pass') {
+    return `<span class="badge badge-danger">Not pass</span>`;
+  }
+
+  if (pStatus === 'voted' || sStatus === 'voted') return `<span class="badge badge-info">Voted</span>`;
+
+  return `<span class="badge badge-warning">Đang xét</span>`;
+}
 
     // Show edit modal
     function showEditModal(candidateId) {
@@ -1517,7 +1644,7 @@
       if (!currentCandidateId) return;
       
       try {
-        const candidateRef = doc(db, "users", currentCandidateId);
+        const candidateRef = doc(db, "applications", currentCandidateId);
         
         await updateDoc(candidateRef, {
           fullname: document.getElementById('editFullName').value,
@@ -1538,12 +1665,12 @@
             email: document.getElementById('editEmail').value,
             phone: document.getElementById('editPhone').value,
             department: document.getElementById('editDepartment').value,
-            current_round: parseInt(document.getElementById('editCurrentRound').value),
+            current_round: parseInt(document.getElementById('editCurrentRound').value, 10),
             status: document.getElementById('editStatus').value
           };
         }
-        
-        // Update filtered data
+
+        // Update filteredCandidates similarly
         const filteredIndex = filteredCandidates.findIndex(c => c.id === currentCandidateId);
         if (filteredIndex !== -1) {
           filteredCandidates[filteredIndex] = {
@@ -1552,10 +1679,11 @@
             email: document.getElementById('editEmail').value,
             phone: document.getElementById('editPhone').value,
             department: document.getElementById('editDepartment').value,
-            current_round: parseInt(document.getElementById('editCurrentRound').value),
+            current_round: parseInt(document.getElementById('editCurrentRound').value, 10),
             status: document.getElementById('editStatus').value
           };
         }
+
         
         // Update UI
         renderCandidates();
@@ -1587,150 +1715,330 @@
       noCandidateSelected.style.display = 'none';
     }
 
-    // Load round data into form
+    /* ===== helper nhỏ ===== */
+    function getEl(id){ return document.getElementById(id); }
+    function getVal(id){ const e = getEl(id); return e ? e.value : null; }
+    function getMultiValues(id){
+      const el = getEl(id);
+      if(!el) return null;
+      return Array.from(el.selectedOptions).map(o => o.value);
+    }
+
+    function disableSection(prefix, disabled = true) {
+      [
+        "StatusSelect", "Time", "Location", "Members", "Note",
+        "Challenge", "Materials", "Deadline", "Pitching", "Advisor", "Interviewer"
+      ].forEach(suffix => {
+        const el = document.getElementById(prefix + suffix);
+        if (el) el.disabled = disabled;
+      });
+    }
+
     function loadRoundData(candidate) {
-      // Round 1
-      document.getElementById('round1StatusSelect').value = candidate.round_1?.status || 'Chưa bắt đầu';
-      
-      // Round 2
-      document.getElementById('round2StatusSelect').value = candidate.round_2?.status || 'Chưa bắt đầu';
-      document.getElementById('round2Time').value = candidate.round_2?.time || '';
-      document.getElementById('round2Location').value = candidate.round_2?.location || '';
-      document.getElementById('round2Members').value = candidate.round_2?.members || '';
-      document.getElementById('round2Note').value = candidate.round_2?.note || '';
-      
-      // Round 3
-      document.getElementById('round3StatusSelect').value = candidate.round_3?.status || 'Chưa bắt đầu';
-      document.getElementById('round3Challenge').value = candidate.round_3?.challenge || '';
-      document.getElementById('round3Materials').value = candidate.round_3?.materials || '';
-      document.getElementById('round3Deadline').value = candidate.round_3?.deadline || '';
-      document.getElementById('round3Pitching').value = candidate.round_3?.pitching || '';
-      document.getElementById('round3Advisor').value = candidate.round_3?.advisor || '';
-      
-      // Round 4
-      document.getElementById('round4StatusSelect').value = candidate.round_4?.status || 'Chưa bắt đầu';
-      document.getElementById('round4Time').value = candidate.round_4?.time || '';
-      document.getElementById('round4Location').value = candidate.round_4?.location || '';
-      document.getElementById('round4Interviewer').value = candidate.round_4?.interviewer || '';
-      document.getElementById('round4Note').value = candidate.round_4?.note || '';
-    }
+      const getEl = id => document.getElementById(id);
+      const setVal = (id, val) => { const el = getEl(id); if (el) el.value = (val ?? ""); };
+      const setMulti = (id, values = []) => {
+        const el = getEl(id);
+        if (el) Array.from(el.options).forEach(opt => opt.selected = values.includes(opt.value));
+      };
 
-    // Save round data
-    async function saveRoundData(roundNumber) {
-      if (!currentCandidateId) return;
-      
-      try {
-        const candidateRef = doc(db, "users", currentCandidateId);
-        const roundData = {};
-        const roundField = `round_${roundNumber}`;
-        
-        // Get data based on round number
-        switch(roundNumber) {
-          case 1:
-            roundData.status = document.getElementById('round1StatusSelect').value;
-            break;
-          case 2:
-            roundData.status = document.getElementById('round2StatusSelect').value;
-            roundData.time = document.getElementById('round2Time').value;
-            roundData.location = document.getElementById('round2Location').value;
-            roundData.members = document.getElementById('round2Members').value;
-            roundData.note = document.getElementById('round2Note').value;
-            break;
-          case 3:
-            roundData.status = document.getElementById('round3StatusSelect').value;
-            roundData.challenge = document.getElementById('round3Challenge').value;
-            roundData.materials = document.getElementById('round3Materials').value;
-            roundData.deadline = document.getElementById('round3Deadline').value;
-            roundData.pitching = document.getElementById('round3Pitching').value;
-            roundData.advisor = document.getElementById('round3Advisor').value;
-            break;
-          case 4:
-            roundData.status = document.getElementById('round4StatusSelect').value;
-            roundData.time = document.getElementById('round4Time').value;
-            roundData.location = document.getElementById('round4Location').value;
-            roundData.interviewer = document.getElementById('round4Interviewer').value;
-            roundData.note = document.getElementById('round4Note').value;
-            break;
-        }
-        
-        await updateDoc(candidateRef, {
-          [roundField]: roundData,
-          updatedAt: new Date()
+      // helper: enable/disable set các field theo pattern round{n}{Type}{Suffix}
+      const suffixesByRound = {
+        1: ["StatusSelect"], // round1 minimal (only status selects used in your markup)
+        2: ["StatusSelect","Time","Location","Note","Members"],
+        3: ["StatusSelect","Challenge","Materials","Deadline","Pitching","Advisor","Note","Members"],
+        4: ["StatusSelect","Time","Location","Interviewer","Note"]
+      };
+      const setEnabledFor = (round, typeCapital, enabled) => {
+        const suffixes = suffixesByRound[round] || [];
+        suffixes.forEach(suf => {
+          const id = `round${round}${typeCapital}${suf}`;
+          const el = getEl(id);
+          if (el) el.disabled = !enabled;
         });
-        
-        // Update local data
-        const candidateIndex = candidatesData.findIndex(c => c.id === currentCandidateId);
-        if (candidateIndex !== -1) {
-          candidatesData[candidateIndex][roundField] = roundData;
-        }
-        
-        // Update filtered data
-        const filteredIndex = filteredCandidates.findIndex(c => c.id === currentCandidateId);
-        if (filteredIndex !== -1) {
-          filteredCandidates[filteredIndex][roundField] = roundData;
-        }
-        
-        showToast('success', `Cập nhật thông tin vòng ${roundNumber} thành công`);
-      } catch (error) {
-        console.error(`Error updating round ${roundNumber}:`, error);
-        showToast('error', `Cập nhật thông tin vòng ${roundNumber} thất bại`);
-      }
+      };
+
+      // ---------- set values (keeps same behavior as before) ----------
+      const r1 = candidate.round_1 || {};
+      setVal("round1PriorityStatusSelect", r1.priority?.status);
+      setVal("round1SecondaryStatusSelect", r1.secondary?.status);
+      setVal("round1StatusSelect", r1.status);
+
+      const r2 = candidate.round_2 || {};
+      setVal("round2PriorityStatusSelect", r2.priority?.status);
+      setVal("round2PriorityTime", r2.priority?.time);
+      setVal("round2PriorityLocation", r2.priority?.location);
+      setVal("round2PriorityNote", r2.priority?.note);
+      setVal("round2PriorityMembers", r2.priority?.members);
+
+      setVal("round2SecondaryStatusSelect", r2.secondary?.status);
+      setVal("round2SecondaryTime", r2.secondary?.time);
+      setVal("round2SecondaryLocation", r2.secondary?.location);
+      setVal("round2SecondaryNote", r2.secondary?.note);
+      setVal("round2SecondaryMembers", r2.secondary?.members);
+
+      setVal("round2StatusSelect", r2.status);
+      setVal("round2Time", r2.time);
+      setVal("round2Location", r2.location);
+      setVal("round2Note", r2.note);
+      setVal("round2Members", r2.members);
+
+      const r3 = candidate.round_3 || {};
+      setVal("round3PriorityStatusSelect", r3.priority?.status);
+      setVal("round3PriorityChallenge", r3.priority?.challenge);
+      setVal("round3PriorityMaterials", r3.priority?.materials);
+      setVal("round3PriorityDeadline", r3.priority?.deadline);
+      setVal("round3PriorityPitching", r3.priority?.pitching);
+      setVal("round3PriorityAdvisor", r3.priority?.advisor);
+      setVal("round3PriorityNote", r3.priority?.note);
+      setVal("round3PriorityMembers", r3.priority?.members);
+
+      setVal("round3SecondaryStatusSelect", r3.secondary?.status);
+      setVal("round3SecondaryChallenge", r3.secondary?.challenge);
+      setVal("round3SecondaryMaterials", r3.secondary?.materials);
+      setVal("round3SecondaryDeadline", r3.secondary?.deadline);
+      setVal("round3SecondaryPitching", r3.secondary?.pitching);
+      setVal("round3SecondaryAdvisor", r3.secondary?.advisor);
+      setVal("round3SecondaryNote", r3.secondary?.note);
+      setVal("round3SecondaryMembers", r3.secondary?.members);
+
+      setVal("round3StatusSelect", r3.status);
+      setVal("round3Challenge", r3.challenge);
+      setVal("round3Materials", r3.materials);
+      setVal("round3Deadline", r3.deadline);
+      setVal("round3Pitching", r3.pitching);
+      setVal("round3Advisor", r3.advisor);
+      setVal("round3Note", r3.note);
+      setVal("round3Members", r3.members);
+
+      const r4 = candidate.round_4 || {};
+      setVal("round4PriorityStatusSelect", r4.priority?.status);
+      setVal("round4PriorityTime", r4.priority?.time);
+      setVal("round4PriorityLocation", r4.priority?.location);
+      setVal("round4PriorityInterviewer", r4.priority?.interviewer);
+      setVal("round4PriorityNote", r4.priority?.note);
+
+      setVal("round4SecondaryStatusSelect", r4.secondary?.status);
+      setVal("round4SecondaryTime", r4.secondary?.time);
+      setVal("round4SecondaryLocation", r4.secondary?.location);
+      setVal("round4SecondaryInterviewer", r4.secondary?.interviewer);
+      setVal("round4SecondaryNote", r4.secondary?.note);
+
+      setVal("round4StatusSelect", r4.status);
+      setVal("round4Time", r4.time);
+      setVal("round4Location", r4.location);
+      setVal("round4Interviewer", r4.interviewer);
+      setVal("round4Note", r4.note);
+
+      // ---------- enable/disable logic using resolveStatus (canonicalizes values) ----------
+      // round2 fields enabled only if round1 that type was 'pass'
+      const r1P = resolveStatus(candidate, 1, 'priority'); // 'pass' | 'not pass' | 'pending'...
+      const r1S = resolveStatus(candidate, 1, 'secondary');
+
+      setEnabledFor(1, "Priority", true);   // round1 always editable (status select)
+      setEnabledFor(1, "Secondary", true);
+
+      setEnabledFor(2, "Priority", r1P === 'pass');
+      setEnabledFor(2, "Secondary", r1S === 'pass');
+
+      // round3 based on round2 results
+      const r2P = resolveStatus(candidate, 2, 'priority');
+      const r2S = resolveStatus(candidate, 2, 'secondary');
+      setEnabledFor(3, "Priority", r2P === 'pass');
+      setEnabledFor(3, "Secondary", r2S === 'pass');
+
+      // round4 based on round3 results
+      const r3P = resolveStatus(candidate, 3, 'priority');
+      const r3S = resolveStatus(candidate, 3, 'secondary');
+      setEnabledFor(4, "Priority", r3P === 'pass');
+      setEnabledFor(4, "Secondary", r3S === 'pass');
+
+      // Optional: disable Save button for a round if neither priority nor secondary is allowed
+      [2,3,4].forEach(n => {
+        const allow = (resolveStatus(candidate, n-1, 'priority') === 'pass') || (resolveStatus(candidate, n-1, 'secondary') === 'pass');
+        const btn = getEl(`saveRound${n}Btn`);
+        if (btn) btn.disabled = !allow;
+      });
     }
 
-    // Load candidate history
-    function loadCandidateHistory(candidateId) {
-      const candidate = candidatesData.find(c => c.id === candidateId);
-      if (!candidate) return;
-      
-      // Sample history data (in a real app, this would come from Firestore)
-      const history = [
-        { 
-          date: '15/07/2025 14:30', 
-          action: 'Đã cập nhật trạng thái thành "Đã duyệt"', 
-          type: 'status',
-          by: 'Admin' 
-        },
-        { 
-          date: '10/07/2025 09:15', 
-          action: 'Đã chuyển sang vòng 2: Phỏng vấn nhóm', 
-          type: 'round',
-          by: 'Admin' 
-        },
-        { 
-          date: '05/07/2025 16:45', 
-          action: 'Đã đăng ký ứng tuyển', 
-          type: 'info',
-          by: 'Hệ thống' 
-        }
-      ];
-      
-      const typeFilter = historyTypeFilter.value;
-      const filteredHistory = typeFilter 
-        ? history.filter(item => item.type === typeFilter)
-        : history;
-      
-      if (filteredHistory.length === 0) {
-        historyContent.innerHTML = `
-          <div class="filter-section" style="text-align: center; padding: 50px;">
-            <i class="fas fa-info-circle" style="font-size: 48px; color: var(--text-light); margin-bottom: 20px;"></i>
-            <h3 style="color: var(--text-light);">Không có hoạt động nào được ghi nhận</h3>
-          </div>
-        `;
-        return;
-      }
-      
-      historyContent.innerHTML = `
-        <div class="filter-section">
-          ${filteredHistory.map(item => `
-            <div class="history-item">
-              <div class="history-date">${item.date}</div>
-              <div class="history-action">${item.action}</div>
-              <div class="history-by">${item.by}</div>
-            </div>
-          `).join('')}
-        </div>
-      `;
+/* ===== saveRoundData: lưu dữ liệu vòng, có kiểm tra pass vòng trước ===== */
+async function saveRoundData(roundNumber) {
+  if (!currentCandidateId) return;
+  const getEl = id => document.getElementById(id);
+  const getVal = id => (getEl(id)?.value ?? "").trim();
+
+  const candidate = candidatesData.find(c => c.id === currentCandidateId);
+  if (!candidate) return showToast('error', 'Ứng viên không tồn tại');
+
+  const updateData = {};
+  const roundField = `round_${roundNumber}`;
+
+  // ✅ Chặn nhảy vòng: chỉ cho phép lên nếu vòng trước có ít nhất 1 ban pass
+  if (roundNumber > 1) {
+    const prevRound = roundNumber - 1;
+    const prevP = resolveStatus(candidate, prevRound, 'priority');
+    const prevS = resolveStatus(candidate, prevRound, 'secondary');
+
+    if (prevP !== 'pass' && prevS !== 'pass') {
+      return showToast(
+        'error',
+        `Ứng viên chưa có ban nào pass ở vòng ${prevRound}, không thể lên vòng ${roundNumber}`
+      );
     }
+  }
+
+  // ===== PRIORITY =====
+  const canUpdatePriority = (roundNumber === 1) || (resolveStatus(candidate, roundNumber - 1, 'priority') === 'pass');
+  if (canUpdatePriority) {
+    if (getEl(`round${roundNumber}PriorityStatusSelect`)) {
+      updateData[`${roundField}.priority.status`] =
+        normalizeStatus(getVal(`round${roundNumber}PriorityStatusSelect`));
+    }
+    if (getEl(`round${roundNumber}PriorityTime`)) {
+      updateData[`${roundField}.priority.time`] = getVal(`round${roundNumber}PriorityTime`);
+    }
+    if (getEl(`round${roundNumber}PriorityLocation`)) {
+      updateData[`${roundField}.priority.location`] = getVal(`round${roundNumber}PriorityLocation`);
+    }
+    if (getEl(`round${roundNumber}PriorityMembers`)) {
+      updateData[`${roundField}.priority.members`] = getVal(`round${roundNumber}PriorityMembers`);
+    }
+    if (getEl(`round${roundNumber}PriorityNote`)) {
+      updateData[`${roundField}.priority.note`] = getVal(`round${roundNumber}PriorityNote`);
+    }
+    if (getEl(`round${roundNumber}PriorityChallenge`)) {
+      updateData[`${roundField}.priority.challenge`] = getVal(`round${roundNumber}PriorityChallenge`);
+    }
+    if (getEl(`round${roundNumber}PriorityMaterials`)) {
+      updateData[`${roundField}.priority.materials`] = getVal(`round${roundNumber}PriorityMaterials`);
+    }
+    if (getEl(`round${roundNumber}PriorityDeadline`)) {
+      updateData[`${roundField}.priority.deadline`] = getVal(`round${roundNumber}PriorityDeadline`);
+    }
+    if (getEl(`round${roundNumber}PriorityPitching`)) {
+      updateData[`${roundField}.priority.pitching`] = getVal(`round${roundNumber}PriorityPitching`);
+    }
+    if (getEl(`round${roundNumber}PriorityAdvisor`)) {
+      updateData[`${roundField}.priority.advisor`] = getVal(`round${roundNumber}PriorityAdvisor`);
+    }
+    if (getEl(`round${roundNumber}PriorityInterviewer`)) {
+      updateData[`${roundField}.priority.interviewer`] = getVal(`round${roundNumber}PriorityInterviewer`);
+    }
+  }
+
+  // ===== SECONDARY =====
+  const canUpdateSecondary = (roundNumber === 1) || (resolveStatus(candidate, roundNumber - 1, 'secondary') === 'pass');
+  if (canUpdateSecondary) {
+    if (getEl(`round${roundNumber}SecondaryStatusSelect`)) {
+      updateData[`${roundField}.secondary.status`] =
+        normalizeStatus(getVal(`round${roundNumber}SecondaryStatusSelect`));
+    }
+    if (getEl(`round${roundNumber}SecondaryTime`)) {
+      updateData[`${roundField}.secondary.time`] = getVal(`round${roundNumber}SecondaryTime`);
+    }
+    if (getEl(`round${roundNumber}SecondaryLocation`)) {
+      updateData[`${roundField}.secondary.location`] = getVal(`round${roundNumber}SecondaryLocation`);
+    }
+    if (getEl(`round${roundNumber}SecondaryMembers`)) {
+      updateData[`${roundField}.secondary.members`] = getVal(`round${roundNumber}SecondaryMembers`);
+    }
+    if (getEl(`round${roundNumber}SecondaryNote`)) {
+      updateData[`${roundField}.secondary.note`] = getVal(`round${roundNumber}SecondaryNote`);
+    }
+    if (getEl(`round${roundNumber}SecondaryChallenge`)) {
+      updateData[`${roundField}.secondary.challenge`] = getVal(`round${roundNumber}SecondaryChallenge`);
+    }
+    if (getEl(`round${roundNumber}SecondaryMaterials`)) {
+      updateData[`${roundField}.secondary.materials`] = getVal(`round${roundNumber}SecondaryMaterials`);
+    }
+    if (getEl(`round${roundNumber}SecondaryDeadline`)) {
+      updateData[`${roundField}.secondary.deadline`] = getVal(`round${roundNumber}SecondaryDeadline`);
+    }
+    if (getEl(`round${roundNumber}SecondaryPitching`)) {
+      updateData[`${roundField}.secondary.pitching`] = getVal(`round${roundNumber}SecondaryPitching`);
+    }
+    if (getEl(`round${roundNumber}SecondaryAdvisor`)) {
+      updateData[`${roundField}.secondary.advisor`] = getVal(`round${roundNumber}SecondaryAdvisor`);
+    }
+    if (getEl(`round${roundNumber}SecondaryInterviewer`)) {
+      updateData[`${roundField}.secondary.interviewer`] = getVal(`round${roundNumber}SecondaryInterviewer`);
+    }
+  }
+
+  try {
+    const candidateRef = doc(db, "applications", currentCandidateId);
+    // ✅ cập nhật dữ liệu vòng
+    await updateDoc(candidateRef, updateData);
+
+    // ✅ merge dữ liệu ứng viên hiện tại với updateData theo đúng cấu trúc
+    const mergedCandidate = JSON.parse(JSON.stringify(candidate)); // deep clone tránh mutate
+    for (const key in updateData) {
+      const path = key.split(".");
+      let obj = mergedCandidate;
+      for (let i = 0; i < path.length - 1; i++) {
+        if (!obj[path[i]]) obj[path[i]] = {};
+        obj = obj[path[i]];
+      }
+      obj[path[path.length - 1]] = updateData[key];
+    }
+
+    // ✅ nếu có ít nhất 1 ban pass thì cập nhật current_round
+    const pStatus = resolveStatus(mergedCandidate, roundNumber, 'priority');
+    const sStatus = resolveStatus(mergedCandidate, roundNumber, 'secondary');
+
+    if (pStatus === 'pass' || sStatus === 'pass') {
+      await updateDoc(candidateRef, { current_round: roundNumber });
+    }
+
+    showToast('success', `Lưu vòng ${roundNumber} thành công`);
+    await loadCandidates(); // refresh UI
+  } catch (err) {
+    console.error("Error saving round data:", err);
+    showToast('error', 'Có lỗi khi lưu dữ liệu vòng');
+  }
+}
+
+
+    function getRoundText(round) {
+      const names = {
+        0: "Chưa bắt đầu",
+        1: "Đơn",
+        2: "Phỏng vấn nhóm",
+        3: "Thử thách",
+        4: "Phỏng vấn cá nhân",
+        5: "Đã hoàn thành"
+      };
+      return names[Number(round)] || 'Chưa xác định';
+    }
+
+    window.saveRoundData = saveRoundData;
+
+    /* ===== sửa update-round-btn để dùng round_${newRound} thay vì rounds.${newRound} ===== */
+document.getElementById("update-round-btn")?.addEventListener("click", async () => {
+  const newRound = Number(document.getElementById("round-select").value);
+  if (!newRound) return alert("Hãy chọn vòng!");
+  if (!confirm(`Chuyển tất cả ứng viên đã pass sang vòng ${newRound}?`)) return;
+
+  try {
+    const snapshot = await getDocs(collection(db, "applications"));
+    for (const docSnap of snapshot.docs) {
+      const candidate = docSnap.data();
+      const docRef = doc(db, "applications", docSnap.id);
+      const curRound = Number(candidate.current_round) || 1;
+      const currentStatus = resolveRoundStatus(candidate, curRound);
+      if (currentStatus === 'pass') {
+        await updateDoc(docRef, { current_round: newRound });
+      }
+    }
+    alert(`Đã cập nhật vòng ${newRound} thành công!`);
+    await loadCandidates();
+  } catch (error) {
+    console.error("Lỗi khi cập nhật vòng:", error);
+    alert("Có lỗi xảy ra khi cập nhật vòng.");
+  }
+});
+
+
 
     // Filter candidates
     function filterCandidates() {
@@ -1848,113 +2156,142 @@
 
     // Initialize event listeners
     function initEventListeners() {
-      // Login button
-      loginButton.addEventListener('click', login);
-      
-      // Logout button
-      logoutBtn.addEventListener('click', logout);
-      
-      // Refresh button
-      refreshButton.addEventListener('click', loadCandidates);
-      
-      // Export button
-      exportButton.addEventListener('click', exportToCSV);
-      
-      // Filter inputs
-      searchInput.addEventListener('input', filterCandidates);
-      departmentFilter.addEventListener('change', filterCandidates);
-      roundFilter.addEventListener('change', filterCandidates);
-      statusFilter.addEventListener('change', filterCandidates);
-      
-      // Table sorting
+      // Lấy các node an toàn (có thể null)
+      const loginButton = document.getElementById('loginButton');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const refreshButton = document.getElementById('refreshButton');
+      const exportButton = document.getElementById('exportButton');
+      const searchInput = document.getElementById('searchInput');
+      const departmentFilter = document.getElementById('departmentFilter');
+      const roundFilter = document.getElementById('roundFilter');
+      const statusFilter = document.getElementById('statusFilter');
+
+      // Chỉ gắn event nếu phần tử tồn tại
+      if (loginButton) loginButton.addEventListener('click', login);
+      if (logoutBtn) logoutBtn.addEventListener('click', logout);
+      if (refreshButton) refreshButton.addEventListener('click', loadCandidates);
+      if (exportButton) exportButton.addEventListener('click', exportToCSV);
+
+      if (searchInput) searchInput.addEventListener('input', filterCandidates);
+      if (departmentFilter) departmentFilter.addEventListener('change', filterCandidates);
+      if (roundFilter) roundFilter.addEventListener('change', filterCandidates);
+      if (statusFilter) statusFilter.addEventListener('change', filterCandidates);
+
+      // Table sorting (guard)
       document.querySelectorAll('th[data-sort]').forEach(th => {
         th.addEventListener('click', function() {
           sortCandidates(this.getAttribute('data-sort'));
         });
       });
-      
+
       // Main tab switching
-      mainTabButtons.forEach(btn => {
+      document.querySelectorAll('.main-tab-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           switchMainTab(this.getAttribute('data-tab'));
         });
       });
-      
+
       // Round tab switching
-      roundTabButtons.forEach(btn => {
+      document.querySelectorAll('.round-tab-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-          switchRoundTab(this.getAttribute('data-tab'));
+          const tabId = this.getAttribute('data-tab');
+          switchRoundTab(tabId);
         });
       });
-      
-      // Round candidate selection
-      roundCandidateSelect.addEventListener('change', function() {
-        if (this.value) {
-          loadRoundManagement(this.value);
-        } else {
-          roundManagementContent.style.display = 'none';
-          noCandidateSelected.style.display = 'block';
-        }
-      });
-      
-      // History candidate selection
-      historyCandidateSelect.addEventListener('change', function() {
-        if (this.value) {
-          loadCandidateHistory(this.value);
-        } else {
-          historyContent.innerHTML = `
-            <div class="filter-section" style="text-align: center; padding: 50px;">
-              <i class="fas fa-clock" style="font-size: 48px; color: var(--text-light); margin-bottom: 20px;"></i>
-              <h3 style="color: var(--text-light);">Vui lòng chọn ứng viên để xem lịch sử hoạt động</h3>
-            </div>
-          `;
-        }
-      });
-      
-      // History type filter
-      historyTypeFilter.addEventListener('change', function() {
-        if (historyCandidateSelect.value) {
-          loadCandidateHistory(historyCandidateSelect.value);
-        }
-      });
-      
-      // Modal close buttons
-      closeModalButtons.forEach(btn => {
+
+      // ... các listener khác: kiểm tra ID trước khi dùng
+      const roundCandidateSelect = document.getElementById('roundCandidateSelect');
+      if (roundCandidateSelect) {
+        roundCandidateSelect.addEventListener('change', function() {
+          if (this.value) loadRoundManagement(this.value);
+          else {
+            const roundManagementContent = document.getElementById('roundManagementContent');
+            const noCandidateSelected = document.getElementById('noCandidateSelected');
+            if (roundManagementContent) roundManagementContent.style.display = 'none';
+            if (noCandidateSelected) noCandidateSelected.style.display = 'block';
+          }
+        });
+      }
+
+      // Modal close handlers — guard
+      document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', function() {
-          candidateModal.style.display = 'none';
-          editModal.style.display = 'none';
+          const candidateModal = document.getElementById('candidateModal');
+          const editModal = document.getElementById('editModal');
+          if (candidateModal) candidateModal.style.display = 'none';
+          if (editModal) editModal.style.display = 'none';
         });
       });
-      
-      // Close modal when clicking outside
+
       window.addEventListener('click', function(event) {
-        if (event.target === candidateModal) {
-          candidateModal.style.display = 'none';
-        }
-        if (event.target === editModal) {
-          editModal.style.display = 'none';
-        }
+        const candidateModal = document.getElementById('candidateModal');
+        const editModal = document.getElementById('editModal');
+        if (event.target === candidateModal && candidateModal) candidateModal.style.display = 'none';
+        if (event.target === editModal && editModal) editModal.style.display = 'none';
       });
-      
-      // Save buttons
-      document.getElementById('saveEditBtn').addEventListener('click', saveEditedCandidate);
-      document.getElementById('saveRound1Btn').addEventListener('click', () => saveRoundData(1));
-      document.getElementById('saveRound2Btn').addEventListener('click', () => saveRoundData(2));
-      document.getElementById('saveRound3Btn').addEventListener('click', () => saveRoundData(3));
-      document.getElementById('saveRound4Btn').addEventListener('click', () => saveRoundData(4));
+
+      // Save buttons guard
+      const saveEditBtn = document.getElementById('saveEditBtn');
+      if (saveEditBtn) saveEditBtn.addEventListener('click', saveEditedCandidate);
+
+      const saveRound1Btn = document.getElementById('saveRound1Btn');
+      if (saveRound1Btn) saveRound1Btn.addEventListener('click', () => saveRoundData(1));
+      const saveRound2Btn = document.getElementById('saveRound2Btn');
+      if (saveRound2Btn) saveRound2Btn.addEventListener('click', () => saveRoundData(2));
+      const saveRound3Btn = document.getElementById('saveRound3Btn');
+      if (saveRound3Btn) saveRound3Btn.addEventListener('click', () => saveRoundData(3));
+      const saveRound4Btn = document.getElementById('saveRound4Btn');
+      if (saveRound4Btn) saveRound4Btn.addEventListener('click', () => saveRoundData(4));
     }
+
 
     // Check auth state
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        loginBox.style.display = 'none';
+        // Nếu đã đăng nhập thì hiển thị Admin
         adminContent.style.display = 'block';
         loadCandidates();
       } else {
-        loginBox.style.display = 'block';
-        adminContent.style.display = 'none';
+        // Nếu chưa đăng nhập thì chuyển sang login.html
+        window.location.href = "/admin/login.html";
       }
     });
+
+document.getElementById("update-round-btn").addEventListener("click", async () => {
+  const newRound = Number(document.getElementById("round-select").value);
+  if (!newRound) return alert("Hãy chọn vòng!");
+
+  if (!confirm(`Chuyển tất cả ứng viên đã pass sang vòng ${newRound}?`)) return;
+
+  try {
+    const snapshot = await getDocs(collection(db, "applications"));
+
+    for (const docSnap of snapshot.docs) {
+      const candidate = docSnap.data();
+      const docRef = doc(db, "applications", docSnap.id);
+
+      // chỉ update nếu ứng viên pass vòng hiện tại
+      const pass =
+        candidate.priorityAccepted === true ||
+        candidate.secondaryAccepted === true ||
+        candidate.priorityAccepted === "true" ||
+        candidate.secondaryAccepted === "true";
+
+      if (pass) {
+        await updateDoc(docRef, {
+          current_round: newRound,
+          [`rounds.${newRound}.status`]: candidate.rounds?.[newRound]?.status || "pending"
+        });
+      }
+    }
+
+    alert(`Đã cập nhật vòng ${newRound} thành công!`);
+    await loadCandidates();
+  } catch (error) {
+    console.error("Lỗi khi cập nhật vòng:", error);
+    alert("Có lỗi xảy ra khi cập nhật vòng.");
+  }
+});
 
     // Initialize the app
     document.addEventListener('DOMContentLoaded', function() {
