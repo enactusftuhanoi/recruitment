@@ -687,25 +687,28 @@
             ];
 
             var currentRound = applicationData.current_round || 'round1';
-            var shouldStop = false;
+
+            // Map round -> số thứ tự
+            var roundIndex = { round1: 1, round2: 2, round3: 3, round4: 4 };
+            var maxIndex = roundIndex[currentRound];
 
             for (var i = 0; i < roundDefs.length; i++) {
-                if (shouldStop) break;
                 var round = roundDefs[i];
+
+                // ⛔ Dừng nếu vượt quá vòng hiện tại
+                if (roundIndex[round.id] > maxIndex) break;
 
                 var pri = applicationData[round.id + '_priority_status'];
                 var sec = applicationData[round.id + '_secondary_status'];
 
                 // Nếu cả 2 ban cùng not-pass ở vòng này -> dừng
                 if (pri === 'not-pass' && sec === 'not-pass') {
-                    shouldStop = true;
                     break;
                 }
 
                 // Nếu cả 2 ban đã bị loại trước đó -> dừng
                 var bothOutBefore = isEliminatedBefore('priority', i + 1) && isEliminatedBefore('secondary', i + 1);
                 if (bothOutBefore) {
-                    shouldStop = true;
                     break;
                 }
 
@@ -738,7 +741,10 @@
                 roundsList.appendChild(roundCard);
 
                 if (round.id === currentRound) {
-                    (function(rid){ setTimeout(function(){ var el = document.getElementById('details-' + rid); if (el) el.classList.add('active'); }, 300); })(round.id);
+                    (function(rid){ setTimeout(function(){ 
+                        var el = document.getElementById('details-' + rid); 
+                        if (el) el.classList.add('active'); 
+                    }, 300); })(round.id);
                 }
             }
         }

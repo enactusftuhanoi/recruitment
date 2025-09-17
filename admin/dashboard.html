@@ -1317,30 +1317,34 @@
 
             // chỉ giữ ban pass vòng 1 (từ response map)
             const positions = [
-              { type: 'priority', dept: app.priority_position, prev: app.priority_status },
-              { type: 'secondary', dept: app.secondary_position, prev: app.secondary_status }
+            { type: 'priority', dept: app.priority_position, prev: app.priority_status },
+            { type: 'secondary', dept: app.secondary_position, prev: app.secondary_status }
             ].filter(pos => pos.dept && pos.dept !== 'null' && pos.prev === 'pass');
 
-            if (positions.length === 0) return;
+            // Lọc theo quyền admin
+            const visiblePositions = positions.filter(pos => {
+            if (userRole === 'admin') {
+                return pos.dept === userDept;
+            }
+            return true; // superadmin thì thấy tất cả
+            });
 
-            positions.forEach((pos, idx) => {
-              if (userRole === 'admin' && pos.dept !== userDept) return;
+            if (visiblePositions.length === 0) return;
 
-              const status = app[`round2_${pos.type}_status`] || 'pending';
-              const data = app.round2?.[pos.type] || {};
+            visiblePositions.forEach((pos, idx) => {
+            const status = app[`round2_${pos.type}_status`] || 'pending';
+            const data = app.round2?.[pos.type] || {};
 
-              // trong renderRound2(), khi build tr.innerHTML
-              const canEditThisBan = canEditBan(app, pos.type); // pos.type = 'priority'|'secondary'
-              const rowClass = canEditThisBan ? '' : 'row-disabled';
+            const canEditThisBan = canEditBan(app, pos.type);
+            const rowClass = canEditThisBan ? '' : 'row-disabled';
 
-              const tr = document.createElement('tr');
-              tr.className = rowClass;
+            const tr = document.createElement('tr');
+            tr.className = rowClass;
 
-              // nếu tên cần rowspan
-              if (idx === 0) {
-                tr.innerHTML += `<td rowspan="${positions.length}">${app.fullname}</td>`;
-              }
-
+            // Tên ứng viên chỉ hiển thị 1 lần với rowspan = số dòng thực sự render
+            if (idx === 0) {
+                tr.innerHTML += `<td rowspan="${visiblePositions.length}">${app.fullname}</td>`;
+            }
               tr.innerHTML += `
                 <td>${pos.dept}</td>
                 <td><input class="app-input" ${!canEditThisBan ? 'disabled' : ''} value="${data.time || ''}" data-field="${pos.type}.time"></td>
