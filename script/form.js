@@ -746,14 +746,24 @@
                 
                 // Nếu là hình thức phỏng vấn, xóa dữ liệu section 3
                 if (applicationType === 'interview') {
+                    // Chỉ xoá phần intro và các câu hỏi chi tiết theo phân ban,
+                    // nhưng giữ lại lựa chọn ban (priority_position, secondary_position).
                     delete formObject.intro;
-                    
-                    // Xóa tất cả câu hỏi phân ban
+
                     Object.keys(formObject).forEach(key => {
-                        if (key.startsWith('priority_') || key.startsWith('secondary_')) {
+                        if ((key.startsWith('priority_') || key.startsWith('secondary_'))
+                            && key !== 'priority_position' && key !== 'secondary_position') {
                             delete formObject[key];
                         }
                     });
+
+                    // (Không bắt buộc) nếu bạn muốn chắc chắn không gửi các trường rỗng
+                    if (Array.isArray(formObject.md_sub_departments) && formObject.md_sub_departments.length === 0) {
+                        delete formObject.md_sub_departments;
+                    }
+                    if (Array.isArray(formObject.md_sub_departments_secondary) && formObject.md_sub_departments_secondary.length === 0) {
+                        delete formObject.md_sub_departments_secondary;
+                    }
                 }
                 
                 // Trước khi lưu vào Firebase
