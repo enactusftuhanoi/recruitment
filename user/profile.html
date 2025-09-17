@@ -547,13 +547,13 @@
             if (!applicationData) return;
             
             // Basic info
-            document.getElementById('profile-name').textContent = applicationData.fullname || 'Chưa cung cấp';
-            document.getElementById('profile-email').textContent = applicationData.email || 'Chưa cung cấp';
-            document.getElementById('profile-phone').textContent = applicationData.phone || 'Chưa cung cấp';
+            document.getElementById('profile-name').textContent = applicationData.fullname || 'Không có dữ liệu';
+            document.getElementById('profile-email').textContent = applicationData.email || 'Không có dữ liệu';
+            document.getElementById('profile-phone').textContent = applicationData.phone || 'Không có dữ liệu';
             
             // Departments
-            document.getElementById('priority-department').textContent = getDepartmentName(applicationData.priority_position) || 'Chưa cung cấp';
-            document.getElementById('secondary-department').textContent = getDepartmentName(applicationData.secondary_position) || 'Chưa cung cấp';
+            document.getElementById('priority-department').textContent = getDepartmentName(applicationData.priority_position) || 'Không có dữ liệu';
+            document.getElementById('secondary-department').textContent = getDepartmentName(applicationData.secondary_position) || 'Không có dữ liệu';
             
             // Current round and status
             const currentRound = applicationData.current_round || 'round1';
@@ -576,54 +576,179 @@
             renderRounds();
         }
 
-        // Render rounds
-        function renderRounds() {
-            const roundsList = document.getElementById('rounds-list');
-            roundsList.innerHTML = '';
-            
-            const rounds = [
-                { id: 'round1', title: 'Vòng 1: Đơn ứng tuyển', status: applicationData.status || 'new' },
-                { id: 'round2', title: 'Vòng 2: Phỏng vấn nhóm', status: getDeptStatusForRound(applicationData, 'priority') || 'pending' },
-                { id: 'round3', title: 'Vòng 3: Thử thách', status: getDeptStatusForRound(applicationData, 'priority') || 'pending' },
-                { id: 'round4', title: 'Vòng 4: Phỏng vấn cá nhân', status: getDeptStatusForRound(applicationData, 'priority') || 'pending' },
-                { id: 'success', title: 'Kết quả cuối cùng', status: applicationData.final_status || 'pending' }
-            ];
-            
-            // Sort rounds: current round first, then completed, then pending
-            const currentRound = applicationData.current_round || 'round1';
-            
-            rounds.forEach(round => {
-                const roundCard = document.createElement('div');
-                roundCard.className = 'round-card';
-                
-                const isCurrent = round.id === currentRound;
-                const isCompleted = isRoundCompleted(round.id);
-                
-                roundCard.innerHTML = `
-                    <div class="round-header" onclick="toggleRoundDetails('${round.id}')">
-                        <div class="round-title">${round.title}</div>
-                        <div class="round-status ${getStatusClass(round.status)}">${getStatusText(round.status)}</div>
-                    </div>
-                    <div class="round-details" id="details-${round.id}">
-                        ${getRoundDetails(round.id)}
-                    </div>
-                `;
-                
-                roundsList.appendChild(roundCard);
-                
-                // Auto-expand current round
-                if (isCurrent) {
-                    setTimeout(() => {
-                        document.getElementById(`details-${round.id}`).classList.add('active');
-                    }, 300);
-                }
-            });
+        function isEliminatedBefore(type, roundNumber) {
+            for (let i = 1; i < roundNumber; i++) {
+                const st = applicationData[`round${i}_${type}_status`];
+                if (st === 'not-pass') return true;
+            }
+            return false;
         }
 
-        // Toggle round details
+        // Helper nhỏ (nếu bạn chưa có)
+        function isEliminatedBefore(type, roundNumber) {
+            if (!applicationData) return false;
+            for (let i = 1; i < roundNumber; i++) {
+                const st = applicationData['round' + i + '_' + type + '_status'];
+                if (st === 'not-pass') return true;
+            }
+            return false;
+        }
+
+
+        /* ---------- DOM helpers ---------- */
+        function createDetailItem(label, value) {
+            var wrap = document.createElement('div');
+            wrap.className = 'detail-item';
+            var lab = document.createElement('div');
+            lab.className = 'detail-label';
+            lab.textContent = label;
+            var val = document.createElement('div');
+            val.className = 'detail-value';
+            val.textContent = value;
+            wrap.appendChild(lab);
+            wrap.appendChild(val);
+            return wrap;
+        }
+
+        /* ---------- build fragment chi tiết cho 1 vòng (không dùng innerHTML) ---------- */
+        function buildRoundDetailsFragment(roundId) {
+            var frag = document.createDocumentFragment();
+            if (!applicationData) {
+                frag.appendChild(createDetailItem('', 'Chưa có thông tin chi tiết'));
+                return frag;
+            }
+
+            if (roundId === 'round1') {
+                ['priority', 'secondary'].forEach(function(type) {
+                    var dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
+                    if (!dept) return;
+                    var status = getRound1Status(type);
+                    frag.appendChild(createDetailItem('Ban ' + getDepartmentName(dept) + ' (' + type + ')', 'Trạng thái: ' + getStatusText(status)));
+                });
+                frag.appendChild(createDetailItem('Hình thức ứng tuyển', applicationData.application_type || 'Form trực tuyến'));
+                var ts = 'Chưa có';
+                if (applicationData.timestamp) {
+                    ts = applicationData.timestamp.toDate ? applicationData.timestamp.toDate().toLocaleString('vi-VN') : String(applicationData.timestamp);
+                }
+                frag.appendChild(createDetailItem('Thời gian nộp đơn', ts));
+                return frag;
+            }
+
+            if (roundId === 'round2' || roundId === 'round3' || roundId === 'round4') {
+                var roundObj = applicationData[roundId] || {};
+                var roundNum = (roundId === 'round2' ? 2 : (roundId === 'round3' ? 3 : 4));
+                ['priority', 'secondary'].forEach(function(type) {
+                    if (isEliminatedBefore(type, roundNum)) return; // nếu ban đã out trước đó thì ko show detail
+                    var dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
+                    if (!dept) return;
+                    var data = roundObj[type] || {};
+                    var status = applicationData[roundId + '_' + type + '_status'] || 'pending';
+                    frag.appendChild(createDetailItem('Ban ' + getDepartmentName(dept) + ' (' + type + ')', 'Trạng thái: ' + getStatusText(status)));
+
+                    if (roundId === 'round2') {
+                        frag.appendChild(createDetailItem('Thời gian', data.time || 'Chưa có'));
+                        frag.appendChild(createDetailItem('Địa điểm', data.location || 'Chưa có'));
+                        frag.appendChild(createDetailItem('Ghi chú', data.note || 'Không có'));
+                    } else if (roundId === 'round3') {
+                        frag.appendChild(createDetailItem('Thử thách', data.challenge || 'Chưa có'));
+                        frag.appendChild(createDetailItem('Thời hạn', data.deadline || 'Chưa có'));
+                        frag.appendChild(createDetailItem('Hướng dẫn', data.instructions || 'Chưa có'));
+                    } else if (roundId === 'round4') {
+                        frag.appendChild(createDetailItem('Thời gian', data.time || 'Chưa có'));
+                        frag.appendChild(createDetailItem('Địa điểm', data.location || 'Chưa có'));
+                        frag.appendChild(createDetailItem('Người phỏng vấn', data.interviewer || 'Chưa có'));
+                        frag.appendChild(createDetailItem('Hình thức', data.method || 'Chưa có'));
+                        frag.appendChild(createDetailItem('Ghi chú', data.note || 'Không có'));
+                    }
+                });
+                return frag;
+            }
+
+            if (roundId === 'success') {
+                frag.appendChild(createDetailItem('Kết quả cuối cùng', getStatusText(applicationData.final_status || 'pending')));
+                return frag;
+            }
+
+            frag.appendChild(createDetailItem('', 'Chưa có thông tin chi tiết'));
+            return frag;
+        }
+
+        /* ---------- renderRounds (DOM-based, không dùng template literals) ---------- */
+        function renderRounds() {
+            var roundsList = document.getElementById('rounds-list');
+            if (!roundsList) return;
+            roundsList.innerHTML = '';
+
+            var roundDefs = [
+                { id: 'round1', title: 'Vòng 1: Đơn ứng tuyển', status: computeRoundStatus('round1') },
+                { id: 'round2', title: 'Vòng 2: Phỏng vấn nhóm', status: computeRoundStatus('round2') },
+                { id: 'round3', title: 'Vòng 3: Thử thách', status: computeRoundStatus('round3') },
+                { id: 'round4', title: 'Vòng 4: Phỏng vấn cá nhân', status: computeRoundStatus('round4') },
+            ];
+
+            var currentRound = applicationData.current_round || 'round1';
+            var shouldStop = false;
+
+            for (var i = 0; i < roundDefs.length; i++) {
+                if (shouldStop) break;
+                var round = roundDefs[i];
+
+                var pri = applicationData[round.id + '_priority_status'];
+                var sec = applicationData[round.id + '_secondary_status'];
+
+                // Nếu cả 2 ban cùng not-pass ở vòng này -> dừng
+                if (pri === 'not-pass' && sec === 'not-pass') {
+                    shouldStop = true;
+                    break;
+                }
+
+                // Nếu cả 2 ban đã bị loại trước đó -> dừng
+                var bothOutBefore = isEliminatedBefore('priority', i + 1) && isEliminatedBefore('secondary', i + 1);
+                if (bothOutBefore) {
+                    shouldStop = true;
+                    break;
+                }
+
+                // build card bằng DOM
+                var roundCard = document.createElement('div');
+                roundCard.className = 'round-card';
+
+                var header = document.createElement('div');
+                header.className = 'round-header';
+                (function(rid){ header.addEventListener('click', function(){ toggleRoundDetails(rid); }); })(round.id);
+
+                var titleDiv = document.createElement('div');
+                titleDiv.className = 'round-title';
+                titleDiv.textContent = round.title;
+
+                var statusDiv = document.createElement('div');
+                statusDiv.className = 'round-status ' + getStatusClass(round.status);
+                statusDiv.textContent = getStatusText(round.status);
+
+                header.appendChild(titleDiv);
+                header.appendChild(statusDiv);
+
+                var detailsDiv = document.createElement('div');
+                detailsDiv.className = 'round-details';
+                detailsDiv.id = 'details-' + round.id;
+                detailsDiv.appendChild(buildRoundDetailsFragment(round.id));
+
+                roundCard.appendChild(header);
+                roundCard.appendChild(detailsDiv);
+                roundsList.appendChild(roundCard);
+
+                if (round.id === currentRound) {
+                    (function(rid){ setTimeout(function(){ var el = document.getElementById('details-' + rid); if (el) el.classList.add('active'); }, 300); })(round.id);
+                }
+            }
+        }
+
+        /* ---------- toggleRoundDetails (giữ nguyên) ---------- */
         function toggleRoundDetails(roundId) {
-            const detailsElement = document.getElementById(`details-${roundId}`);
-            detailsElement.classList.toggle('active');
+            var detailsElement = document.getElementById('details-' + roundId);
+            if (!detailsElement) return;
+            if (detailsElement.classList.contains('active')) detailsElement.classList.remove('active');
+            else detailsElement.classList.add('active');
         }
 
         // Check if round is completed
@@ -642,100 +767,185 @@
             return roundIndex[roundId] < roundIndex[currentRound];
         }
 
+        /* ---------- merge status của 2 ban (dùng chung) ---------- */
+        function mergeStatus(priority, secondary) {
+            if (priority === 'pass' || secondary === 'pass') return 'pass';
+            if (priority === 'not-pass' && secondary === 'not-pass') return 'not-pass';
+            if (priority === 'pending' || secondary === 'pending') return 'pending';
+            return priority || secondary || 'pending';
+        }
+
+        /* ---------- kiểm tra ban đã bị loại ở vòng trước chưa ---------- */
+        function isEliminatedBefore(type, roundNumber) {
+            if (!applicationData) return false;
+            // check round1 special boolean schema too
+            for (var i = 1; i < roundNumber; i++) {
+                if (i === 1) {
+                    if (type === 'priority' && applicationData.priorityRejected) return true;
+                    if (type === 'secondary' && applicationData.secondaryRejected) return true;
+                } else {
+                    var st = applicationData['round' + i + '_' + type + '_status'];
+                    if (st === 'not-pass') return true;
+                }
+            }
+            return false;
+        }
+
+
+        /* ---------- helper: convert round1 boolean flags -> status ---------- */
+        function getRound1Status(type) {
+            if (!applicationData) return 'pending';
+            if (type === 'priority') {
+                if (applicationData.priorityAccepted) return 'pass';
+                if (applicationData.priorityRejected) return 'not-pass';
+            } else {
+                if (applicationData.secondaryAccepted) return 'pass';
+                if (applicationData.secondaryRejected) return 'not-pass';
+            }
+            return 'pending';
+        }
+
         // Get round details
         function getRoundDetails(roundId) {
             if (!applicationData) return '<p>Chưa có thông tin chi tiết</p>';
-            
+
             let details = '';
-            
+
             switch(roundId) {
                 case 'round1':
-                    details = `
+                    ['priority','secondary'].forEach(type => {
+                        const dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
+                        if (!dept) return;
+                        const status = getRound1Status(type); // dùng convert mới
+                        details += `
+                            <div class="detail-item">
+                                <div class="detail-label">Ban ${dept} (${type})</div>
+                                <div class="detail-value">Trạng thái: ${getStatusText(status)}</div>
+                            </div>
+                        `;
+                    });
+
+                    details += `
                         <div class="detail-item">
                             <div class="detail-label">Hình thức ứng tuyển</div>
                             <div class="detail-value">${applicationData.application_type || 'Form trực tuyến'}</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Thời gian nộp đơn</div>
-                            <div class="detail-value">${applicationData.timestamp ? applicationData.timestamp.toDate().toLocaleString('vi-VN') : 'Chưa có thông tin'}</div>
+                            <div class="detail-value">${applicationData.timestamp ? applicationData.timestamp.toDate().toLocaleString('vi-VN') : 'Chưa có'}</div>
                         </div>
                     `;
                     break;
-                    
+
                 case 'round2':
-                    const round2Data = applicationData.round2 || {};
-                    details = `
-                        <div class="detail-item">
-                            <div class="detail-label">Thời gian</div>
-                            <div class="detail-value">${round2Data.time || 'Chưa có thông tin'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Địa điểm</div>
-                            <div class="detail-value">${round2Data.location || 'Chưa có thông tin'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Ghi chú</div>
-                            <div class="detail-value">${round2Data.note || 'Không có ghi chú'}</div>
-                        </div>
-                    `;
+                    const round2 = applicationData.round2 || {};
+                    ['priority','secondary'].forEach(type => {
+                        if (isEliminatedBefore(type, 2)) return;
+                        const dept = type === 'priority' ? applicationData.priority_position : applicationData.secondary_position;
+                        if (!dept) return;
+                        const data = round2[type] || {};
+                        const status = applicationData[`round2_${type}_status`] || 'pending';
+                        details += `
+                            <div class="detail-item">
+                                <div class="detail-label">Ban ${dept} (${type})</div>
+                                <div class="detail-value">Trạng thái: ${getStatusText(status)}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Thời gian</div>
+                                <div class="detail-value">${data.time || 'Chưa có'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Địa điểm</div>
+                                <div class="detail-value">${data.location || 'Chưa có'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Ghi chú</div>
+                                <div class="detail-value">${data.note || 'Không có'}</div>
+                            </div>
+                        `;
+                    });
                     break;
-                    
+
                 case 'round3':
-                    const round3Data = applicationData.round3 || {};
-                    details = `
-                        <div class="detail-item">
-                            <div class="detail-label">Thử thách</div>
-                            <div class="detail-value">${round3Data.challenge || 'Chưa có thông tin'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Thời hạn</div>
-                            <div class="detail-value">${round3Data.deadline || 'Chưa có thông tin'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Hướng dẫn</div>
-                            <div class="detail-value">${round3Data.instructions || 'Chưa có thông tin'}</div>
-                        </div>
-                    `;
+                    const round3 = applicationData.round3 || {};
+                    ['priority','secondary'].forEach(type => {
+                        if (isEliminatedBefore(type, 3)) return;
+                        const dept = type === 'priority' ? applicationData.priority_position : applicationData.secondary_position;
+                        if (!dept) return;
+                        const data = round3[type] || {};
+                        const status = applicationData[`round3_${type}_status`] || 'pending';
+                        details += `
+                            <div class="detail-item">
+                                <div class="detail-label">Ban ${dept} (${type})</div>
+                                <div class="detail-value">Trạng thái: ${getStatusText(status)}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Thử thách</div>
+                                <div class="detail-value">${data.challenge || 'Chưa có'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Thời hạn</div>
+                                <div class="detail-value">${data.deadline || 'Chưa có'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Hướng dẫn</div>
+                                <div class="detail-value">${data.instructions || 'Chưa có'}</div>
+                            </div>
+                        `;
+                    });
                     break;
-                    
+
                 case 'round4':
-                    const round4Data = applicationData.round4 || {};
-                    details = `
-                        <div class="detail-item">
-                            <div class="detail-label">Thời gian</div>
-                            <div class="detail-value">${round4Data.time || 'Chưa có thông tin'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Địa điểm</div>
-                            <div class="detail-value">${round4Data.location || 'Chưa có thông tin'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Người phỏng vấn</div>
-                            <div class="detail-value">${round4Data.interviewer || 'Chưa có thông tin'}</div>
-                        </div>
-                    `;
+                    const round4 = applicationData.round4 || {};
+                    ['priority','secondary'].forEach(type => {
+                        if (isEliminatedBefore(type, 4)) return;
+                        const dept = type === 'priority' ? applicationData.priority_position : applicationData.secondary_position;
+                        if (!dept) return;
+                        const data = round4[type] || {};
+                        const status = applicationData[`round4_${type}_status`] || 'pending';
+                        details += `
+                            <div class="detail-item">
+                                <div class="detail-label">Ban ${dept} (${type})</div>
+                                <div class="detail-value">Trạng thái: ${getStatusText(status)}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Thời gian</div>
+                                <div class="detail-value">${data.time || 'Chưa có'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Địa điểm</div>
+                                <div class="detail-value">${data.location || 'Chưa có'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Người phỏng vấn</div>
+                                <div class="detail-value">${data.interviewer || 'Chưa có'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Hình thức</div>
+                                <div class="detail-value">${data.method || 'Chưa có'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Ghi chú</div>
+                                <div class="detail-value">${data.note || 'Không có'}</div>
+                            </div>
+                        `;
+                    });
                     break;
-                    
+
                 case 'success':
                     details = `
                         <div class="detail-item">
-                            <div class="detail-label">Kết quả</div>
-                            <div class="detail-value">${applicationData.final_status === 'pass' ? 'Chúc mừng bạn đã trở thành thành viên chính thức của Enactus FTU Hanoi!' : 'Ứng tuyển của bạn chưa thành công'}</div>
+                            <div class="detail-label">Kết quả cuối cùng</div>
+                            <div class="detail-value">${getStatusText(applicationData.final_status || 'pending')}</div>
                         </div>
-                        ${applicationData.final_department ? `
-                        <div class="detail-item">
-                            <div class="detail-label">Ban được phân công</div>
-                            <div class="detail-value">${getDepartmentName(applicationData.final_department)}</div>
-                        </div>
-                        ` : ''}
                     `;
                     break;
-                    
+
                 default:
                     details = '<p>Chưa có thông tin chi tiết</p>';
             }
-            
-            return details;
+
+            return details || '<p>Chưa có thông tin chi tiết</p>';
         }
 
         // Helper functions from dashboard
@@ -797,33 +1007,53 @@
         function getStatusText(status) {
             switch(status) {
                 case 'new': return 'Mới';
-                case 'pending': return 'Đang chờ';
-                case 'pass': return 'Đạt';
-                case 'not-pass': return 'Không đạt';
-                case 'interviewed': return 'Đã phỏng vấn';
-                case 'voted': return 'Đã bình chọn';
-                case "success": return "Thành công";
+                case 'pending': return 'Pending';
+                case 'pass': return 'Pass';
+                case 'not-pass': return 'Not pass';
+                case 'interviewed': return 'Interviewed';
+                case 'voted': return 'Voted';
+                case "success": return "Success";
                 default: return status;
             }
         }
 
-        function computeOverallStatus(application) {
-            const round = application.current_round || "round1";
-            if (round === "success" || application.status === "success") {
-                return "success";
+        /* ---------- compute status cho 1 vòng (round1 xử lý khác) ---------- */
+        function computeRoundStatus(roundId) {
+            if (!applicationData) return 'pending';
+            if (roundId === 'round1') {
+                var p = getRound1Status('priority');
+                var s = getRound1Status('secondary');
+                return mergeStatus(p, s);
+            } else {
+                var p = applicationData[roundId + '_priority_status'];
+                var s = applicationData[roundId + '_secondary_status'];
+                return mergeStatus(p, s);
+            }
+        }
+
+        function computeOverallStatus(app) {
+            if (!app) return 'pending';
+
+            const current = app.current_round || 'round1';
+
+            // Nếu vòng 4 pass => Success
+            if (mergeStatus(app.round4_priority_status, app.round4_secondary_status) === 'pass') {
+                return 'success';
             }
 
-            const p = getDeptStatusForRound(application, "priority");
-            const s = getDeptStatusForRound(application, "secondary");
-            const perRoundStatus = application[`${round}_status`] || null;
+            if (current === 'round1') {
+                if (app.priorityAccepted || app.secondaryAccepted) return 'pass';
+                if (app.priorityRejected && (app.secondaryRejected || !app.secondaryAccepted)) return 'not-pass';
+                return 'pending';
+            } else if (current === 'round2') {
+                return mergeStatus(app.round2_priority_status, app.round2_secondary_status);
+            } else if (current === 'round3') {
+                return mergeStatus(app.round3_priority_status, app.round3_secondary_status);
+            } else if (current === 'round4') {
+                return mergeStatus(app.round4_priority_status, app.round4_secondary_status);
+            }
 
-            if (perRoundStatus === 'voted' || perRoundStatus === 'interviewed') return perRoundStatus;
-            if (p === "pass" || s === "pass") return "pass";
-            if ((p === "not-pass" && s === "not-pass") || (p === "not-pass" && !s) || (!p && s === "not-pass")) return "not-pass";
-            if (perRoundStatus === "pass" || perRoundStatus === "not-pass") return perRoundStatus;
-
-            if (round === "round1") return application.status || "new";
-            return "pending";
+            return 'pending';
         }
 
         // Logout
