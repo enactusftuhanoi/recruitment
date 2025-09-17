@@ -20,6 +20,10 @@
         
         // Hàm chọn hình thức ứng tuyển
         function selectApplicationType(type) {
+            if (type === 'interview') {
+                alert("Chức năng phỏng vấn thay đơn đang khóa");
+                return; // không cho chọn
+            }
 
             applicationType = type;
             document.getElementById('application_type').value = type;
@@ -731,8 +735,6 @@
             }
             
             const form = document.getElementById('recruitmentForm');
-            const successMessage = document.getElementById('successMessage');
-            const redirectMsg = document.getElementById('redirectMsg');
             
             // Show loading state
             const submitBtn = form.querySelector('.btn-submit');
@@ -765,24 +767,13 @@
                 // Save to Firebase
                 await db.collection('applications').add(formObject);
 
+                
                 // Xóa dữ liệu tạm sau khi gửi thành công
                 localStorage.removeItem('enactus_form_data');
                 
                 // Hide form and show success message
                 form.style.display = 'none';
-                successMessage.style.display = 'block';
-                
-                // Countdown redirect
-                let countdown = 5;
-                redirectMsg.innerHTML = `Chuyển hướng sau <strong>${countdown}</strong>s...`;
-                const interval = setInterval(() => {
-                    countdown--;
-                    redirectMsg.innerHTML = `Chuyển hướng sau <strong>${countdown}</strong>s...`;
-                    if (countdown <= 0) {
-                        clearInterval(interval);
-                        window.location.href = "/user/login.html";
-                    }
-                }, 1000);
+                document.getElementById('successMessage').style.display = 'block';
                 
                 console.log('Application submitted successfully:', formObject);
             } catch (error) {
@@ -844,33 +835,6 @@
                 updatePositionNames();
             }
         });
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const successMessage = document.getElementById("successMessage");
-            const form = document.getElementById("recruitmentForm");
-            const redirectMsg = document.getElementById("redirectMsg");
-
-            form.addEventListener("submit", function(e) {
-                e.preventDefault();
-
-                // Ẩn form + hiện success message
-                form.style.display = "none";
-                successMessage.style.display = "block";
-
-                let countdown = 5;
-                redirectMsg.textContent = `Chuyển hướng sau ${countdown}s...`;
-
-                const interval = setInterval(() => {
-                countdown--;
-                redirectMsg.textContent = `Chuyển hướng sau ${countdown}s...`;
-
-                if (countdown <= 0) {
-                    clearInterval(interval);
-                    window.location.href = "/user/login.html";
-                }
-                }, 1000);
-            });
-        });
         
         // Add shake animation for error states
         const style = document.createElement('style');
@@ -892,6 +856,5 @@
             confirmButtonText: 'OK'
         });
         };
-
 
 

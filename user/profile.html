@@ -626,7 +626,7 @@
                     frag.appendChild(createDetailItem('Ban ' + getDepartmentName(dept) + ' (' + type + ')', 'Trạng thái: ' + getStatusText(status)));
                 });
                 frag.appendChild(createDetailItem('Hình thức ứng tuyển', applicationData.application_type || 'Form trực tuyến'));
-                var ts = 'Chưa có';
+                var ts = 'Đang cập nhật';
                 if (applicationData.timestamp) {
                     ts = applicationData.timestamp.toDate ? applicationData.timestamp.toDate().toLocaleString('vi-VN') : String(applicationData.timestamp);
                 }
@@ -646,18 +646,18 @@
                     frag.appendChild(createDetailItem('Ban ' + getDepartmentName(dept) + ' (' + type + ')', 'Trạng thái: ' + getStatusText(status)));
 
                     if (roundId === 'round2') {
-                        frag.appendChild(createDetailItem('Thời gian', data.time || 'Chưa có'));
-                        frag.appendChild(createDetailItem('Địa điểm', data.location || 'Chưa có'));
+                        frag.appendChild(createDetailItem('Thời gian', data.time || 'Đang cập nhật'));
+                        frag.appendChild(createDetailItem('Địa điểm', data.location || 'Đang cập nhật'));
                         frag.appendChild(createDetailItem('Ghi chú', data.note || 'Không có'));
                     } else if (roundId === 'round3') {
-                        frag.appendChild(createDetailItem('Thử thách', data.challenge || 'Chưa có'));
-                        frag.appendChild(createDetailItem('Thời hạn', data.deadline || 'Chưa có'));
-                        frag.appendChild(createDetailItem('Hướng dẫn', data.instructions || 'Chưa có'));
+                        frag.appendChild(createDetailItem('Thử thách', data.challenge || 'Đang cập nhật'));
+                        frag.appendChild(createDetailItem('Thời hạn', data.deadline || 'Đang cập nhật'));
+                        frag.appendChild(createDetailItem('Hướng dẫn', data.instructions || 'Đang cập nhật'));
                     } else if (roundId === 'round4') {
-                        frag.appendChild(createDetailItem('Thời gian', data.time || 'Chưa có'));
-                        frag.appendChild(createDetailItem('Địa điểm', data.location || 'Chưa có'));
-                        frag.appendChild(createDetailItem('Người phỏng vấn', data.interviewer || 'Chưa có'));
-                        frag.appendChild(createDetailItem('Hình thức', data.method || 'Chưa có'));
+                        frag.appendChild(createDetailItem('Thời gian', data.time || 'Đang cập nhật'));
+                        frag.appendChild(createDetailItem('Địa điểm', data.location || 'Đang cập nhật'));
+                        frag.appendChild(createDetailItem('Người phỏng vấn', data.interviewer || 'Đang cập nhật'));
+                        frag.appendChild(createDetailItem('Hình thức', data.method || 'Đang cập nhật'));
                         frag.appendChild(createDetailItem('Ghi chú', data.note || 'Không có'));
                     }
                 });
@@ -838,7 +838,7 @@
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Thời gian nộp đơn</div>
-                            <div class="detail-value">${applicationData.timestamp ? applicationData.timestamp.toDate().toLocaleString('vi-VN') : 'Chưa có'}</div>
+                            <div class="detail-value">${applicationData.timestamp ? applicationData.timestamp.toDate().toLocaleString('vi-VN') : 'Đang cập nhật'}</div>
                         </div>
                     `;
                     break;
@@ -858,11 +858,11 @@
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Thời gian</div>
-                                <div class="detail-value">${data.time || 'Chưa có'}</div>
+                                <div class="detail-value">${data.time || 'Đang cập nhật'}</div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Địa điểm</div>
-                                <div class="detail-value">${data.location || 'Chưa có'}</div>
+                                <div class="detail-value">${data.location || 'Đang cập nhật'}</div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Ghi chú</div>
@@ -887,15 +887,15 @@
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Thử thách</div>
-                                <div class="detail-value">${data.challenge || 'Chưa có'}</div>
+                                <div class="detail-value">${data.challenge || 'Đang cập nhật'}</div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Thời hạn</div>
-                                <div class="detail-value">${data.deadline || 'Chưa có'}</div>
+                                <div class="detail-value">${data.deadline || 'Đang cập nhật'}</div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Hướng dẫn</div>
-                                <div class="detail-value">${data.instructions || 'Chưa có'}</div>
+                                <div class="detail-value">${data.instructions || 'Đang cập nhật'}</div>
                             </div>
                         `;
                     });
@@ -916,19 +916,19 @@
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Thời gian</div>
-                                <div class="detail-value">${data.time || 'Chưa có'}</div>
+                                <div class="detail-value">${data.time || 'Đang cập nhật'}</div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Địa điểm</div>
-                                <div class="detail-value">${data.location || 'Chưa có'}</div>
+                                <div class="detail-value">${data.location || 'Đang cập nhật'}</div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Người phỏng vấn</div>
-                                <div class="detail-value">${data.interviewer || 'Chưa có'}</div>
+                                <div class="detail-value">${data.interviewer || 'Đang cập nhật'}</div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Hình thức</div>
-                                <div class="detail-value">${data.method || 'Chưa có'}</div>
+                                <div class="detail-value">${data.method || 'Đang cập nhật'}</div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Ghi chú</div>
