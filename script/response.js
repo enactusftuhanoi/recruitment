@@ -821,7 +821,7 @@ function getDepartmentName(code) {
         'MD': 'Truyền thông',
         'HR': 'Nhân sự',
         'ER': 'Đối ngoại',
-        'PD': 'Nội dung'
+        'PD': 'Dự án'
     };
     
     return departments[code] || code;
