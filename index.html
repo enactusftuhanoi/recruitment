@@ -260,6 +260,129 @@
         }
         }
 
+        /* Intro Section */
+        .intro-section {
+          width: 100%;
+          margin: 120px auto 140px;
+          padding: 0 20px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .intro-title img {
+          width: 600px;
+          max-width: 100%;
+          height: auto;
+          display: block;
+          margin: 0 auto 50px;
+        }
+
+        .intro-container {
+          max-width: 900px;
+          background: rgba(158, 182, 255, 0.35);
+          border: 2px solid rgba(130, 163, 250, 0.6);
+          border-radius: 24px;
+          padding: 40px;
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          font-family: "Montserrat", sans-serif;
+          font-size: 1.05rem;
+          line-height: 1.7;
+          color: #ffffff;
+          text-align: justify;
+        }
+
+        .intro-container p {
+          margin-bottom: 18px;
+        }
+
+        /* Timeline Section */
+        .timeline-section {
+          width: 100%;
+          margin: 120px auto 140px;
+          padding: 0 20px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .timeline-title img {
+          width: 600px;
+          max-width: 100%;
+          height: auto;
+          display: block;
+          margin: 0 auto 60px;
+        }
+
+        .timeline-wrapper {
+          position: relative;
+          width: 100%;
+          max-width: 1000px;
+          margin: 80px auto 0;
+          padding: 0 40px; /* tạo dư line ở 2 bên */
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+        }
+
+        .timeline-line {
+          position: absolute;
+          top: 20px;
+          left: 20px;
+          right: 20px;
+          height: 4px;
+          background: rgba(255, 255, 255, 0.8);
+          z-index: 0;
+        }
+
+        .timeline-step {
+          position: relative;
+          text-align: center;
+          flex: 1;
+        }
+
+        .timeline-icon {
+          position: absolute;
+          top: -110px; /* cao hơn line */
+          left: 20px;
+          width: 90px; /* to hơn icon */
+          height: auto;
+          transform: translateX(0);
+          transition: transform 0.2s ease-out;
+          z-index: 3;
+        }
+
+        .timeline-step .dot {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: #ffd84d;
+          border: 3px solid rgba(255, 255, 255, 0.9);
+          margin: 0 auto;
+          position: relative;
+          top: 10px; /* đặt dot chạm line */
+          z-index: 2;
+        }
+
+        .step-text h3 {
+          font-family: "Bricolage Grotesque", sans-serif;
+          font-size: 1rem; /* nhỏ lại */
+          text-transform: uppercase;
+          color: #ffd84d; /* vàng */
+          text-shadow:
+            0 0 4px rgba(255, 255, 255, 0.9),
+            0 0 8px rgba(255, 255, 255, 0.6); /* glow trắng */
+          margin-top: 20px;
+        }
+
+        .step-text p {
+          font-family: "Montserrat", sans-serif;
+          font-size: 0.85rem; /* nhỏ gọn hơn */
+          color: #f0f0f0;
+          margin-top: 4px;
+        }
+
        /* FAQ Section */
       .faq-section {
         width: 100%;
@@ -535,6 +658,84 @@
         <p>Giây</p>
       </div>
     </section>
+    <!-- Intro Section -->
+    <section id="intro" class="intro-section">
+      <!-- Tiêu đề bằng ảnh -->
+      <div class="intro-title">
+        <img src="/assets/intro.png" alt="Giới thiệu Enactus FTU Hanoi" />
+      </div>
+      <!-- Nội dung -->
+      <div class="intro-container" data-aos="fade-up">
+        <p>
+          ✨ <strong>Enactus FTU Hanoi</strong> được thành lập từ năm 2008,
+          là một trong những câu lạc bộ tiên phong tại Đại học Ngoại thương
+          với sứ mệnh tạo ra <strong>tác động xã hội bền vững</strong>
+          thông qua các dự án khởi nghiệp xã hội.
+        </p>
+        <p>
+          🌍 Trải qua nhiều thế hệ, Enactus FTU Hanoi đã không ngừng phát triển,
+          mang lại những dự án ý nghĩa, đồng thời xây dựng một cộng đồng sinh viên
+          trẻ trung, năng động, luôn sẵn sàng thử thách bản thân và đóng góp
+          cho xã hội.
+        </p>
+        <p>
+          🚀 Hành trình tại Enactus không chỉ là nơi để bạn học hỏi và trau dồi
+          kỹ năng, mà còn là nơi bạn tìm thấy đồng đội, cảm hứng và động lực
+          để tạo ra những giá trị thật sự.
+        </p>
+      </div>
+    </section>
+    <!-- Timeline Section -->
+    <section id="timeline" class="timeline-section">
+      <!-- Tiêu đề -->
+      <div class="timeline-title">
+        <img src="/assets/timeline.png" alt="Timeline tuyển thành viên" />
+      </div>
+
+      <div class="timeline-wrapper">
+        <!-- Line -->
+        <div class="timeline-line"></div>
+
+        <!-- Icon ong -->
+        <img src="/assets/icon.png" alt="Bee Icon" class="timeline-icon" />
+
+        <!-- Step 1 -->
+        <div class="timeline-step">
+          <div class="dot"></div>
+          <div class="step-text">
+            <h3>Vòng Đơn</h3>
+            <p>01.10.2025 - 21.10.2025</p>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="timeline-step">
+          <div class="dot"></div>
+          <div class="step-text">
+            <h3>Vòng Phỏng vấn nhóm</h3>
+            <p>24.10.2025 - 25.10.2025</p>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="timeline-step">
+          <div class="dot"></div>
+          <div class="step-text">
+            <h3>Vòng Teamwork</h3>
+            <p>28.10.2025 - 06.11.2025</p>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="timeline-step">
+          <div class="dot"></div>
+          <div class="step-text">
+            <h3>Vòng Phỏng vấn cá nhân</h3>
+            <p>09.11.2025 - 11.11.2025</p>
+          </div>
+        </div>
+      </div>
+    </section>
     <!-- FAQ Section -->
     <section id="faq" class="faq-section">
       <!-- Tiêu đề bằng ảnh -->
@@ -761,6 +962,21 @@
         // Toggle item hiện tại 
         item.classList.toggle('active'); 
         }); 
+    });
+    const bee = document.querySelector(".timeline-icon");
+    const timeline = document.querySelector(".timeline-wrapper");
+
+    window.addEventListener("scroll", () => {
+      const rect = timeline.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      // Tính progress (0 -> 1)
+      let progress = (windowHeight - rect.top) / (rect.height + windowHeight);
+      progress = Math.min(Math.max(progress, 0), 1);
+
+      // Giới hạn chạy từ dot 1 đến dot 4
+      const lineWidth = timeline.offsetWidth - 80; // trừ padding 40px mỗi bên
+      bee.style.transform = `translateX(${progress * lineWidth}px)`;
     });
     </script>
   </body>
