@@ -55,10 +55,6 @@ auth.onAuthStateChanged(async (user) => {
         applyRoleUIRules();
         renderUserInfoBox(window.currentUserFullname);
 
-        // 👉 Gắn listener export sau khi UI đã sẵn sàng
-        attachExportDepartmentListener();
-
-
       } else {
         // account không tồn tại
         await auth.signOut();
