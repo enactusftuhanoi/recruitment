@@ -699,7 +699,17 @@ footer {
     font-style: italic;
     color: var(--gray-500);
 }
+.question-media {
+  text-align: center; /* căn giữa ảnh */
+  margin: 10px 0;
+}
 
+.question-media .question-img {
+  max-width: 100%;   /* vừa khung cha */
+  height: auto;
+  border-radius: 8px; /* bo góc nhẹ, optional */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15); /* đổ bóng nhẹ, optional */
+}
 
 /* Responsive styles */
 @media (max-width: 900px) {

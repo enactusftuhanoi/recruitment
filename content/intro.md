@@ -31,8 +31,6 @@ Anh chị chờ em, **Enactus** chờ em!
 > *"We believe investing in students who take entrepreneurial action for
 > others creates a better world for us all"*
 
-📖 Booklet: <https://bit.ly/EnactusFTUHanoi_Booklet2024_G17>
-
 
 ### 📌 CƠ CẤU CÁC VÒNG THI:
 

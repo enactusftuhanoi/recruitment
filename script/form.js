@@ -46,36 +46,107 @@
         loadIntroFromMarkdown();
         });
 
+        // Helper: chuyển newline -> <p> và <br>, giữ paragraph
+        function formatQuestionText(str) {
+        if (!str) return '';
+        // Chia thành các đoạn cách nhau bởi 1 dòng trống -> mỗi đoạn thành <p>...</p>
+        const paragraphs = String(str).split(/\n\s*\n/).map(p => {
+            // trong 1 đoạn, các newline liên tiếp -> <br>
+            return '<p>' + p.trim().replace(/\n+/g, '<br>') + '</p>';
+        });
+        return paragraphs.join('');
+        }
+
         // Hàm hiển thị câu hỏi chung
         function renderGeneralQuestions() {
-          const container = document.getElementById('general-questions');
-          container.innerHTML = '';
-        
-          generalQuestions.forEach(q => {
-            const div = document.createElement('div');
-            div.className = 'form-group question-item';
-            let html = `<label for="general_${q.id}" ${q.required ? 'class="required"' : ''}>${q.question}</label>`;
-        
-            switch (q.type) {
-              case 'textarea':
-                html += `<textarea id="general_${q.id}" name="general_${q.id}" rows="3" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}></textarea>`;
-                break;
-        
-              case 'email':
-              case 'tel':
-              case 'date':
-              case 'text':
-                html += `<input type="${q.type}" id="general_${q.id}" name="general_${q.id}" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}>`;
-                break;
-        
-              default:
-                html += `<input type="text" id="general_${q.id}" name="general_${q.id}" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}>`;
+            const container = document.getElementById('general-questions');
+            if (!container) {
+                console.warn('renderGeneralQuestions: missing #general-questions element');
+                return;
             }
-        
-            div.innerHTML = html;
-            container.appendChild(div);
-          });
-        }
+            container.innerHTML = '';
+
+            generalQuestions.forEach(q => {
+                const div = document.createElement('div');
+                div.className = 'form-group question-item';
+
+                // label
+                const label = document.createElement('label');
+                label.setAttribute('for', `general_${q.id}`);
+                if (q.required) label.classList.add('required');
+
+                const questionText = q.question || '';
+
+                // chỉ xử lý xuống dòng khi có \n
+                if (/\r?\n/.test(questionText)) {
+                const lines = questionText.split(/\r?\n/);
+                lines.forEach((line, idx) => {
+                    label.appendChild(document.createTextNode(line));
+                    if (idx < lines.length - 1) label.appendChild(document.createElement('br'));
+                });
+                } else {
+                // ko có xuống dòng -> đặt text đơn thuần (an toàn)
+                label.textContent = questionText;
+                }
+
+                div.appendChild(label);
+
+                // media (image/video)
+                if (q.media) {
+                const mediaWrap = document.createElement('div');
+                mediaWrap.className = 'question-media';
+                if (q.media.type === 'image') {
+                    const img = document.createElement('img');
+                    img.className = 'question-img';
+                    img.src = q.media.url;
+                    img.alt = q.media.alt || '';
+                    mediaWrap.appendChild(img);
+                } else if (q.media.type === 'video') {
+                    // nếu có thumbnail dùng img, ngược lại dùng <video>
+                    if (q.media.thumbnail) {
+                    const img = document.createElement('img');
+                    img.className = 'question-img';
+                    img.src = q.media.thumbnail;
+                    img.alt = q.media.alt || '';
+                    mediaWrap.appendChild(img);
+                    } else {
+                    const video = document.createElement('video');
+                    video.className = 'question-img';
+                    video.src = q.media.url;
+                    video.controls = true;
+                    mediaWrap.appendChild(video);
+                    }
+                }
+                div.appendChild(mediaWrap);
+                }
+
+                // input / textarea
+                let inputEl;
+                switch (q.type) {
+                case 'textarea':
+                    inputEl = document.createElement('textarea');
+                    inputEl.rows = 3;
+                    break;
+                case 'email':
+                case 'tel':
+                case 'date':
+                case 'text':
+                    inputEl = document.createElement('input');
+                    inputEl.type = q.type;
+                    break;
+                default:
+                    inputEl = document.createElement('input');
+                    inputEl.type = 'text';
+                }
+                inputEl.id = `general_${q.id}`;
+                inputEl.name = `general_${q.id}`;
+                if (q.placeholder) inputEl.placeholder = q.placeholder;
+                if (q.required) inputEl.required = true;
+
+                div.appendChild(inputEl);
+                container.appendChild(div);
+            });
+            }
 
         // Hàm hiển thị câu hỏi theo phân ban
         function renderBanQuestions(banCode, type) {
@@ -94,18 +165,29 @@
                 const questionDiv = document.createElement('div');
                 questionDiv.className = 'form-group question-item';
         
-                let html = `<label for="${prefixedId}" ${q.required ? 'class="required"' : ''}>${q.question}</label>`;
+                let labelHtml = '';
+                if (/\r?\n/.test(q.question)) {
+                const lines = q.question.split(/\r?\n/);
+                lines.forEach((line, idx) => {
+                    labelHtml += line;
+                    if (idx < lines.length - 1) labelHtml += '<br>';
+                });
+                } else {
+                labelHtml = q.question;
+                }
+
+                let html = `<label for="${prefixedId}" ${q.required ? 'class="required"' : ''}>${labelHtml}</label>`;
 
                 // Nếu có media kèm theo
                 if (q.media) {
                     if (q.media.type === 'image') {
                         html += `<div class="question-media">
-                                    <img src="${q.media.url}" alt="${q.media.alt || ''}" style="max-width:300px; margin:10px 0; display:block;">
-                                 </div>`;
+                                    <img src="${q.media.url}" alt="${q.media.alt || ''}" class="question-img">
+                                </div>`;
                     } else if (q.media.type === 'video') {
                         html += `<div class="question-media">
-                                    <video src="${q.media.url}" controls style="max-width:400px; margin:10px 0; display:block;"></video>
-                                 </div>`;
+                                    <video src="${q.media.url}" controls class="question-video"></video>
+                                </div>`;
                     }
                 }
                 
