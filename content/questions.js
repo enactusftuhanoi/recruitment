@@ -12,15 +12,22 @@ const generalQuestions = [
           },
           {
             type: 'textarea',
-            id: 'gq2', //generalQuestions1
+            id: 'gq2',
             question: 'Câu 2: Hãy chia sẻ về một trải nghiệm ngoại khóa, tình nguyện hoặc hoạt động tập thể mà bạn cảm thấy tự hào nhất. Trong trải nghiệm đó, bạn đã đảm nhận vai trò gì, đạt được kết quả gì hoặc gặp phải khó khăn nào? Bạn rút ra được bài học gì và bài học đó sẽ giúp ích như thế nào cho quá trình hoạt động tại CLB?',
             placeholder: '',
             required: true
           },
           {
             type: 'textarea',
-            id: 'gq4', //generalQuestions1
-            question: `Câu 3: Năm 2025, thế giới thay đổi nhanh chóng, kéo theo nhiều vấn đề xã hội đáng lo ngại. Nếu có một "cây đũa thần" để thay đổi duy nhất một vấn đề xã hội nổi bật trong năm 2025 thì bạn sẽ giải quyết vấn đề gì?
+            id: 'gq3', 
+            question: 'Câu 3: “We change while creating the change”. Khi cố gắng thay đổi một điều gì đó, bạn có nhận ra bản thân cũng đã thay đổi? Hãy kể lại một trải nghiệm như vậy.',
+            placeholder: '',
+            required: true
+          },
+          {
+            type: 'textarea',
+            id: 'gq4', 
+            question: `Câu 4: Năm 2025, thế giới thay đổi nhanh chóng, kéo theo nhiều vấn đề xã hội đáng lo ngại. Nếu có một "cây đũa thần" để thay đổi duy nhất một vấn đề xã hội nổi bật trong năm 2025 thì bạn sẽ giải quyết vấn đề gì?
 
           Hãy chia sẻ lý do khiến bạn trăn trở và muốn ưu tiên vấn đề ấy. 
 
@@ -33,12 +40,12 @@ const generalQuestions = [
           {
               type: 'textarea',
               id: 'gq5',
-              question: 'Câu 4: Hãy nêu cảm nhận của bạn về hình ảnh này?',
+              question: 'Câu 5: Hãy nêu cảm nhận của bạn về hình ảnh này?',
               required: true,
               placeholder: 'Hãy nêu cảm nhận về bức ảnh trên',
               media: {
                 type: 'image',
-                url: '/assets/vsic2024.png',
+                url: '/assets/gq5.webp',
               }
           },
         ];
@@ -62,9 +69,16 @@ const generalQuestions = [
                   required: true
                 },
                 {
+                  type: 'checkbox',
+                  id: 'md_qs3_1',
+                  question: 'Câu 3: Chọn 1 nền tảng truyền thông mà em yêu thích nhất:',
+                  options: ['Facebook', 'Instagram', 'TikTok', 'Threads', 'LinkedIn', 'YouTube'],
+                  required: true
+                },
+                {
                   type: 'textarea',
-                  id: 'md_qs3',
-                  question: 'Câu 3: ',
+                  id: 'md_qs3_2',
+                  question: 'Em thường theo dõi những nội dung gì trên nền tảng truyền thông đó?',
                   placeholder: '',
                   required: true
                 },
@@ -73,6 +87,43 @@ const generalQuestions = [
                   id: 'md_qs4',
                   question: 'Câu 4: Hãy chia sẻ một chiến dịch truyền thông để lại cho em nhiều ấn tượng nhất. Tại sao em yêu thích chiến dịch đó?',
                   placeholder: '',
+                  required: true
+                },
+                {
+                  type: 'text',
+                  id: 'md_design_qs1',
+                  question: `Câu 5: Em đã từng có kinh nghiệm viết bài đăng bao giờ chưa? Nếu có, hãy đính kèm một link drive tổng hợp những bài viết tâm đắc nhất em từng làm nhé!
+                              
+                  *Lưu ý: Hãy kiểm tra lại quyền truy cập trước khi gắn nhé!`,
+                  placeholder: 'Hãy điền link drive vào đây',
+                  required: true
+                },
+                {
+                  type: 'scale',
+                  id: 'md_design_qs2',
+                  question: `Câu 6: Em thường sử dụng những công cụ hay phần mềm nào để thiết kế? Hãy đánh giá mức độ thành thạo chúng của em trên thang đo từ 1 đến 5:
+                              1. Chưa biết sử dụng
+                              2. Mới làm quen
+                              3. Sử dụng ở mức cơ bản
+                              4. Sử dụng thành thạo
+                              5. Sử dụng rất thành thạo`,
+                  min: 1,
+                  max: 5,
+                  required: true
+                },
+                {
+                  type: 'textarea',
+                  id: 'md_design_qs3',
+                  question: `Câu 7: Theo em, những yếu tố nào sẽ làm nên một thiết kế bài đăng trên mạng xã hội vừa đảm bảo chất lượng vừa hấp dẫn người xem?`,
+                  placeholder: '',
+                  required: true
+                },
+                                {
+                  type: 'text',
+                  id: 'md_design_qs4',
+                  question: `Câu 8: Em đã từng có kinh nghiệm thiết kế ấn phẩm bao giờ chưa? Nếu có, hãy đính kèm một link drive tổng hợp những ấn phẩm tâm đắc nhất em từng làm nhé!
+                            *Lưu ý: Hãy kiểm tra lại quyền truy cập trước khi gắn nhé!`,
+                  placeholder: 'Hãy điền link drive vào đây',
                   required: true
                 },
               ],
@@ -92,9 +143,16 @@ const generalQuestions = [
                   required: true
                 },
                 {
+                  type: 'checkbox',
+                  id: 'md_qs3_1',
+                  question: 'Câu 3: Chọn 1 nền tảng truyền thông mà em yêu thích nhất:',
+                  options: ['Facebook', 'Instagram', 'TikTok', 'Threads', 'LinkedIn', 'YouTube'],
+                  required: true
+                },
+                {
                   type: 'textarea',
-                  id: 'md_qs3',
-                  question: 'Câu 3: ',
+                  id: 'md_qs3_2',
+                  question: 'Em thường theo dõi những nội dung gì trên nền tảng truyền thông đó?',
                   placeholder: '',
                   required: true
                 },
@@ -115,7 +173,7 @@ const generalQuestions = [
                 {
                   type: 'textarea',
                   id: 'md_content_qs2',
-                  question: 'Câu 6: ',
+                  question: 'Câu 6: Nếu phải chọn một chủ đề xã hội cho bài đăng truyền thông thể hiện quan điểm của mình, em sẽ chọn chủ đề nào và tại sao?',
                   placeholder: '',
                   required: true
                 },
@@ -240,6 +298,25 @@ const generalQuestions = [
                   type: 'textarea',
                   id: 'pd_qs3_1', 
                   question: `2. Bạn sẽ định hình cách tiếp cận thế nào để vừa trấn an lo lắng của phụ huynh, vừa đảm bảo học sinh tiếp nhận được thông điệp giáo dục giới tính một cách phù hợp, hiệu quả?`,
+                  placeholder: '',
+                  required: true
+                },
+                {
+                  type: 'textarea',
+                  id: 'pd_qs4', 
+                  question: `Câu 4: Thiết kế của iPhone dòng Pro từ phiên bản 11 đến 16 có sự thay đổi không quá lớn, với các yếu tố như màn hình, camera, và kích thước đều khá giống nhau. Bạn nghĩ sao về chiến lược thiết kế này của Apple? Liệu việc duy trì một thiết kế ổn định có là một điểm mạnh hay điểm yếu đối với thương hiệu và người dùng trong dài hạn?`,
+                  placeholder: '',
+                  required: true
+                },
+                {
+                  type: 'textarea',
+                  id: 'pd_qs5', 
+                  question: `Câu 5: Gần đây, mạng xã hội rộ lên trào lưu dùng AI để tạo hình ảnh nghệ thuật chỉ với vài dòng mô tả, cho ra những bức tranh đẹp mắt. Trào lưu này thu hút hàng triệu lượt chia sẻ trên TikTok, Instagram, Threads…Tuy nhiên, nó cũng vấp phải nhiều phản ứng dữ dội từ cộng đồng nghệ sĩ, cho rằng AI đã học phong cách từ tác phẩm của con người mà không xin phép hay ghi nhận, dẫn đến việc tạo ra hình ảnh mang tính mô phỏng, thậm chí bị xem là đạo nhái chất xám và làm xói mòn giá trị sáng tạo. 
+                            Liệu hình ảnh do AI tạo ra có thể được coi là nghệ thuật thật sự, hay chỉ là sản phẩm mô phỏng vô hồn? Và nếu AI học từ tác phẩm của con người mà không xin phép, đó có phải là một dạng đạo nhái?
+
+                            Không chỉ dừng lại ở khía cạnh nghệ thuật, làn sóng lạm dụng AI còn dấy lên lo ngại môi trường. Việc tạo ra hàng triệu hình ảnh mỗi ngày tiêu tốn lượng lớn năng lượng từ các trung tâm dữ liệu, kéo theo phát thải khí nhà kính – góp phần vào biến đổi khí hậu.
+
+                            Quan điểm của bạn về vấn đề này như thế nào?`,
                   placeholder: '',
                   required: true
                 }
