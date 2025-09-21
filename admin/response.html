@@ -128,6 +128,9 @@
                         <button class="export-option-btn" onclick="exportData('personalWithResults')">
                             <i class="fas fa-file-alt"></i> Xuất thông tin cá nhân + kết quả
                         </button>
+                        <button class="export-option-btn" onclick="exportInterviewSchedule()">
+                            <i class="fas fa-calendar-alt"></i> Xuất lịch phỏng vấn
+                        </button>
                     </div>
                     <div class="export-filter" id="department-filter" style="display: none;">
                         <label>Chọn ban:</label>
@@ -148,7 +151,8 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- load data trước -->
-    <script src="/script/questions.js"></script>
+    <script src="/content/questions.js"></script>
+    <script src="/content/calendar.js"></script> <!-- THÊM DÒNG NÀY -->
     <!-- logic phụ thuộc vào data -->
     <script src="/script/response.js"></script>
 </body>

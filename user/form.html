@@ -246,7 +246,12 @@
                 <!-- Section 3: Experience and Skills -->
                 <div class="form-section" id="section3">
                     <h2><i class="fas fa-tasks"></i> Chi tiết ứng tuyển</h2>
-                    
+
+                    <div id="interview-schedule" style="display:none; margin-top:20px;">
+                        <h3><i class="fas fa-calendar-alt"></i> Đăng ký lịch phỏng vấn</h3>
+                        <div id="interview-questions"></div>
+                    </div>
+
                     <div class="tab-container">
                         <div class="tab-buttons">
                             <button type="button" class="tab-button active" onclick="showTab('general')">Câu hỏi chung</button>
@@ -342,7 +347,8 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- load data trước -->
-    <script src="/script/questions.js"></script>
+    <script src="/content/questions.js"></script>
+    <script src="/content/calendar.js"></script>
     
     <!-- logic phụ thuộc vào data -->
     <script src="/script/form.js"></script>

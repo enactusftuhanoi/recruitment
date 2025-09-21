@@ -761,6 +761,33 @@
             transform: scale(1.1);
             color: #b71c1c;
             }
+            .department-evaluation {
+                margin: 15px 0;
+                padding: 15px;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                background-color: #f9f9f9;
+            }
+
+            .department-evaluation h4 {
+                margin-top: 0;
+                color: #333;
+                border-bottom: 1px solid #ddd;
+                padding-bottom: 8px;
+            }
+
+            .general-evaluation {
+                margin: 20px 0;
+                padding: 15px;
+                border: 2px solid #ffc107;
+                border-radius: 8px;
+                background-color: #fff8e1;
+            }
+
+            .general-evaluation h4 {
+                margin-top: 0;
+                color: #e65100;
+            }
 
 
 

@@ -394,7 +394,7 @@ function showApplicationDetail(appId) {
     const detailSections = document.getElementById('detail-sections');
     detailSections.innerHTML = '';
     
-    // Thông tin cá nhân (đã bổ sung đầy đủ)
+    // Thông tin cá nhân (luôn hiển thị)
     const personalInfoSection = document.createElement('div');
     personalInfoSection.className = 'detail-section';
     
@@ -413,13 +413,18 @@ function showApplicationDetail(appId) {
                 <span class="detail-label">Số điện thoại</span>
                 <span class="detail-value">${application.phone || 'Chưa cung cấp'}</span>
             </div>
+    `;
+    
+    // Thêm các trường thông tin cá nhân bổ sung (nếu có)
+    if (application.facebook) {
+        personalInfoHTML += `
             <div class="detail-item">
                 <span class="detail-label">Facebook</span>
                 <span class="detail-value">${application.facebook || 'Chưa cung cấp'}</span>
             </div>
-    `;
+        `;
+    }
     
-    // Thêm các trường thông tin cá nhân bổ sung
     if (application.birthdate) {
         personalInfoHTML += `
             <div class="detail-item">
@@ -460,7 +465,7 @@ function showApplicationDetail(appId) {
     detailSections.appendChild(personalInfoSection);
     personalInfoHTML += `</div>`;
     
-    // Thông tin ứng tuyển (sắp xếp lại logic)
+    // Thông tin ứng tuyển
     const applicationInfoSection = document.createElement('div');
     applicationInfoSection.className = 'detail-section';
     
@@ -492,15 +497,18 @@ function showApplicationDetail(appId) {
                 <span class="detail-label">Thời gian dành cho Enactus</span>
                 <span class="detail-value">${application.availability || 'Chưa cung cấp'}</span>
             </div>
-            <div class="detail-item">
-                <span class="detail-label">Trạng thái tổng</span>
-                <span class="detail-value">
-                    <span class="status-indicator ${getStatusInfo(computeOverallStatus(application)).class}">
-                        ${getStatusInfo(computeOverallStatus(application)).text}
-                    </span>
-                </span>
-            </div>
+    `;
 
+    // HIỂN THỊ TRẠNG THÁI CHO CẢ HAI HÌNH THỨC
+    applicationInfoHTML += `
+        <div class="detail-item">
+            <span class="detail-label">Trạng thái tổng</span>
+            <span class="detail-value">
+                <span class="status-indicator ${getStatusInfo(computeOverallStatus(application)).class}">
+                    ${getStatusInfo(computeOverallStatus(application)).text}
+                </span>
+            </span>
+        </div>
     `;
 
     // Hiển thị trạng thái từng nguyện vọng nếu ứng viên có 2 nguyện vọng
@@ -525,9 +533,8 @@ function showApplicationDetail(appId) {
         `;
     }
 
-    // Xác định ban được chấp nhận dựa trên trạng thái từng nguyện vọng
+    // Xác định ban được chấp nhận
     let acceptedText = getAcceptedDepartments(application) || 'Không có';
-
     applicationInfoHTML += `
         <div class="detail-item">
             <span class="detail-label">Ban được chấp nhận</span>
@@ -536,7 +543,6 @@ function showApplicationDetail(appId) {
             </span>
         </div>
     `;
-
 
     // Hiển thị lý do từ chối (nếu có)
     if (application.rejectionReason) {
@@ -557,96 +563,238 @@ function showApplicationDetail(appId) {
             </div>
         `;
     }
-
+    
     applicationInfoHTML += `</div>`;
     applicationInfoSection.innerHTML = applicationInfoHTML;
     detailSections.appendChild(applicationInfoSection);
     
-    // Câu trả lời chung
-    if (application.general_intro) {
-        const generalAnswersSection = document.createElement('div');
-        generalAnswersSection.className = 'detail-section';
-        generalAnswersSection.innerHTML = '<h3><i class="fas fa-comments"></i> Câu trả lời chung</h3>';
-        
-        generalQuestions.forEach(q => {
-            const answer = application[`general_${q.id}`] || 'Chưa trả lời';
+    // XỬ LÝ THEO HÌNH THỨC ỨNG TUYỂN
+    if (application.application_type === 'form') {
+        // HIỂN THỊ CÂU TRẢ LỜI CHO ỨNG VIÊN ĐIỀN ĐƠN
+        // Câu trả lời chung
+        if (application.general_intro) {
+            const generalAnswersSection = document.createElement('div');
+            generalAnswersSection.className = 'detail-section';
+            generalAnswersSection.innerHTML = '<h3><i class="fas fa-comments"></i> Câu trả lời chung</h3>';
             
-            const questionItem = document.createElement('div');
-            questionItem.className = 'question-item';
-            questionItem.innerHTML = `
-                <div class="question-text">${q.question}</div>
-                <div class="answer-text">${answer}</div>
-            `;
-            generalAnswersSection.appendChild(questionItem);
+            generalQuestions.forEach(q => {
+                const answer = application[`general_${q.id}`] || 'Chưa trả lời';
+                
+                const questionItem = document.createElement('div');
+                questionItem.className = 'question-item';
+                questionItem.innerHTML = `
+                    <div class="question-text">${q.question}</div>
+                    <div class="answer-text">${answer}</div>
+                `;
+                generalAnswersSection.appendChild(questionItem);
+            });
+            
+            detailSections.appendChild(generalAnswersSection);
+        }
+        
+        // Câu trả lời theo ban ưu tiên
+        if (application.priority_position) {
+            const priorityAnswersSection = document.createElement('div');
+            priorityAnswersSection.className = 'detail-section';
+
+            let priorityTitle = `<h3><i class="fas fa-star"></i> Câu trả lời cho ${getDepartmentName(application.priority_position)} (Ưu tiên)</h3>`;
+            if (application.priorityRejected) {
+                priorityTitle = `<h3><i class="fas fa-star" style="color: var(--error);"></i> Câu trả lời cho ${getDepartmentName(application.priority_position)} (Ưu tiên - Đã từ chối)</h3>`;
+            } else if (application.acceptedDepartment === application.priority_position) {
+                priorityTitle = `<h3><i class="fas fa-star" style="color: var(--success);"></i> Câu trả lời cho ${getDepartmentName(application.priority_position)} (Ưu tiên - Đã chấp nhận)</h3>`;
+            }
+            priorityAnswersSection.innerHTML = priorityTitle;
+
+            renderBanSpecificAnswers(application, 'priority', priorityAnswersSection);
+
+            // Nút hành động chỉ dành cho ứng viên điền đơn
+            if (canActOnDepartment(application, 'priority')) {
+                const priorityActions = document.createElement('div');
+                priorityActions.className = 'action-buttons';
+                priorityActions.innerHTML = `
+                    <button class="action-button btn-accept" onclick="acceptDepartment('priority')">
+                    <i class="fas fa-check"></i> Chấp nhận ban ưu tiên
+                    </button>
+                    <button class="action-button btn-reject" onclick="rejectDepartment('priority')">
+                    <i class="fas fa-times"></i> Từ chối ban ưu tiên
+                    </button>
+                `;
+                priorityAnswersSection.appendChild(priorityActions);
+            }
+
+            detailSections.appendChild(priorityAnswersSection);
+        }
+
+        // Câu trả lời theo ban dự bị
+        if (application.secondary_position && application.secondary_position !== 'None') {
+            const secondaryAnswersSection = document.createElement('div');
+            secondaryAnswersSection.className = 'detail-section';
+
+            let secondaryTitle = `<h3><i class="fas fa-clock"></i> Câu trả lời cho ${getDepartmentName(application.secondary_position)} (Dự bị)</h3>`;
+            if (application.acceptedDepartment === application.secondary_position) {
+                secondaryTitle = `<h3><i class="fas fa-clock" style="color: var(--success);"></i> Câu trả lời cho ${getDepartmentName(application.secondary_position)} (Dự bị - Đã chấp nhận)</h3>`;
+            } else if (application.secondaryRejected) {
+                secondaryTitle = `<h3><i class="fas fa-clock" style="color: var(--error);"></i> Câu trả lời cho ${getDepartmentName(application.secondary_position)} (Dự bị - Đã từ chối)</h3>`;
+            }
+            secondaryAnswersSection.innerHTML = secondaryTitle;
+
+            renderBanSpecificAnswers(application, 'secondary', secondaryAnswersSection);
+
+            // Nút hành động chỉ dành cho ứng viên điền đơn
+            if (canActOnDepartment(application, 'secondary')) {
+                const secondaryActions = document.createElement('div');
+                secondaryActions.className = 'action-buttons';
+                secondaryActions.innerHTML = `
+                    <button class="action-button btn-accept" onclick="acceptDepartment('secondary')">
+                    <i class="fas fa-check"></i> Chấp nhận ban dự bị
+                    </button>
+                    <button class="action-button btn-reject" onclick="rejectDepartment('secondary')">
+                    <i class="fas fa-times"></i> Từ chối ban dự bị
+                    </button>
+                `;
+                secondaryAnswersSection.appendChild(secondaryActions);
+            }
+
+            detailSections.appendChild(secondaryAnswersSection);
+        }
+    } else {
+        // HIỂN THỊ THÔNG TIN PHỎNG VẤN
+        const interviewInfoSection = document.createElement('div');
+        interviewInfoSection.className = 'detail-section';
+        
+        let interviewHTML = `
+            <h3><i class="fas fa-calendar-alt"></i> Thông tin phỏng vấn</h3>
+            <div class="application-details">
+                <div class="detail-item">
+                    <span class="detail-label">Hình thức</span>
+                    <span class="detail-value">Phỏng vấn trực tiếp</span>
+                </div>
+        `;
+        
+        // HIỂN THỊ LỊCH PHỎNG VẤN ĐÃ CHỌN
+        let hasInterviewData = false;
+        interview.forEach(day => {
+            const dayData = application[day.id];
+            if (dayData && Array.isArray(dayData) && dayData.length > 0) {
+                hasInterviewData = true;
+                interviewHTML += `
+                    <div class="detail-item">
+                        <span class="detail-label">${day.question}</span>
+                        <span class="detail-value">${dayData.join(', ')}</span>
+                    </div>
+                `;
+            }
         });
         
-        detailSections.appendChild(generalAnswersSection);
-    }
-    
-      // --- Câu trả lời theo ban ưu tiên ---
-    if (application.priority_position) {
-        const priorityAnswersSection = document.createElement('div');
-        priorityAnswersSection.className = 'detail-section';
-
-        let priorityTitle = `<h3><i class="fas fa-star"></i> Câu trả lời cho ${getDepartmentName(application.priority_position)} (Ưu tiên)</h3>`;
-        if (application.priorityRejected) {
-        priorityTitle = `<h3><i class="fas fa-star" style="color: var(--error);"></i> Câu trả lời cho ${getDepartmentName(application.priority_position)} (Ưu tiên - Đã từ chối)</h3>`;
-        } else if (application.acceptedDepartment === application.priority_position) {
-        priorityTitle = `<h3><i class="fas fa-star" style="color: var(--success);"></i> Câu trả lời cho ${getDepartmentName(application.priority_position)} (Ưu tiên - Đã chấp nhận)</h3>`;
+        if (!hasInterviewData) {
+            interviewHTML += `
+                <div class="detail-item">
+                    <span class="detail-label">Lịch đã chọn</span>
+                    <span class="detail-value" style="color: var(--error);">Chưa chọn lịch phỏng vấn</span>
+                </div>
+            `;
         }
-        priorityAnswersSection.innerHTML = priorityTitle;
-
-        renderBanSpecificAnswers(application, 'priority', priorityAnswersSection);
-
-        // 👉 chỉ thêm nút nếu có quyền
-        if (canActOnDepartment(application, 'priority')) {
-        const priorityActions = document.createElement('div');
-        priorityActions.className = 'action-buttons';
-        priorityActions.innerHTML = `
-            <button class="action-button btn-accept" onclick="acceptDepartment('priority')">
-            <i class="fas fa-check"></i> Chấp nhận ban ưu tiên
-            </button>
-            <button class="action-button btn-reject" onclick="rejectDepartment('priority')">
-            <i class="fas fa-times"></i> Từ chối ban ưu tiên
-            </button>
-        `;
-        priorityAnswersSection.appendChild(priorityActions);
+        
+        interviewHTML += `</div>`;
+        interviewInfoSection.innerHTML = interviewHTML;
+        detailSections.appendChild(interviewInfoSection);
+        
+        // HIỂN THỊ ĐÁNH GIÁ PHỎNG VẤN CHO CẢ 2 BAN NẾU CÓ
+        if (application.interview_notes || application.interview_result) {
+            const interviewEvaluationSection = document.createElement('div');
+            interviewEvaluationSection.className = 'detail-section';
+            
+            let evaluationHTML = `
+                <h3><i class="fas fa-clipboard-check"></i> Đánh giá phỏng vấn</h3>
+                <div class="application-details">
+            `;
+            
+            if (application.interview_result) {
+                const resultText = application.interview_result === 'accepted' ? 
+                    '<span style="color: var(--success);">Đậu</span>' : 
+                    '<span style="color: var(--error);">Trượt</span>';
+                
+                evaluationHTML += `
+                    <div class="detail-item">
+                        <span class="detail-label">Kết quả chung</span>
+                        <span class="detail-value">${resultText}</span>
+                    </div>
+                `;
+            }
+            
+            // HIỂN THỊ ĐÁNH GIÁ THEO TỪNG BAN NẾU CÓ
+            if (application.priority_interview_notes) {
+                evaluationHTML += `
+                    <div class="detail-item">
+                        <span class="detail-label">Đánh giá ${getDepartmentName(application.priority_position)} (Ưu tiên)</span>
+                        <span class="detail-value">${application.priority_interview_notes}</span>
+                    </div>
+                `;
+            }
+            
+            if (application.secondary_interview_notes && application.secondary_position !== 'None') {
+                evaluationHTML += `
+                    <div class="detail-item">
+                        <span class="detail-label">Đánh giá ${getDepartmentName(application.secondary_position)} (Dự bị)</span>
+                        <span class="detail-value">${application.secondary_interview_notes}</span>
+                    </div>
+                `;
+            }
+            
+            // HIỂN THỊ GHI CHÚ CHUNG NẾU CÓ
+            if (application.interview_notes) {
+                evaluationHTML += `
+                    <div class="detail-item">
+                        <span class="detail-label">Ghi chú chung</span>
+                        <span class="detail-value">${application.interview_notes}</span>
+                    </div>
+                `;
+            }
+            
+            if (application.interview_evaluated_by) {
+                evaluationHTML += `
+                    <div class="detail-item">
+                        <span class="detail-label">Người đánh giá</span>
+                        <span class="detail-value">${application.interview_evaluated_by}</span>
+                    </div>
+                `;
+            }
+            
+            if (application.interview_evaluated_at) {
+                const evalDate = application.interview_evaluated_at.toDate ? 
+                    application.interview_evaluated_at.toDate() : 
+                    new Date(application.interview_evaluated_at);
+                
+                evaluationHTML += `
+                    <div class="detail-item">
+                        <span class="detail-label">Thời gian đánh giá</span>
+                        <span class="detail-value">${evalDate.toLocaleDateString('vi-VN')} ${evalDate.toLocaleTimeString('vi-VN')}</span>
+                    </div>
+                `;
+            }
+            
+            evaluationHTML += `</div>`;
+            interviewEvaluationSection.innerHTML = evaluationHTML;
+            detailSections.appendChild(interviewEvaluationSection);
         }
-
-        detailSections.appendChild(priorityAnswersSection);
-    }
-
-    // --- Câu trả lời theo ban dự bị ---
-    if (application.secondary_position && application.secondary_position !== 'None') {
-        const secondaryAnswersSection = document.createElement('div');
-        secondaryAnswersSection.className = 'detail-section';
-
-        let secondaryTitle = `<h3><i class="fas fa-clock"></i> Câu trả lời cho ${getDepartmentName(application.secondary_position)} (Dự bị)</h3>`;
-        if (application.acceptedDepartment === application.secondary_position) {
-        secondaryTitle = `<h3><i class="fas fa-clock" style="color: var(--success);"></i> Câu trả lời cho ${getDepartmentName(application.secondary_position)} (Dự bị - Đã chấp nhận)</h3>`;
-        } else if (application.secondaryRejected) {
-        secondaryTitle = `<h3><i class="fas fa-clock" style="color: var(--error);"></i> Câu trả lời cho ${getDepartmentName(application.secondary_position)} (Dự bị - Đã từ chối)</h3>`;
+        
+        // THÊM NÚT ĐÁNH GIÁ PHỎNG VẤN CHO ADMIN
+        if (canActOnDepartment(application, 'priority') || canActOnDepartment(application, 'secondary')) {
+            const interviewActions = document.createElement('div');
+            interviewActions.className = 'action-buttons';
+            interviewActions.innerHTML = `
+                <button class="action-button btn-accept" onclick="evaluateInterview('accepted')">
+                    <i class="fas fa-check"></i> Đậu phỏng vấn
+                </button>
+                <button class="action-button btn-reject" onclick="evaluateInterview('rejected')">
+                    <i class="fas fa-times"></i> Trượt phỏng vấn
+                </button>
+                <button class="action-button btn-notes" onclick="addInterviewNotes()">
+                    <i class="fas fa-edit"></i> Thêm ghi chú
+                </button>
+            `;
+            detailSections.appendChild(interviewActions);
         }
-        secondaryAnswersSection.innerHTML = secondaryTitle;
-
-        renderBanSpecificAnswers(application, 'secondary', secondaryAnswersSection);
-
-        // 👉 chỉ thêm nút nếu có quyền
-        if (canActOnDepartment(application, 'secondary')) {
-        const secondaryActions = document.createElement('div');
-        secondaryActions.className = 'action-buttons';
-        secondaryActions.innerHTML = `
-            <button class="action-button btn-accept" onclick="acceptDepartment('secondary')">
-            <i class="fas fa-check"></i> Chấp nhận ban dự bị
-            </button>
-            <button class="action-button btn-reject" onclick="rejectDepartment('secondary')">
-            <i class="fas fa-times"></i> Từ chối ban dự bị
-            </button>
-        `;
-        secondaryAnswersSection.appendChild(secondaryActions);
-        }
-
-        detailSections.appendChild(secondaryAnswersSection);
     }
 
     // Hiển thị view chi tiết
@@ -654,6 +802,154 @@ function showApplicationDetail(appId) {
     document.getElementById('application-detail').style.display = 'block';
 }
 
+// Thêm ghi chú phỏng vấn
+async function addInterviewNotes() {
+    if (!currentApplicationId) return;
+    
+    const application = applications.find(app => app.id === currentApplicationId);
+    if (!application || application.application_type !== 'interview') return;
+    
+    const { value: notes } = await Swal.fire({
+        title: 'Thêm ghi chú phỏng vấn',
+        input: 'textarea',
+        inputLabel: 'Ghi chú',
+        inputValue: application.interview_notes || '',
+        inputPlaceholder: 'Nhập ghi chú về buổi phỏng vấn...',
+        showCancelButton: true,
+        confirmButtonText: 'Lưu',
+        cancelButtonText: 'Hủy'
+    });
+    
+    if (notes !== undefined) {
+        try {
+            await db.collection('applications').doc(currentApplicationId).update({
+                interview_notes: notes,
+                interview_updated_at: new Date()
+            });
+            
+            // Cập nhật local data
+            const appIndex = applications.findIndex(app => app.id === currentApplicationId);
+            if (appIndex !== -1) {
+                applications[appIndex].interview_notes = notes;
+                applications[appIndex].interview_updated_at = new Date();
+            }
+            
+            Swal.fire('Thành công', 'Đã lưu ghi chú phỏng vấn', 'success');
+            showApplicationDetail(currentApplicationId);
+            
+        } catch (error) {
+            console.error('Error saving interview notes:', error);
+            Swal.fire('Lỗi', 'Không thể lưu ghi chú', 'error');
+        }
+    }
+}
+
+// Đánh giá kết quả phỏng vấn
+async function evaluateInterview(result) {
+    if (!currentApplicationId) return;
+    
+    const application = applications.find(app => app.id === currentApplicationId);
+    if (!application || application.application_type !== 'interview') return;
+    
+    const { value: notes } = await Swal.fire({
+        title: result === 'accepted' ? 'Đậu phỏng vấn' : 'Trượt phỏng vấn',
+        input: 'textarea',
+        inputLabel: 'Ghi chú đánh giá',
+        inputPlaceholder: 'Nhập đánh giá chi tiết về ứng viên...',
+        showCancelButton: true,
+        confirmButtonText: 'Xác nhận',
+        cancelButtonText: 'Hủy'
+    });
+    
+    if (notes !== undefined) {
+        try {
+            const updateData = {
+                interview_notes: notes,
+                interview_result: result,
+                interview_evaluated_at: new Date(),
+                interview_evaluated_by: window.currentUserFullname || 'Unknown'
+            };
+            
+            // Cập nhật trạng thái chung
+            if (result === 'accepted') {
+                updateData.status = 'accepted';
+                if (application.priority_position) {
+                    updateData.priorityAccepted = true;
+                }
+                if (application.secondary_position && application.secondary_position !== 'None') {
+                    updateData.secondaryAccepted = true;
+                }
+            } else {
+                updateData.status = 'rejected';
+                if (application.priority_position) {
+                    updateData.priorityRejected = true;
+                }
+                if (application.secondary_position && application.secondary_position !== 'None') {
+                    updateData.secondaryRejected = true;
+                }
+            }
+            
+            await db.collection('applications').doc(currentApplicationId).update(updateData);
+            
+            // Cập nhật local data
+            const appIndex = applications.findIndex(app => app.id === currentApplicationId);
+            if (appIndex !== -1) {
+                applications[appIndex] = { ...applications[appIndex], ...updateData };
+            }
+            
+            Swal.fire('Thành công', `Đã ${result === 'accepted' ? 'chấp nhận' : 'từ chối'} ứng viên`, 'success');
+            showApplicationDetail(currentApplicationId);
+            
+        } catch (error) {
+            console.error('Error evaluating interview:', error);
+            Swal.fire('Lỗi', 'Không thể cập nhật đánh giá phỏng vấn', 'error');
+        }
+    }
+}
+
+// Hàm hiển thị lịch phỏng vấn
+function renderInterviewSchedule(application, container) {
+    if (!application || application.application_type !== 'interview') return;
+    
+    const interviewSection = document.createElement('div');
+    interviewSection.className = 'detail-section';
+    
+    let interviewHTML = `
+        <h3><i class="fas fa-calendar-alt"></i> Lịch phỏng vấn đã chọn</h3>
+        <div class="application-details">
+    `;
+    
+    // Duyệt qua tất cả các ngày phỏng vấn có thể
+    interview.forEach(day => {
+        const dayData = application[day.id];
+        if (dayData && Array.isArray(dayData) && dayData.length > 0) {
+            interviewHTML += `
+                <div class="detail-item">
+                    <span class="detail-label">${day.question}</span>
+                    <span class="detail-value">${dayData.join(', ')}</span>
+                </div>
+            `;
+        }
+    });
+    
+    // Nếu không có lịch nào được chọn
+    let hasInterviewData = interview.some(day => 
+        application[day.id] && Array.isArray(application[day.id]) && application[day.id].length > 0
+    );
+    
+    if (!hasInterviewData) {
+        interviewHTML += `
+            <div class="detail-item">
+                <span class="detail-label">Lịch đã chọn</span>
+                <span class="detail-value" style="color: var(--error);">Chưa chọn lịch phỏng vấn</span>
+            </div>
+        `;
+    }
+    
+    interviewHTML += `</div>`;
+    interviewSection.innerHTML = interviewHTML;
+    container.appendChild(interviewSection);
+}
 // Hàm hiển thị câu trả lời đặc thù của từng ban
 function renderBanSpecificAnswers(application, type, container) {
     const banCode = type === 'priority' ? application.priority_position : application.secondary_position;
@@ -713,103 +1009,120 @@ function hideDetailView() {
 }
 
 // Chấp nhận từng ban riêng biệt
-// Chấp nhận từng ban riêng biệt
 async function acceptDepartment(departmentType) {
-  if (!currentApplicationId) return;
+    if (!currentApplicationId) return;
 
-  const application = applications.find(app => app.id === currentApplicationId);
-  if (!application) return;
+    const application = applications.find(app => app.id === currentApplicationId);
+    if (!application) return;
 
-  // 👉 Check quyền
-  if (!canActOnDepartment(application, departmentType)) {
-    Swal.fire('Không có quyền', 'Bạn không có quyền chấp nhận ứng viên cho ban này.', 'error');
-    return;
-  }
-
-  const confirmResult = await Swal.fire({
-    title: 'Xác nhận',
-    text: `Bạn có chắc chắn muốn CHẤP NHẬN ứng viên này cho ban ${departmentType === 'priority' ? 'ưu tiên' : 'dự bị'}?`,
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: 'Có, chấp nhận',
-    cancelButtonText: 'Hủy'
-  });
-
-  if (!confirmResult.isConfirmed) return;
-
-  try {
-    const updateData = {};
-    if (departmentType === 'priority') {
-      updateData.priorityAccepted = true;
-      updateData.priorityRejected = false;
-    } else {
-      updateData.secondaryAccepted = true;
-      updateData.secondaryRejected = false;
+    // 👉 Check quyền
+    if (!canActOnDepartment(application, departmentType)) {
+        Swal.fire('Không có quyền', 'Bạn không có quyền chấp nhận ứng viên cho ban này.', 'error');
+        return;
     }
 
-    await db.collection('applications').doc(currentApplicationId).update(updateData);
+    const confirmResult = await Swal.fire({
+        title: 'Xác nhận',
+        text: `Bạn có chắc chắn muốn CHẤP NHẬN ứng viên này cho ban ${departmentType === 'priority' ? 'ưu tiên' : 'dự bị'}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Có, chấp nhận',
+        cancelButtonText: 'Hủy'
+    });
 
-    Swal.fire('Thành công', 'Ứng viên đã được CHẤP NHẬN.', 'success');
+    if (!confirmResult.isConfirmed) return;
 
-    // 👉 Load lại danh sách và sau đó mở lại detail
-    await loadApplications();
-    showApplicationDetail(currentApplicationId);
+    try {
+        const updateData = {};
+        if (departmentType === 'priority') {
+            updateData.priorityAccepted = true;
+            updateData.priorityRejected = false;
+            // Đảm bảo không đồng thời accept cả hai
+            if (application.secondaryAccepted) {
+                updateData.secondaryAccepted = false;
+            }
+        } else {
+            updateData.secondaryAccepted = true;
+            updateData.secondaryRejected = false;
+            // Đảm bảo không đồng thời accept cả hai
+            if (application.priorityAccepted) {
+                updateData.priorityAccepted = false;
+            }
+        }
 
-  } catch (err) {
-    console.error(err);
-    Swal.fire('Lỗi', 'Không thể cập nhật trạng thái: ' + err.message, 'error');
-  }
+        await db.collection('applications').doc(currentApplicationId).update(updateData);
+
+        Swal.fire('Thành công', 'Ứng viên đã được CHẤP NHẬN.', 'success');
+
+        // 👉 Load lại danh sách và sau đó mở lại detail
+        await loadApplications();
+        showApplicationDetail(currentApplicationId);
+
+    } catch (err) {
+        console.error(err);
+        Swal.fire('Lỗi', 'Không thể cập nhật trạng thái: ' + err.message, 'error');
+    }
 }
 
 // Từ chối từng ban riêng biệt
 async function rejectDepartment(departmentType) {
-  if (!currentApplicationId) return;
+    if (!currentApplicationId) return;
 
-  const application = applications.find(app => app.id === currentApplicationId);
-  if (!application) return;
+    const application = applications.find(app => app.id === currentApplicationId);
+    if (!application) return;
 
-  // 👉 Check quyền
-  if (!canActOnDepartment(application, departmentType)) {
-    Swal.fire('Không có quyền', 'Bạn không có quyền từ chối ứng viên cho ban này.', 'error');
-    return;
-  }
-
-  const { value: reason } = await Swal.fire({
-    title: 'Nhập lý do từ chối',
-    input: 'text',
-    inputPlaceholder: 'Ví dụ: Không phù hợp với ban',
-    showCancelButton: true,
-    confirmButtonText: 'Từ chối',
-    cancelButtonText: 'Hủy'
-  });
-
-  const updateData = { rejectionReason: reason || 'Không có' };
-
-
-  try {
-    const updateData = { rejectionReason: reason };
-    if (departmentType === 'priority') {
-      updateData.priorityRejected = true;
-      updateData.priorityAccepted = false;
-    } else {
-      updateData.secondaryRejected = true;
-      updateData.secondaryAccepted = false;
+    // 👉 Check quyền
+    if (!canActOnDepartment(application, departmentType)) {
+        Swal.fire('Không có quyền', 'Bạn không có quyền từ chối ứng viên cho ban này.', 'error');
+        return;
     }
 
-    await db.collection('applications').doc(currentApplicationId).update(updateData);
+    const { value: reason } = await Swal.fire({
+        title: 'Nhập lý do từ chối',
+        input: 'text',
+        inputPlaceholder: 'Ví dụ: Không phù hợp với ban',
+        showCancelButton: true,
+        confirmButtonText: 'Từ chối',
+        cancelButtonText: 'Hủy'
+    });
 
-    Swal.fire('Thành công', 'Ứng viên đã bị TỪ CHỐI.', 'success');
+    try {
+        const updateData = { 
+            rejectionReason: reason || 'Không có lý do' 
+        };
+        
+        if (departmentType === 'priority') {
+            updateData.priorityRejected = true;
+            updateData.priorityAccepted = false;
+        } else {
+            updateData.secondaryRejected = true;
+            updateData.secondaryAccepted = false;
+        }
 
-    // 👉 Load lại danh sách và sau đó mở lại detail
-    await loadApplications();
-    showApplicationDetail(currentApplicationId);
+        await db.collection('applications').doc(currentApplicationId).update(updateData);
 
-  } catch (err) {
-    console.error(err);
-    Swal.fire('Lỗi', 'Không thể cập nhật trạng thái: ' + err.message, 'error');
-  }
+        Swal.fire('Thành công', 'Ứng viên đã bị TỪ CHỐI.', 'success');
+
+        // 👉 Load lại danh sách và sau đó mở lại detail
+        await loadApplications();
+        showApplicationDetail(currentApplicationId);
+
+    } catch (err) {
+        console.error(err);
+        Swal.fire('Lỗi', 'Không thể cập nhật trạng thái: ' + err.message, 'error');
+    }
 }
 
+function getAcceptedDepartments(app) {
+    const accepted = [];
+    if (app.priorityAccepted) {
+        accepted.push(getDepartmentName(app.priority_position) + ' (Ưu tiên)');
+    }
+    if (app.secondaryAccepted) {
+        accepted.push(getDepartmentName(app.secondary_position) + ' (Dự bị)');
+    }
+    return accepted.length > 0 ? accepted.join(' / ') : 'Chưa có';
+}
 
 // Lấy tên ban từ mã
 function getDepartmentName(code) {
@@ -824,17 +1137,32 @@ function getDepartmentName(code) {
 }
 
 function computeOverallStatus(app) {
-    if (app.priorityAccepted || app.secondaryAccepted) return 'accepted';
-    if ((app.priorityRejected && (!app.secondary_position || app.secondaryRejected)) ||
-        (app.secondaryRejected && (!app.priority_position || app.priorityRejected))) {
-        return 'rejected';
+    // Nếu là ứng viên phỏng vấn, xử lý khác với form
+    if (app.application_type === 'interview') {
+        // Nếu có ít nhất một ban được chấp nhận -> accepted
+        if (app.priorityAccepted || app.secondaryAccepted) return 'accepted';
+        
+        // Nếu cả hai ban đều bị từ chối -> rejected
+        if (app.priorityRejected && app.secondaryRejected) return 'rejected';
+        
+        // Nếu có ít nhất một ban đã được đánh giá (accept hoặc reject) -> reviewed
+        if (app.priorityAccepted || app.priorityRejected || 
+            app.secondaryAccepted || app.secondaryRejected) return 'reviewed';
+        
+        // Mặc định là new
+        return 'new';
+    } else {
+        // Xử lý cho ứng viên điền đơn (giữ nguyên)
+        if (app.priorityAccepted || app.secondaryAccepted) return 'accepted';
+        if ((app.priorityRejected && (!app.secondary_position || app.secondaryRejected)) ||
+            (app.secondaryRejected && (!app.priority_position || app.priorityRejected))) {
+            return 'rejected';
+        }
+        if (app.priorityRejected || app.secondaryRejected) return 'reviewed';
+        return 'new';
     }
-    if (app.priorityRejected || app.secondaryRejected) return 'reviewed';
-    return 'new';
 }
 
-
-// Hiển thị modal export
 // Hiển thị modal export
 function showExportOptions() {
   const exportDeptSelect = document.getElementById('export-department');
@@ -887,6 +1215,9 @@ function exportData(type) {
         case 'personalWithResults':
             exportPersonalWithResults();
             break;
+        case 'interviewSchedule': // THÊM CASE MỚI CHO LỊCH PHỎNG VẤN
+            exportInterviewSchedule();
+            break;
     }
 }
 
@@ -922,6 +1253,107 @@ function formatDateValue(val) {
  * qid: id từ questions.js (ví dụ 'platforms', 'content_level', ...)
  * sub: (tùy) sub-department, ví dụ 'Content' cho MD
  */
+function extractVoteCounts(app, prefix, sub) {
+  const counts = {};
+  if (!app) return counts;
+
+  const keys = Object.keys(app || {});
+  // heuristic: tất cả keys có chứa 'vote', 'voter', 'voted', 'voting', 'votes', 'voters'
+  const voteKeys = keys.filter(k => /vote|voter|voted|voting|votes|voters/i.test(k));
+
+  // also check explicit keys related to prefix (e.g. priority_votes, secondary_votes)
+  if (prefix) {
+    const pref = prefix + '_votes';
+    if (keys.includes(pref)) voteKeys.push(pref);
+  }
+
+  // helper to add count
+  const add = (opt, n = 1) => {
+    const key = String(opt ?? 'Không xác định').trim();
+    if (!key) return;
+    counts[key] = (counts[key] || 0) + (Number.isFinite(n) ? n : 1);
+  };
+
+  for (const k of voteKeys) {
+    let v = app[k];
+    if (v === undefined || v === null) continue;
+
+    // If sub provided, attempt to look into nested objects e.g. app.priority_votes?.[sub]
+    if (sub && typeof v === 'object' && v[sub] !== undefined) {
+      v = v[sub];
+    }
+
+    // Arrays
+    if (Array.isArray(v)) {
+      if (v.length === 0) continue;
+      const first = v[0];
+      if (typeof first === 'string' || typeof first === 'number') {
+        v.forEach(item => add(item));
+      } else if (typeof first === 'object') {
+        // array of vote objects: try fields option/choice/value
+        v.forEach(item => {
+          const opt = item.option || item.choice || item.value || item.vote || JSON.stringify(item);
+          add(opt);
+        });
+      }
+      continue;
+    }
+
+    // Objects (map option -> array or option -> count)
+    if (typeof v === 'object') {
+      Object.keys(v).forEach(opt => {
+        const val = v[opt];
+        if (Array.isArray(val)) {
+          add(opt, val.length);
+        } else if (typeof val === 'number') {
+          add(opt, val);
+        } else if (typeof val === 'string') {
+          // comma separated?
+          add(opt, val.split(',').filter(Boolean).length);
+        } else {
+          // fallback count 1
+          add(opt, 1);
+        }
+      });
+      continue;
+    }
+
+    // String: maybe JSON or comma-separated list or single option
+    if (typeof v === 'string') {
+      // try parse JSON
+      try {
+        const parsed = JSON.parse(v);
+        if (Array.isArray(parsed)) {
+          parsed.forEach(p => add(p));
+          continue;
+        } else if (typeof parsed === 'object') {
+          Object.keys(parsed).forEach(opt => {
+            const val = parsed[opt];
+            if (Array.isArray(val)) add(opt, val.length);
+            else if (typeof val === 'number') add(opt, val);
+            else add(opt, 1);
+          });
+          continue;
+        }
+      } catch (e) {
+        // not JSON
+      }
+      // comma-separated
+      const parts = v.split(',').map(s => s.trim()).filter(Boolean);
+      if (parts.length > 1) {
+        parts.forEach(p => add(p));
+      } else {
+        add(v);
+      }
+      continue;
+    }
+
+    // Number or other -> skip
+  }
+
+  return counts;
+}
+
 function getAnswer(app, prefix, qid, sub) {
     if (!app || !prefix || !qid) return undefined;
     const candidates = [];
@@ -957,6 +1389,50 @@ function getAnswer(app, prefix, qid, sub) {
     }
 
     return undefined;
+}
+function renderVoteResults(container, counts, title = 'Kết quả vote') {
+  const entries = Object.entries(counts);
+  if (!entries || entries.length === 0) {
+    const msg = document.createElement('div');
+    msg.className = 'no-vote-data';
+    msg.textContent = 'Không tìm thấy dữ liệu vote.';
+    container.appendChild(msg);
+    return;
+  }
+
+  // sort desc
+  entries.sort((a,b) => b[1] - a[1]);
+  const total = entries.reduce((s, e) => s + e[1], 0) || 0;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'vote-results';
+
+  const heading = document.createElement('h4');
+  heading.innerHTML = `<i class="fas fa-chart-bar"></i> ${title}`;
+  wrapper.appendChild(heading);
+
+  entries.forEach(([opt, cnt]) => {
+    const pct = total ? Math.round((cnt / total) * 100) : 0;
+    const item = document.createElement('div');
+    item.className = 'vote-item';
+
+    const meta = document.createElement('div');
+    meta.className = 'vote-meta';
+    meta.innerHTML = `<div class="vote-option">${opt}</div><div class="vote-count">${cnt} phiếu (${pct}%)</div>`;
+
+    const barWrap = document.createElement('div');
+    barWrap.className = 'vote-bar-wrap';
+    const bar = document.createElement('div');
+    bar.className = 'vote-bar';
+    bar.style.width = `${pct}%`;
+    barWrap.appendChild(bar);
+
+    item.appendChild(meta);
+    item.appendChild(barWrap);
+    wrapper.appendChild(item);
+  });
+
+  container.appendChild(wrapper);
 }
 
 /* Summary-only object for "Tổng hợp" sheet (only basic info) */
@@ -1054,37 +1530,126 @@ function formatAnswer(answer, type) {
 
 /* Render ban-specific answers in detail view using getAnswer */
 function renderBanSpecificAnswers(application, type, container) {
-    const banCode = type === 'priority' ? application.priority_position : application.secondary_position;
-    if (!banCode || banCode === 'None') return;
+  const banCode = type === 'priority' ? application.priority_position : application.secondary_position;
+  if (!banCode || banCode === 'None') return;
 
-    if (banCode === 'MD') {
-        const subs = type === 'priority' ? (application.md_sub_departments || []) : (application.md_sub_departments_secondary || []);
-        subs.forEach(sub => {
-            const qList = (banQuestions['MD'] && banQuestions['MD'][sub]) || [];
-            qList.forEach(q => {
-                const val = getAnswer(application, type, q.id, sub);
-                const answer = val === undefined || val === null ? 'Chưa trả lời' : formatAnswer(val, q.type);
-                const item = document.createElement('div');
-                item.className = 'question-item';
-                let html = `<div class="question-text">${q.question}</div>`;
-                if (q.media && q.media.type === 'image') html += `<div class="question-media"><img src="${q.media.url}" alt="${q.media.alt || ''}"></div>`;
-                html += `<div class="answer-text">${answer}</div>`;
-                item.innerHTML = html;
-                container.appendChild(item);
-            });
-        });
-        return;
-    }
+  // For MD sub-departments
+  if (banCode === 'MD') {
+    const subs = type === 'priority' ? (application.md_sub_departments || []) : (application.md_sub_departments_secondary || []);
+    subs.forEach(sub => {
+      // first attempt: extract vote data from the application doc for this sub
+      const counts = extractVoteCounts(application, type, sub);
+      if (Object.keys(counts).length > 0) {
+        const section = document.createElement('div');
+        section.className = 'detail-section';
+        section.innerHTML = `<h3><i class="fas fa-star"></i> Kết quả vote cho ${getDepartmentName(banCode)} - ${sub}</h3>`;
+        renderVoteResults(section, counts, `Kết quả vote ${sub}`);
+        container.appendChild(section);
+        return; // go next sub
+      }
 
-    const qList = banQuestions[banCode] || [];
-    qList.forEach(q => {
+      // fallback: if no vote data stored in doc, try fetching from Firestore 'interview_votes' collection
+      if (application.id) {
+        // asynchronous fetch, then render if found
+        db.collection('interview_votes').doc(application.id).get().then(doc => {
+          if (doc.exists) {
+            const data = doc.data();
+            // try sub-key first
+            const subData = data[sub] || data[`${type}_${sub}`] || data[`${sub}_votes`] || data['votes'] || data;
+            const countsFromDoc = extractVoteCounts({ tmp: subData }, 'tmp');
+            if (Object.keys(countsFromDoc).length > 0) {
+              const section = document.createElement('div');
+              section.className = 'detail-section';
+              section.innerHTML = `<h3><i class="fas fa-star"></i> Kết quả vote cho ${getDepartmentName(banCode)} - ${sub}</h3>`;
+              renderVoteResults(section, countsFromDoc, `Kết quả vote ${sub}`);
+              container.appendChild(section);
+            }
+          }
+        }).catch(err => console.warn('Không lấy được vote từ interview_votes:', err));
+      }
+
+      // If still no votes => render questions as before
+      const qList = (banQuestions['MD'] && banQuestions['MD'][sub]) || [];
+      qList.forEach(q => {
+        const val = getAnswer(application, type, q.id, sub);
+        const answer = val === undefined || val === null ? 'Chưa trả lời' : formatAnswer(val, q.type);
+        const item = document.createElement('div');
+        item.className = 'question-item';
+        let html = `<div class="question-text">${q.question}</div>`;
+        if (q.media && q.media.type === 'image') html += `<div class="question-media"><img src="${q.media.url}" alt="${q.media.alt || ''}"></div>`;
+        html += `<div class="answer-text">${answer}</div>`;
+        item.innerHTML = html;
+        container.appendChild(item);
+      });
+    });
+    return;
+  }
+
+  // Non-MD departments
+  // 1) Try to extract votes stored in the application doc for this department/type
+  const counts = extractVoteCounts(application, type);
+  if (Object.keys(counts).length > 0) {
+    const section = document.createElement('div');
+    section.className = 'detail-section';
+    section.innerHTML = `<h3><i class="fas fa-chart-pie"></i> Kết quả vote cho ${getDepartmentName(banCode)}</h3>`;
+    renderVoteResults(section, counts, `Kết quả vote ${getDepartmentName(banCode)}`);
+    container.appendChild(section);
+    return;
+  }
+
+  // 2) Fallback: try Firestore collection interview_votes doc with id = application.id
+  if (application.id) {
+    db.collection('interview_votes').doc(application.id).get().then(doc => {
+      if (doc.exists) {
+        const data = doc.data();
+        // prefer type-specific key (priority/secondary) or dept code
+        const candidate = data[type] || data[banCode] || data['votes'] || data;
+        const countsFromDoc = extractVoteCounts({ tmp: candidate }, 'tmp');
+        if (Object.keys(countsFromDoc).length > 0) {
+          const section = document.createElement('div');
+          section.className = 'detail-section';
+          section.innerHTML = `<h3><i class="fas fa-chart-pie"></i> Kết quả vote cho ${getDepartmentName(banCode)}</h3>`;
+          renderVoteResults(section, countsFromDoc, `Kết quả vote ${getDepartmentName(banCode)}`);
+          container.appendChild(section);
+          return;
+        }
+      }
+      // if no votes found in external doc => fall back to rendering questions as before
+      const qList = banQuestions[banCode] || [];
+      qList.forEach(q => {
         const val = getAnswer(application, type, q.id);
         const answer = val === undefined || val === null ? 'Chưa trả lời' : formatAnswer(val, q.type);
         const item = document.createElement('div');
         item.className = 'question-item';
         item.innerHTML = `<div class="question-text">${q.question}</div><div class="answer-text">${answer}</div>`;
         container.appendChild(item);
+      });
+    }).catch(err => {
+      console.warn('Không lấy được interview_votes doc:', err);
+      // render questions if fetch fails
+      const qList = banQuestions[banCode] || [];
+      qList.forEach(q => {
+        const val = getAnswer(application, type, q.id);
+        const answer = val === undefined || val === null ? 'Chưa trả lời' : formatAnswer(val, q.type);
+        const item = document.createElement('div');
+        item.className = 'question-item';
+        item.innerHTML = `<div class="question-text">${q.question}</div><div class="answer-text">${answer}</div>`;
+        container.appendChild(item);
+      });
     });
+    return;
+  }
+
+  // 3) If we got here (no app.id, no votes) => render questions as before
+  const qList = banQuestions[banCode] || [];
+  qList.forEach(q => {
+    const val = getAnswer(application, type, q.id);
+    const answer = val === undefined || val === null ? 'Chưa trả lời' : formatAnswer(val, q.type);
+    const item = document.createElement('div');
+    item.className = 'question-item';
+    item.innerHTML = `<div class="question-text">${q.question}</div><div class="answer-text">${answer}</div>`;
+    container.appendChild(item);
+  });
 }
 
 /* Helpers: header union */
@@ -1344,6 +1909,99 @@ function exportAllData() {
   closeExportModal();
 }
 
+// Export lịch phỏng vấn theo template
+async function exportInterviewSchedule() {
+    try {
+        // Lấy dữ liệu ứng viên phỏng vấn
+        const interviewApps = applications.filter(app => 
+            app.application_type === 'interview'
+        );
+
+        if (interviewApps.length === 0) {
+            Swal.fire('Thông báo', 'Không có ứng viên phỏng vấn nào', 'info');
+            return;
+        }
+
+        // Tạo workbook mới
+        const wb = XLSX.utils.book_new();
+
+        // Tạo dữ liệu cho sheet
+        const data = [];
+
+
+        // Header theo template - dòng 2
+        const headerRow2 = ['STT', 'Họ và tên', 'Ban ưu tiên', 'Ban dự bị'];
+        
+        // Thêm các ca phỏng vấn từ calendar
+        if (interview && interview.length > 0) {
+            interview.forEach(day => {
+                day.options.forEach(option => {
+                    headerRow2.push(option);
+                });
+            });
+        }
+        
+        data.push(headerRow2);
+
+        // Thêm dữ liệu ứng viên
+        interviewApps.forEach((app, index) => {
+            const row = [
+                index + 1,
+                app.fullname || '',
+                getDepartmentName(app.priority_position) || '',
+                app.secondary_position && app.secondary_position !== 'None' ? 
+                    getDepartmentName(app.secondary_position) : 'Không có'
+            ];
+
+            // Thêm dữ liệu lịch phỏng vấn đã chọn
+            if (interview && interview.length > 0) {
+                interview.forEach(day => {
+                    const dayData = app[day.id];
+                    day.options.forEach(option => {
+                        // Đánh dấu X nếu ứng viên chọn ca này
+                        row.push(dayData && dayData.includes(option) ? 'X' : '');
+                    });
+                });
+            }
+
+            data.push(row);
+        });
+
+        // Tạo worksheet từ dữ liệu
+        const ws = XLSX.utils.aoa_to_sheet(data);
+
+        // Điều chỉnh độ rộng cột cho phù hợp
+        const colWidths = [
+            { wch: 5 },  // STT
+            { wch: 20 }, // Họ và tên
+            { wch: 15 }, // Ban ưu tiên
+            { wch: 15 }  // Ban dự bị
+        ];
+        
+        // Thêm độ rộng cho các cột ca phỏng vấn
+        if (interview && interview.length > 0) {
+            interview.forEach(day => {
+                day.options.forEach(() => {
+                    colWidths.push({ wch: 12 });
+                });
+            });
+        }
+        
+        ws['!cols'] = colWidths;
+
+        // Thêm worksheet vào workbook
+        XLSX.utils.book_append_sheet(wb, ws, 'Lịch phỏng vấn');
+
+        // Xuất file
+        XLSX.writeFile(wb, 'enactus_lich_phong_van.xlsx');
+        
+        Swal.fire('Thành công', 'Đã xuất lịch phỏng vấn thành công', 'success');
+        
+    } catch (error) {
+        console.error('Error exporting interview schedule:', error);
+        Swal.fire('Lỗi', 'Không thể xuất lịch phỏng vấn: ' + error.message, 'error');
+    }
+}
 
 // Giữ lại fields chung và chỉ giữ phần "Ưu tiên" hoặc "Dự bị" tùy loại
 function filterExportData(data, type) {

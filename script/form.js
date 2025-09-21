@@ -46,6 +46,35 @@
         loadIntroFromMarkdown();
         });
 
+        function renderInterviewSchedule() {
+            const container = document.getElementById('interview-questions');
+            container.innerHTML = '';
+
+            interview.forEach(q => {
+                const div = document.createElement('div');
+                div.className = 'form-group question-item';
+
+                const label = document.createElement('label');
+                label.innerHTML = q.question;
+                div.appendChild(label);
+
+                const group = document.createElement('div');
+                group.className = 'checkbox-group';
+                q.options.forEach((opt, idx) => {
+                const optionId = `${q.id}_${idx}`;
+                const item = document.createElement('div');
+                item.className = 'checkbox-item';
+                item.innerHTML = `
+                    <input type="checkbox" id="${optionId}" name="${q.id}[]" value="${opt}">
+                    <label for="${optionId}">${opt}</label>
+                `;
+                group.appendChild(item);
+                });
+                div.appendChild(group);
+                container.appendChild(div);
+            });
+            }
+
         // Helper: chuyển newline -> <p> và <br>, giữ paragraph
         function formatQuestionText(str) {
         if (!str) return '';
@@ -351,7 +380,17 @@
                 updateProgressBar();
 
                 if (sectionNumber === 4) generateSummary();
-                if (sectionNumber === 3) updatePositionNames();
+                if (sectionNumber === 3) {
+                    if (applicationType === 'interview') {
+                        document.querySelector('.tab-container').style.display = 'none';
+                        document.getElementById('interview-schedule').style.display = 'block';
+                        renderInterviewSchedule();
+                    } else {
+                        document.querySelector('.tab-container').style.display = 'block';
+                        document.getElementById('interview-schedule').style.display = 'none';
+                        updatePositionNames();
+                    }
+                }
             }
         }
         
@@ -515,37 +554,40 @@
                 return;
             }
             
-            // Nếu chọn phỏng vấn thay đơn, bỏ qua section 3
-            if (current === 2 && applicationType === 'interview') {
-                showSection(4);
-                return;
-            }
-            
             if (current === 3) {
-                const section = document.getElementById('section3');
-                const tabs = ['general', 'priority', 'secondary'];
-                for (let tab of tabs) {
-                    const tabContent = document.getElementById(`tab-${tab}`);
-                    if (tabContent && tabContent.style.display !== 'none') {
-                        const requiredInputs = tabContent.querySelectorAll('input[required], select[required], textarea[required]');
-                        for (let input of requiredInputs) {
-                            if (!input.value) {
-                                // Nếu có lỗi -> highlight + chuyển tab
-                                input.style.borderColor = 'var(--error)';
-                                input.style.animation = 'shake 0.5s';
-                                setTimeout(() => { input.style.animation = ''; }, 500);
-                                showTab(tab);
-                                alert('Vui lòng điền đầy đủ các thông tin trong tab này trước khi tiếp tục.');
-                                return; // Dừng không sang section 4
-                            } else {
-                                input.style.borderColor = 'var(--border)';
+                if (applicationType === 'interview') {
+                    // validate chọn lịch phỏng vấn
+                    const anyChecked = document.querySelector('#interview-schedule input[type="checkbox"]:checked');
+                    if (!anyChecked) {
+                        alert('Vui lòng chọn ít nhất một khung giờ phỏng vấn trước khi tiếp tục.');
+                        return;
+                    }
+                    showSection(4);
+                    return;
+                } else {
+                    // validate như cũ cho form
+                    const tabs = ['general', 'priority', 'secondary'];
+                    for (let tab of tabs) {
+                        const tabContent = document.getElementById(`tab-${tab}`);
+                        if (tabContent && tabContent.style.display !== 'none') {
+                            const requiredInputs = tabContent.querySelectorAll('input[required], select[required], textarea[required]');
+                            for (let input of requiredInputs) {
+                                if (!input.value) {
+                                    input.style.borderColor = 'var(--error)';
+                                    input.style.animation = 'shake 0.5s';
+                                    setTimeout(() => { input.style.animation = ''; }, 500);
+                                    showTab(tab);
+                                    alert('Vui lòng điền đầy đủ các thông tin trong tab này trước khi tiếp tục.');
+                                    return;
+                                } else {
+                                    input.style.borderColor = 'var(--border)';
+                                }
                             }
                         }
                     }
+                    showSection(4);
+                    return;
                 }
-                // Nếu qua hết vòng lặp mà không lỗi → sang section 4
-                showSection(4);
-                return;
             }
 
             // Basic validation
@@ -592,12 +634,6 @@
         }
         
         function prevSection(current) {
-            // Nếu chọn phỏng vấn thay đơn và đang ở section 4, quay lại section 2
-            if (current === 4 && applicationType === 'interview') {
-                showSection(2);
-                return;
-            }
-
             // Nếu đang ở section 0 thì quay lại Intro
             if (current === 0) {
                 showSection(-1);
@@ -658,7 +694,7 @@
         function collectFormData() {
             const formObject = {
                 application_type: applicationType,
-        
+
                 // Thông tin cá nhân
                 fullname: document.getElementById('fullname').value,
                 birthdate: document.getElementById('birthdate').value,
@@ -668,29 +704,42 @@
                 school: document.getElementById('school').value,
                 major: document.getElementById('major').value,
                 facebook: document.getElementById('facebook').value,
-        
+
                 // Vị trí ứng tuyển
                 priority_position: document.getElementById('priority_position').value,
                 secondary_position: document.getElementById('secondary_position').value,
                 availability: document.getElementById('availability').value,
-        
+
                 // Câu hỏi chung
                 general_intro: document.getElementById('general_intro')?.value || '',
-        
+
                 // Tiểu ban truyền thông
                 md_sub_departments: Array.from(document.querySelectorAll('input[name="md_sub_departments[]"]:checked')).map(cb => cb.value),
                 md_sub_departments_secondary: Array.from(document.querySelectorAll('input[name="md_sub_departments_secondary[]"]:checked')).map(cb => cb.value),
-        
+
                 // Câu hỏi phân ban ưu tiên
                 ...collectBanQuestions('priority'),
-        
+
                 // Câu hỏi phân ban dự bị
                 ...collectBanQuestions('secondary'),
-        
+
                 // Timestamp
                 timestamp: new Date()
             };
-        
+
+            // Nếu chọn phỏng vấn thay đơn → lưu lịch phỏng vấn
+            if (applicationType === 'interview') {
+                if (typeof interview !== "undefined" && Array.isArray(interview)) {
+                    interview.forEach(q => {
+                        const checked = Array.from(document.querySelectorAll(`input[name="${q.id}[]"]:checked`))
+                            .map(cb => cb.value);
+                        if (checked.length > 0) {
+                            formObject[q.id] = checked;
+                        }
+                    });
+                }
+            }
+
             return formObject;
         }
 
