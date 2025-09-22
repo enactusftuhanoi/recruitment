@@ -42,10 +42,6 @@
         }
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
-        loadIntroFromMarkdown();
-        });
-
         function renderInterviewSchedule() {
             const container = document.getElementById('interview-questions');
             container.innerHTML = '';
@@ -456,13 +452,22 @@
         
             // Tab dự bị
             const secondaryTabBtn = document.getElementById('secondary-tab-btn');
-            if (secondarySelect.value && secondarySelect.value !== "None") {
+            if (secondarySelect.value && secondarySelect.value !== "" && secondarySelect.value !== "None") {
                 if (secondaryTabBtn) {
                     secondaryTabBtn.style.display = 'inline-block';
                     secondaryTabBtn.textContent = `Câu hỏi dành cho ban ${secondaryPositionName} (Dự bị)`;
                 }
             } else {
                 if (secondaryTabBtn) secondaryTabBtn.style.display = 'none';
+
+                // 🧹 Xóa dữ liệu tạm của ban dự bị trong localStorage khi không chọn
+                const savedData = JSON.parse(localStorage.getItem('enactus_form_data')) || {};
+                Object.keys(savedData).forEach(key => {
+                    if (key.startsWith("secondary_")) {
+                        delete savedData[key];
+                    }
+                });
+                localStorage.setItem('enactus_form_data', JSON.stringify(savedData));
             }
         
             // Update header inside các sub-section
@@ -850,6 +855,36 @@
                     
                     // Cập nhật tên phân ban và câu hỏi
                     updatePositionNames();
+
+                    // Khôi phục câu hỏi riêng của ban
+                    Object.keys(formData).forEach(key => {
+                        // Chỉ xét các field thuộc priority_ hoặc secondary_
+                        if (key.startsWith("priority_") || key.startsWith("secondary_")) {
+                            const value = formData[key];
+                            const el = document.getElementsByName(key);
+
+                            if (el && el.length > 0) {
+                                const first = el[0];
+
+                                if (first.type === "checkbox") {
+                                    // Nếu là checkbox (có thể nhiều giá trị)
+                                    if (Array.isArray(value)) {
+                                        value.forEach(val => {
+                                            const cb = document.querySelector(`input[name="${key}[]"][value="${val}"]`);
+                                            if (cb) cb.checked = true;
+                                        });
+                                    }
+                                } else if (first.type === "radio") {
+                                    // Nếu là radio
+                                    const radio = document.querySelector(`input[name="${key}"][value="${value}"]`);
+                                    if (radio) radio.checked = true;
+                                } else {
+                                    // Input thường / textarea / select
+                                    first.value = value;
+                                }
+                            }
+                        }
+                    });
                     
                     console.log('Form data loaded from temporary storage');
                 }
@@ -859,33 +894,31 @@
         }
         
         // Handle form submission
-        document.getElementById('recruitmentForm').addEventListener('submit', async function(e) {
+        document.getElementById('recruitmentForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             // Check if agreement is checked
             if (!document.getElementById('agree').checked) {
                 alert('Vui lòng xác nhận rằng tất cả thông tin bạn cung cấp là chính xác.');
                 return;
             }
-            
+
             const form = document.getElementById('recruitmentForm');
             const successMessage = document.getElementById('successMessage');
             const redirectMsg = document.getElementById('redirectMsg');
-            
+
             // Show loading state
             const submitBtn = form.querySelector('.btn-submit');
             const originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
             submitBtn.disabled = true;
-            
+
             try {
                 // Lấy tất cả dữ liệu từ form
                 const formObject = collectFormData();
-                
+
                 // Nếu là hình thức phỏng vấn, xóa dữ liệu section 3
                 if (applicationType === 'interview') {
-                    // Chỉ xoá phần intro và các câu hỏi chi tiết theo phân ban,
-                    // nhưng giữ lại lựa chọn ban (priority_position, secondary_position).
                     delete formObject.intro;
 
                     Object.keys(formObject).forEach(key => {
@@ -895,7 +928,6 @@
                         }
                     });
 
-                    // (Không bắt buộc) nếu bạn muốn chắc chắn không gửi các trường rỗng
                     if (Array.isArray(formObject.md_sub_departments) && formObject.md_sub_departments.length === 0) {
                         delete formObject.md_sub_departments;
                     }
@@ -903,8 +935,8 @@
                         delete formObject.md_sub_departments_secondary;
                     }
                 }
-                
-                // Trước khi lưu vào Firebase
+
+                // Thêm danh sách ban đã chọn
                 formObject.all_departments = [
                     formObject.priority_position,
                     formObject.secondary_position
@@ -913,14 +945,13 @@
                 // Save to Firebase
                 await db.collection('applications').add(formObject);
 
-                // Xóa dữ liệu tạm sau khi gửi thành công
+                // ✅ Xóa dữ liệu tạm sau khi gửi thành công
                 localStorage.removeItem('enactus_form_data');
-                
-                // Hide form and show success message
+
+                // ✅ Hiện thông báo thành công + redirect
                 form.style.display = 'none';
                 successMessage.style.display = 'block';
-                
-                // Countdown redirect
+
                 let countdown = 5;
                 redirectMsg.innerHTML = `Chuyển hướng sau <strong>${countdown}</strong>s...`;
                 const interval = setInterval(() => {
@@ -931,21 +962,16 @@
                         window.location.href = "/user/login.html";
                     }
                 }, 1000);
-                
+
                 console.log('Application submitted successfully:', formObject);
             } catch (error) {
                 console.error('Error submitting application:', error);
                 alert('Có lỗi xảy ra khi gửi đơn ứng tuyển. Vui lòng thử lại sau. Chi tiết lỗi: ' + error.message);
-                
+
                 // Reset button state
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
             }
-        });
-        
-        // Thêm sự kiện lưu dữ liệu khi người dùng rời khỏi trang
-        window.addEventListener('beforeunload', function(e) {
-            saveFormData();
         });
         
         // Thêm sự kiện lưu dữ liệu khi người dùng thay đổi thông tin
@@ -975,40 +1001,19 @@
         updateProgressBar();
         updateSecondaryOptions();
         
-        // Tải dữ liệu đã lưu khi trang được tải
-        window.addEventListener('DOMContentLoaded', function() {
-            // Render general questions first so their elements exist
-            renderGeneralQuestions();
-        
-            // Set up secondary options display depending on select (no harm)
-            updateSecondaryOptions();
-        
-            // Load saved data (khôi phục select + sẽ gọi updatePositionNames() bên trong)
-            loadFormData();
-        
-            // Nếu cần, cập nhật hiển thị tab/tiểu ban
-            const prioritySelect = document.getElementById('priority_position');
-            if (prioritySelect.value) {
-                updatePositionNames();
-            }
-        });
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const successMessage = document.getElementById("successMessage");
+        // Khi submit thành công (sau khi lưu Firebase + xoá localStorage), thì ẩn form, hiện success, redirect
+        function showSuccessAndRedirect() {
             const form = document.getElementById("recruitmentForm");
+            const successMessage = document.getElementById("successMessage");
             const redirectMsg = document.getElementById("redirectMsg");
 
-            form.addEventListener("submit", function(e) {
-                e.preventDefault();
+            form.style.display = "none";
+            successMessage.style.display = "block";
 
-                // Ẩn form + hiện success message
-                form.style.display = "none";
-                successMessage.style.display = "block";
+            let countdown = 5;
+            redirectMsg.textContent = `Chuyển hướng sau ${countdown}s...`;
 
-                let countdown = 5;
-                redirectMsg.textContent = `Chuyển hướng sau ${countdown}s...`;
-
-                const interval = setInterval(() => {
+            const interval = setInterval(() => {
                 countdown--;
                 redirectMsg.textContent = `Chuyển hướng sau ${countdown}s...`;
 
@@ -1016,9 +1021,8 @@
                     clearInterval(interval);
                     window.location.href = "/user/login.html";
                 }
-                }, 1000);
-            });
-        });
+            }, 1000);
+        }
         
         // Add shake animation for error states
         const style = document.createElement('style');
@@ -1042,9 +1046,25 @@
         };
 
         document.addEventListener("DOMContentLoaded", () => {
+            // Load intro.md
             loadIntroFromMarkdown();
-            loadFormData();   // ✅ khôi phục dữ liệu đã lưu
+
+            // Render general questions trước để có element
+            renderGeneralQuestions();
+
+            // Set up secondary options
+            updateSecondaryOptions();
+
+            // Load dữ liệu tạm
+            loadFormData();
+
+            // Nếu có chọn ban ưu tiên thì cập nhật câu hỏi
+            const prioritySelect = document.getElementById('priority_position');
+            if (prioritySelect.value) {
+                updatePositionNames();
+            }
         });
+
 
 
 
