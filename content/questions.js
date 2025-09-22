@@ -90,18 +90,9 @@ const generalQuestions = [
                   required: true
                 },
                 {
-                  type: 'text',
-                  id: 'md_design_qs1',
-                  question: `Câu 5: Em đã từng có kinh nghiệm viết bài đăng bao giờ chưa? Nếu có, hãy đính kèm một link drive tổng hợp những bài viết tâm đắc nhất em từng làm nhé!
-                              
-                  *Lưu ý: Hãy kiểm tra lại quyền truy cập trước khi gắn nhé!`,
-                  placeholder: 'Hãy điền link drive vào đây',
-                  required: true
-                },
-                {
                   type: 'scale',
-                  id: 'md_design_qs2',
-                  question: `Câu 6: Em thường sử dụng những công cụ hay phần mềm nào để thiết kế? Hãy đánh giá mức độ thành thạo chúng của em trên thang đo từ 1 đến 5:
+                  id: 'md_design_qs1',
+                  question: `Câu 5: Em thường sử dụng những công cụ hay phần mềm nào để thiết kế? Hãy đánh giá mức độ thành thạo chúng của em trên thang đo từ 1 đến 5:
                               1. Chưa biết sử dụng
                               2. Mới làm quen
                               3. Sử dụng ở mức cơ bản
@@ -113,15 +104,15 @@ const generalQuestions = [
                 },
                 {
                   type: 'textarea',
-                  id: 'md_design_qs3',
-                  question: `Câu 7: Theo em, những yếu tố nào sẽ làm nên một thiết kế bài đăng trên mạng xã hội vừa đảm bảo chất lượng vừa hấp dẫn người xem?`,
+                  id: 'md_design_qs2',
+                  question: `Câu 6: Theo em, những yếu tố nào sẽ làm nên một thiết kế bài đăng trên mạng xã hội vừa đảm bảo chất lượng vừa hấp dẫn người xem?`,
                   placeholder: '',
                   required: true
                 },
                                 {
                   type: 'text',
-                  id: 'md_design_qs4',
-                  question: `Câu 8: Em đã từng có kinh nghiệm thiết kế ấn phẩm bao giờ chưa? Nếu có, hãy đính kèm một link drive tổng hợp những ấn phẩm tâm đắc nhất em từng làm nhé!
+                  id: 'md_design_qs3',
+                  question: `Câu 7: Em đã từng có kinh nghiệm thiết kế ấn phẩm bao giờ chưa? Nếu có, hãy đính kèm một link drive tổng hợp những ấn phẩm tâm đắc nhất em từng làm nhé!
                             *Lưu ý: Hãy kiểm tra lại quyền truy cập trước khi gắn nhé!`,
                   placeholder: 'Hãy điền link drive vào đây',
                   required: true
@@ -175,6 +166,15 @@ const generalQuestions = [
                   id: 'md_content_qs2',
                   question: 'Câu 6: Nếu phải chọn một chủ đề xã hội cho bài đăng truyền thông thể hiện quan điểm của mình, em sẽ chọn chủ đề nào và tại sao?',
                   placeholder: '',
+                  required: true
+                },
+                                {
+                  type: 'text',
+                  id: 'md_content_qs3',
+                  question: `Câu 7: Em đã từng có kinh nghiệm viết bài đăng bao giờ chưa? Nếu có, hãy đính kèm một link drive tổng hợp những bài viết tâm đắc nhất em từng làm nhé!
+                              
+                  *Lưu ý: Hãy kiểm tra lại quyền truy cập trước khi gắn nhé!`,
+                  placeholder: 'Hãy điền link drive vào đây',
                   required: true
                 },
               ]
