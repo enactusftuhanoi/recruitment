@@ -278,6 +278,12 @@
         
                 questionDiv.innerHTML = html;
                 questionsContainer.appendChild(questionDiv);
+
+                // Gán sự kiện lưu tạm cho input mới render
+                questionDiv.querySelectorAll('input, select, textarea').forEach(el => {
+                    el.addEventListener('input', saveFormData);
+                    el.addEventListener('change', saveFormData);
+                });
         
                 // Nếu là scale, add listener để cập nhật output
                 if (q.type === 'scale') {
@@ -632,6 +638,7 @@
             });
             
             if (valid) {
+                saveFormData();
                 showSection(current + 1);
             } else {
                 alert('Vui lòng điền đầy đủ các thông tin bắt buộc.');
@@ -715,7 +722,7 @@
                 secondary_position: document.getElementById('secondary_position').value,
 
                 // Câu hỏi chung
-                general_intro: document.getElementById('general_intro')?.value || '',
+                ...collectGeneralQuestions(),
 
                 // Tiểu ban truyền thông
                 md_sub_departments: Array.from(document.querySelectorAll('input[name="md_sub_departments[]"]:checked')).map(cb => cb.value),
@@ -745,6 +752,29 @@
             }
 
             return formObject;
+        }
+
+        function collectGeneralQuestions() {
+            const data = {};
+            const container = document.getElementById('general-questions');
+            if (!container) return data;
+
+            const inputs = container.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                const key = input.name || input.id;
+                if (!key) return;
+
+                if (input.type === 'checkbox') {
+                    if (!data[key]) data[key] = [];
+                    if (input.checked) data[key].push(input.value);
+                } else if (input.type === 'radio') {
+                    if (input.checked) data[key] = input.value;
+                } else {
+                    data[key] = input.value;
+                }
+            });
+
+            return data;
         }
 
         // Hàm thu thập câu hỏi theo phân ban

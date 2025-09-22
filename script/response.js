@@ -565,20 +565,37 @@ function showApplicationDetail(appId) {
     if (application.application_type === 'form') {
         // HIỂN THỊ CÂU TRẢ LỜI CHO ỨNG VIÊN ĐIỀN ĐƠN
         // Câu trả lời chung
-        if (application.general_intro) {
+        const hasGeneralAnswers = generalQuestions.some(q => application[`general_${q.id}`]);
+        if (hasGeneralAnswers) {
             const generalAnswersSection = document.createElement('div');
             generalAnswersSection.className = 'detail-section';
             generalAnswersSection.innerHTML = '<h3><i class="fas fa-comments"></i> Câu trả lời chung</h3>';
             
             generalQuestions.forEach(q => {
                 const answer = application[`general_${q.id}`] || 'Chưa trả lời';
-                
                 const questionItem = document.createElement('div');
                 questionItem.className = 'question-item';
-                questionItem.innerHTML = `
-                    <div class="question-text">${q.question}</div>
-                    <div class="answer-text">${answer}</div>
-                `;
+
+                // render text câu hỏi
+                let html = `<div class="question-text">${q.question}</div>`;
+
+                // render media nếu có
+                if (q.media) {
+                    if (q.media.type === 'image') {
+                        html += `<div class="question-media">
+                                    <img src="${q.media.url}" alt="${q.media.alt || ''}" class="question-img">
+                                </div>`;
+                    } else if (q.media.type === 'video') {
+                        html += `<div class="question-media">
+                                    <video src="${q.media.url}" controls class="question-video"></video>
+                                </div>`;
+                    }
+                }
+
+                // render câu trả lời
+                html += `<div class="answer-text">${answer}</div>`;
+
+                questionItem.innerHTML = html;
                 generalAnswersSection.appendChild(questionItem);
             });
             
@@ -1640,6 +1657,72 @@ function renderBanSpecificAnswers(application, type, container) {
     item.innerHTML = `<div class="question-text">${q.question}</div><div class="answer-text">${answer}</div>`;
     container.appendChild(item);
   });
+}
+
+function renderGeneralQuestions() {
+    const container = document.getElementById('general-questions');
+    if (!container) {
+        console.warn('renderGeneralQuestions: missing #general-questions element');
+        return;
+    }
+    container.innerHTML = '';
+
+    generalQuestions.forEach(q => {
+        const div = document.createElement('div');
+        div.className = 'form-group question-item';
+
+        // label
+        const label = document.createElement('label');
+        label.setAttribute('for', `general_${q.id}`);
+        if (q.required) label.classList.add('required');
+        label.textContent = q.question;
+        div.appendChild(label);
+
+        // media (image/video)
+        if (q.media) {
+            const mediaWrap = document.createElement('div');
+            mediaWrap.className = 'question-media';
+            if (q.media.type === 'image') {
+                const img = document.createElement('img');
+                img.src = q.media.url;
+                img.alt = q.media.alt || '';
+                img.className = 'question-img';
+                mediaWrap.appendChild(img);
+            }
+            div.appendChild(mediaWrap);
+        }
+
+        // input / textarea
+        let inputEl;
+        switch (q.type) {
+            case 'textarea':
+                inputEl = document.createElement('textarea');
+                inputEl.rows = 3;
+                break;
+            case 'email':
+            case 'tel':
+            case 'date':
+            case 'text':
+                inputEl = document.createElement('input');
+                inputEl.type = q.type;
+                break;
+            default:
+                inputEl = document.createElement('input');
+                inputEl.type = 'text';
+        }
+
+        inputEl.id = `general_${q.id}`;
+        inputEl.name = `general_${q.id}`;
+        if (q.placeholder) inputEl.placeholder = q.placeholder;
+        if (q.required) inputEl.required = true;
+
+        // gán sự kiện lưu tạm
+        inputEl.addEventListener('input', saveFormData);
+        inputEl.addEventListener('change', saveFormData);
+
+        div.appendChild(inputEl);
+        container.appendChild(div);
+    });
 }
 
 /* Helpers: header union */
