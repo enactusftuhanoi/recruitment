@@ -57,42 +57,42 @@ const generalQuestions = [
                 {
                   type: 'textarea',
                   id: 'md_qs1',
-                  question: 'Câu 1: Nếu một ngày em có thể quay về quá khứ và thay đổi một quyết định của bản thân, em sẽ chọn khoảnh khắc nào? Vì sao?',
+                  question: 'Câu 1: Nếu một ngày bạn có thể quay về quá khứ và thay đổi một quyết định của bản thân, bạn sẽ chọn khoảnh khắc nào? Vì sao?',
                   placeholder: '',
                   required: true
                 },
                 {
                   type: 'textarea',
                   id: 'md_qs2',
-                  question: 'Câu 2: Hãy tưởng tượng sau 1 năm tham gia Ban Truyền thông, em muốn mọi người nhớ đến em là một người như thế nào?',
+                  question: 'Câu 2: Hãy tưởng tượng sau 1 năm tham gia Ban Truyền thông, bạn muốn mọi người nhớ đến bạn là một người như thế nào?',
                   placeholder: '',
                   required: true
                 },
                 {
                   type: 'checkbox',
                   id: 'md_qs3_1',
-                  question: 'Câu 3: Chọn 1 nền tảng truyền thông mà em yêu thích nhất:',
+                  question: 'Câu 3: Chọn 1 nền tảng truyền thông mà bạn yêu thích nhất:',
                   options: ['Facebook', 'Instagram', 'TikTok', 'Threads', 'LinkedIn', 'YouTube'],
                   required: true
                 },
                 {
                   type: 'textarea',
                   id: 'md_qs3_2',
-                  question: 'Em thường theo dõi những nội dung gì trên nền tảng truyền thông đó?',
+                  question: 'Bạn thường theo dõi những nội dung gì trên nền tảng truyền thông đó?',
                   placeholder: '',
                   required: true
                 },
                 {
                   type: 'textarea',
                   id: 'md_qs4',
-                  question: 'Câu 4: Hãy chia sẻ một chiến dịch truyền thông để lại cho em nhiều ấn tượng nhất. Tại sao em yêu thích chiến dịch đó?',
+                  question: 'Câu 4: Hãy chia sẻ một chiến dịch truyền thông để lại cho bạn nhiều ấn tượng nhất. Tại sao bạn yêu thích chiến dịch đó?',
                   placeholder: '',
                   required: true
                 },
                 {
                   type: 'scale',
                   id: 'md_design_qs1',
-                  question: `Câu 5: Em thường sử dụng những công cụ hay phần mềm nào để thiết kế? Hãy đánh giá mức độ thành thạo chúng của em trên thang đo từ 1 đến 5:
+                  question: `Câu 5: Bạn thường sử dụng những công cụ hay phần mềm nào để thiết kế? Hãy đánh giá mức độ thành thạo chúng của bạn trên thang đo từ 1 đến 5:
                               1. Chưa biết sử dụng
                               2. Mới làm quen
                               3. Sử dụng ở mức cơ bản
@@ -105,77 +105,77 @@ const generalQuestions = [
                 {
                   type: 'textarea',
                   id: 'md_design_qs2',
-                  question: `Câu 6: Theo em, những yếu tố nào sẽ làm nên một thiết kế bài đăng trên mạng xã hội vừa đảm bảo chất lượng vừa hấp dẫn người xem?`,
+                  question: `Câu 6: Theo bạn, những yếu tố nào sẽ làm nên một thiết kế bài đăng trên mạng xã hội vừa đảm bảo chất lượng vừa hấp dẫn người xem?`,
                   placeholder: '',
                   required: true
                 },
                                 {
                   type: 'text',
                   id: 'md_design_qs3',
-                  question: `Câu 7: Em đã từng có kinh nghiệm thiết kế ấn phẩm bao giờ chưa? Nếu có, hãy đính kèm một link drive tổng hợp những ấn phẩm tâm đắc nhất em từng làm nhé!
+                  question: `Câu 7: Bạn đã từng có kinh nghiệm thiết kế ấn phẩm bao giờ chưa? Nếu có, hãy đính kèm một link drive tổng hợp những ấn phẩm tâm đắc nhất bạn từng làm nhé!
                             *Lưu ý: Hãy kiểm tra lại quyền truy cập trước khi gắn nhé!`,
                   placeholder: 'Hãy điền link drive vào đây',
-                  required: true
+                  required: false
                 },
               ],
               'Content': [
                 {
                   type: 'textarea',
                   id: 'md_qs1',
-                  question: 'Câu 1: Nếu một ngày em có thể quay về quá khứ và thay đổi một quyết định của bản thân, em sẽ chọn khoảnh khắc nào? Vì sao?',
+                  question: 'Câu 1: Nếu một ngày bạn có thể quay về quá khứ và thay đổi một quyết định của bản thân, bạn sẽ chọn khoảnh khắc nào? Vì sao?',
                   placeholder: '',
                   required: true
                 },
                 {
                   type: 'textarea',
                   id: 'md_qs2',
-                  question: 'Câu 2: Hãy tưởng tượng sau 1 năm tham gia Ban Truyền thông, em muốn mọi người nhớ đến em là một người như thế nào?',
+                  question: 'Câu 2: Hãy tưởng tượng sau 1 năm tham gia Ban Truyền thông, bạn muốn mọi người nhớ đến bạn là một người như thế nào?',
                   placeholder: '',
                   required: true
                 },
                 {
-                  type: 'checkbox',
+                  type: 'radio',
                   id: 'md_qs3_1',
-                  question: 'Câu 3: Chọn 1 nền tảng truyền thông mà em yêu thích nhất:',
+                  question: 'Câu 3: Chọn 1 nền tảng truyền thông mà bạn yêu thích nhất:',
                   options: ['Facebook', 'Instagram', 'TikTok', 'Threads', 'LinkedIn', 'YouTube'],
                   required: true
                 },
                 {
                   type: 'textarea',
                   id: 'md_qs3_2',
-                  question: 'Em thường theo dõi những nội dung gì trên nền tảng truyền thông đó?',
+                  question: 'Bạn thường theo dõi những nội dung gì trên nền tảng truyền thông đó?',
                   placeholder: '',
                   required: true
                 },
                 {
                   type: 'textarea',
                   id: 'md_qs4',
-                  question: 'Câu 4: Hãy chia sẻ một chiến dịch truyền thông để lại cho em nhiều ấn tượng nhất. Tại sao em yêu thích chiến dịch đó?',
+                  question: 'Câu 4: Hãy chia sẻ một chiến dịch truyền thông để lại cho bạn nhiều ấn tượng nhất. Tại sao bạn yêu thích chiến dịch đó?',
                   placeholder: '',
                   required: true
                 },
                 {
                   type: 'textarea',
                   id: 'md_content_qs1',
-                  question: 'Câu 5: Những năm gần đây, công nghệ và AI phát triển mạnh với nhiều công cụ hỗ trợ học tập, làm việc như ChatGPT, Gemini hay Copilot. Điều này tạo ra hai luồng ý kiến: một bên cho rằng AI giúp cuộc sống tiện lợi, tiết kiệm thời gian, một bên lại lo ngại con người mất dần tư duy sáng tạo và ngày càng phụ thuộc. Em đồng ý với quan điểm nào? Hãy giải thích lý do.',
+                  question: 'Câu 5: Những năm gần đây, công nghệ và AI phát triển mạnh với nhiều công cụ hỗ trợ học tập, làm việc như ChatGPT, Gemini hay Copilot. Điều này tạo ra hai luồng ý kiến: một bên cho rằng AI giúp cuộc sống tiện lợi, tiết kiệm thời gian, một bên lại lo ngại con người mất dần tư duy sáng tạo và ngày càng phụ thuộc. Bạn đồng ý với quan điểm nào? Hãy giải thích lý do.',
                   placeholder: '',
                   required: true
                 },
                 {
                   type: 'textarea',
                   id: 'md_content_qs2',
-                  question: 'Câu 6: Nếu phải chọn một chủ đề xã hội cho bài đăng truyền thông thể hiện quan điểm của mình, em sẽ chọn chủ đề nào và tại sao?',
+                  question: 'Câu 6: Nếu phải chọn một chủ đề xã hội cho bài đăng truyền thông thể hiện quan điểm của mình, bạn sẽ chọn chủ đề nào và tại sao?',
                   placeholder: '',
                   required: true
                 },
                                 {
                   type: 'text',
                   id: 'md_content_qs3',
-                  question: `Câu 7: Em đã từng có kinh nghiệm viết bài đăng bao giờ chưa? Nếu có, hãy đính kèm một link drive tổng hợp những bài viết tâm đắc nhất em từng làm nhé!
+                  question: `Câu 7: Bạn đã từng có kinh nghiệm viết bài đăng bao giờ chưa? Nếu có, hãy đính kèm một link drive tổng hợp những bài viết tâm đắc nhất bạn từng làm nhé!
                               
                   *Lưu ý: Hãy kiểm tra lại quyền truy cập trước khi gắn nhé!`,
                   placeholder: 'Hãy điền link drive vào đây',
-                  required: true
+                  required: false
                 },
               ]
             },
@@ -183,48 +183,35 @@ const generalQuestions = [
                 {
                     type: 'textarea',
                     id: 'hr_qs1',
-                    question: `Câu 1: Bạn hãy kể về những trải nghiệm, hoạt động ngoại khóa mà bạn đã từng tham gia trước đây. Sau những trải nghiệm, hoạt động đó, bạn đã rút ra được những bài học gì cho bản thân và điều gì khiến bạn tâm đắc nhất?
-                    
-                    VD:
-                    - Nội dung chính của hoạt động là gì?
-                    - Bạn tham gia với vai trò gì?
-                    - Bạn học được những gì và bạn tâm đắc nhất điều gì?
-                    - …`,
+                    question: 'Câu 1: Bạn hiểu như thế nào về vai trò của ban Nhân sự - Sự Kiện trong Enactus FTU Hanoi. Bạn nghĩ mình có những đặc điểm gì phù hợp với ban Nhân sự - Sự kiện?',
                     placeholder: '',
                     required: true
                 },
                 {
                     type: 'textarea',
                     id: 'hr_qs2',
-                    question: 'Câu 2: Bạn hiểu như thế nào về vai trò của ban Nhân sự - Sự Kiện trong Enactus FTU Hanoi. Bạn nghĩ mình có những đặc điểm gì phù hợp với ban Nhân sự - Sự kiện?',
+                    question: 'Câu 2: Trong một tập thể, bạn nghĩ điều gì quan trọng hơn: sự đồng đều giữa các thành viên hay sự khác biệt để bổ sung lẫn nhau? Nếu là một phần của tập thể, bạn mong muốn mình sẽ đóng vai trò là leader hay member?',
                     placeholder: '',
                     required: true
                 },
                 {
                     type: 'textarea',
                     id: 'hr_qs3',
-                    question: 'Câu 3: Trong một tập thể, bạn nghĩ điều gì quan trọng hơn: sự đồng đều giữa các thành viên hay sự khác biệt để bổ sung lẫn nhau? Nếu là một phần của tập thể, bạn mong muốn mình sẽ đóng vai trò là leader hay member?',
+                    question: 'Câu 3: Giả sử bạn là thành viên ban Nhân sự – Sự kiện, hãy chia sẻ góc nhìn của mình về mối liên hệ giữa sự kết nối của các thành viên và chiếc điện thoại theo hai chiều hướng: tích cực và tiêu cực.',
                     placeholder: '',
                     required: true
                 },
                 {
                     type: 'textarea',
                     id: 'hr_qs4',
-                    question: 'Câu 4: Giả sử bạn là thành viên ban Nhân sự – Sự kiện, hãy chia sẻ góc nhìn của mình về mối liên hệ giữa sự gắn kết của các thành viên và chiếc điện thoại theo hai chiều hướng: tích cực và tiêu cực.',
+                    question: 'Câu 4: Tại một sự kiện offline của CLB, bất ngờ số lượng khách tham gia đông hơn dự kiến (gấp rưỡi). Khiến người tham dự phải xếp hàng dài và bắt đầu than phiền. Nếu bạn là người điều phối nhân sự ở khu vực này, bạn sẽ xử lý tình huống thế nào để vừa hiệu quả, vừa giữ hình ảnh chuyên nghiệp của CLB?',
                     placeholder: '',
                     required: true
                 },
                 {
                     type: 'textarea',
                     id: 'hr_qs5',
-                    question: 'Câu 5: Tại một sự kiện offline của CLB, bất ngờ số lượng khách tham gia đông hơn dự kiến (gấp rưỡi). Khiến người tham dự phải xếp hàng dài và bắt đầu than phiền. Nếu bạn là người điều phối nhân sự ở khu vực này, bạn sẽ xử lý tình huống thế nào để vừa hiệu quả, vừa giữ hình ảnh chuyên nghiệp của CLB?',
-                    placeholder: '',
-                    required: true
-                },
-                {
-                    type: 'textarea',
-                    id: 'hr_qs6',
-                    question: 'Câu 6: Giả sử trong quá trình làm việc, nhận thấy các thành viên đang dần đuối sức, cảm thấy mệt mỏi với một khối lượng công việc rất lớn, thậm chí có thành viên muốn out khỏi team, là một thành viên của ban Nhân sự - Sự kiện, bạn sẽ làm gì?',
+                    question: 'Câu 5: Giả sử trong quá trình làm việc, nhận thấy các thành viên đang dần đuối sức, cảm thấy mệt mỏi với một khối lượng công việc rất lớn, thậm chí có thành viên muốn out khỏi team, là một thành viên của ban Nhân sự - Sự kiện, bạn sẽ làm gì?',
                     placeholder: '',
                     required: true
                 }
