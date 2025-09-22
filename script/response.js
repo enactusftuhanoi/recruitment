@@ -491,13 +491,6 @@ function showApplicationDetail(appId) {
             </div>
         `;
     }
-    
-    applicationInfoHTML += `
-            <div class="detail-item">
-                <span class="detail-label">Thời gian dành cho Enactus</span>
-                <span class="detail-value">${application.availability || 'Chưa cung cấp'}</span>
-            </div>
-    `;
 
     // HIỂN THỊ TRẠNG THÁI CHO CẢ HAI HÌNH THỨC
     applicationInfoHTML += `
@@ -1447,12 +1440,9 @@ function normalizeApplicationForSummary(app, index = 0) {
         'Giới tính': app.gender ?? '',
         'Trường': app.school ?? '',
         'Chuyên ngành': app.major ?? '',
-        'Mã sinh viên': app.student_id ?? '',
-        'Năm học': app.school_year ?? '',
         'Hình thức ứng tuyển': app.application_type === 'form' ? 'Điền đơn' : 'Phỏng vấn',
         'Ban ưu tiên': getDepartmentName(app.priority_position),
         'Ban dự bị': app.secondary_position && app.secondary_position !== 'None' ? getDepartmentName(app.secondary_position) : 'Không có',
-        'Thời gian dành cho Enactus': app.availability ?? '',
         'Trạng thái': getStatusInfo(computeOverallStatus(app)).text,
         'Ban được chấp nhận': getAcceptedDepartments(app),
         'Ghi chú': app.note ?? '',

@@ -708,7 +708,6 @@
                 // Vị trí ứng tuyển
                 priority_position: document.getElementById('priority_position').value,
                 secondary_position: document.getElementById('secondary_position').value,
-                availability: document.getElementById('availability').value,
 
                 // Câu hỏi chung
                 general_intro: document.getElementById('general_intro')?.value || '',
@@ -821,7 +820,6 @@
                         updateMDSubDepartments();
                     }
                     if (formData.secondary_position) document.getElementById('secondary_position').value = formData.secondary_position;
-                    if (formData.availability) document.getElementById('availability').value = formData.availability;
                     
                     // Khôi phục tiểu ban Truyền thông
                     if (formData.md_sub_departments) {
