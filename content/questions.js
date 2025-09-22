@@ -90,16 +90,17 @@ const generalQuestions = [
                   required: true
                 },
                 {
-                  type: 'scale',
-                  id: 'md_design_qs1',
-                  question: `Câu 5: Bạn thường sử dụng những công cụ hay phần mềm nào để thiết kế? Hãy đánh giá mức độ thành thạo chúng của bạn trên thang đo từ 1 đến 5:
-                              1. Chưa biết sử dụng
-                              2. Mới làm quen
-                              3. Sử dụng ở mức cơ bản
-                              4. Sử dụng thành thạo
-                              5. Sử dụng rất thành thạo`,
-                  min: 1,
-                  max: 5,
+                  type: 'checkbox',
+                  id: 'md_design_qs1_1',
+                  question: `Câu 5: Bạn thường sử dụng những công cụ hay phần mềm thiết kế nào? Với mỗi công cụ hay phần mềm ấy bạn thường sử dụng để làm công việc gì?`,
+                  options: ['Adobe Photoshop', 'Adobe Illustrator', 'Canva', 'Figma', 'Adobe Premiere Pro', 'Adobe After Effects', 'Final Cut Pro', 'Davinci Resolve', 'Procreate', 'CorelDRAW', 'Sketch', 'InDesign', 'Affinity Designer', 'GIMP', 'Blender', 'Cinema 4D', 'Khác (Vui lòng ghi rõ ở câu hỏi tiếp theo)'],
+                  required: true
+                },
+                                {
+                  type: 'textarea',
+                  id: 'md_design_qs1_2',
+                  question: `Với mỗi công cụ hay phần mềm ấy bạn thường sử dụng để làm công việc gì?`,
+                  placeholder: '',
                   required: true
                 },
                 {

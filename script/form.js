@@ -666,7 +666,7 @@
             let summaryHTML = `
                 <p><strong>Hình thức ứng tuyển:</strong> ${applicationType === 'form' ? 'Điền đơn ứng tuyển' : 'Phỏng vấn trực tiếp'}</p>
                 <p><strong>Họ và tên:</strong> ${form.fullname.value}</p>
-                <p><strong>Ngày/tháng/năm sinh:</strong> ${form.birthdate.value}</p>
+                <p><strong>Ngày/tháng/năm sinh:</strong> ${formatDateToVN(form.birthdate.value)}</p>
                 <p><strong>Giới tính:</strong> ${form.gender.value}</p>
                 <p><strong>Trường:</strong> ${form.school.value}</p>
                 <p><strong>Khóa/Chuyên ngành đang theo học:</strong> ${form.major.value}</p>
@@ -789,6 +789,15 @@
             } catch (error) {
                 console.error('Error saving form data:', error);
             }
+        }
+
+        function formatDateToVN(dateString) {
+            if (!dateString) return "";
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
         }
         
         // Hàm khôi phục dữ liệu từ localStorage
@@ -1031,6 +1040,12 @@
             confirmButtonText: 'OK'
         });
         };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadIntroFromMarkdown();
+            loadFormData();   // ✅ khôi phục dữ liệu đã lưu
+        });
+
 
 
 
