@@ -69,10 +69,10 @@ const generalQuestions = [
                   required: true
                 },
                 {
-                  type: 'checkbox',
+                  type: 'radio',
                   id: 'md_qs3_1',
                   question: 'Câu 3: Chọn 1 nền tảng truyền thông mà bạn yêu thích nhất:',
-                  options: ['Facebook', 'Instagram', 'TikTok', 'Threads', 'LinkedIn', 'YouTube'],
+                  options: ['Facebook', 'Instagram', 'TikTok', 'Threads', 'LinkedIn', 'Khác (Vui lòng ghi rõ ở câu hỏi tiếp theo)'],
                   required: true
                 },
                 {
@@ -138,7 +138,7 @@ const generalQuestions = [
                   type: 'radio',
                   id: 'md_qs3_1',
                   question: 'Câu 3: Chọn 1 nền tảng truyền thông mà bạn yêu thích nhất:',
-                  options: ['Facebook', 'Instagram', 'TikTok', 'Threads', 'LinkedIn', 'YouTube'],
+                  options: ['Facebook', 'Instagram', 'TikTok', 'Threads', 'LinkedIn', 'Khác (Vui lòng ghi rõ ở câu hỏi tiếp theo)'],
                   required: true
                 },
                 {
