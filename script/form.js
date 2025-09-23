@@ -454,14 +454,14 @@
         
             // Tab ưu tiên
             const priorityTabBtn = document.getElementById('priority-tab-btn');
-            if (priorityTabBtn) priorityTabBtn.textContent = `Câu hỏi dành cho ban ${priorityPositionName} (Ưu tiên)`;
+            if (priorityTabBtn) priorityTabBtn.textContent = `Câu hỏi dành cho ban ${priorityPositionName} (NV1)`;
         
             // Tab dự bị
             const secondaryTabBtn = document.getElementById('secondary-tab-btn');
             if (secondarySelect.value && secondarySelect.value !== "" && secondarySelect.value !== "None") {
                 if (secondaryTabBtn) {
                     secondaryTabBtn.style.display = 'inline-block';
-                    secondaryTabBtn.textContent = `Câu hỏi dành cho ban ${secondaryPositionName} (Dự bị)`;
+                    secondaryTabBtn.textContent = `Câu hỏi dành cho ban ${secondaryPositionName} (NV2)`;
                 }
             } else {
                 if (secondaryTabBtn) secondaryTabBtn.style.display = 'none';
@@ -477,8 +477,8 @@
             }
         
             // Update header inside các sub-section
-            document.getElementById('ban-name').textContent = `${priorityPositionName} (Ưu tiên)`;
-            document.getElementById('secondary-ban-name').textContent = secondarySelect.value && secondarySelect.value !== "None" ? `${secondaryPositionName} (Dự bị)` : 'vị trí dự bị';
+            document.getElementById('ban-name').textContent = `${priorityPositionName} (NV1)`;
+            document.getElementById('secondary-ban-name').textContent = secondarySelect.value && secondarySelect.value !== "None" ? `${secondaryPositionName} (NV2)` : 'vị trí nguyện vọng 2';
         
             // Render câu hỏi tương ứng
             renderBanQuestions(prioritySelect.value, 'priority');
@@ -696,7 +696,7 @@
             
             // Thêm thông tin tiểu ban dự bị nếu là Ban Truyền thông
             if (form.secondary_position.value === 'MD' && mdSubDepartmentsSecondary.length > 0) {
-                summaryHTML += `<p><strong>Tiểu ban Truyền thông (dự bị):</strong> ${mdSubDepartmentsSecondary.join(', ')}</p>`;
+                summaryHTML += `<p><strong>Tiểu ban Truyền thông (NV2):</strong> ${mdSubDepartmentsSecondary.join(', ')}</p>`;
             }
             
             summaryDiv.innerHTML = summaryHTML;
