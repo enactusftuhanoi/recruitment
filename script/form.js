@@ -676,7 +676,7 @@
             });
             
             let summaryHTML = `
-                <p><strong>Hình thức ứng tuyển:</strong> ${applicationType === 'form' ? 'Điền đơn ứng tuyển' : 'Phỏng vấn trực tiếp'}</p>
+                <p><strong>Hình thức ứng tuyển:</strong> ${applicationType === 'form' ? 'Điền đơn ứng tuyển' : 'Phỏng vấn thay đơn'}</p>
                 <p><strong>Họ và tên:</strong> ${form.fullname.value}</p>
                 <p><strong>Ngày/tháng/năm sinh:</strong> ${formatDateToVN(form.birthdate.value)}</p>
                 <p><strong>Giới tính:</strong> ${form.gender.value}</p>
