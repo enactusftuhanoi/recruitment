@@ -158,7 +158,7 @@
                         <div class="position-box">
                             <h3><i class="fas fa-star"></i> Bạn muốn đăng ký vào ban nào ? <span class="required"></span></h3>
                             <div class="form-group">
-                                <label for="priority_position" class="required">Ban mong muốn nhất (Ưu tiên)</label>
+                                <label for="priority_position" class="required">Ban mong muốn nhất (Nguyện vọng 1)</label>
                                 <select id="priority_position" name="priority_position" required onchange="updateSecondaryOptions(); updateMDSubDepartments(); updatePositionNames();">
                                     <option value="">-- Chọn vị trí --</option>
                                     <option value="MD">Ban Truyền thông</option>
@@ -188,7 +188,7 @@
                         <div class="position-box">
                             <h3><i class="fas fa-clock"></i> Bạn có nguyện vọng đăng ký vào ban nào khác không ?</h3>
                             <div class="form-group">
-                                <label for="secondary_position">Ban quan tâm khác</label>
+                                <label for="secondary_position">Ban quan tâm khác (Nguyện vọng 2)</label>
                                 <select id="secondary_position" name="secondary_position" onchange="updateMDSubDepartments(); updatePositionNames();">
                                     <option value="">-- Chọn vị trí --</option>
                                     <option value="None">Không chọn</option>
@@ -201,7 +201,7 @@
                             
                             <!-- MD Sub-departments for secondary position (only visible when MD is selected) -->
                             <div class="md-sub-departments" id="md-sub-departments-secondary" style="display: none;">
-                                <h4>Tiểu ban Truyền thông (dự bị)</h4>
+                                <h4>Tiểu ban Truyền thông (NV2)</h4>
                                 <p>Bạn có thể chọn một hoặc cả hai tiểu ban:</p>
                                 <div class="checkbox-group">
                                     <div class="checkbox-item">
@@ -239,8 +239,8 @@
                     <div class="tab-container">
                         <div class="tab-buttons">
                             <button type="button" class="tab-button active" onclick="showTab('general')">Câu hỏi chung</button>
-                            <button type="button" class="tab-button" onclick="showTab('priority')" id="priority-tab-btn">Câu hỏi dành cho ban ... (Ưu tiên)</button>
-                            <button type="button" class="tab-button" onclick="showTab('secondary')" id="secondary-tab-btn" style="display: none;">Câu hỏi dành cho ban ... (Dự bị)</button>
+                            <button type="button" class="tab-button" onclick="showTab('priority')" id="priority-tab-btn">Câu hỏi dành cho ban ... (NV1)</button>
+                            <button type="button" class="tab-button" onclick="showTab('secondary')" id="secondary-tab-btn" style="display: none;">Câu hỏi dành cho ban ... (NV2)</button>
                         </div>
                         
                         <div id="tab-general" class="tab-content active">
@@ -253,7 +253,7 @@
                             
                             <!-- Câu hỏi dành riêng cho phân ban ưu tiên -->
                             <div class="sub-section">
-                                <h3><i class="fas fa-question-circle"></i> Câu hỏi dành riêng cho <span id="ban-name">vị trí ưu tiên</span></h3>
+                                <h3><i class="fas fa-question-circle"></i> Câu hỏi dành riêng cho <span id="ban-name">Nguyện vọng 1</span></h3>
                                 <div id="ban-specific-questions">
                                     <!-- Câu hỏi sẽ được tự động thêm vào đây bằng JavaScript -->
                                 </div>
@@ -264,7 +264,7 @@
                             
                             <!-- Câu hỏi dành riêng cho phân ban dự bị -->
                             <div class="sub-section">
-                                <h3><i class="fas fa-question-circle"></i> Câu hỏi dành riêng cho <span id="secondary-ban-name">vị trí dự bị</span></h3>
+                                <h3><i class="fas fa-question-circle"></i> Câu hỏi dành riêng cho <span id="secondary-ban-name">Nguyện vọng 2</span></h3>
                                 <div id="secondary-ban-specific-questions">
                                     <!-- Câu hỏi sẽ được tự động thêm vào đây bằng JavaScript -->
                                 </div>
