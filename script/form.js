@@ -1700,25 +1700,6 @@ document.addEventListener("DOMContentLoaded", function() {
     // Thiết lập auto-save
     setupSimpleAutoSave();
     
-    // Thêm nút debug
-    const debugBtn = document.createElement('button');
-    debugBtn.innerHTML = '🐛 Debug';
-    debugBtn.style.position = 'fixed';
-    debugBtn.style.bottom = '10px';
-    debugBtn.style.right = '10px';
-    debugBtn.style.zIndex = '10000';
-    debugBtn.style.padding = '8px 12px';
-    debugBtn.style.background = '#28a745';
-    debugBtn.style.color = 'white';
-    debugBtn.style.border = 'none';
-    debugBtn.style.borderRadius = '5px';
-    debugBtn.style.cursor = 'pointer';
-    debugBtn.onclick = function() {
-        const count = restoreBanQuestionsDirectly();
-        alert(`Đã khôi phục ${count} câu hỏi phân ban!`);
-    };
-    document.body.appendChild(debugBtn);
-    
     console.log('✅ Form đã sẵn sàng');
     
     // Retry cuối cùng sau 5 giây
@@ -1728,26 +1709,4 @@ document.addEventListener("DOMContentLoaded", function() {
     }, 5000);
 });
 
-// 11. HÀM DEBUG
-function debugFormState() {
-    const saved = localStorage.getItem('enactus_form_data');
-    if (saved) {
-        const data = JSON.parse(saved);
-        console.log('🔍 DEBUG - Dữ liệu đang lưu:');
-        
-        const priorityKeys = Object.keys(data).filter(k => k.startsWith('priority_'));
-        const secondaryKeys = Object.keys(data).filter(k => k.startsWith('secondary_'));
-        
-        console.log(`📊 Priority: ${priorityKeys.length}, Secondary: ${secondaryKeys.length}`);
-        
-        // Kiểm tra từng key
-        priorityKeys.forEach(key => {
-            const inputs = document.querySelectorAll(`[name="${key}"]`);
-            console.log(`   ${key}: ${inputs.length} inputs, value:`, data[key]);
-        });
-    }
-}
-
-// Debug sau khi load
-setTimeout(debugFormState, 3000);
 
