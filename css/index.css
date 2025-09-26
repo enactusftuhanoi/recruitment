@@ -241,7 +241,6 @@
           margin-bottom: 18px;
         }
 
-       /* Timeline Section */
 /* Timeline Section */
 .timeline-section {
   width: 100%;
@@ -533,7 +532,7 @@
 
 .department-content p {
   font-family: "Montserrat", sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   line-height: 1.4;
   color: #ffffff;
   margin-bottom: 15px;
