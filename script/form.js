@@ -1748,8 +1748,8 @@ document.addEventListener("DOMContentLoaded", () => {
     msgBox.className =
       "max-w-lg mx-auto mt-20 p-6 bg-white shadow-lg rounded-2xl text-center";
     msgBox.innerHTML = `
-      <h2 class="text-xl font-semibold mb-2">⏳ Đã đóng đơn</h2>
-      <p class="text-gray-600">Hiện tại không nằm trong thời gian mở đơn hay phỏng vấn thay đơn.</p>
+        <h2 class="text-xl font-semibold mb-2">❗Hiện chưa tới thời gian mở đơn</h2>
+        <p class="text-gray-600">Đơn sẽ chính thức mở vào lúc <b>20h00 ngày 01/10/2025</b>. Vui lòng quay lại sau !</p>
     `;
     formEl.parentNode.insertBefore(msgBox, formEl);
   }
