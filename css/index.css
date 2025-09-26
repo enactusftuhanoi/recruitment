@@ -977,7 +977,154 @@
         margin-top: 40px;
         font-size: 0.9rem;
         color: #e6e6e6;
-      } /* Responsive: mobile & tablet */
+      } 
+/* Scroll Down Indicator */
+.scroll-down-indicator {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: #7c77df;
+  z-index: 10;
+  animation: fadeInUp 2s ease-out;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.scroll-down-indicator.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.scroll-down-indicator.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.scroll-down-indicator span {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  text-shadow: 0 2px 4px rgb(255, 255, 255);
+}
+
+/* Phương án 1: Dùng GIF */
+.scroll-gif {
+  width: 40px;
+  height: 40px;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: rotate(45deg) translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: rotate(45deg) translateY(-10px);
+    opacity: 0.7;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .scroll-down-indicator {
+    bottom: 20px;
+  }
+  
+  .scroll-down-indicator span {
+    font-size: 12px;
+  }
+}
+
+/* Container cho person và phone riêng biệt */
+.person-with-phone {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Phone info tách biệt hoàn toàn */
+.phone-info-separate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 44px; /* Căn chỉnh với text-block */
+  padding-left: 0; /* Đảm bảo không có padding thừa */
+}
+
+.phone-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin: 0; /* Reset margin */
+}
+
+.phone {
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+  color: #ffffff;
+  font-weight: 400;
+  margin: 0; /* Reset margin */
+}
+
+/* Căn chỉnh lại phần person bên trong */
+.person-with-phone .person {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0; /* Reset margin */
+}
+
+.person-with-phone .text-block {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.4;
+  margin: 0; /* Reset margin */
+}
+
+/* Đảm bảo icon person và phone thẳng hàng */
+.person-with-phone .person svg {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+  .phone-info-separate {
+    margin-left: 40px;
+    gap: 6px;
+  }
+  
+  .phone-icon {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .phone {
+    font-size: 0.85rem;
+  }
+  
+  .person-with-phone .person svg {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+      /* Responsive: mobile & tablet */
       @media (max-width: 768px) {
         .apply-btn {
           bottom: 12%;
