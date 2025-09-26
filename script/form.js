@@ -20,6 +20,21 @@
         
         // Hàm chọn hình thức ứng tuyển
         function selectApplicationType(type) {
+            if (type === 'interview') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '⚠️ Cảnh báo',
+                                            html: `
+                            <p style="text-align:center; line-height:1.6; white-space:normal;">
+                                Phỏng vấn thay đơn mở từ 
+                                <br>
+                                <b>00h 15/10/2025</b> – <b>23h59 18/10/2025</b>.
+                                <br>
+                                Vui lòng quay lại sau.
+                            </p>`,
+                });
+                return; // không cho chọn
+            }
 
             applicationType = type;
             document.getElementById('application_type').value = type;
@@ -838,7 +853,6 @@
             return `${day}/${month}/${year}`;
         }
         
-        // Hàm khôi phục dữ liệu từ localStorage
         // Hàm khôi phục dữ liệu từ localStorage - PHIÊN BẢN CẢI TIẾN
         function loadFormData() {
             try {
@@ -1396,317 +1410,347 @@
             }
         }
 
-// === GIẢI PHÁP ĐƠN GIẢN - FIX LỖI KHÔI PHỤC CÂU HỎI PHÂN BAN ===
+        // === GIẢI PHÁP ĐƠN GIẢN - FIX LỖI KHÔI PHỤC CÂU HỎI PHÂN BAN ===
 
-// 1. HÀM KHÔI PHỤC CÂU HỎI PHÂN BAN TRỰC TIẾP
-function restoreBanQuestionsDirectly() {
-    const saved = localStorage.getItem('enactus_form_data');
-    if (!saved) return;
-    
-    const data = JSON.parse(saved);
-    console.log('🔄 Đang khôi phục câu hỏi phân ban trực tiếp...');
-    
-    let restoredCount = 0;
-    
-    // Khôi phục tất cả các field bắt đầu bằng priority_ và secondary_
-    Object.keys(data).forEach(key => {
-        if (key.startsWith('priority_') || key.startsWith('secondary_')) {
-            const value = data[key];
-            const inputs = document.querySelectorAll(`[name="${key}"]`);
+        // 1. HÀM KHÔI PHỤC CÂU HỎI PHÂN BAN TRỰC TIẾP
+        function restoreBanQuestionsDirectly() {
+            const saved = localStorage.getItem('enactus_form_data');
+            if (!saved) return;
             
-            if (inputs.length > 0) {
-                inputs.forEach(input => {
-                    if (input.type === 'checkbox') {
-                        if (Array.isArray(value) && value.includes(input.value)) {
-                            input.checked = true;
-                            restoredCount++;
-                        }
-                    } else if (input.type === 'radio') {
-                        if (value === input.value) {
-                            input.checked = true;
-                            restoredCount++;
-                        }
-                    } else {
-                        // Text, textarea, select
-                        if (input.value !== value) {
-                            input.value = value || '';
-                            if (value) restoredCount++;
-                        }
+            const data = JSON.parse(saved);
+            console.log('🔄 Đang khôi phục câu hỏi phân ban trực tiếp...');
+            
+            let restoredCount = 0;
+            
+            // Khôi phục tất cả các field bắt đầu bằng priority_ và secondary_
+            Object.keys(data).forEach(key => {
+                if (key.startsWith('priority_') || key.startsWith('secondary_')) {
+                    const value = data[key];
+                    const inputs = document.querySelectorAll(`[name="${key}"]`);
+                    
+                    if (inputs.length > 0) {
+                        inputs.forEach(input => {
+                            if (input.type === 'checkbox') {
+                                if (Array.isArray(value) && value.includes(input.value)) {
+                                    input.checked = true;
+                                    restoredCount++;
+                                }
+                            } else if (input.type === 'radio') {
+                                if (value === input.value) {
+                                    input.checked = true;
+                                    restoredCount++;
+                                }
+                            } else {
+                                // Text, textarea, select
+                                if (input.value !== value) {
+                                    input.value = value || '';
+                                    if (value) restoredCount++;
+                                }
+                            }
+                        });
                     }
-                });
-            }
-        }
-    });
-    
-    console.log(`✅ Đã khôi phục ${restoredCount} câu hỏi phân ban`);
-    return restoredCount;
-}
-
-// 2. HÀM RETRY NHIỀU LẦN
-function retryRestoreWithDelay(maxRetries = 10, delay = 500) {
-    let retryCount = 0;
-    
-    const tryRestore = () => {
-        const restored = restoreBanQuestionsDirectly();
-        
-        if (restored > 0 || retryCount >= maxRetries) {
-            console.log(`✅ Hoàn thành sau ${retryCount} lần thử`);
-            return;
-        }
-        
-        retryCount++;
-        console.log(`🔄 Thử lại lần ${retryCount}...`);
-        setTimeout(tryRestore, delay);
-    };
-    
-    tryRestore();
-}
-
-// 3. GHI ĐÈ HÀM RENDER BAN QUESTIONS MỘT CÁCH AN TOÀN
-if (typeof window._banQuestionsRestorePatched === 'undefined') {
-    window._banQuestionsRestorePatched = true;
-    
-    const originalRenderFunction = renderBanQuestions;
-    renderBanQuestions = function(banCode, type) {
-        originalRenderFunction(banCode, type);
-        
-        // Khôi phục dữ liệu sau khi render
-        setTimeout(() => {
-            restoreBanQuestionsDirectly();
-        }, 100);
-    };
-}
-
-// 4. GHI ĐÈ HÀM SHOW TAB MỘT CÁCH AN TOÀN
-if (typeof window._showTabPatched === 'undefined') {
-    window._showTabPatched = true;
-    
-    const originalShowTabFunction = showTab;
-    showTab = function(tabName) {
-        originalShowTabFunction(tabName);
-        
-        // Khôi phục dữ liệu khi chuyển tab
-        setTimeout(() => {
-            restoreBanQuestionsDirectly();
-        }, 200);
-    };
-}
-
-// 5. GHI ĐÈ HÀM UPDATE POSITION NAMES
-if (typeof window._updatePositionNamesPatched === 'undefined') {
-    window._updatePositionNamesPatched = true;
-    
-    const originalUpdateFunction = updatePositionNames;
-    updatePositionNames = function() {
-        originalUpdateFunction();
-        
-        // Khôi phục dữ liệu sau khi update position
-        setTimeout(() => {
-            restoreBanQuestionsDirectly();
-        }, 300);
-    };
-}
-
-// 6. HÀM KHÔI PHỤC DỮ LIỆU HOÀN CHỈNH
-function enhancedLoadFormData() {
-    try {
-        const saved = localStorage.getItem('enactus_form_data');
-        if (!saved) return;
-
-        const data = JSON.parse(saved);
-        console.log('📁 Đang khôi phục dữ liệu...');
-
-        // Khôi phục thông tin cơ bản
-        if (data.application_type) selectApplicationType(data.application_type);
-        if (data.fullname) document.getElementById('fullname').value = data.fullname;
-        if (data.birthdate) document.getElementById('birthdate').value = data.birthdate;
-        if (data.gender) document.getElementById('gender').value = data.gender;
-        if (data.email) document.getElementById('email').value = data.email;
-        if (data.phone) document.getElementById('phone').value = data.phone;
-        if (data.school) document.getElementById('school').value = data.school;
-        if (data.major) document.getElementById('major').value = data.major;
-        if (data.facebook) document.getElementById('facebook').value = data.facebook;
-        
-        if (data.priority_position) {
-            document.getElementById('priority_position').value = data.priority_position;
-            updateSecondaryOptions();
-            updateMDSubDepartments();
-        }
-        if (data.secondary_position) document.getElementById('secondary_position').value = data.secondary_position;
-        
-        if (data.md_sub_departments) {
-            data.md_sub_departments.forEach(value => {
-                const cb = document.querySelector(`input[name="md_sub_departments[]"][value="${value}"]`);
-                if (cb) cb.checked = true;
-            });
-        }
-        if (data.md_sub_departments_secondary) {
-            data.md_sub_departments_secondary.forEach(value => {
-                const cb = document.querySelector(`input[name="md_sub_departments_secondary[]"][value="${value}"]`);
-                if (cb) cb.checked = true;
-            });
-        }
-
-        // Khôi phục câu hỏi chung
-        Object.keys(data).forEach(key => {
-            if (key.startsWith('general_')) {
-                const value = data[key];
-                const inputs = document.querySelectorAll(`[name="${key}"]`);
-                
-                inputs.forEach(input => {
-                    if (input.type === 'checkbox') {
-                        if (Array.isArray(value) && value.includes(input.value)) {
-                            input.checked = true;
-                        }
-                    } else if (input.type === 'radio') {
-                        if (value === input.value) {
-                            input.checked = true;
-                        }
-                    } else {
-                        input.value = value || '';
-                    }
-                });
-            }
-        });
-
-        console.log('✅ Đã khôi phục thông tin cơ bản');
-
-        // Bắt đầu retry khôi phục câu hỏi phân ban
-        setTimeout(() => {
-            retryRestoreWithDelay();
-        }, 1000);
-
-    } catch (error) {
-        console.error('❌ Lỗi khôi phục dữ liệu:', error);
-    }
-}
-
-// 7. HÀM LƯU DỮ LIỆU ĐƠN GIẢN
-function simpleSaveFormData() {
-    try {
-        const formData = {
-            application_type: applicationType,
-            fullname: document.getElementById('fullname')?.value || '',
-            birthdate: document.getElementById('birthdate')?.value || '',
-            gender: document.getElementById('gender')?.value || '',
-            email: document.getElementById('email')?.value || '',
-            phone: document.getElementById('phone')?.value || '',
-            school: document.getElementById('school')?.value || '',
-            major: document.getElementById('major')?.value || '',
-            facebook: document.getElementById('facebook')?.value || '',
-            priority_position: document.getElementById('priority_position')?.value || '',
-            secondary_position: document.getElementById('secondary_position')?.value || '',
-            md_sub_departments: Array.from(document.querySelectorAll('input[name="md_sub_departments[]"]:checked')).map(cb => cb.value),
-            md_sub_departments_secondary: Array.from(document.querySelectorAll('input[name="md_sub_departments_secondary[]"]:checked')).map(cb => cb.value),
-            timestamp: new Date().toISOString()
-        };
-
-        // Thu thập câu hỏi chung
-        const generalContainer = document.getElementById('general-questions');
-        if (generalContainer) {
-            generalContainer.querySelectorAll('input, textarea, select').forEach(input => {
-                const name = input.name || input.id;
-                if (!name) return;
-
-                if (input.type === 'checkbox') {
-                    if (!formData[name]) formData[name] = [];
-                    if (input.checked) formData[name].push(input.value);
-                } else if (input.type === 'radio') {
-                    if (input.checked) formData[name] = input.value;
-                } else {
-                    formData[name] = input.value || '';
                 }
             });
+            
+            console.log(`✅ Đã khôi phục ${restoredCount} câu hỏi phân ban`);
+            return restoredCount;
         }
 
-        // Thu thập câu hỏi phân ban
-        ['priority', 'secondary'].forEach(type => {
-            const containerId = type === 'priority' ? 'ban-specific-questions' : 'secondary-ban-specific-questions';
-            const container = document.getElementById(containerId);
+        // 2. HÀM RETRY NHIỀU LẦN
+        function retryRestoreWithDelay(maxRetries = 10, delay = 500) {
+            let retryCount = 0;
             
-            if (container) {
-                container.querySelectorAll('input, textarea, select').forEach(input => {
-                    const name = input.name;
-                    if (!name || !name.startsWith(type + '_')) return;
+            const tryRestore = () => {
+                const restored = restoreBanQuestionsDirectly();
+                
+                if (restored > 0 || retryCount >= maxRetries) {
+                    console.log(`✅ Hoàn thành sau ${retryCount} lần thử`);
+                    return;
+                }
+                
+                retryCount++;
+                console.log(`🔄 Thử lại lần ${retryCount}...`);
+                setTimeout(tryRestore, delay);
+            };
+            
+            tryRestore();
+        }
 
-                    if (input.type === 'checkbox') {
-                        if (!formData[name]) formData[name] = [];
-                        if (input.checked) formData[name].push(input.value);
-                    } else if (input.type === 'radio') {
-                        if (input.checked) formData[name] = input.value;
-                    } else {
-                        formData[name] = input.value || '';
+        // 3. GHI ĐÈ HÀM RENDER BAN QUESTIONS MỘT CÁCH AN TOÀN
+        if (typeof window._banQuestionsRestorePatched === 'undefined') {
+            window._banQuestionsRestorePatched = true;
+            
+            const originalRenderFunction = renderBanQuestions;
+            renderBanQuestions = function(banCode, type) {
+                originalRenderFunction(banCode, type);
+                
+                // Khôi phục dữ liệu sau khi render
+                setTimeout(() => {
+                    restoreBanQuestionsDirectly();
+                }, 100);
+            };
+        }
+
+        // 4. GHI ĐÈ HÀM SHOW TAB MỘT CÁCH AN TOÀN
+        if (typeof window._showTabPatched === 'undefined') {
+            window._showTabPatched = true;
+            
+            const originalShowTabFunction = showTab;
+            showTab = function(tabName) {
+                originalShowTabFunction(tabName);
+                
+                // Khôi phục dữ liệu khi chuyển tab
+                setTimeout(() => {
+                    restoreBanQuestionsDirectly();
+                }, 200);
+            };
+        }
+
+        // 5. GHI ĐÈ HÀM UPDATE POSITION NAMES
+        if (typeof window._updatePositionNamesPatched === 'undefined') {
+            window._updatePositionNamesPatched = true;
+            
+            const originalUpdateFunction = updatePositionNames;
+            updatePositionNames = function() {
+                originalUpdateFunction();
+                
+                // Khôi phục dữ liệu sau khi update position
+                setTimeout(() => {
+                    restoreBanQuestionsDirectly();
+                }, 300);
+            };
+        }
+
+        // 6. HÀM KHÔI PHỤC DỮ LIỆU HOÀN CHỈNH
+        function enhancedLoadFormData() {
+            try {
+                const saved = localStorage.getItem('enactus_form_data');
+                if (!saved) return;
+
+                const data = JSON.parse(saved);
+                console.log('📁 Đang khôi phục dữ liệu...');
+
+                // Khôi phục thông tin cơ bản
+                if (data.application_type) selectApplicationType(data.application_type);
+                if (data.fullname) document.getElementById('fullname').value = data.fullname;
+                if (data.birthdate) document.getElementById('birthdate').value = data.birthdate;
+                if (data.gender) document.getElementById('gender').value = data.gender;
+                if (data.email) document.getElementById('email').value = data.email;
+                if (data.phone) document.getElementById('phone').value = data.phone;
+                if (data.school) document.getElementById('school').value = data.school;
+                if (data.major) document.getElementById('major').value = data.major;
+                if (data.facebook) document.getElementById('facebook').value = data.facebook;
+                
+                if (data.priority_position) {
+                    document.getElementById('priority_position').value = data.priority_position;
+                    updateSecondaryOptions();
+                    updateMDSubDepartments();
+                }
+                if (data.secondary_position) document.getElementById('secondary_position').value = data.secondary_position;
+                
+                if (data.md_sub_departments) {
+                    data.md_sub_departments.forEach(value => {
+                        const cb = document.querySelector(`input[name="md_sub_departments[]"][value="${value}"]`);
+                        if (cb) cb.checked = true;
+                    });
+                }
+                if (data.md_sub_departments_secondary) {
+                    data.md_sub_departments_secondary.forEach(value => {
+                        const cb = document.querySelector(`input[name="md_sub_departments_secondary[]"][value="${value}"]`);
+                        if (cb) cb.checked = true;
+                    });
+                }
+
+                // Khôi phục câu hỏi chung
+                Object.keys(data).forEach(key => {
+                    if (key.startsWith('general_')) {
+                        const value = data[key];
+                        const inputs = document.querySelectorAll(`[name="${key}"]`);
+                        
+                        inputs.forEach(input => {
+                            if (input.type === 'checkbox') {
+                                if (Array.isArray(value) && value.includes(input.value)) {
+                                    input.checked = true;
+                                }
+                            } else if (input.type === 'radio') {
+                                if (value === input.value) {
+                                    input.checked = true;
+                                }
+                            } else {
+                                input.value = value || '';
+                            }
+                        });
                     }
                 });
+
+                console.log('✅ Đã khôi phục thông tin cơ bản');
+
+                // Bắt đầu retry khôi phục câu hỏi phân ban
+                setTimeout(() => {
+                    retryRestoreWithDelay();
+                }, 1000);
+
+            } catch (error) {
+                console.error('❌ Lỗi khôi phục dữ liệu:', error);
             }
+        }
+
+        // 7. HÀM LƯU DỮ LIỆU ĐƠN GIẢN
+        function simpleSaveFormData() {
+            try {
+                const formData = {
+                    application_type: applicationType,
+                    fullname: document.getElementById('fullname')?.value || '',
+                    birthdate: document.getElementById('birthdate')?.value || '',
+                    gender: document.getElementById('gender')?.value || '',
+                    email: document.getElementById('email')?.value || '',
+                    phone: document.getElementById('phone')?.value || '',
+                    school: document.getElementById('school')?.value || '',
+                    major: document.getElementById('major')?.value || '',
+                    facebook: document.getElementById('facebook')?.value || '',
+                    priority_position: document.getElementById('priority_position')?.value || '',
+                    secondary_position: document.getElementById('secondary_position')?.value || '',
+                    md_sub_departments: Array.from(document.querySelectorAll('input[name="md_sub_departments[]"]:checked')).map(cb => cb.value),
+                    md_sub_departments_secondary: Array.from(document.querySelectorAll('input[name="md_sub_departments_secondary[]"]:checked')).map(cb => cb.value),
+                    timestamp: new Date().toISOString()
+                };
+
+                // Thu thập câu hỏi chung
+                const generalContainer = document.getElementById('general-questions');
+                if (generalContainer) {
+                    generalContainer.querySelectorAll('input, textarea, select').forEach(input => {
+                        const name = input.name || input.id;
+                        if (!name) return;
+
+                        if (input.type === 'checkbox') {
+                            if (!formData[name]) formData[name] = [];
+                            if (input.checked) formData[name].push(input.value);
+                        } else if (input.type === 'radio') {
+                            if (input.checked) formData[name] = input.value;
+                        } else {
+                            formData[name] = input.value || '';
+                        }
+                    });
+                }
+
+                // Thu thập câu hỏi phân ban
+                ['priority', 'secondary'].forEach(type => {
+                    const containerId = type === 'priority' ? 'ban-specific-questions' : 'secondary-ban-specific-questions';
+                    const container = document.getElementById(containerId);
+                    
+                    if (container) {
+                        container.querySelectorAll('input, textarea, select').forEach(input => {
+                            const name = input.name;
+                            if (!name || !name.startsWith(type + '_')) return;
+
+                            if (input.type === 'checkbox') {
+                                if (!formData[name]) formData[name] = [];
+                                if (input.checked) formData[name].push(input.value);
+                            } else if (input.type === 'radio') {
+                                if (input.checked) formData[name] = input.value;
+                            } else {
+                                formData[name] = input.value || '';
+                            }
+                        });
+                    }
+                });
+
+                localStorage.setItem('enactus_form_data', JSON.stringify(formData));
+                console.log('💾 Đã lưu dữ liệu');
+
+            } catch (error) {
+                console.error('❌ Lỗi khi lưu dữ liệu:', error);
+            }
+        }
+
+        // 8. THIẾT LẬP AUTO-SAVE
+        function setupSimpleAutoSave() {
+            // Lưu khi thay đổi
+            document.addEventListener('input', function(e) {
+                setTimeout(simpleSaveFormData, 300);
+            });
+            
+            document.addEventListener('change', function(e) {
+                setTimeout(simpleSaveFormData, 300);
+            });
+            
+            // Lưu khi click radio/checkbox
+            document.addEventListener('click', function(e) {
+                if (e.target.type === 'radio' || e.target.type === 'checkbox') {
+                    setTimeout(simpleSaveFormData, 200);
+                }
+            });
+            
+            // Lưu khi rời trang
+            window.addEventListener('beforeunload', simpleSaveFormData);
+            
+            // Lưu định kỳ
+            setInterval(simpleSaveFormData, 30000);
+        }
+
+        // 9. GHI ĐÈ HÀM NEXT SECTION
+        if (typeof window._nextSectionPatched === 'undefined') {
+            window._nextSectionPatched = true;
+            
+            const originalNextSection = nextSection;
+            nextSection = function(current) {
+                simpleSaveFormData();
+                originalNextSection(current);
+            };
+        }
+
+        // 10. KHỞI TẠO FORM
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log('🚀 Khởi tạo form...');
+            
+            // Khởi tạo ban đầu
+            loadIntroFromMarkdown();
+            renderGeneralQuestions();
+            updateSecondaryOptions();
+            
+            // Khôi phục dữ liệu
+            enhancedLoadFormData();
+            
+            // Thiết lập auto-save
+            setupSimpleAutoSave();
+            
+            console.log('✅ Form đã sẵn sàng');
+            
+            // Retry cuối cùng sau 5 giây
+            setTimeout(() => {
+                console.log('⏰ Khôi phục lần cuối...');
+                restoreBanQuestionsDirectly();
+            }, 5000);
         });
 
-        localStorage.setItem('enactus_form_data', JSON.stringify(formData));
-        console.log('💾 Đã lưu dữ liệu');
+document.addEventListener("DOMContentLoaded", () => {
+  const now = new Date();
 
-    } catch (error) {
-        console.error('❌ Lỗi khi lưu dữ liệu:', error);
-    }
-}
+  // Vòng đơn
+  const formStart = new Date("2025-10-01T21:00:00+07:00"); 
+  const formEnd   = new Date("2025-10-21T20:00:00+07:00"); 
 
-// 8. THIẾT LẬP AUTO-SAVE
-function setupSimpleAutoSave() {
-    // Lưu khi thay đổi
-    document.addEventListener('input', function(e) {
-        setTimeout(simpleSaveFormData, 300);
-    });
-    
-    document.addEventListener('change', function(e) {
-        setTimeout(simpleSaveFormData, 300);
-    });
-    
-    // Lưu khi click radio/checkbox
-    document.addEventListener('click', function(e) {
-        if (e.target.type === 'radio' || e.target.type === 'checkbox') {
-            setTimeout(simpleSaveFormData, 200);
-        }
-    });
-    
-    // Lưu khi rời trang
-    window.addEventListener('beforeunload', simpleSaveFormData);
-    
-    // Lưu định kỳ
-    setInterval(simpleSaveFormData, 30000);
-}
+  let allowedType = null;
 
-// 9. GHI ĐÈ HÀM NEXT SECTION
-if (typeof window._nextSectionPatched === 'undefined') {
-    window._nextSectionPatched = true;
-    
-    const originalNextSection = nextSection;
-    nextSection = function(current) {
-        simpleSaveFormData();
-        originalNextSection(current);
-    };
-}
+  // Kiểm tra thời gian hiện tại có nằm trong khoảng không
+  if (now >= formStart && now <= formEnd) {
+    allowedType = "form"; // mở form
+  }
 
-// 10. KHỞI TẠO FORM
-document.addEventListener("DOMContentLoaded", function() {
-    console.log('🚀 Khởi tạo form...');
-    
-    // Khởi tạo ban đầu
-    loadIntroFromMarkdown();
-    renderGeneralQuestions();
-    updateSecondaryOptions();
-    
-    // Khôi phục dữ liệu
-    enhancedLoadFormData();
-    
-    // Thiết lập auto-save
-    setupSimpleAutoSave();
-    
-    console.log('✅ Form đã sẵn sàng');
-    
-    // Retry cuối cùng sau 5 giây
-    setTimeout(() => {
-        console.log('⏰ Khôi phục lần cuối...');
-        restoreBanQuestionsDirectly();
-    }, 5000);
+  const formEl = document.getElementById("recruitmentForm");
+
+  if (!allowedType) {
+    // Ẩn form
+    formEl.style.display = "none";
+
+    // Thông báo
+    const msgBox = document.createElement("div");
+    msgBox.className =
+      "max-w-lg mx-auto mt-20 p-6 bg-white shadow-lg rounded-2xl text-center";
+    msgBox.innerHTML = `
+      <h2 class="text-xl font-semibold mb-2">⏳ Đã đóng đơn</h2>
+      <p class="text-gray-600">Hiện tại không nằm trong thời gian mở đơn hay phỏng vấn thay đơn.</p>
+    `;
+    formEl.parentNode.insertBefore(msgBox, formEl);
+  }
 });
-
-
