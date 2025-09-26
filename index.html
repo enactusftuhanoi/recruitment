@@ -6,6 +6,7 @@
     <title>Recruitment | Enactus FTU Hanoi</title>
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <link rel="canonical" href="https://recruitment.enactusftuhanoi.id.vn" />
+    <link rel="stylesheet" href="../css/index.css">
     <!-- SEO Meta -->
     <meta
       name="description"
@@ -53,575 +54,7 @@
     />
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      body {
-        min-height: 100vh;
-        background: url("/assets/background.webp") no-repeat center top fixed;
-        background-size: cover;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: center;
-        position: relative;
-        font-family: "Bricolage Grotesque", sans-serif;
-      } /* Preloader */
-      #preloader {
-        position: fixed;
-        inset: 0;
-        background: #ffffff; /* nền trắng */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        transition: opacity 0.8s ease, visibility 0.8s ease;
-      }
-      #preloader.hidden {
-        opacity: 0;
-        visibility: hidden;
-      }
-      .preloader-logo {
-        width: 150px; /* chỉnh kích thước logo */
-        height: auto;
-        animation: fadeBlink 2s infinite ease-in-out;
-      }
-      @keyframes fadeBlink {
-        0%,
-        100% {
-          opacity: 0.3;
-        }
-        50% {
-          opacity: 1;
-        }
-      }
-      .hero-container {
-        position: relative;
-        width: 100%;
-        height: 100vh; /* hero cao đúng 1 màn hình */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      .hero-img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain; /* đảm bảo không bị cắt */
-        display: block;
-      }
-      /* Chỉ áp dụng cho màn hình nhỏ hơn 600px (mobile) */
-    @media (max-width: 600px) {
-    .hero-container {
-        position: relative;
-        height: auto; /* co theo ảnh, không ép 100vh nữa */
-    }
 
-    .hero-img {
-        width: 100%;
-        height: auto;
-        display: block;
-    }
-
-    .apply-btn {
-        bottom: 8%;   /* bám gần ảnh hơn */
-        transform: translateX(-50%);
-    }
-    }
- 
-      /* Button gốc - SỬA LẠI CHO RESPONSIVE */
-      .apply-btn {
-        position: absolute;
-        bottom: 15%; /* Giữ giá trị phần trăm */
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 0.7vw 2vw; /* Sử dụng đơn vị viewport width để co giãn tốt hơn */
-        font-size: clamp(0.9rem, 2vw, 1.3rem); /* Kích thước chữ linh hoạt */
-        font-weight: 900;
-        color: #fbfbd6;
-        background: #7c77df;
-        border: 0.3vw solid #638efe; /* Border co giãn theo viewport */
-        border-radius: 40px;
-        cursor: pointer;
-        text-decoration: none;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        white-space: nowrap;
-        text-align: center;
-        min-width: 160px; /* Đảm bảo nút không quá nhỏ */
-      }
-      .apply-btn:hover {
-        transform: translateX(-50%) translateY(-3px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-      } /* Countdown style - giống layout bạn gửi */
-      .countdown {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        gap: 34px; /* tăng khoảng cách trên dưới */
-        margin: 300px 0 300px;
-        padding: 0 20px;
-        box-sizing: border-box;
-        pointer-events: auto;
-        font-family: "Montserrat", sans-serif;
-      } /* Hộp chính */
-      .time-box {
-        position: relative;
-        width: 170px;
-        height: 170px;
-        border-radius: 34px;
-        background: rgba(158, 182, 255, 0.6); /* #9eb6ff @ 60% */
-        border: 4px solid #82a3fa;
-        box-sizing: border-box;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: visible;
-        box-shadow: 0 8px 0 0 rgba(130, 163, 250, 0.1),
-          0 10px 20px rgba(0, 0, 0, 0.06);
-      } /* Tạo vòng viền phụ */
-      .time-box::before {
-        content: "";
-        position: absolute;
-        inset: -6px;
-        border-radius: 40px;
-        pointer-events: none;
-        z-index: -1;
-      } /* Số (font = Bricolage Grotesque) */
-      .time-box span {
-        display: block;
-        font-family: "Bricolage Grotesque", sans-serif; /* đổi font */
-        font-size: 4.4rem;
-        line-height: 1;
-        color: #fbfbd6;
-        font-weight: 700; /* đậm vừa phải cho giống ảnh */
-        letter-spacing: 2px;
-        transform: translateY(-12px);
-        text-align: center;
-      } /* Label dưới (font = Montserrat) */
-      .time-box p {
-        position: absolute;
-        bottom: 22px;
-        width: 100%;
-        margin: 0;
-        font-size: 1.1rem;
-        color: #eeecff;
-        font-family: "Montserrat", sans-serif; /* giữ Montserrat */
-        font-weight: 400;
-        text-align: center;
-        opacity: 0.95;
-        letter-spacing: 0.6px;
-      } 
-      /* Responsive */
-      @media (max-width: 880px) {
-        .time-box {
-            width: 110px;
-            height: 130px;
-            border-radius: 22px;
-        }
-
-        .countdown {
-            gap: 16px;
-            margin: 60px 10px 80px;
-        }
-
-        .time-box span {
-            font-size: 2.6rem;
-            transform: translateY(-8px);
-        }
-
-        .time-box p {
-            font-size: 0.9rem;
-            bottom: 14px;
-        }
-        }
-
-        @media (max-width: 420px) {
-        .time-box {
-            width: 80px;
-            height: 100px;
-            border-radius: 16px;
-        }
-
-        .time-box span {
-            font-size: 1.8rem;
-            transform: translateY(-4px);
-        }
-
-        .time-box p {
-            font-size: 0.75rem;
-            bottom: 6px;
-        }
-
-        .countdown {
-            gap: 8px;
-            margin: 40px 5px 50px;
-        }
-        }
-
-        /* Intro Section */
-        .intro-section {
-          width: 100%;
-          margin: 120px auto 140px;
-          padding: 0 20px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-
-        .intro-title img {
-          width: 600px;
-          max-width: 100%;
-          height: auto;
-          display: block;
-          margin: 0 auto 50px;
-        }
-
-        .intro-container {
-          max-width: 900px;
-          background: rgba(158, 182, 255, 0.35);
-          border: 2px solid rgba(130, 163, 250, 0.6);
-          border-radius: 24px;
-          padding: 40px;
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          font-family: "Montserrat", sans-serif;
-          font-size: 1.05rem;
-          line-height: 1.7;
-          color: #ffffff;
-          text-align: justify;
-        }
-
-        .intro-container p {
-          margin-bottom: 18px;
-        }
-
-        /* Timeline Section */
-        .timeline-section {
-          width: 100%;
-          margin: 120px auto 140px;
-          padding: 0 20px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-
-        .timeline-title img {
-          width: 600px;
-          max-width: 100%;
-          height: auto;
-          display: block;
-          margin: 0 auto 60px;
-        }
-
-        .timeline-wrapper {
-          position: relative;
-          width: 100%;
-          max-width: 1000px;
-          margin: 80px auto 0;
-          padding: 0 40px; /* tạo dư line ở 2 bên */
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-        }
-
-        .timeline-line {
-          position: absolute;
-          top: 20px;
-          left: 20px;
-          right: 20px;
-          height: 4px;
-          background: rgba(255, 255, 255, 0.8);
-          z-index: 0;
-        }
-
-        .timeline-step {
-          position: relative;
-          text-align: center;
-          flex: 1;
-        }
-
-        .timeline-icon {
-          position: absolute;
-          top: -110px; /* cao hơn line */
-          left: 20px;
-          width: 90px; /* to hơn icon */
-          height: auto;
-          transform: translateX(0);
-          transition: transform 0.2s ease-out;
-          z-index: 3;
-        }
-
-        .timeline-step .dot {
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: #ffd84d;
-          border: 3px solid rgba(255, 255, 255, 0.9);
-          margin: 0 auto;
-          position: relative;
-          top: 10px; /* đặt dot chạm line */
-          z-index: 2;
-        }
-
-        .step-text h3 {
-          font-family: "Bricolage Grotesque", sans-serif;
-          font-size: 1rem; /* nhỏ lại */
-          text-transform: uppercase;
-          color: #ffd84d; /* vàng */
-          text-shadow:
-            0 0 4px rgba(255, 255, 255, 0.9),
-            0 0 8px rgba(255, 255, 255, 0.6); /* glow trắng */
-          margin-top: 20px;
-        }
-
-        .step-text p {
-          font-family: "Montserrat", sans-serif;
-          font-size: 0.85rem; /* nhỏ gọn hơn */
-          color: #f0f0f0;
-          margin-top: 4px;
-        }
-
-       /* FAQ Section */
-      .faq-section {
-        width: 100%;
-        margin: 100px auto 140px;
-        padding: 0 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      .faq-title img {
-        width: 600px;
-        max-width: 100%;
-        height: auto;
-        display: block;
-        margin: 0 auto 50px;
-      } /* Container */
-      .faq-container {
-        width: 100%;
-        max-width: 1000px;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-      }
-      .faq-answer p {
-        margin-bottom: 12px;
-        line-height: 1.6;
-      } /* Item */
-      .faq-item {
-        background: rgba(158, 182, 255, 0.35);
-        border: 2px solid rgba(130, 163, 250, 0.6);
-        border-radius: 24px;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        overflow: hidden;
-        transition: all 0.3s ease;
-      } /* nút câu hỏi */
-      .faq-question {
-        width: 100%;
-        padding: 18px 24px;
-        background: transparent;
-        border: none;
-        outline: none;
-        cursor: pointer;
-        font-size: 1.2rem;
-        font-family: "Bricolage Grotesque", sans-serif; /* đổi font */
-        font-weight: 700; /* Bold */
-        color: #ffffff; /* màu câu hỏi */
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        text-align: left;
-        letter-spacing: 0.5px;
-      } /* icon mũi tên */
-      .arrow {
-        font-size: 1.1rem;
-        color: #c1e6ff;
-        transition: transform 0.3s;
-        margin-left: 10px;
-      } /* câu trả lời */
-      .faq-answer {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.4s ease, padding 0.3s ease;
-        padding: 0 24px;
-        font-size: 1rem;
-        font-family: "Montserrat", sans-serif; /* font Montserrat */
-        font-weight: 300; /* Light */
-        color: #ffffff; /* màu câu trả lời */
-        line-height: 1.5;
-      }
-      .faq-item.active .faq-answer {
-        max-height: 400px;
-        padding: 12px 24px 20px;
-      }
-      .faq-item.active .arrow {
-        transform: rotate(90deg); /* ▶ xoay thành ▼ */
-      }
-      .footer {
-        position: relative;
-        width: 100%;
-        color: #fff;
-        font-family: "Montserrat", sans-serif;
-        padding: 60px 20px 25px;
-      } /* Overlay phủ full */
-      .footer::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          to top,
-          rgba(124, 119, 223, 0.85) 0%,
-          rgba(130, 163, 250, 0.75) 60%,
-          rgba(158, 182, 255, 0.5) 100%
-        );
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-        z-index: 0;
-      }
-      .footer-container {
-        position: relative;
-        z-index: 1;
-        display: flex;
-        justify-content: space-between; /* tự căn cách đều 2 cột */
-        align-items: flex-start;
-        max-width: 1200px;
-        margin: auto;
-        flex-wrap: wrap;
-        gap: 100px; /* khoảng cách cố định giữa các cột */
-      }
-      .footer-col:first-child {
-        flex: 0 0 350px; /* cột 1 chỉ rộng ~320px */
-      }
-      .footer-col {
-        flex: 1;
-        min-width: 250px;
-      }
-      .footer-logo {
-        width: 140px;
-        margin-bottom: 16px;
-      }
-      .footer h3 {
-        font-family: "Bricolage Grotesque", sans-serif;
-        font-size: 1.3rem;
-        margin-bottom: 14px;
-        color: #ffd84d;
-      }
-      .footer p,
-      .footer a {
-        margin: 6px 0;
-        font-size: 0.95rem;
-        color: #f0f0f0;
-        line-height: 1.5;
-      }
-      .footer-right {
-        display: flex;
-        gap: 60px; /* khoảng cách giữa Ban Chủ Tịch và Kết nối */
-        align-items: flex-start;
-      } /* person row: icon | text-block */
-      .footer .person {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px; /* khoảng cách icon - text */
-        margin: 8px 0;
-      } /* SVG icon */
-      .footer .person svg {
-        width: 36px; /* chỉnh vừa phải */
-        height: 36px;
-        flex-shrink: 0; /* không co icon */
-        color: #c1e6ff;
-        opacity: 1;
-        margin-top: 2px; /* cho icon cân với text-block */
-      } /* Text block = label trên, name dưới */
-      .footer .person .text-block {
-        display: flex;
-        flex-direction: column; /* label trên, name dưới */
-        line-height: 1.4;
-      } /* phần "Chức vụ:" */
-      .footer .person .label {
-        font-family: "Montserrat", sans-serif;
-        font-size: 1rem;
-        font-weight: 400;
-        color: #fff9aa;
-        line-height: 1.3;
-      } /* phần tên */
-      .footer .person .name {
-        font-family: "Bricolage Grotesque", sans-serif;
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: #ffffff;
-        line-height: 1.3;
-      } /* Email/link row: cho phép wrap nhẹ (nếu cần) */
-      .footer .person a {
-        color: #f0f0f0;
-        text-decoration: none;
-        font-family: "Montserrat", sans-serif;
-        font-size: 0.95rem;
-        line-height: 1.4;
-      }
-      .bct-row {
-        display: flex;
-        gap: 50px; /* khoảng cách giữa từng người */
-        flex-wrap: wrap; /* cho responsive, nếu hẹp thì xuống hàng */
-        margin-top: 10px;
-      }
-      .bct-row .person {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      } /* Mobile: nếu màn quá chật thì vẫn giữ block dọc, icon trên - text dưới */
-      @media (max-width: 520px) {
-        .footer .person {
-          gap: 10px;
-        }
-        .footer .person svg {
-          width: 32px;
-          height: 32px;
-        }
-      }
-      .social-links {
-        margin-top: 10px;
-      }
-      .social-links a {
-        font-size: 1.5rem;
-        margin-right: 16px;
-        color: #ffffff;
-        transition: color 0.3s, transform 0.2s;
-      }
-      .social-links a:hover {
-        color: #ffd84d;
-        transform: translateY(-2px);
-      }
-      .footer-bottom {
-        position: relative;
-        z-index: 1;
-        text-align: center;
-        padding-top: 20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.25);
-        margin-top: 40px;
-        font-size: 0.9rem;
-        color: #e6e6e6;
-      } /* Responsive: mobile & tablet */
-      @media (max-width: 768px) {
-        .apply-btn {
-          bottom: 12%;
-          padding: 1.2vw 3vw;
-          font-size: clamp(0.8rem, 3vw, 1.1rem);
-          min-width: 140px;
-        }
-      }
-      @media (max-width: 480px) {
-        .apply-btn {
-          bottom: 10%;
-          padding: 1.5vw 4vw;
-          font-size: clamp(0.7rem, 3.5vw, 1rem);
-          min-width: 120px;
-          border-width: 0.5vw;
-        }
-      }
-    </style>
   </head>
   <body>
     <!-- Preloader -->
@@ -664,44 +97,52 @@
       <div class="intro-title">
         <img src="/assets/intro.png" alt="Giới thiệu Enactus FTU Hanoi" />
       </div>
-      <!-- Nội dung -->
-      <div class="intro-container" data-aos="fade-up">
-        <p>
-          ✨ <strong>Enactus FTU Hanoi</strong> được thành lập từ năm 2008,
-          là một trong những câu lạc bộ tiên phong tại Đại học Ngoại thương
-          với sứ mệnh tạo ra <strong>tác động xã hội bền vững</strong>
-          thông qua các dự án khởi nghiệp xã hội.
-        </p>
-        <p>
-          🌍 Trải qua nhiều thế hệ, Enactus FTU Hanoi đã không ngừng phát triển,
-          mang lại những dự án ý nghĩa, đồng thời xây dựng một cộng đồng sinh viên
-          trẻ trung, năng động, luôn sẵn sàng thử thách bản thân và đóng góp
-          cho xã hội.
-        </p>
-        <p>
-          🚀 Hành trình tại Enactus không chỉ là nơi để bạn học hỏi và trau dồi
-          kỹ năng, mà còn là nơi bạn tìm thấy đồng đội, cảm hứng và động lực
-          để tạo ra những giá trị thật sự.
-        </p>
+      
+      <!-- Nội dung chính -->
+      <!-- Phần Hành trình 16 năm -->
+      <div class="journey-container">
+        <div class="journey-content">
+          <div class="journey-text">
+            <h2>Hành trình 16 năm</h2>
+            <p>
+              Thành lập vào ngày 07/03/2008 dưới sự bảo trợ của Khoa Quản trị Kinh doanh, 
+              trong 16 năm, các thành viên của đội tuyển Enactus FTU Hanoi thực hiện các 
+              dự án xã hội để trao quyền cho những người cần sự giúp đỡ, nâng cao chất 
+              lượng cuộc sống tại Việt Nam.
+            </p>
+            <p>
+              Chúng tôi ghi dấu ấn với nhiều dự án và cuộc thi hướng tới các mục tiêu 
+              phát triển bền vững (SDGs) của Liên Hợp Quốc, cùng với các chi nhánh Enactus 
+              khác nhằm lan tỏa tinh thần, giá trị kinh doanh – xã hội của tổ chức.
+            </p>
+            <a href="https://enactusftuhanoi.id.vn/" class="view-more-btn">Xem thêm</a>
+          </div>
+          <div class="journey-image">
+            <img src="/assets/vsic2024.png" alt="VSIC 2024 - Enactus FTU Hanoi" />
+          </div>
+        </div>
       </div>
     </section>
     <!-- Timeline Section -->
-    <section id="timeline" class="timeline-section">
-      <!-- Tiêu đề -->
-      <div class="timeline-title">
-        <img src="/assets/timeline.png" alt="Timeline tuyển thành viên" />
-      </div>
+    <!-- Timeline Section -->
+<section id="timeline" class="timeline-section">
+  <!-- Tiêu đề -->
+  <div class="timeline-title">
+    <img src="/assets/timeline.png" alt="Timeline tuyển thành viên" />
+  </div>
 
-      <div class="timeline-wrapper">
-        <!-- Line -->
-        <div class="timeline-line"></div>
-
-        <!-- Icon ong -->
-        <img src="/assets/icon.png" alt="Bee Icon" class="timeline-icon" />
-
+  <div class="timeline-container">
+    <div class="timeline-box">
+      <!-- Line phát sáng -->
+      <div class="timeline-line-glow"></div>
+      <div class="timeline-line"></div>
+      
+      <div class="timeline-steps">
         <!-- Step 1 -->
         <div class="timeline-step">
-          <div class="dot"></div>
+          <div class="step-icon">
+            <img src="/assets/icon.png" alt="Vòng Đơn" />
+          </div>
           <div class="step-text">
             <h3>Vòng Đơn</h3>
             <p>01.10.2025 - 21.10.2025</p>
@@ -710,7 +151,9 @@
 
         <!-- Step 2 -->
         <div class="timeline-step">
-          <div class="dot"></div>
+          <div class="step-icon">
+            <img src="/assets/icon.png" alt="Vòng Phỏng vấn nhóm" />
+          </div>
           <div class="step-text">
             <h3>Vòng Phỏng vấn nhóm</h3>
             <p>24.10.2025 - 25.10.2025</p>
@@ -719,7 +162,9 @@
 
         <!-- Step 3 -->
         <div class="timeline-step">
-          <div class="dot"></div>
+          <div class="step-icon">
+            <img src="/assets/icon.png" alt="Vòng Teamwork" />
+          </div>
           <div class="step-text">
             <h3>Vòng Teamwork</h3>
             <p>28.10.2025 - 06.11.2025</p>
@@ -728,14 +173,76 @@
 
         <!-- Step 4 -->
         <div class="timeline-step">
-          <div class="dot"></div>
+          <div class="step-icon">
+            <img src="/assets/icon.png" alt="Vòng Phỏng vấn cá nhân" />
+          </div>
           <div class="step-text">
             <h3>Vòng Phỏng vấn cá nhân</h3>
             <p>09.11.2025 - 11.11.2025</p>
           </div>
         </div>
       </div>
-    </section>
+    </div>
+  </div>
+</section>
+<!-- Departments Section -->
+<section id="departments" class="departments-section">
+  <!-- Tiêu đề bằng ảnh -->
+  <div class="departments-title">
+    <img src="/assets/departments.png" alt="Các ban tại Enactus FTU Hanoi" />
+  </div>
+  
+  <!-- Container chứa các ban - Layout chính -->
+  <div class="departments-container">
+    <!-- Ban Project Development -->
+    <div class="department-card">
+      <div class="department-image">
+        <img src="/assets/pd.jpg" alt="Ban Project Development" />
+      </div>
+      <div class="department-content">
+        <h3>Ban Dự án</h3>
+        <p>"Những bộ não siêu viết, đam mê giải quyết vấn đề và biến không thể thành có thể!"</p>
+        <a href="https://drive.google.com/file/d/1omLBDTt8PFcF-UGXW0heRewrjm-7-9Oq/view?usp=sharing" class="view-detail-btn">Xem chi tiết</a>
+      </div>
+    </div>
+    
+    <!-- Ban Human Resources -->
+    <div class="department-card">
+      <div class="department-image">
+        <img src="/assets/hr.jpg" alt="Ban Human Resources" />
+      </div>
+      <div class="department-content">
+        <h3>Ban Nhân sự - Sự kiện</h3>
+        <p>"Chúng mình chính là sợi dây kết nối yêu thương, là cục sạc năng lượng cho cả nhà Enactus!"</p>
+        <a href="https://drive.google.com/file/d/10m9z8D07pdEjNxMshkUKH0_U9yed0tpr/view?usp=sharing" class="view-detail-btn">Xem chi tiết</a>
+      </div>
+    </div>
+    
+    <!-- Ban External Relations -->
+    <div class="department-card">
+      <div class="department-image">
+        <img src="/assets/er.jpg" alt="Ban External Relations" />
+      </div>
+      <div class="department-content">
+        <h3>Ban Đối ngoại</h3>
+        <p>"Lời nói có sức mạnh, ảnh hưởng có giá trị - chúng tôi kết nối Enactus với thế giới!"</p>
+        <a href="https://drive.google.com/file/d/11hCLumAvH0FXhK7VEo7d4uPBL4gRCbXS/view?usp=sharing" class="view-detail-btn">Xem chi tiết</a>
+      </div>
+    </div>
+    
+    <!-- Ban Media & Communication -->
+    <div class="department-card">
+      <div class="department-image">
+        <img src="/assets/md.jpg" alt="Ban Media & Communication" />
+      </div>
+      <div class="department-content">
+        <h3>Ban Truyền thông</h3>
+        <p>"Tay cầm content, mắt nhìn design - chúng tôi là gương mặt của Enactus FTU Hanoi!"</p>
+        <a href="https://drive.google.com/file/d/1e9o9AVZyWjq8-vxYrQ7MAIkoZNWBCfpt/view?usp=sharing" class="view-detail-btn">Xem chi tiết</a>
+      </div>
+    </div>
+  </div>
+</section>
     <!-- FAQ Section -->
     <section id="faq" class="faq-section">
       <!-- Tiêu đề bằng ảnh -->
@@ -856,8 +363,8 @@
                 d="M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908Z"
               />
             </svg>
-            <a href="mailto:enactusftuhanoi@gmail.com"
-              >enactusftuhanoi.bct@gmail.com</a
+            <a href="mailto:enactusftuhn.bcn@gmail.com"
+              >enactusftuhn.bcn@gmail.com</a
             >
           </div>
         </div>
@@ -919,11 +426,11 @@
           </div>
           <h3 style="margin-top: 40px">Kết nối</h3>
           <div class="social-links">
-            <a href="#"><i class="fab fa-facebook"></i></a>
-            <a href="#"><i class="fab fa-instagram"></i></a>
-            <a href="#"><i class="fab fa-linkedin"></i></a>
-            <a href="#"><i class="fab fa-tiktok"></i></a>
-            <a href="#"><i class="fa-brands fa-threads"></i></a>
+            <a href="https://www.facebook.com/Enactus.FTU.Hanoi"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.instagram.com/enactus_ftu.hanoi"><i class="fab fa-instagram"></i></a>
+            <a href="https://www.linkedin.com/company/enactusftuhn/"><i class="fab fa-linkedin"></i></a>
+            <a href="https://www.tiktok.com/@enactusftuhanoi_official"><i class="fab fa-tiktok"></i></a>
+            <a href="https://www.threads.com/@enactus_ftu.hanoi"><i class="fa-brands fa-threads"></i></a>
           </div>
         </div>
       </div>
@@ -962,21 +469,6 @@
         // Toggle item hiện tại 
         item.classList.toggle('active'); 
         }); 
-    });
-    const bee = document.querySelector(".timeline-icon");
-    const timeline = document.querySelector(".timeline-wrapper");
-
-    window.addEventListener("scroll", () => {
-      const rect = timeline.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-
-      // Tính progress (0 -> 1)
-      let progress = (windowHeight - rect.top) / (rect.height + windowHeight);
-      progress = Math.min(Math.max(progress, 0), 1);
-
-      // Giới hạn chạy từ dot 1 đến dot 4
-      const lineWidth = timeline.offsetWidth - 80; // trừ padding 40px mỗi bên
-      bee.style.transform = `translateX(${progress * lineWidth}px)`;
     });
     </script>
   </body>
