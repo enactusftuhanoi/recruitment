@@ -1037,14 +1037,20 @@
   }
 }
 
-/* Responsive */
+/* Ẩn scroll down indicator trên điện thoại */
 @media (max-width: 768px) {
   .scroll-down-indicator {
-    bottom: 20px;
+    display: none !important;
   }
-  
-  .scroll-down-indicator span {
-    font-size: 12px;
+}
+
+/* Responsive: mobile & tablet */
+@media (max-width: 768px) {
+  .apply-btn {
+    bottom: 12%;
+    padding: 1.2vw 3vw;
+    font-size: clamp(0.8rem, 3vw, 1.1rem);
+    min-width: 140px;
   }
 }
 
