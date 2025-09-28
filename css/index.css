@@ -1,51 +1,51 @@
 :root {
-    /* Màu sắc */
-    --primary: #7c77df;
-    --secondary: #638efe;
-    --accent: #ffd84d;
-    --text-light: #fbfbd6;
-    --text-white: #ffffff;
-    
-    /* Background */
-    --bg-overlay: rgba(158, 182, 255, 0.35);
-    --border-light: rgba(130, 163, 250, 0.6);
-    
-    /* Font */
-    --font-heading: "Bricolage Grotesque", sans-serif;
-    --font-body: "Montserrat", sans-serif;
-    
-    /* Kích thước */
-    --border-radius: 24px;
-    --container-padding: 20px;
+  /* Màu sắc */
+  --primary: #7c77df;
+  --secondary: #638efe;
+  --accent: #ffd84d;
+  --text-light: #fbfbd6;
+  --text-white: #ffffff;
+
+  /* Background */
+  --bg-overlay: rgba(158, 182, 255, 0.35);
+  --border-light: rgba(130, 163, 250, 0.6);
+
+  /* Font */
+  --font-heading: "Bricolage Grotesque", sans-serif;
+  --font-body: "Montserrat", sans-serif;
+
+  /* Kích thước */
+  --border-radius: 24px;
+  --container-padding: 20px;
 }
 
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 /* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 body {
-    min-height: 100vh;
-    background: url("/assets/background.webp") no-repeat center top fixed;
-    background-size: cover;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    position: relative;
-    font-family: var(--font-heading);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  background: url("/assets/background.webp") no-repeat center top fixed;
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  position: relative;
+  font-family: var(--font-heading);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Common section styles */
@@ -54,31 +54,34 @@ body {
 .timeline-section,
 .departments-section,
 .faq-section {
-    width: 100%;
-    padding: 0 var(--container-padding);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  width: 100%;
+  padding: 0 var(--container-padding);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
- /* Preloader */
+/* PRELOADER */
 #preloader {
   position: fixed;
-  inset: 0;
-  background: #ffffff; /* nền trắng */
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
   z-index: 9999;
-  transition: opacity 0.8s ease, visibility 0.8s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s ease;
 }
 #preloader.hidden {
   opacity: 0;
-  visibility: hidden;
+  pointer-events: none;
 }
 .preloader-logo {
-  width: 150px; /* chỉnh kích thước logo */
+  width: 100px;
   height: auto;
-  animation: fadeBlink 2s infinite ease-in-out;
+  animation: fadeIn 1s ease;
 }
 @keyframes fadeBlink {
   0%,
