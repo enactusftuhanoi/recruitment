@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
     <title>Recruitment | Enactus FTU Hanoi</title>
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     
-    <!-- Preload CRITICAL resources only -->
-    <link rel="preload" href="assets/hero-optimized.webp" as="image" type="image/webp">
-    <link rel="preload" href="assets/logo_den-optimized.webp" as="image" type="image/webp">
+    <!-- Preconnect để tăng tốc độ load external resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     
-    <!-- CSS chính - đã có sẵn -->
-    <link rel="stylesheet" href="../css/index.css" media="print" onload="this.media='all'">
+    <link rel="canonical" href="https://recruitment.enactusftuhanoi.id.vn" />
+    <link rel="stylesheet" href="../css/index.css">
     
     <!-- SEO Meta -->
     <meta name="description" content="Enactus FTU Hanoi chính thức mở đơn tuyển thành viên Gen 18.0! Hãy gia nhập CLB duy nhất tại FTU thực hiện các dự án xã hội, khởi nghiệp bền vững và tạo tác động tích cực."/>
@@ -31,23 +32,16 @@
     <meta name="twitter:description" content="Enactus FTU Hanoi mở đơn tuyển thành viên mới! Cùng tạo tác động xã hội tích cực qua các dự án bền vững."/>
     <meta name="twitter:image" content="https://recruitment.enactusftuhanoi.id.vn/assets/recruitment.jpg"/>
     
-    <!-- Font Loading Optimized -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700&family=Montserrat:wght@300;400;500;700&display=swap" rel="stylesheet"/>
     
-    <!-- Chỉ load font thực sự cần thiết -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript>
-        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    </noscript>
+    <!-- Font Awesome - chỉ load khi cần -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'"/>
     
-    <!-- Font non-critical -->
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    
-    <!-- Font Awesome optimized -->
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
-</head>
+    <!-- Load ảnh -->
+    <link rel="preload" href="assets/hero.webp" as="image">
+    <link rel="preload" href="assets/background.webp" as="image">
+  </head>
   <body>
     <!-- Preloader -->
     <div id="preloader">
