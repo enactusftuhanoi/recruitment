@@ -20,6 +20,22 @@
         
         // Hàm chọn hình thức ứng tuyển
         function selectApplicationType(type) {
+            if (type === 'interview') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '⚠️ Cảnh báo',
+                    html: `
+                            <p style="text-align:center; line-height:1.6; white-space:normal;">
+                                Phỏng vấn thay đơn mở từ 
+                                <br>
+                                <b>00h 15/10/2025</b> – <b>23h59 18/10/2025</b>.
+                                <br>
+                                Vui lòng quay lại sau.
+                            </p>`,
+                });
+                return; // không cho chọn
+            }
+
             applicationType = type;
             document.getElementById('application_type').value = type;
             
@@ -1711,7 +1727,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const now = new Date();
 
   // Vòng đơn
-  const formStart = new Date("2025-09-01T21:00:00+07:00"); 
+  const formStart = new Date("2025-10-01T20:00:00+07:00"); 
   const formEnd   = new Date("2025-10-21T20:00:00+07:00"); 
 
   let allowedType = null;

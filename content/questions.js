@@ -191,7 +191,7 @@ const generalQuestions = [
                 {
                     type: 'textarea',
                     id: 'hr_qs2',
-                    question: 'Câu 2: Trong một tập thể, bạn nghĩ điều gì quan trọng hơn: sự đồng đều giữa các thành viên hay sự khác biệt để bổ sung lẫn nhau? Nếu là một phần của tập thể, bạn mong muốn mình sẽ đóng vai trò là leader hay member?',
+                    question: 'Câu 2: Bạn hãy chia sẻ quan điểm của mình về sự khác nhau giữa một tập thể mà các thành viên có trình độ, kỹ năng và tính cách tương đối đồng đều, và một tập thể có sự đa dạng về những khía cạnh này. Hãy phân tích ở hai mặt: ưu điểm và hạn chế. Đồng thời, bạn mong muốn được làm việc trong môi trường nào hơn, và vì sao?',
                     placeholder: '',
                     required: true
                 },
@@ -298,13 +298,19 @@ const generalQuestions = [
                 },
                 {
                   type: 'textarea',
-                  id: 'pd_qs5', 
-                  question: `Câu 5: Gần đây, mạng xã hội rộ lên trào lưu dùng AI để tạo hình ảnh nghệ thuật chỉ với vài dòng mô tả, cho ra những bức tranh đẹp mắt. Trào lưu này thu hút hàng triệu lượt chia sẻ trên TikTok, Instagram, Threads…Tuy nhiên, nó cũng vấp phải nhiều phản ứng dữ dội từ cộng đồng nghệ sĩ, cho rằng AI đã học phong cách từ tác phẩm của con người mà không xin phép hay ghi nhận, dẫn đến việc tạo ra hình ảnh mang tính mô phỏng, thậm chí bị xem là đạo nhái chất xám và làm xói mòn giá trị sáng tạo. 
-                            Liệu hình ảnh do AI tạo ra có thể được coi là nghệ thuật thật sự, hay chỉ là sản phẩm mô phỏng vô hồn? Và nếu AI học từ tác phẩm của con người mà không xin phép, đó có phải là một dạng đạo nhái?
-
-                            Không chỉ dừng lại ở khía cạnh nghệ thuật, làn sóng lạm dụng AI còn dấy lên lo ngại môi trường. Việc tạo ra hàng triệu hình ảnh mỗi ngày tiêu tốn lượng lớn năng lượng từ các trung tâm dữ liệu, kéo theo phát thải khí nhà kính – góp phần vào biến đổi khí hậu.
-
-                            Quan điểm của bạn về vấn đề này như thế nào?`,
+                  id: 'pd_qs5_1', 
+                  question: `Câu 5: Gần đây, mạng xã hội rộ lên trào lưu dùng AI để tạo hình ảnh nghệ thuật chỉ với vài dòng mô tả, cho ra những bức tranh đẹp mắt. Trào lưu này thu hút hàng triệu lượt chia sẻ trên TikTok, Instagram, Threads… Tuy nhiên, nó cũng vấp phải nhiều phản ứng dữ dội từ cộng đồng nghệ sĩ, cho rằng AI đã học phong cách từ tác phẩm của con người mà không xin phép hay ghi nhận, dẫn đến việc tạo ra hình ảnh mang tính mô phỏng, thậm chí bị xem là đạo nhái chất xám và làm xói mòn giá trị sáng tạo.  
+                            
+                  Liệu hình ảnh do AI tạo ra có thể được coi là nghệ thuật thật sự, hay chỉ là sản phẩm mô phỏng vô hồn? Và nếu AI học từ tác phẩm của con người mà không xin phép, đó có phải là một dạng đạo nhái?`,
+                  placeholder: '',
+                  required: true
+                },
+                                {
+                  type: 'textarea',
+                  id: 'pd_qs5_2', 
+                  question: `Không chỉ dừng lại ở khía cạnh nghệ thuật, làn sóng lạm dụng AI còn dấy lên lo ngại môi trường. Việc tạo ra hàng triệu hình ảnh mỗi ngày tiêu tốn lượng lớn năng lượng từ các trung tâm dữ liệu, kéo theo phát thải khí nhà kính – góp phần vào biến đổi khí hậu.
+                            
+                  Quan điểm của bạn về vấn đề này như thế nào?`,
                   placeholder: '',
                   required: true
                 }
