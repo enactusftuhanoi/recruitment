@@ -4,20 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Recruitment | Enactus FTU Hanoi</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
     
-    <!-- Critical CSS Inline -->
-    <style>
-        /* CSS tối thiểu cho fold đầu tiên */
-        #preloader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .hero-container { position: relative; width: 100%; height: 100vh; overflow: hidden; }
-        .hidden { display: none !important; }
-    </style>
-
-    <!-- Preload critical resources -->
-    <link rel="preload" href="assets/hero.webp" as="image" type="image/webp">
-    <link rel="preload" href="../css/index.css" as="style">
+    <!-- Preload CRITICAL resources only -->
+    <link rel="preload" href="assets/hero-optimized.webp" as="image" type="image/webp">
+    <link rel="preload" href="assets/logo_den-optimized.webp" as="image" type="image/webp">
     
-    <!-- Non-critical CSS -->
+    <!-- CSS chính - đã có sẵn -->
     <link rel="stylesheet" href="../css/index.css" media="print" onload="this.media='all'">
     
     <!-- SEO Meta -->
@@ -30,24 +23,31 @@
     <meta property="og:description" content="Đừng bỏ lỡ cơ hội trở thành một phần của Enactus FTU Hanoi - CLB duy nhất tại FTU triển khai các dự án xã hội và khởi nghiệp bền vững. Ứng tuyển ngay hôm nay!"/>
     <meta property="og:type" content="website"/>
     <meta property="og:url" content="https://recruitment.enactusftuhanoi.id.vn"/>
-    <meta property="og:image" content="https://recruitment.enactusftuhanoi.id.vn/assets/recruitment.png"/>
+    <meta property="og:image" content="https://recruitment.enactusftuhanoi.id.vn/assets/recruitment.jpg"/>
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image"/>
     <meta name="twitter:title" content="18th Gen Membership Recruitment | Enactus FTU Hanoi"/>
     <meta name="twitter:description" content="Enactus FTU Hanoi mở đơn tuyển thành viên mới! Cùng tạo tác động xã hội tích cực qua các dự án bền vững."/>
-    <meta name="twitter:image" content="https://recruitment.enactusftuhanoi.id.vn/assets/recruitment.png"/>
+    <meta name="twitter:image" content="https://recruitment.enactusftuhanoi.id.vn/assets/recruitment.jpg"/>
     
-    <!-- Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700&family=Montserrat:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+    <!-- Font Loading Optimized -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <!-- Font Awesome - chỉ load khi cần -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'"/>
+    <!-- Chỉ load font thực sự cần thiết -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    </noscript>
     
-    <!-- Load ảnh -->
-    <link rel="preload" href="assets/hero.webp" as="image">
-    <link rel="preload" href="assets/background.webp" as="image">
-  </head>
+    <!-- Font non-critical -->
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    
+    <!-- Font Awesome optimized -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+</head>
   <body>
     <!-- Preloader -->
     <div id="preloader">
