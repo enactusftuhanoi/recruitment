@@ -39,8 +39,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'"/>
     
     <!-- Load ảnh -->
-    <link rel="preload" href="assets/hero.webp" as="image">
-    <link rel="preload" href="assets/background.webp" as="image">
+    <link rel="preload" href="assets/hero.webp" as="image" fetchpriority="high">
+    <link rel="preload" href="assets/background.webp" as="image" fetchpriority="low">
   </head>
   <body>
     <!-- Preloader -->
@@ -446,6 +446,6 @@
         <p>© 2025 Enactus FTU Hanoi. All rights reserved.</p>
       </div>
     </footer>
-    <script src="script/index.js" defer></script>
+    <script src="script/index.js" async></script>
   </body>
 </html>

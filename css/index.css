@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700&family=Montserrat:wght@300;400;500;700&display=swap');
 :root {
   /* Màu sắc */
   --primary: #7c77df;
@@ -1197,5 +1198,11 @@ body {
     font-size: clamp(0.7rem, 3.5vw, 1rem);
     min-width: 120px;
     border-width: 0.5vw;
+  }
+}
+/* Fallback cho mobile */
+@media (max-width: 768px) {
+  body {
+    background: linear-gradient(135deg, #7c77df 0%, #638efe 100%);
   }
 }
