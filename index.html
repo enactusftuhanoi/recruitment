@@ -37,12 +37,16 @@
     
     <!-- Font Awesome - chỉ load khi cần -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'"/>
+    
+    <!-- Load ảnh -->
+    <link rel="preload" href="assets/hero.webp" as="image">
+    <link rel="preload" href="assets/background.webp" as="image">
   </head>
   <body>
     <!-- Preloader -->
     <div id="preloader">
       <img
-        src="/assets/logo_den.png"
+        src="assets/logo_den.png"
         alt="Enactus FTU Hanoi"
         class="preloader-logo"
       />
@@ -111,125 +115,124 @@
       </div>
     </section>
     <!-- Timeline Section -->
-    <!-- Timeline Section -->
-<section id="timeline" class="timeline-section">
-  <!-- Tiêu đề -->
-  <div class="timeline-title">
-    <img src="assets/timeline.png" alt="Timeline tuyển thành viên" />
-  </div>
+    <section id="timeline" class="timeline-section">
+      <!-- Tiêu đề -->
+      <div class="timeline-title">
+        <img src="assets/timeline.png" alt="Timeline tuyển thành viên" />
+      </div>
 
-  <div class="timeline-container">
-    <div class="timeline-box">
-      <!-- Line phát sáng -->
-      <div class="timeline-line-glow"></div>
-      <div class="timeline-line"></div>
+      <div class="timeline-container">
+        <div class="timeline-box">
+          <!-- Line phát sáng -->
+          <div class="timeline-line-glow"></div>
+          <div class="timeline-line"></div>
+          
+          <div class="timeline-steps">
+            <!-- Step 1 -->
+            <div class="timeline-step">
+              <div class="step-icon">
+                <img src="assets/icon.png" alt="Vòng Đơn" />
+              </div>
+              <div class="step-text">
+                <h3>Vòng Đơn</h3>
+                <p>01.10.2025 - 21.10.2025</p>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="timeline-step">
+              <div class="step-icon">
+                <img src="assets/icon.png" alt="Vòng Phỏng vấn nhóm" />
+              </div>
+              <div class="step-text">
+                <h3>Vòng Phỏng vấn nhóm</h3>
+                <p>24.10.2025 - 25.10.2025</p>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="timeline-step">
+              <div class="step-icon">
+                <img src="assets/icon.png" alt="Vòng Teamwork" />
+              </div>
+              <div class="step-text">
+                <h3>Vòng Teamwork</h3>
+                <p>28.10.2025 - 06.11.2025</p>
+              </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="timeline-step">
+              <div class="step-icon">
+                <img src="assets/icon.png" alt="Vòng Phỏng vấn cá nhân" />
+              </div>
+              <div class="step-text">
+                <h3>Vòng Phỏng vấn cá nhân</h3>
+                <p>09.11.2025 - 11.11.2025</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Departments Section -->
+    <section id="departments" class="departments-section">
+      <!-- Tiêu đề bằng ảnh -->
+      <div class="departments-title">
+        <img src="assets/departments.png" alt="Các ban tại Enactus FTU Hanoi" />
+      </div>
       
-      <div class="timeline-steps">
-        <!-- Step 1 -->
-        <div class="timeline-step">
-          <div class="step-icon">
-            <img src="assets/icon.png" alt="Vòng Đơn" />
+      <!-- Container chứa các ban - Layout chính -->
+      <div class="departments-container">
+        <!-- Ban Project Development -->
+        <div class="department-card">
+          <div class="department-image">
+            <img src="assets/pd.jpg" alt="Ban Project Development" />
           </div>
-          <div class="step-text">
-            <h3>Vòng Đơn</h3>
-            <p>01.10.2025 - 21.10.2025</p>
-          </div>
-        </div>
-
-        <!-- Step 2 -->
-        <div class="timeline-step">
-          <div class="step-icon">
-            <img src="assets/icon.png" alt="Vòng Phỏng vấn nhóm" />
-          </div>
-          <div class="step-text">
-            <h3>Vòng Phỏng vấn nhóm</h3>
-            <p>24.10.2025 - 25.10.2025</p>
+          <div class="department-content">
+            <h3>Ban Dự án</h3>
+            <p>"Những bộ não siêu viết, đam mê giải quyết vấn đề và biến không thể thành có thể!"</p>
+            <a href="https://drive.google.com/file/d/1omLBDTt8PFcF-UGXW0heRewrjm-7-9Oq/view?usp=sharing" class="view-detail-btn">Xem chi tiết</a>
           </div>
         </div>
-
-        <!-- Step 3 -->
-        <div class="timeline-step">
-          <div class="step-icon">
-            <img src="assets/icon.png" alt="Vòng Teamwork" />
+        
+        <!-- Ban Human Resources -->
+        <div class="department-card">
+          <div class="department-image">
+            <img src="assets/hr.jpg" alt="Ban Human Resources" />
           </div>
-          <div class="step-text">
-            <h3>Vòng Teamwork</h3>
-            <p>28.10.2025 - 06.11.2025</p>
-          </div>
-        </div>
-
-        <!-- Step 4 -->
-        <div class="timeline-step">
-          <div class="step-icon">
-            <img src="assets/icon.png" alt="Vòng Phỏng vấn cá nhân" />
-          </div>
-          <div class="step-text">
-            <h3>Vòng Phỏng vấn cá nhân</h3>
-            <p>09.11.2025 - 11.11.2025</p>
+          <div class="department-content">
+            <h3>Ban Nhân sự - Sự kiện</h3>
+            <p>"Chúng mình chính là sợi dây kết nối yêu thương, là cục sạc năng lượng cho cả nhà Enactus!"</p>
+            <a href="https://drive.google.com/file/d/10m9z8D07pdEjNxMshkUKH0_U9yed0tpr/view?usp=sharing" class="view-detail-btn">Xem chi tiết</a>
           </div>
         </div>
+        
+        <!-- Ban External Relations -->
+        <div class="department-card">
+          <div class="department-image">
+            <img src="assets/er.jpg" alt="Ban External Relations" />
+          </div>
+          <div class="department-content">
+            <h3>Ban Đối ngoại</h3>
+            <p>"Lời nói có sức mạnh, ảnh hưởng có giá trị - chúng mình kết nối Enactus với thế giới!"</p>
+            <a href="https://drive.google.com/file/d/11hCLumAvH0FXhK7VEo7d4uPBL4gRCbXS/view?usp=sharing" class="view-detail-btn">Xem chi tiết</a>
+          </div>
+        </div>
+        
+        <!-- Ban Media & Communication -->
+        <div class="department-card">
+          <div class="department-image">
+            <img src="assets/md.JPG" alt="Ban Media & Communication" />
+          </div>
+          <div class="department-content">
+            <h3>Ban Truyền thông</h3>
+            <p>"Tay cầm content, mắt nhìn design - chúng mình là gương mặt của Enactus FTU Hanoi!"</p>
+            <a href="https://drive.google.com/file/d/1e9o9AVZyWjq8-vxYrQ7MAIkoZNWBCfpt/view?usp=sharing" class="view-detail-btn">Xem chi tiết</a>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</section>
-<!-- Departments Section -->
-<section id="departments" class="departments-section">
-  <!-- Tiêu đề bằng ảnh -->
-  <div class="departments-title">
-    <img src="assets/departments.png" alt="Các ban tại Enactus FTU Hanoi" />
-  </div>
-  
-  <!-- Container chứa các ban - Layout chính -->
-  <div class="departments-container">
-    <!-- Ban Project Development -->
-    <div class="department-card">
-      <div class="department-image">
-        <img src="assets/pd.jpg" alt="Ban Project Development" />
-      </div>
-      <div class="department-content">
-        <h3>Ban Dự án</h3>
-        <p>"Những bộ não siêu viết, đam mê giải quyết vấn đề và biến không thể thành có thể!"</p>
-        <a href="https://drive.google.com/file/d/1omLBDTt8PFcF-UGXW0heRewrjm-7-9Oq/view?usp=sharing" class="view-detail-btn">Xem chi tiết</a>
-      </div>
-    </div>
-    
-    <!-- Ban Human Resources -->
-    <div class="department-card">
-      <div class="department-image">
-        <img src="assets/hr.jpg" alt="Ban Human Resources" />
-      </div>
-      <div class="department-content">
-        <h3>Ban Nhân sự - Sự kiện</h3>
-        <p>"Chúng mình chính là sợi dây kết nối yêu thương, là cục sạc năng lượng cho cả nhà Enactus!"</p>
-        <a href="https://drive.google.com/file/d/10m9z8D07pdEjNxMshkUKH0_U9yed0tpr/view?usp=sharing" class="view-detail-btn">Xem chi tiết</a>
-      </div>
-    </div>
-    
-    <!-- Ban External Relations -->
-    <div class="department-card">
-      <div class="department-image">
-        <img src="assets/er.jpg" alt="Ban External Relations" />
-      </div>
-      <div class="department-content">
-        <h3>Ban Đối ngoại</h3>
-        <p>"Lời nói có sức mạnh, ảnh hưởng có giá trị - chúng mình kết nối Enactus với thế giới!"</p>
-        <a href="https://drive.google.com/file/d/11hCLumAvH0FXhK7VEo7d4uPBL4gRCbXS/view?usp=sharing" class="view-detail-btn">Xem chi tiết</a>
-      </div>
-    </div>
-    
-    <!-- Ban Media & Communication -->
-    <div class="department-card">
-      <div class="department-image">
-        <img src="assets/md.JPG" alt="Ban Media & Communication" />
-      </div>
-      <div class="department-content">
-        <h3>Ban Truyền thông</h3>
-        <p>"Tay cầm content, mắt nhìn design - chúng mình là gương mặt của Enactus FTU Hanoi!"</p>
-        <a href="https://drive.google.com/file/d/1e9o9AVZyWjq8-vxYrQ7MAIkoZNWBCfpt/view?usp=sharing" class="view-detail-btn">Xem chi tiết</a>
-      </div>
-    </div>
-  </div>
-</section>
+    </section>
     <!-- FAQ Section -->
     <section id="faq" class="faq-section">
       <!-- Tiêu đề bằng ảnh -->
