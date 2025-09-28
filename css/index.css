@@ -1203,6 +1203,6 @@ body {
 /* Fallback cho mobile */
 @media (max-width: 768px) {
   body {
-    background: linear-gradient(135deg, #7c77df 0%, #638efe 100%);
+    background: linear-gradient(200deg, #a7c5f7 20%, #e1c5ec 30%, #a3bdff 100%);
   }
 }
