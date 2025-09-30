@@ -1,0 +1,401 @@
+/* departments.css - Đồng bộ với index */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+    color: #ffffff;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+.department-page {
+    min-height: 100vh;
+}
+
+/* Header giống hero section */
+.dept-header {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+}
+
+.dept-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), 
+                url('../assets/md.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    z-index: -1;
+}
+
+.back-btn {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    text-decoration: none;
+    padding: 12px 25px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.2);
+    font-weight: 500;
+    z-index: 10;
+}
+
+.back-btn:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateX(-5px);
+}
+
+.dept-hero-content {
+    max-width: 800px;
+    padding: 0 20px;
+}
+
+.dept-hero-content h1 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 4rem;
+    margin-bottom: 20px;
+    background: linear-gradient(45deg, #ff6b6b, #ffd700, #667eea);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.dept-tagline {
+    font-size: 1.4rem;
+    opacity: 0.9;
+    margin-bottom: 40px;
+    font-style: italic;
+}
+
+.dept-hero-img {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+
+/* Main Content - Đồng bộ với sections trong index */
+.dept-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 20px;
+}
+
+.dept-section {
+    background: rgba(255,255,255,0.05);
+    margin-bottom: 40px;
+    padding: 50px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    transition: transform 0.3s ease;
+}
+
+.dept-section:hover {
+    transform: translateY(-5px);
+}
+
+.dept-section h2 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 2.2rem;
+    margin-bottom: 30px;
+    color: #ffd700;
+    text-align: center;
+}
+
+.dept-section p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 20px;
+    opacity: 0.9;
+}
+
+/* Job Categories */
+.job-category {
+    margin-bottom: 35px;
+    padding: 25px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 15px;
+    border-left: 4px solid #667eea;
+}
+
+.job-category h3 {
+    color: #ff6b6b;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.job-category ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.job-category li {
+    padding: 12px 0;
+    padding-left: 35px;
+    position: relative;
+    font-size: 1.05rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.job-category li:last-child {
+    border-bottom: none;
+}
+
+.job-category li:before {
+    content: "▶";
+    color: #ffd700;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+    font-size: 0.8rem;
+}
+
+/* Requirements Grid - Giống department cards */
+.requirements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.requirement-item {
+    text-align: center;
+    padding: 35px 25px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border-radius: 15px;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.requirement-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.5s;
+}
+
+.requirement-item:hover::before {
+    left: 100%;
+}
+
+.requirement-item:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+    transform: translateY(-5px);
+}
+
+.requirement-item i {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #ffd700;
+}
+
+.requirement-item h4 {
+    margin-bottom: 12px;
+    font-size: 1.2rem;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.requirement-item p {
+    font-size: 0.95rem;
+    opacity: 0.8;
+    margin-bottom: 0;
+}
+
+/* Advantages List */
+.advantages-list {
+    list-style: none;
+    padding-left: 0;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.advantages-list li {
+    padding: 15px 0;
+    padding-left: 50px;
+    font-size: 1.1rem;
+    position: relative;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.advantages-list li:last-child {
+    border-bottom: none;
+}
+
+.advantages-list li:before {
+    content: "⭐";
+    position: absolute;
+    left: 15px;
+    font-size: 1.2rem;
+}
+
+/* Download Section */
+.download-section {
+    text-align: center;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+.download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(45deg, #ff6b6b, #ffd700);
+    color: #000;
+    padding: 16px 35px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(255,107,107,0.3);
+    border: none;
+    cursor: pointer;
+}
+
+.download-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 40px rgba(255,107,107,0.4);
+}
+
+/* CTA Section - Giống apply button */
+.cta-section {
+    text-align: center;
+    padding: 100px 20px;
+    background: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.9)), 
+                url('../assets/background.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+.cta-section h2 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 3rem;
+    margin-bottom: 20px;
+    background: linear-gradient(45deg, #ff6b6b, #ffd700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.cta-section p {
+    font-size: 1.3rem;
+    margin-bottom: 40px;
+    opacity: 0.9;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.apply-now-btn {
+    display: inline-block;
+    background: linear-gradient(45deg, #ff6b6b, #ffd700);
+    color: #000;
+    padding: 18px 50px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(255,107,107,0.3);
+    border: none;
+    cursor: pointer;
+}
+
+.apply-now-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(255,107,107,0.4);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dept-hero-content h1 {
+        font-size: 2.8rem;
+    }
+    
+    .dept-hero-content .dept-tagline {
+        font-size: 1.2rem;
+    }
+    
+    .dept-hero-img {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .dept-content {
+        padding: 50px 20px;
+    }
+    
+    .dept-section {
+        padding: 30px 20px;
+    }
+    
+    .requirements-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .back-btn {
+        top: 20px;
+        left: 20px;
+        padding: 10px 20px;
+    }
+    
+    .cta-section h2 {
+        font-size: 2.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .dept-hero-content h1 {
+        font-size: 2.2rem;
+    }
+    
+    .dept-section h2 {
+        font-size: 1.8rem;
+    }
+    
+    .job-category li {
+        padding-left: 25px;
+        font-size: 1rem;
+    }
+}
