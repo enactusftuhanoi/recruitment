@@ -426,11 +426,11 @@
 
                 <div class="info-grid">
                     <div class="info-item">
-                        <div class="info-label">Ban ưu tiên</div>
+                        <div class="info-label">Nguyện vọng 1</div>
                         <div class="info-value" id="priority-department">Chưa có thông tin</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-label">Ban dự bị</div>
+                        <div class="info-label">Nguyện vọng 2</div>
                         <div class="info-value" id="secondary-department">Chưa có thông tin</div>
                     </div>
                     <div class="info-item">
@@ -543,48 +543,59 @@
         }
 
         // Render application data
-        function renderApplicationData() {
-            if (!applicationData) return;
-            
-            // Basic info
-            document.getElementById('profile-name').textContent = applicationData.fullname || 'Không có dữ liệu';
-            document.getElementById('profile-email').textContent = applicationData.email || 'Không có dữ liệu';
-            document.getElementById('profile-phone').textContent = applicationData.phone || 'Không có dữ liệu';
-            
-            // Departments
-            document.getElementById('priority-department').textContent = getDepartmentName(applicationData.priority_position) || 'Không có dữ liệu';
-            document.getElementById('secondary-department').textContent = getDepartmentName(applicationData.secondary_position) || 'Không có dữ liệu';
-            
-            // Current round and status
-            const currentRound = applicationData.current_round || 'round1';
-            document.getElementById('current-round').textContent = getRoundText(currentRound);
-            
-            const status = computeOverallStatus(applicationData);
-            const statusElement = document.getElementById('profile-status');
-            statusElement.textContent = getStatusText(status);
-            statusElement.className = `profile-status ${getStatusClass(status)}`;
-            
-            // Application time
-            if (applicationData.timestamp) {
-                const date = applicationData.timestamp.toDate();
-                document.getElementById('application-time').textContent = date.toLocaleDateString('vi-VN');
+function renderApplicationData() {
+    if (!applicationData) return;
+    
+    // Basic info
+    document.getElementById('profile-name').textContent = applicationData.fullname || 'Không có dữ liệu';
+    document.getElementById('profile-email').textContent = applicationData.email || 'Không có dữ liệu';
+    document.getElementById('profile-phone').textContent = applicationData.phone || 'Không có dữ liệu';
+    
+    // Departments
+    document.getElementById('priority-department').textContent = getDepartmentName(applicationData.priority_position) || 'Không có dữ liệu';
+    document.getElementById('secondary-department').textContent = getDepartmentName(applicationData.secondary_position) || 'Không có dữ liệu';
+    
+    // Current round and status
+    const currentRound = applicationData.current_round || 'round1';
+    document.getElementById('current-round').textContent = getRoundText(currentRound);
+    
+    const status = computeOverallStatus(applicationData);
+    const statusElement = document.getElementById('profile-status');
+    statusElement.textContent = getStatusText(status);
+    statusElement.className = `profile-status ${getStatusClass(status)}`;
+    
+    // Application time - FIXED
+    if (applicationData.timestamp) {
+        let date;
+        try {
+            // Kiểm tra nếu là Firebase Timestamp
+            if (applicationData.timestamp.toDate && typeof applicationData.timestamp.toDate === 'function') {
+                date = applicationData.timestamp.toDate();
+            } else if (applicationData.timestamp.seconds) {
+                // Nếu là object có seconds (Firestore timestamp)
+                date = new Date(applicationData.timestamp.seconds * 1000);
+            } else if (typeof applicationData.timestamp === 'string') {
+                // Nếu là string
+                date = new Date(applicationData.timestamp);
+            } else if (typeof applicationData.timestamp === 'number') {
+                // Nếu là timestamp number
+                date = new Date(applicationData.timestamp);
             } else {
-                document.getElementById('application-time').textContent = 'Chưa có thông tin';
+                date = new Date();
             }
-            
-            // Render rounds
-            renderRounds();
+            document.getElementById('application-time').textContent = date.toLocaleDateString('vi-VN');
+        } catch (error) {
+            console.error('Error parsing timestamp:', error);
+            document.getElementById('application-time').textContent = 'Chưa có thông tin';
         }
+    } else {
+        document.getElementById('application-time').textContent = 'Chưa có thông tin';
+    }
+    
+    // Render rounds
+    renderRounds();
+}
 
-        function isEliminatedBefore(type, roundNumber) {
-            for (let i = 1; i < roundNumber; i++) {
-                const st = applicationData[`round${i}_${type}_status`];
-                if (st === 'not-pass') return true;
-            }
-            return false;
-        }
-
-        // Helper nhỏ (nếu bạn chưa có)
         function isEliminatedBefore(type, roundNumber) {
             if (!applicationData) return false;
             for (let i = 1; i < roundNumber; i++) {
@@ -626,9 +637,26 @@
                     frag.appendChild(createDetailItem('Ban ' + getDepartmentName(dept) + ' (' + type + ')', 'Trạng thái: ' + getStatusText(status)));
                 });
                 frag.appendChild(createDetailItem('Hình thức ứng tuyển', applicationData.application_type || 'Form trực tuyến'));
+                
                 var ts = 'Đang cập nhật';
                 if (applicationData.timestamp) {
-                    ts = applicationData.timestamp.toDate ? applicationData.timestamp.toDate().toLocaleString('vi-VN') : String(applicationData.timestamp);
+                    try {
+                        let date;
+                        if (applicationData.timestamp.toDate && typeof applicationData.timestamp.toDate === 'function') {
+                            date = applicationData.timestamp.toDate();
+                        } else if (applicationData.timestamp.seconds) {
+                            date = new Date(applicationData.timestamp.seconds * 1000);
+                        } else if (typeof applicationData.timestamp === 'string') {
+                            date = new Date(applicationData.timestamp);
+                        } else if (typeof applicationData.timestamp === 'number') {
+                            date = new Date(applicationData.timestamp);
+                        }
+                        if (date) {
+                            ts = date.toLocaleString('vi-VN');
+                        }
+                    } catch (error) {
+                        console.error('Error parsing timestamp:', error);
+                    }
                 }
                 frag.appendChild(createDetailItem('Thời gian nộp đơn', ts));
                 return frag;
@@ -811,6 +839,30 @@
             return 'pending';
         }
 
+        // Helper function to format timestamp safely
+function formatTimestamp(timestamp) {
+    if (!timestamp) return null;
+    
+    try {
+        let date;
+        if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+            date = timestamp.toDate();
+        } else if (timestamp.seconds) {
+            date = new Date(timestamp.seconds * 1000);
+        } else if (typeof timestamp === 'string') {
+            date = new Date(timestamp);
+        } else if (typeof timestamp === 'number') {
+            date = new Date(timestamp);
+        } else {
+            return null;
+        }
+        return date.toLocaleString('vi-VN');
+    } catch (error) {
+        console.error('Error formatting timestamp:', error);
+        return null;
+    }
+}
+
         // Get round details
         function getRoundDetails(roundId) {
             if (!applicationData) return '<p>Chưa có thông tin chi tiết</p>';
@@ -838,7 +890,7 @@
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Thời gian nộp đơn</div>
-                            <div class="detail-value">${applicationData.timestamp ? applicationData.timestamp.toDate().toLocaleString('vi-VN') : 'Đang cập nhật'}</div>
+                            <div class="detail-value">${formatTimestamp(applicationData.timestamp) || 'Đang cập nhật'}</div>
                         </div>
                     `;
                     break;
