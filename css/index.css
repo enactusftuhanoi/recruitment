@@ -37,7 +37,7 @@
 
 body {
   min-height: 100vh;
-  background: url("/assets/background.webp") no-repeat center top fixed;
+  background: url("/assets/background.png") no-repeat center top fixed;
   background-size: cover;
   display: flex;
   flex-direction: column;
@@ -129,27 +129,34 @@ body {
 /* Button gốc - SỬA LẠI CHO RESPONSIVE */
 .apply-btn {
   position: absolute;
-  bottom: 15%; /* Giữ giá trị phần trăm */
+  bottom: 15%;
   left: 50%;
   transform: translateX(-50%);
-  padding: 0.7vw 2vw; /* Sử dụng đơn vị viewport width để co giãn tốt hơn */
-  font-size: clamp(0.9rem, 2vw, 1.3rem); /* Kích thước chữ linh hoạt */
+  padding: 0.8vw 2.5vw;
+  font-size: clamp(0.9rem, 2vw, 1.3rem);
   font-weight: 900;
-  color: #fbfbd6;
-  background: #7c77df;
-  border: 0.3vw solid #638efe; /* Border co giãn theo viewport */
+  color: #edf5f9; /* Xanh lam đậm */
+  background: #abb94c; /* Vàng kim gradient */
+  border: 0.3vw solid #cfeafc; /* Viền xanh lam đậm */
   border-radius: 40px;
   cursor: pointer;
   text-decoration: none;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s ease;
   white-space: nowrap;
   text-align: center;
-  min-width: 160px; /* Đảm bảo nút không quá nhỏ */
+  min-width: 160px;
+  box-shadow: 0 4px 12px rgba(183, 224, 224, 0.722);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
 }
+
 .apply-btn:hover {
   transform: translateX(-50%) translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-} /* Countdown style - giống layout bạn gửi */
+  background: #abb94c; /* Đảo gradient */
+  box-shadow: 0 6px 20px rgba(175, 230, 170, 0.4);
+  border-color: #cfeafc; /* Xanh lam đậm hơn */
+}
+
+/* Countdown style - giống layout bạn gửi */
 .countdown {
   width: 100%;
   display: flex;
@@ -1198,11 +1205,5 @@ body {
     font-size: clamp(0.7rem, 3.5vw, 1rem);
     min-width: 120px;
     border-width: 0.5vw;
-  }
-}
-/* Fallback cho mobile */
-@media (max-width: 768px) {
-  body {
-    background: linear-gradient(200deg, #a7c5f7 20%, #e1c5ec 30%, #a3bdff 100%);
   }
 }
