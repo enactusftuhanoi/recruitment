@@ -2,7 +2,7 @@ window.addEventListener("load", () => {
   const preloader = document.getElementById("preloader");
   setTimeout(() => {
     preloader.classList.add("hidden");
-  }, 500);
+  }, 100);
 });
 
 const targetDate = new Date("2025-10-21T23:59:59").getTime();
