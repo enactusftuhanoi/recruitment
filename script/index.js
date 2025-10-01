@@ -1,33 +1,3 @@
-// Optimized preloader with timeout fallback
-window.addEventListener("load", () => {
-    const preloader = document.getElementById("preloader");
-    const heroImg = document.querySelector(".hero-img");
-    
-    let preloaderHidden = false;
-    
-    const hidePreloader = () => {
-        if (!preloaderHidden) {
-            preloaderHidden = true;
-            preloader.classList.add("hidden");
-            setTimeout(() => {
-                preloader.style.display = 'none';
-            }, 300);
-        }
-    };
-    
-    // Hide when hero image loads
-    if (heroImg.complete) {
-        hidePreloader();
-    } else {
-        heroImg.addEventListener('load', hidePreloader);
-        heroImg.addEventListener('error', hidePreloader); // Fallback if image fails
-    }
-    
-    // Timeout fallback (5 seconds)
-    setTimeout(hidePreloader, 5000);
-});
-
-// Optimized countdown with requestAnimationFrame
 const targetDate = new Date("2025-10-21T23:59:59").getTime();
 let lastUpdate = 0;
 
@@ -109,23 +79,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     lazyImages.forEach(img => imageObserver.observe(img));
-});
-
-// Preload critical images
-function preloadImage(url) {
-    const img = new Image();
-    img.src = url;
-}
-
-// Preload important images after page load
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        const imagesToPreload = [
-            'assets/intro.webp',
-            'assets/timeline.webp',
-            'assets/departments.webp'
-        ];
-        
-        imagesToPreload.forEach(preloadImage);
-    }, 1000);
 });
