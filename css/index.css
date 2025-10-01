@@ -3,7 +3,7 @@
   /* Màu sắc */
   --primary: #7c77df;
   --secondary: #638efe;
-  --accent: #ffd84d;
+  --accent: #fbfbd6;
   --text-light: #fbfbd6;
   --text-white: #ffffff;
 
@@ -149,124 +149,75 @@ img[loading="lazy"].loaded {
 .apply-btn {
   position: absolute;
   bottom: 15%;
-  right: 21%;
-  transform: none !important;
+  left: 21%;
+  transform: none;
   padding: 0.8vw 2.5vw;
   font-size: clamp(0.9rem, 2vw, 1.3rem);
   font-weight: 900;
-  color: #ffffff;
+  color: #fbfbd6;
   
-  /* Nền glass với màu xanh biển nhạt */
+  /* Glass effect tinh tế hơn */
   background: linear-gradient(135deg, 
-    rgba(173, 216, 230, 0.25) 0%, 
-    rgba(176, 224, 230, 0.15) 50%,
-    rgba(255, 255, 255, 0.1) 100%);
+    rgba(255, 255, 255, 0.18) 0%, 
+    rgba(255, 255, 255, 0.12) 100%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   
-  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
   border-radius: 40px;
   cursor: pointer;
   text-decoration: none;
-  transition: all 0.4s ease;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   white-space: nowrap;
   text-align: center;
   min-width: 160px;
   
-  /* Shadow với ánh xanh nhạt */
+  /* Shadow được tối ưu */
   box-shadow: 
-    0 6px 24px rgba(135, 206, 250, 0.3),
-    0 2px 12px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 6px 24px rgba(171, 185, 76, 0.25),
+    0 2px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
     inset 0 -1px 0 rgba(0, 0, 0, 0.05);
   
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   letter-spacing: 0.3px;
-  position: relative;
-  overflow: hidden;
-  
-  /* Tắt tất cả animation gốc */
-  animation: none !important;
 }
 
-/* Hiệu ứng sóng nước mượt mà hơn */
-.apply-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg,
-    transparent,
-    rgba(173, 216, 230, 0.3),
-    rgba(255, 255, 255, 0.4),
-    rgba(176, 224, 230, 0.3),
-    transparent
-  );
-  background-size: 200% 100%;
-  animation: waterFlow 3s ease-in-out infinite;
-  border-radius: 40px;
-  z-index: 0;
-  opacity: 0.7;
-}
-
-/* Hiệu ứng ánh sáng trượt */
+/* Sửa lại hiệu ứng ánh sáng viền - không ảnh hưởng vị trí */
 .apply-btn::after {
   content: '';
   position: absolute;
   top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    rgba(255, 255, 255, 0.6),
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
-  transition: left 0.8s ease;
-  z-index: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    rgba(171, 185, 76, 0.2), 
+    rgba(255, 255, 255, 0.1), 
+    rgba(171, 185, 76, 0.2));
+  border-radius: 40px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
 .apply-btn:hover::after {
-  left: 100%;
+  opacity: 1;
 }
 
 .apply-btn:hover {
-  /* CHỈ thay đổi shadow và background - không transform */
+  /* Chỉ translateY thôi, không scale để không thay đổi kích thước */
+  transform: translateY(-3px);
   background: linear-gradient(135deg, 
-    rgba(173, 216, 230, 0.35) 0%, 
-    rgba(176, 224, 230, 0.25) 50%,
-    rgba(255, 255, 255, 0.2) 100%);
+    rgba(255, 255, 255, 0.25) 0%, 
+    rgba(255, 255, 255, 0.18) 100%);
   box-shadow: 
-    0 8px 30px rgba(135, 206, 250, 0.5),
-    0 4px 16px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 12px 32px rgb(255, 255, 255),
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
     inset 0 -1px 0 rgba(0, 0, 0, 0.08);
-  border-color: rgba(255, 255, 255, 0.8);
+  border-color: rgba(255, 255, 255, 0.7);
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-}
-
-/* Animation sóng nước mượt mà */
-@keyframes waterFlow {
-  0% {
-    background-position: -150% 0;
-  }
-  50% {
-    background-position: 150% 0;
-  }
-  100% {
-    background-position: -150% 0;
-  }
-}
-
-/* Đảm bảo text nổi lên trên hiệu ứng */
-.apply-btn span {
-  position: relative;
-  z-index: 1;
-  display: block;
 }
 
 /* Countdown style - giống layout bạn gửi */
@@ -507,7 +458,7 @@ img[loading="lazy"].loaded {
   font-family: "Bricolage Grotesque", sans-serif;
   font-size: 1.2rem;
   text-transform: uppercase;
-  color: #ffd84d;
+  color: #fbfbd6;
   margin-bottom: 8px;
 }
 
@@ -696,7 +647,7 @@ img[loading="lazy"].loaded {
   font-family: "Bricolage Grotesque", sans-serif;
   font-size: 1.3rem;
   font-weight: 700;
-  color: #ffd84d;
+  color: #fbfbd6;
   margin-bottom: 10px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
@@ -920,7 +871,7 @@ img[loading="lazy"].loaded {
   font-family: "Bricolage Grotesque", sans-serif;
   font-size: 1.3rem;
   margin-bottom: 14px;
-  color: #ffd84d;
+  color: #fbfbd6;
 }
 .footer p,
 .footer a {
@@ -1013,7 +964,7 @@ img[loading="lazy"].loaded {
   font-family: "Bricolage Grotesque", sans-serif;
   font-size: 2.2rem;
   font-weight: 700;
-  color: #ffd84d;
+  color: #fbfbd6;
   margin-bottom: 20px;
   text-shadow: 0 0 10px rgba(255, 216, 77, 0.3);
 }
@@ -1136,7 +1087,7 @@ img[loading="lazy"].loaded {
   transition: color 0.3s, transform 0.2s;
 }
 .social-links a:hover {
-  color: #ffd84d;
+  color: #fbfbd6;
   transform: translateY(-2px);
 }
 .footer-bottom {
