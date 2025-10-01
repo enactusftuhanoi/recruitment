@@ -6,10 +6,14 @@
     <title>Recruitment | Enactus FTU Hanoi</title>
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     
-    <!-- Preconnect để tăng tốc độ load external resources -->
+    <!-- Preload ảnh quan trọng -->
+    <link rel="preload" href="/assets/hero.webp" as="image">
+    <link rel="preload" href="/assets/background.webp" as="image">
+
+    <!-- Preconnect đến domains quan trọng -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     
     <link rel="canonical" href="https://recruitment.enactusftuhanoi.id.vn" />
     <link rel="stylesheet" href="../css/index.css">
@@ -37,10 +41,6 @@
     
     <!-- Font Awesome - chỉ load khi cần -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'"/>
-    
-    <!-- Load ảnh -->
-    <link rel="preload" href="assets/hero.png" as="image" fetchpriority="high">
-    <link rel="preload" href="assets/background.png" as="image" fetchpriority="low">
   </head>
   <body>
     <!-- Preloader -->
