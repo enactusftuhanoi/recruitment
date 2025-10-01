@@ -26,9 +26,7 @@
                     title: '⚠️ Cảnh báo',
                     html: `
                             <p style="text-align:center; line-height:1.6; white-space:normal;">
-                                Phỏng vấn thay đơn mở từ 
-                                <br>
-                                <b>20h 10/10/2025</b> – <b>23h59 14/10/2025</b>.
+                                Hình thức <b>Phỏng vấn thay đơn</b> chưa mở
                                 <br>
                                 Vui lòng quay lại sau.
                             </p>`,

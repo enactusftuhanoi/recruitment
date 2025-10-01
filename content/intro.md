@@ -34,10 +34,10 @@ Anh chị chờ em, **Enactus** chờ em!
 
 ### 📌 CƠ CẤU CÁC VÒNG THI:
 
-🔹 Vòng 1 - Vòng đơn: **01/10/2025 - 21/10/2025**\
-🔹 Vòng 2 - Vòng phỏng vấn nhóm: **22/10/2025 - 29/10/2025**\
-🔹 Vòng 3 - Vòng Teamwork: **31/10/2025 - 10/11/2025**\
-🔹 Vòng 4 - Vòng phỏng vấn cá nhân: **12/11/2025 - 14/11/2025**
+🔹 Vòng 1 (Vòng đơn) - Journey Call: **01/10/2025 - 21/10/2025**\
+🔹 Vòng 2 (Vòng phỏng vấn nhóm) - Kindred Spirit: **24/10/2025 - 26/10/2025**\
+🔹 Vòng 3 (Vòng Teamwork) - Trial Path: **28/10/2025 - 07/11/2025**\
+🔹 Vòng 4 (Vòng phỏng vấn cá nhân) - Final Discovery: **09/11/2025 - 12/11/2025**
 
 ——————————
 
