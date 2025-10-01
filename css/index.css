@@ -129,15 +129,15 @@ body {
 /* Button gốc - SỬA LẠI CHO RESPONSIVE */
 .apply-btn {
   position: absolute;
-  bottom: 15%;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 15%; /* Đẩy lên trên */
+  left: 21%; /* Sang trái */
+  transform: none; /* Bỏ translateX(-50%) */
   padding: 0.8vw 2.5vw;
   font-size: clamp(0.9rem, 2vw, 1.3rem);
   font-weight: 900;
-  color: #edf5f9; /* Xanh lam đậm */
-  background: #abb94c; /* Vàng kim gradient */
-  border: 0.3vw solid #cfeafc; /* Viền xanh lam đậm */
+  color: #edf5f9;
+  background: #abb94c;
+  border: 0.3vw solid #cfeafc;
   border-radius: 40px;
   cursor: pointer;
   text-decoration: none;
@@ -150,10 +150,10 @@ body {
 }
 
 .apply-btn:hover {
-  transform: translateX(-50%) translateY(-3px);
-  background: #abb94c; /* Đảo gradient */
+  transform: translateY(-3px); /* Chỉ translateY khi hover */
+  background: #abb94c;
   box-shadow: 0 6px 20px rgba(175, 230, 170, 0.4);
-  border-color: #cfeafc; /* Xanh lam đậm hơn */
+  border-color: #cfeafc;
 }
 
 /* Countdown style - giống layout bạn gửi */
