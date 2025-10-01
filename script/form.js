@@ -28,7 +28,7 @@
                             <p style="text-align:center; line-height:1.6; white-space:normal;">
                                 Phỏng vấn thay đơn mở từ 
                                 <br>
-                                <b>00h 11/10/2025</b> – <b>23h59 14/10/2025</b>.
+                                <b>20h 10/10/2025</b> – <b>23h59 14/10/2025</b>.
                                 <br>
                                 Vui lòng quay lại sau.
                             </p>`,
