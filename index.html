@@ -35,12 +35,12 @@
     <!-- Font -->
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700&family=Montserrat:wght@300;400;500;700&display=swap" rel="stylesheet"/>
     
-    <!-- Font Awesome - chỉ load khi cần -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'"/>
-    
-    <!-- Load ảnh -->
-    <link rel="preload" href="assets/hero.webp" as="image" fetchpriority="high">
-    <link rel="preload" href="assets/background.webp" as="image" fetchpriority="high">
+    <!-- Thêm preload cho ảnh hero -->
+    <link rel="preload" href="assets/hero.webp" as="image">
+
+    <!-- Thay thế Font Awesome bằng SVG icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/brands.min.css" media="print" onload="this.media='all'">
+
   </head>
   <body>
     <!-- Preloader -->
@@ -109,7 +109,7 @@
             <a href="https://drive.google.com/file/d/1qe4MlhBtUm2Pu-HUyjnYPsQZzb00qdnu/" class="view-more-btn">Xem thêm</a>
           </div>
           <div class="journey-image">
-            <img src="assets/vsic2024.webp" alt="VSIC 2024 - Enactus FTU Hanoi" />
+            <img src="assets/vsic2024.webp" alt="VSIC 2024 - Enactus FTU Hanoi"/>
           </div>
         </div>
       </div>
