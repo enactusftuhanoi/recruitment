@@ -65,36 +65,3 @@ window.addEventListener("scroll", () => {
     scrollIndicator.classList.add("visible");
   }
 });
-// Preloader với timeout 5s
-window.addEventListener("load", () => {
-  const preloader = document.getElementById("preloader");
-  let loaded = false;
-  
-  // Đảm bảo tối đa 5s
-  const maxLoadTime = setTimeout(() => {
-    if (!loaded) {
-      preloader.classList.add("hidden");
-      loaded = true;
-    }
-  }, 5000); // 5 giây
-
-  // Hoặc khi trang load xong (nhanh hơn)
-  window.addEventListener('DOMContentLoaded', () => {
-    if (!loaded) {
-      clearTimeout(maxLoadTime);
-      preloader.classList.add("hidden");
-      loaded = true;
-    }
-  });
-
-  // Fallback: khi mọi thứ load xong
-  window.addEventListener('load', () => {
-    if (!loaded) {
-      clearTimeout(maxLoadTime);
-      setTimeout(() => {
-        preloader.classList.add("hidden");
-        loaded = true;
-      }, 500); // Thêm delay nhẹ cho mượt
-    }
-  });
-});
