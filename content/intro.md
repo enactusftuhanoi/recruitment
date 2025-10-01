@@ -44,6 +44,6 @@ Anh chị chờ em, **Enactus** chờ em!
 ### 📌 ĐỘI TUYỂN ENACTUS FTU HANOI
 
 ➤ 🌐 Facebook: <https://www.facebook.com/Enactus.FTU.Hanoi/>\
-➤ 🏢 Address: Văn phòng các CLB -- Tầng 1, Nhà B, Trường Đại học Ngoại
+➤ 🏢 Address: Văn phòng các CLB - Tầng 1, Nhà B, Trường Đại học Ngoại
 Thương, Chùa Láng, Phường Láng, Hà Nội\
 ➤ 📧 Email: <enactusftuhn.bcn@gmail.com>
