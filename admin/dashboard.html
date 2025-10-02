@@ -1115,7 +1115,8 @@
             const systemMenus = document.querySelectorAll('.system-settings-menu');
             if (systemMenus) {
                 systemMenus.forEach(menu => {
-                    menu.style.display = (userRole === 'superadmin') ? 'block' : 'none';
+                    // ✅ SỬA: Cho cả superadmin VÀ admin thấy menu system settings
+                    menu.style.display = (userRole === 'superadmin' || userRole === 'admin') ? 'block' : 'none';
                 });
             }
 
@@ -1125,7 +1126,7 @@
 
             // Members should be redirected out earlier; but if not:
             if (userRole === 'member') {
-                window.location.href = 'response.html';
+                window.location.href = "response.html";
             }
         }
 
