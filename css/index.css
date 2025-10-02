@@ -49,17 +49,118 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Common section styles */
-.hero-container,
-.intro-section,
-.timeline-section,
-.departments-section,
-.faq-section {
+/* Common styles for all title images - UPDATED & CLEANED */
+.intro-title img,
+.timeline-title img,
+.departments-title img,
+.faq-title img {
+  width: 600px;
+  max-width: 90%;
+  height: auto;
+  display: block;
+  margin: 0 auto 50px;
+}
+
+/* Responsive adjustments - UPDATED & CLEANED */
+@media (max-width: 768px) {
+  .intro-title img,
+  .timeline-title img,
+  .departments-title img,
+  .faq-title img {
+    max-width: 85%;
+    margin-bottom: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .intro-title img,
+  .timeline-title img,
+  .departments-title img,
+  .faq-title img {
+    max-width: 80%;
+    margin-bottom: 30px;
+  }
+}
+
+/* Điều chỉnh margin cho từng section để đồng bộ khoảng cách */
+.intro-section {
   width: 100%;
-  padding: 0 var(--container-padding);
+  margin: 120px auto 140px;
+  padding: 0 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.timeline-section {
+  width: 100%;
+  margin: 120px auto 140px;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.departments-section {
+  width: 100%;
+  margin: 120px auto 140px; /* Đồng bộ với các section khác */
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.faq-section {
+  width: 100%;
+  margin: 120px auto 140px;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Journey Section - thêm vào để đồng bộ */
+.journey-section {
+  width: 100%;
+  margin: 120px auto 140px;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Countdown Section - thêm vào để đồng bộ */
+.countdown-section {
+  width: 100%;
+  margin: 120px auto 140px;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Responsive margin cho tất cả sections */
+@media (max-width: 768px) {
+  .intro-section,
+  .timeline-section,
+  .departments-section,
+  .faq-section,
+  .journey-section,
+  .countdown-section {
+    margin: 80px auto 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .intro-section,
+  .timeline-section,
+  .departments-section,
+  .faq-section,
+  .journey-section,
+  .countdown-section {
+    margin: 60px auto 80px;
+    padding: 0 15px;
+  }
 }
 
 .hero-container {
@@ -286,14 +387,6 @@ body {
   align-items: center;
 }
 
-.intro-title img {
-  width: 600px;
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto 50px;
-}
-
 .intro-container {
   max-width: 900px;
   background: rgba(158, 182, 255, 0.35);
@@ -321,14 +414,6 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.timeline-title img {
-  width: 600px;
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto 60px;
 }
 
 .timeline-container {
@@ -498,19 +583,11 @@ body {
 /* Departments Section - Updated Design */
 .departments-section {
   width: 100%;
-  margin: 60px auto 80px;
+  margin: 120px auto 140px;
   padding: 0 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.departments-title img {
-  width: 600px;
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto 30px;
 }
 
 .departments-container {
@@ -706,13 +783,8 @@ body {
   flex-direction: column;
   align-items: center;
 }
-.faq-title img {
-  width: 600px;
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto 50px;
-} /* Container */
+
+/* Container */
 .faq-container {
   width: 100%;
   max-width: 1000px;
@@ -891,7 +963,6 @@ body {
 .journey-container {
   width: 100%;
   max-width: 1200px;
-  margin: 80px auto 0;
   background: rgba(158, 182, 255, 0.35);
   border: 2px solid rgba(130, 163, 250, 0.6);
   border-radius: 24px;
@@ -1203,33 +1274,37 @@ body {
   }
 }
 
-/* Responsive cho mobile */
+/* Mobile apply button positioning */
 @media (max-width: 768px) {
+  .hero-container {
+    position: relative;
+    padding-bottom: 80px; /* Tạo khoảng trống cho nút ở dưới */
+  }
+
   .apply-btn {
-    position: relative !important;
-    bottom: auto !important;
-    left: auto !important;
-    right: auto !important;
-    transform: none !important;
-    margin: 30px auto !important;
-    display: block !important;
-    padding: 12px 30px !important;
-    font-size: 1rem !important;
-    min-width: 180px !important;
-    width: fit-content !important;
+    position: absolute !important;
+    bottom: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    margin: 0 auto !important;
+    padding: 12px 40px !important;
+    font-size: 1.1rem !important;
+    min-width: 200px !important;
+    width: auto !important;
     text-align: center !important;
+    z-index: 100;
   }
 
   .apply-btn:hover {
-    transform: translateY(-3px) !important;
+    transform: translateX(-50%) translateY(-3px) !important;
   }
 }
 
 @media (max-width: 480px) {
   .apply-btn {
-    padding: 10px 25px !important;
-    font-size: 0.9rem !important;
-    min-width: 160px !important;
-    margin: 25px auto !important;
+    padding: 10px 35px !important;
+    font-size: 1rem !important;
+    min-width: 180px !important;
+    bottom: 15px !important;
   }
 }
