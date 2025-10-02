@@ -707,7 +707,7 @@
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </div>
-            <div class="nav-item" id="system-settings-menu" style="display: none;" onclick="window.location.href='response.html'">
+            <div class="nav-item system-settings-menu" style="display: none;" onclick="window.location.href='response.html'">
                 <i class="fas fa-folder-open"></i>
                 <span>Response</span>
             </div>
@@ -731,7 +731,7 @@
                 <i class="fas fa-trophy"></i>
                 <span>Thành viên chính thức</span>
             </div>
-            <div class="nav-item" id="system-settings-menu" style="display: none;" onclick="window.location.href='accounts.html'">
+            <div class="nav-item system-settings-menu" style="display: none;" onclick="window.location.href='accounts.html'">
                 <i class="fas fa-cog"></i>
                 <span>Cấp quyền</span>
             </div>
@@ -1111,24 +1111,22 @@
 
         // Apply UI rules based on role
         function applyRoleUIRules() {
-          // system settings only visible to superadmin
-          const systemMenu = document.getElementById('system-settings-menu');
-          if (systemMenu) systemMenu.style.display = (userRole === 'superadmin') ? 'block' : 'none';
+            // system settings only visible to superadmin
+            const systemMenus = document.querySelectorAll('.system-settings-menu');
+            if (systemMenus) {
+                systemMenus.forEach(menu => {
+                    menu.style.display = (userRole === 'superadmin') ? 'block' : 'none';
+                });
+            }
 
-          // Reset button only superadmin
-          const resetBtn = document.getElementById('reset-rounds-btn');
-          if (resetBtn) resetBtn.style.display = (userRole === 'superadmin') ? 'inline-flex' : 'none';
+            // Reset button only superadmin
+            const resetBtn = document.getElementById('reset-rounds-btn');
+            if (resetBtn) resetBtn.style.display = (userRole === 'superadmin') ? 'inline-flex' : 'none';
 
-          // Update-all (bulk) available to superadmin; admin can still use but will only affect their dept
-          // If you want to hide bulk update for admin, uncomment below:
-          // const updateAllBtn = document.getElementById('update-round-btn');
-          // if (updateAllBtn) updateAllBtn.style.display = (userRole === 'superadmin') ? 'inline-flex' : 'none';
-
-          // Members should be redirected out earlier; but if not:
-          if (userRole === 'member') {
-            // optional: block access in UI and redirect to response page
-            window.location.href = 'response.html';
-          }
+            // Members should be redirected out earlier; but if not:
+            if (userRole === 'member') {
+                window.location.href = 'response.html';
+            }
         }
 
         // Load applications from Firestore
