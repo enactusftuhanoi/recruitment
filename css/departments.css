@@ -278,7 +278,7 @@ body::before {
 .content-text {
   font-family: var(--font-body);
   font-size: 1.05rem;
-  line-height: 1.5; /* Đã giảm */
+  line-height: 1.6; /* Đã giảm */
   color: var(--pastel-text); /* Đã đổi màu */
   text-align: justify;
   position: relative;
@@ -371,7 +371,7 @@ body::before {
 .content-text li {
   margin-bottom: 8px;
   opacity: 0.9;
-  line-height: 1.4; /* Đã giảm */
+  line-height: 1.6; /* Đã giảm */
   color: var(--pastel-text); /* Đồng bộ màu */
 }
 
