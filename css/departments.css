@@ -359,7 +359,7 @@ body::before {
 .content-text p {
   margin-bottom: 18px;
   opacity: 0.95;
-  line-height: 1.5; /* Đã giảm */
+  line-height: 1.6; /* Đã giảm */
   color: var(--pastel-text); /* Màu pastel nhạt */
 }
 
