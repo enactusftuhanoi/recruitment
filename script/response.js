@@ -26,9 +26,30 @@ if (!userEmail || !userRole) {
   window.location.href = "login.html";
 }
 
+// ==== Xử lý tham số URL để tự động mở ứng viên cụ thể ====
+function getUrlParameter(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+}
+
+// Hàm tự động mở ứng viên khi có tham số ID
+function autoOpenApplicationFromUrl() {
+    const applicationId = getUrlParameter('id');
+    if (applicationId) {
+        // Tìm ứng viên trong danh sách
+        const application = applications.find(app => app.id === applicationId);
+        if (application) {
+            // Tự động hiển thị chi tiết ứng viên
+            setTimeout(() => {
+                showApplicationDetail(applicationId);
+            }, 500); // Delay để đảm bảo trang đã load xong
+        } else {
+            console.warn('Không tìm thấy ứng viên với ID:', applicationId);
+        }
+    }
+}
 
 // CHÚ Ý: không gọi loadApplications trực tiếp khi load trang.
-// Thay vào đó, lắng nghe auth state để đảm bảo chỉ load khi user đã đăng nhập.
 auth.onAuthStateChanged(async (user) => {
   if (user) {
     try {
@@ -65,7 +86,9 @@ auth.onAuthStateChanged(async (user) => {
       console.error('Lỗi khi lấy account:', e);
     }
 
-    loadApplications();
+    // 👉 SỬA LẠI: Đợi loadApplications hoàn thành trước khi autoOpen
+    await loadApplications();
+    autoOpenApplicationFromUrl(); // 👈 Giờ applications đã có dữ liệu
   } else {
     window.location.href = 'login.html';
   }
@@ -335,39 +358,50 @@ function getStatusInfo(status) {
     }
 }
 
-// Hàm đánh dấu ứng viên đã xem
-async function markAsReviewed() {
-    if (!currentApplicationId) return;
-    const application = applications.find(app => app.id === currentApplicationId);
-    if (!application) return;
+    // Hàm đánh dấu ứng viên đã xem
+    async function markAsReviewed() {
+        if (!currentApplicationId) return;
+        const application = applications.find(app => app.id === currentApplicationId);
+        if (!application) return;
 
-    // Chỉ superadmin hoặc admin của ít nhất 1 ban của ứng viên mới mark reviewed
-    const canMark = (userRole === 'superadmin') ||
-                    (userRole === 'admin' && (
-                        application.priority_position === userDept ||
-                        application.secondary_position === userDept
-                    ));
-    if (!canMark) {
-        Swal.fire('Không có quyền', 'Bạn không có quyền đánh dấu ứng viên này là đã xem.', 'error');
-        return;
+        // Chỉ superadmin hoặc admin của ít nhất 1 ban của ứng viên mới mark reviewed
+        const canMark = (userRole === 'superadmin') ||
+                        (userRole === 'admin' && (
+                            application.priority_position === userDept ||
+                            application.secondary_position === userDept
+                        ));
+        if (!canMark) {
+            Swal.fire('Không có quyền', 'Bạn không có quyền đánh dấu ứng viên này là đã xem.', 'error');
+            return;
+        }
+
+        // chỉ mark khi status là 'new'
+        if (application.status !== 'new') return;
+
+        try {
+            // 🔥 THÊM try-catch để xử lý lỗi
+            await db.collection('applications').doc(currentApplicationId).update({
+                status: 'reviewed',
+                updatedAt: new Date()
+            });
+
+            const appIndex = applications.findIndex(app => app.id === currentApplicationId);
+            if (appIndex !== -1) {
+                applications[appIndex].status = 'reviewed';
+            }
+
+            // 🔥 THÊM thông báo thành công
+            Swal.fire('Thành công', 'Đã đánh dấu ứng viên là đã xem', 'success');
+            
+            renderApplications();
+            showApplicationDetail(currentApplicationId);
+            
+        } catch (error) {
+            // 🔥 THÊM xử lý lỗi
+            console.error('Lỗi khi đánh dấu đã xem:', error);
+            Swal.fire('Lỗi', 'Không thể cập nhật trạng thái: ' + error.message, 'error');
+        }
     }
-
-    // chỉ mark khi status là 'new'
-    if (application.status !== 'new') return;
-
-    await db.collection('applications').doc(currentApplicationId).update({
-        status: 'reviewed',
-        updatedAt: new Date()
-    });
-
-    const appIndex = applications.findIndex(app => app.id === currentApplicationId);
-    if (appIndex !== -1) {
-        applications[appIndex].status = 'reviewed';
-    }
-
-    renderApplications();
-    showApplicationDetail(currentApplicationId);
-}
 
 function canActOnDepartment(application, departmentType) {
     if (!application) return false;
@@ -420,7 +454,12 @@ function showApplicationDetail(appId) {
         personalInfoHTML += `
             <div class="detail-item">
                 <span class="detail-label">Facebook</span>
-                <span class="detail-value">${application.facebook || 'Chưa cung cấp'}</span>
+                <span class="detail-value">
+                    <a href="${application.facebook}" target="_blank" class="facebook-badge">
+                        <i class="fab fa-facebook"></i>
+                        <span>Facebook</span>
+                    </a>
+                </span>
             </div>
         `;
     }
@@ -1162,12 +1201,16 @@ function computeOverallStatus(app) {
         // Mặc định là new
         return 'new';
     } else {
-        // Xử lý cho ứng viên điền đơn (giữ nguyên)
+        // 🔥 SỬA QUAN TRỌNG: Xử lý cho ứng viên điền đơn
         if (app.priorityAccepted || app.secondaryAccepted) return 'accepted';
         if ((app.priorityRejected && (!app.secondary_position || app.secondaryRejected)) ||
             (app.secondaryRejected && (!app.priority_position || app.priorityRejected))) {
             return 'rejected';
         }
+        
+        // 🔥 THÊM DÒNG NÀY: Kiểm tra trực tiếp trường status
+        if (app.status === 'reviewed') return 'reviewed';
+        
         if (app.priorityRejected || app.secondaryRejected) return 'reviewed';
         return 'new';
     }

@@ -784,7 +784,7 @@
                 <div class="stat-card">
                     <div class="stat-title">Tổng số ứng viên</div>
                     <div class="stat-value" id="total-applicants">0</div>
-                    <div class="stat-comparison positive">
+                    <div class="stat-comparison positive" id="total-comparison">
                         <i class="fas fa-arrow-up"></i>
                         <span>0% so với tuần trước</span>
                     </div>
@@ -792,7 +792,7 @@
                 <div class="stat-card">
                     <div class="stat-title">Đã hoàn thành</div>
                     <div class="stat-value" id="completed-applicants">0</div>
-                    <div class="stat-comparison positive">
+                    <div class="stat-comparison positive" id="completed-comparison">
                         <i class="fas fa-arrow-up"></i>
                         <span>0% so với tuần trước</span>
                     </div>
@@ -800,7 +800,7 @@
                 <div class="stat-card">
                     <div class="stat-title">Đang trong quá trình</div>
                     <div class="stat-value" id="inprogress-applicants">0</div>
-                    <div class="stat-comparison negative">
+                    <div class="stat-comparison negative" id="inprogress-comparison">
                         <i class="fas fa-arrow-down"></i>
                         <span>0% so với tuần trước</span>
                     </div>
@@ -808,7 +808,7 @@
                 <div class="stat-card">
                     <div class="stat-title">Đã loại</div>
                     <div class="stat-value" id="rejected-applicants">0</div>
-                    <div class="stat-comparison positive">
+                    <div class="stat-comparison positive" id="rejected-comparison">
                         <i class="fas fa-arrow-up"></i>
                         <span>0% so với tuần trước</span>
                     </div>
@@ -1279,36 +1279,57 @@
             });
         }
 
+        // Trong hàm renderRound1(), sửa phần event listener
         function renderRound1() {
-          const tbody = document.getElementById('round1-table-body');
-          tbody.innerHTML = '';
+            const tbody = document.getElementById('round1-table-body');
+            tbody.innerHTML = '';
 
-          applications.forEach(app => {
-            if (app.current_round !== 'round1') return;
+            applications.forEach(app => {
+                if (app.current_round !== 'round1') return;
 
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${app.fullname}</td>
-              <td>${app.email}</td>
-              <td>${app.phone || ''}</td>
-              <td>
-                ${renderDepartment(app.priority_position, app.priority_status)}
-                ${app.secondary_position && app.secondary_position !== 'None'
-                  ? renderDepartment(app.secondary_position, app.secondary_status)
-                  : ''}
-              </td>
-              <td>${app.application_type || 'form'}</td>
-              <td>${app.application_type !== 'form' ? (app.round1?.time || '') : ''}</td>
-              <td>${app.application_type !== 'form'
-                ? `<a href="${app.round1?.link || '#'}" target="_blank">Link</a>`
-                : ''}</td>
-              <td>${app.application_type !== 'form' ? (app.round1?.note || '') : ''}</td>
-              <td>
-                <a class="action-btn view-btn" href="/admin/response.html?id=${app.id}" target="_blank">Xem</a>
-              </td>
-            `;
-            tbody.appendChild(tr);
-          });
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${app.fullname}</td>
+                    <td>${app.email}</td>
+                    <td>${app.phone || ''}</td>
+                    <td>
+                        ${renderDepartment(app.priority_position, app.priority_status)}
+                        ${app.secondary_position && app.secondary_position !== 'None'
+                        ? renderDepartment(app.secondary_position, app.secondary_status)
+                        : ''}
+                    </td>
+                    <td>${app.application_type || 'form'}</td>
+                    <td>${app.application_type !== 'form' ? (app.round1?.time || '') : ''}</td>
+                    <td>${app.application_type !== 'form'
+                        ? `<a href="${app.round1?.link || '#'}" target="_blank" style="color: #3B82F6; text-decoration: none;">Link</a>`
+                        : '-'}</td>
+                    <td>${app.application_type !== 'form' ? (app.round1?.note || '') : '-'}</td>
+                    <td>
+                        <button class="action-btn view-btn" data-id="${app.id}">
+                            <i class="fas fa-external-link-alt" style="margin-right: 4px;"></i>
+                            Xem
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Sửa phần event listener - thêm kiểm tra authentication
+            tbody.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const appId = e.target.getAttribute('data-id');
+                    
+                    // Kiểm tra authentication trước khi chuyển hướng
+                    if (!userEmail || !userRole) {
+                        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    
+                    // Mở trang response với ID ứng viên
+                    window.open(`response.html?id=${appId}`, '_blank');
+                });
+            });
         }
 
         function renderRound2() {
@@ -1585,11 +1606,76 @@
           });
         }
 
-        // Update statistics
-        function updateStats() {
+        // Thêm hàm tính toán phần trăm so với tuần trước
+        async function calculateWeekComparison() {
+            try {
+                const now = new Date();
+                const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                
+                // Lấy dữ liệu ứng viên từ tuần trước
+                const lastWeekSnapshot = await db.collection('applications')
+                    .where('timestamp', '>=', oneWeekAgo)
+                    .get();
+                
+                const lastWeekApps = lastWeekSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                
+                // Tính toán số liệu tuần trước
+                const lastWeekTotal = lastWeekApps.length;
+                const lastWeekCompleted = lastWeekApps.filter(app => 
+                    computeOverallStatus(app) === 'pass'
+                ).length;
+                const lastWeekInProgress = lastWeekApps.filter(app => 
+                    computeOverallStatus(app) === 'pending'
+                ).length;
+                const lastWeekRejected = lastWeekApps.filter(app => 
+                    computeOverallStatus(app) === 'not-pass'
+                ).length;
+                
+                // Tính toán số liệu hiện tại
+                const currentTotal = applications.length;
+                const currentCompleted = applications.filter(app => 
+                    computeOverallStatus(app) === 'pass'
+                ).length;
+                const currentInProgress = applications.filter(app => 
+                    computeOverallStatus(app) === 'pending'
+                ).length;
+                const currentRejected = applications.filter(app => 
+                    computeOverallStatus(app) === 'not-pass'
+                ).length;
+                
+                // Tính phần trăm thay đổi
+                return {
+                    total: calculatePercentageChange(lastWeekTotal, currentTotal),
+                    completed: calculatePercentageChange(lastWeekCompleted, currentCompleted),
+                    inProgress: calculatePercentageChange(lastWeekInProgress, currentInProgress),
+                    rejected: calculatePercentageChange(lastWeekRejected, currentRejected)
+                };
+            } catch (error) {
+                console.error('Lỗi tính toán phần trăm:', error);
+                return {
+                    total: 0,
+                    completed: 0,
+                    inProgress: 0,
+                    rejected: 0
+                };
+            }
+        }
+
+        // Hàm tính phần trăm thay đổi
+        function calculatePercentageChange(oldValue, newValue) {
+            if (oldValue === 0) {
+                return newValue > 0 ? 100 : 0; // Nếu tuần trước = 0, tuần này có giá trị -> +100%
+            }
+            return Math.round(((newValue - oldValue) / oldValue) * 100);
+        }
+
+        // Cập nhật hàm updateStats
+        async function updateStats() {
             document.getElementById('total-applicants').textContent = applications.length;
             
-            // Simplified stats for demo - would need to be expanded based on your data structure
             const completed = applications.filter(app => computeOverallStatus(app) === 'pass').length;
             const inProgress = applications.filter(app => computeOverallStatus(app) === 'pending').length;
             const rejected = applications.filter(app => computeOverallStatus(app) === 'not-pass').length;
@@ -1597,6 +1683,37 @@
             document.getElementById('completed-applicants').textContent = completed;
             document.getElementById('inprogress-applicants').textContent = inProgress;
             document.getElementById('rejected-applicants').textContent = rejected;
+            
+            // Tính toán và cập nhật phần trăm so với tuần trước
+            const comparisons = await calculateWeekComparison();
+            
+            updateComparisonElement('total-applicants', comparisons.total);
+            updateComparisonElement('completed-applicants', comparisons.completed);
+            updateComparisonElement('inprogress-applicants', comparisons.inProgress);
+            updateComparisonElement('rejected-applicants', comparisons.rejected);
+        }
+
+        // Hàm cập nhật UI phần trăm
+        function updateComparisonElement(statId, percentage) {
+            const statElement = document.getElementById(statId).closest('.stat-card');
+            const comparisonElement = statElement.querySelector('.stat-comparison');
+            const iconElement = comparisonElement.querySelector('i');
+            const textElement = comparisonElement.querySelector('span');
+            
+            // Cập nhật số phần trăm
+            textElement.textContent = `${Math.abs(percentage)}% so với tuần trước`;
+            
+            // Cập nhật màu và icon dựa trên giá trị
+            if (percentage > 0) {
+                comparisonElement.className = 'stat-comparison positive';
+                iconElement.className = 'fas fa-arrow-up';
+            } else if (percentage < 0) {
+                comparisonElement.className = 'stat-comparison negative';
+                iconElement.className = 'fas fa-arrow-down';
+            } else {
+                comparisonElement.className = 'stat-comparison';
+                iconElement.className = 'fas fa-minus';
+            }
         }
 
         function renderDepartment(code, status) {
@@ -1643,22 +1760,23 @@
                         <label style="display: block; font-weight: 500; margin-bottom: 4px;">Ban dự bị</label>
                         <div style="padding: 8px 12px; background-color: #F3F4F6; border-radius: 8px;">
                             ${application.secondary_position && application.secondary_position !== 'None' ? 
-                              getDepartmentName(application.secondary_position) : 'Không có'}
+                            getDepartmentName(application.secondary_position) : 'Không có'}
                         </div>
                     </div>
                 </div>
                 
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; font-weight: 500; margin-bottom: 4px;">Câu trả lời ứng tuyển</label>
-                    <div style="padding: 16px; background-color: #F9FAFB; border-radius: 8px;">
-                        ${application.answers ? Object.entries(application.answers).map(([q, a]) => 
-                            `<p><strong>${q}:</strong> ${a}</p>`
-                        ).join('') : 'Chưa có thông tin câu trả lời'}
+                    <label style="display: block; font-weight: 500; margin-bottom: 12px;">Xem đơn ứng tuyển đầy đủ</label>
+                    <div style="padding: 16px; background-color: #F9FAFB; border-radius: 8px; text-align: center;">
+                        <p style="margin-bottom: 16px; color: #6B7280;">Nhấn nút bên dưới để xem toàn bộ thông tin ứng tuyển và câu trả lời chi tiết</p>
+                        <button class="action-btn view-btn" id="view-full-application" style="background-color: #3B82F6; color: white; padding: 10px 20px;">
+                            <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i>
+                            Xem đơn ứng tuyển đầy đủ
+                        </button>
                     </div>
                 </div>
                 
                 <div style="display: flex; justify-content: flex-end; gap: 12px;">
-                    <button class="action-btn" id="edit-btn">Chỉnh sửa</button>
                     <button class="action-btn" id="close-modal-btn">Đóng</button>
                 </div>
             `;
@@ -1669,6 +1787,12 @@
             // Add event listeners
             document.getElementById('close-modal-btn').addEventListener('click', () => {
                 document.getElementById('application-modal').style.display = 'none';
+            });
+
+            // Thêm sự kiện cho nút xem đơn đầy đủ
+            document.getElementById('view-full-application').addEventListener('click', () => {
+                // Chuyển hướng sang trang response với ID ứng viên
+                window.open(`response.html?id=${appId}`, '_blank');
             });
         }
 
