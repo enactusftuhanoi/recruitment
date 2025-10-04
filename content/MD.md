@@ -1,15 +1,15 @@
 # Mô tả công việc
-## Công việc chung:
+## 1. Công việc chung:
 🔹 Lên ý tưởng và xây dựng kế hoạch truyền thông cho Fanpage Enactus FTU Hanoi.
 🔹 Lên ý tưởng và xây dựng kế hoạch truyền thông cho các sự kiện, dự án của câu lạc bộ như TEB (Teen Entrepreneurship Bootcamp), VSIC (Vietnam Social Innovation Challenge), Tuyến thành viên.
 🔹 Triển khai theo kế hoạch truyền thông đã xây dựng.
-## Công việc từng tiểu ban:
-### Tiểu ban content:
+## 2. Công việc từng tiểu ban:
+### 2.1. Tiểu ban content:
 🔹 Sáng tạo những nội dung bất kịp xu hướng, phù hợp với tinh thần của Enactus.
 🔹 Cập nhật thông tin, thể hiện quan điểm trước các vấn đề xã hội.
 🔹 Cung cấp thông tin liên quan đến các dự án xã hội, các cuộc thi do Enactus thực hiện.
 🔹 Tìm kiếm, chia sẻ thông tin về các chiến dịch quốc tế tiêu biểu có chung mục đích với Enactus.
-### Tiểu ban kỹ thuật:
+### 2.2. Tiểu ban kỹ thuật:
 🔹 Thực hiện các ấn phẩm với từng bài viết (ánh, video).
 🔹 Thiết kế bộ nhận diện (avatar, cover) trong mỗi sự kiện.
 🔹 Thiết kế banner, poster, flyer với các sự kiện, cuộc thi, dự án.

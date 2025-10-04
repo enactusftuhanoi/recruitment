@@ -5,7 +5,7 @@
   --glass-bg: rgba(255, 255, 255, 0.08);
   --glass-border: rgba(255, 255, 255, 0.15);
   --glass-shadow: rgba(0, 0, 0, 0.1);
-  --text-light: #ffff97;
+  --text-light: #fff27d;
   --text-white: #ffffff;
   --accent-glow: rgba(251, 251, 214, 0.3);
 
@@ -278,7 +278,7 @@ body::before {
 .content-text {
   font-family: var(--font-body);
   font-size: 1.05rem;
-  line-height: 1.6; /* Đã giảm */
+  line-height: 1.7; /* Đã giảm */
   color: var(--pastel-text); /* Đã đổi màu */
   text-align: justify;
   position: relative;
@@ -359,7 +359,7 @@ body::before {
 .content-text p {
   margin-bottom: 18px;
   opacity: 0.95;
-  line-height: 1.6; /* Đã giảm */
+  line-height: 1.7; /* Đã giảm */
   color: var(--pastel-text); /* Màu pastel nhạt */
 }
 
@@ -371,7 +371,7 @@ body::before {
 .content-text li {
   margin-bottom: 8px;
   opacity: 0.9;
-  line-height: 1.6; /* Đã giảm */
+  line-height: 1.7; /* Đã giảm */
   color: var(--pastel-text); /* Đồng bộ màu */
 }
 

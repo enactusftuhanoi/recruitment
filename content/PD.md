@@ -1,10 +1,10 @@
 # Mô tả công việc
-## Dự án xã hội:
+## 1. Dự án xã hội:
 🔹 Nghiên cứu, tìm kiếm và lên ý tưởng cho các dự án xã hội nhằm giải quyết các vấn đề xã hội còn tồn đọng.
 🔹 Lên kế hoạch, xây dựng và triển khai dự án.
 🔹 Làm việc trực tiếp với các đối tác cũng như các bên liên quan trong phạm vi dự án.
 🔹 Tìm hiểu vấn đề, khó khăn của người bị ảnh hưởng, từ đó lên ý tưởng, xây dựng giải pháp bằng kiến thức kinh doanh, thực hiện công việc trao quyền cho các PIN (People In Need).
-## Các cuộc thi:
+## 2. Các cuộc thi:
 🔹 Nghiên cứu, xây dựng nội dung chuyên môn, chủ đề, lộ trình cho các cuộc thi như TEB (Teen Entrepreneurship Bootcamp), VSIC (Vietnam Social Innovation Challenge) và các các buổi webinar và training trong khuôn khổ sự kiện.
 🔹 Liên hệ và hợp tác trực tiếp với các đối tác chuyên môn như như bảo trợ chuyên môn, diễn giả, cố vấn…
 
