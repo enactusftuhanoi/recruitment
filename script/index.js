@@ -80,3 +80,74 @@ document.addEventListener('DOMContentLoaded', function() {
     
     lazyImages.forEach(img => imageObserver.observe(img));
 });
+// JavaScript cho băng cát sét
+let musicInitialized = false;
+let isPlaying = true;
+
+function initBackgroundMusic() {
+    if (musicInitialized) return;
+    
+    const audio = new Audio('/assets/audio.mp3');
+    audio.loop = true;
+    audio.volume = 0.7;
+    
+    // Thử phát nhạc ngay lập tức
+    audio.play().then(() => {
+        console.log('Nhạc đang phát');
+        startSpinning();
+    }).catch(error => {
+        console.log('Chờ user tương tác...');
+        // Đợi user click vào băng cát sét để bắt đầu
+        const cassette = document.getElementById('cassettePlayer');
+        cassette.style.opacity = '0.7';
+        cassette.title = 'Click để bật nhạc';
+    });
+    
+    // Sự kiện click để toggle play/pause
+    document.getElementById('cassettePlayer').addEventListener('click', function() {
+        if (audio.paused) {
+            audio.play();
+            isPlaying = true;
+            startSpinning();
+            this.style.opacity = '1';
+        } else {
+            audio.pause();
+            isPlaying = false;
+            stopSpinning();
+            this.style.opacity = '0.8';
+        }
+    });
+    
+    // Auto start khi user tương tác với page
+    document.addEventListener('click', function startOnInteraction() {
+        if (audio.paused) {
+            audio.play();
+            startSpinning();
+        }
+        document.removeEventListener('click', startOnInteraction);
+    });
+    
+    musicInitialized = true;
+}
+
+function startSpinning() {
+    const wheels = document.querySelectorAll('.cassette-wheel');
+    const cassette = document.querySelector('.cassette');
+    
+    wheels.forEach(wheel => wheel.classList.add('spinning'));
+    cassette.classList.remove('paused');
+}
+
+function stopSpinning() {
+    const wheels = document.querySelectorAll('.cassette-wheel');
+    const cassette = document.querySelector('.cassette');
+    
+    wheels.forEach(wheel => wheel.classList.remove('spinning'));
+    cassette.classList.add('paused');
+}
+
+// Khởi tạo khi trang load
+document.addEventListener('DOMContentLoaded', initBackgroundMusic);
+
+// Hoặc khởi tạo ngay lập tức
+initBackgroundMusic();
