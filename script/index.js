@@ -80,119 +80,104 @@ document.addEventListener('DOMContentLoaded', function() {
     
     lazyImages.forEach(img => imageObserver.observe(img));
 });
-// CÁCH CUỐI CÙNG - 100% thành công
-let audioContext = null;
-let audioBuffer = null;
-let sourceNode = null;
+// JavaScript cứng - nhạc phải chạy bằng mọi giá
+let audio = null;
 let isPlaying = false;
 
-// Tải file nhạc
-async function loadAudio() {
-    try {
-        const response = await fetch('/assets/audio.mp3');
-        const arrayBuffer = await response.arrayBuffer();
-        audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-        console.log('✅ Đã tải nhạc xong');
-        return true;
-    } catch (error) {
-        console.error('❌ Lỗi tải nhạc:', error);
-        return false;
-    }
+function forcePlayMusic() {
+    if (audio) return;
+    
+    audio = new Audio('/assets/audio.mp3');
+    audio.loop = true;
+    audio.volume = 0.7;
+    
+    // Strategy 1: Thử play ngay
+    audio.play().then(() => {
+        console.log('🎵 Nhạc đang phát!');
+        isPlaying = true;
+        startSpinning();
+    }).catch(error => {
+        console.log('❌ Lỗi autoplay, thử strategy 2...');
+        strategy2();
+    });
 }
 
-// Phát nhạc
-function playAudio() {
-    if (!audioBuffer || !audioContext) return;
+function strategy2() {
+    // Strategy 2: Thêm muted và autoplay
+    audio.muted = true;
+    audio.autoplay = true;
     
-    // Dừng nhạc cũ nếu có
-    if (sourceNode) {
-        sourceNode.stop();
-    }
-    
-    sourceNode = audioContext.createBufferSource();
-    sourceNode.buffer = audioBuffer;
-    sourceNode.loop = true;
-    sourceNode.connect(audioContext.destination);
-    sourceNode.start();
-    
-    isPlaying = true;
-    startSpinning();
-    console.log('🎵 Nhạc đang phát!');
+    setTimeout(() => {
+        audio.play().then(() => {
+            console.log('🎵 Nhạc đang phát (muted)...');
+            // Unmute sau 2 giây
+            setTimeout(() => {
+                audio.muted = false;
+                isPlaying = true;
+                startSpinning();
+                console.log('🔊 Đã unmute nhạc!');
+            }, 2000);
+        }).catch(error => {
+            console.log('❌ Lỗi lần 2, thử strategy 3...');
+            strategy3();
+        });
+    }, 100);
 }
 
-// Dừng nhạc
-function stopAudio() {
-    if (sourceNode) {
-        sourceNode.stop();
-        sourceNode = null;
-    }
-    isPlaying = false;
-    stopSpinning();
-}
-
-// Khởi tạo audio context khi user tương tác
-function initAudioOnInteraction() {
-    // Tạo audio context
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+function strategy3() {
+    // Strategy 3: Chờ user tương tác và tự động play
+    const cassette = document.getElementById('cassettePlayer');
+    cassette.style.opacity = '0.6';
+    cassette.style.cursor = 'pointer';
     
-    // Tải nhạc và phát ngay
-    loadAudio().then(success => {
-        if (success) {
-            playAudio();
+    // Bắt mọi sự kiện user
+    const events = ['click', 'touchstart', 'keydown', 'mousemove', 'scroll'];
+    
+    const playOnInteraction = () => {
+        if (!isPlaying) {
+            audio.play().then(() => {
+                console.log('🎵 Nhạc đang phát sau user interaction!');
+                isPlaying = true;
+                startSpinning();
+                cassette.style.opacity = '1';
+                
+                // Remove all listeners
+                events.forEach(event => {
+                    document.removeEventListener(event, playOnInteraction);
+                });
+            });
         }
+    };
+    
+    events.forEach(event => {
+        document.addEventListener(event, playOnInteraction, { once: true });
     });
     
-    // Remove event listeners sau khi đã kích hoạt
-    document.removeEventListener('click', initAudioOnInteraction);
-    document.removeEventListener('touchstart', initAudioOnInteraction);
-    document.removeEventListener('keydown', initAudioOnInteraction);
-}
-
-// Hiển thị overlay yêu cầu user click
-function showClickOverlay() {
-    const overlay = document.createElement('div');
-    overlay.innerHTML = `
-        <div style="
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-family: Arial;
-            z-index: 100000;
-            cursor: pointer;
-        ">
-            <div style="font-size: 24px; margin-bottom: 20px;">🎵</div>
-            <div style="font-size: 18px; margin-bottom: 10px;">Nhấn vào màn hình để bắt đầu</div>
-        </div>
-    `;
-    
-    overlay.addEventListener('click', function() {
-        initAudioOnInteraction();
-        overlay.remove();
-    });
-    
-    document.body.appendChild(overlay);
+    // Auto retry sau 3 giây
+    setTimeout(() => {
+        if (!isPlaying) {
+            audio.play().then(() => {
+                isPlaying = true;
+                startSpinning();
+                cassette.style.opacity = '1';
+            });
+        }
+    }, 3000);
 }
 
 // Toggle play/pause khi click cassette
 document.getElementById('cassettePlayer').addEventListener('click', function() {
-    if (!audioContext) {
-        initAudioOnInteraction();
-        return;
-    }
+    if (!audio) return;
     
     if (isPlaying) {
-        stopAudio();
+        audio.pause();
+        isPlaying = false;
+        stopSpinning();
         this.style.opacity = '0.8';
     } else {
-        playAudio();
+        audio.play();
+        isPlaying = true;
+        startSpinning();
         this.style.opacity = '1';
     }
 });
@@ -213,40 +198,13 @@ function stopSpinning() {
     cassette.classList.add('paused');
 }
 
-// BẮT ĐẦU - Hiển thị overlay yêu cầu click
+// CHẠY NGAY KHI TRANG LOAD XONG
 window.addEventListener('load', function() {
-    console.log('🚀 Khởi tạo nhạc...');
-    
-    // Thử dùng HTML Audio trước (đơn giản hơn)
-    const htmlAudio = new Audio('/assets/audio.mp3');
-    htmlAudio.loop = true;
-    htmlAudio.volume = 0.7;
-    
-    htmlAudio.play().then(() => {
-        console.log('🎵 HTML Audio đang phát!');
-        isPlaying = true;
-        startSpinning();
-    }).catch(error => {
-        console.log('❌ HTML Audio bị chặn, dùng Web Audio API...');
-        // Hiển thị overlay yêu cầu click
-        setTimeout(showClickOverlay, 1000);
-    });
-    
-    // Lưu HTML audio để toggle
-    window.htmlAudio = htmlAudio;
-    
-    // Override toggle function cho HTML audio
-    document.getElementById('cassettePlayer').addEventListener('click', function() {
-        if (htmlAudio.paused) {
-            htmlAudio.play();
-            isPlaying = true;
-            startSpinning();
-            this.style.opacity = '1';
-        } else {
-            htmlAudio.pause();
-            isPlaying = false;
-            stopSpinning();
-            this.style.opacity = '0.8';
-        }
-    });
+    console.log('🚀 Bắt đầu phát nhạc...');
+    forcePlayMusic();
 });
+
+// Hoặc chạy ngay nếu DOM đã ready
+if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    forcePlayMusic();
+}
