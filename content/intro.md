@@ -12,7 +12,7 @@ trao quyền và nâng cao, cải thiện chất lượng cuộc sống cho nh�
 cần giúp đỡ tại Việt Nam với tôn chỉ *"Chúng tôi không trao cá, chúng
 tôi trao cần câu"*.
 
-✨ Một hành trình mới bắt đầu -- hành trình của thế hệ thứ **18**,
+✨ Một hành trình mới bắt đầu - hành trình của thế hệ thứ 18,
 **Enactus FTU Hanoi** luôn mong muốn giữ vững những giá trị cốt lõi,
 tiếp tục đồng hành cùng các bạn trẻ khám phá và phát triển tinh thần
 kinh doanh xã hội trong mình.
