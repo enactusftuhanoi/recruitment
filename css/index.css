@@ -199,7 +199,7 @@ body {
 /* Button gốc - SỬA LẠI CHO RESPONSIVE */
 .apply-btn {
   position: absolute;
-  bottom: 15%;
+  bottom: 12%;
   left: 21%;
   transform: none;
   padding: 0.8vw 2.5vw;
