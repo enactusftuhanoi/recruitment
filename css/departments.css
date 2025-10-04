@@ -5,7 +5,7 @@
   --glass-bg: rgba(255, 255, 255, 0.08);
   --glass-border: rgba(255, 255, 255, 0.15);
   --glass-shadow: rgba(0, 0, 0, 0.1);
-  --text-light: #fbfbd6;
+  --text-light: #ffff97;
   --text-white: #ffffff;
   --accent-glow: rgba(251, 251, 214, 0.3);
 
@@ -514,24 +514,39 @@ body::before {
 }
 
 .cta-container h2 {
-  font-family: var(--font-heading);
-  font-size: 2.5rem;
-  color: var(--text-light);
-  margin-bottom: 24px; /* Tăng margin dưới */
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(135deg, #fbfbd6, #ffffff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: 1.2; /* Thêm line-height */
+  font-size: 2rem;
+  color: var(--pastel-blue);
+  margin: 0 0 25px 0;
+  text-align: center;
+  background: none;
+  -webkit-text-fill-color: initial;
+  /* Stroke dày - nhiều layer */
+  text-shadow: 
+    /* Layer 1 - viền chính */
+    2px 2px 0 rgba(255, 255, 255, 0.9),
+    -2px -2px 0 rgba(255, 255, 255, 0.9),
+    2px -2px 0 rgba(255, 255, 255, 0.9),
+    -2px 2px 0 rgba(255, 255, 255, 0.9),
+    /* Layer 2 - làm dày thêm */
+    1px 1px 0 rgba(255, 255, 255, 0.8),
+    -1px -1px 0 rgba(255, 255, 255, 0.8),
+    1px -1px 0 rgba(255, 255, 255, 0.8),
+    -1px 1px 0 rgba(255, 255, 255, 0.8),
+    /* Layer 3 - làm dày thêm */
+    0px 2px 0 rgba(255, 255, 255, 0.7),
+    0px -2px 0 rgba(255, 255, 255, 0.7),
+    2px 0px 0 rgba(255, 255, 255, 0.7),
+    -2px 0px 0 rgba(255, 255, 255, 0.7),
+    /* Hiệu ứng glow */
+    0 0 15px rgba(255, 255, 255, 0.4),
+    0 0 30px rgba(255, 255, 255, 0.2);
 }
 
 .cta-container p {
   font-family: var(--font-body);
   font-size: 1.2rem;
-  color: var(--text-white);
-  margin-bottom: 48px; /* Tăng margin dưới */
-  line-height: 1.7; /* Tăng line-height */
+  color: #535353;
+  margin-bottom: 30px; /* Tăng margin dưới */
   opacity: 0.9;
 }
 
