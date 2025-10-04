@@ -13,7 +13,7 @@
   --pastel-blue: #a8d8ea;
   --pastel-green: #c1e1c1;
   --pastel-yellow: #fff9c4;
-  --pastel-text: #e8f4f8;
+  --pastel-text: #535353;
 
   /* Font */
   --font-heading: "Bricolage Grotesque", sans-serif;
@@ -287,23 +287,73 @@ body::before {
 
 .content-text h1 {
   font-size: 2rem;
-  color: var(--pastel-blue); /* Màu xanh pastel */
+  color: var(--pastel-blue);
   margin: 0 0 25px 0;
   text-align: center;
   background: none;
   -webkit-text-fill-color: initial;
+  /* Stroke dày - nhiều layer */
+  text-shadow: 
+    /* Layer 1 - viền chính */
+    2px 2px 0 rgba(255, 255, 255, 0.9),
+    -2px -2px 0 rgba(255, 255, 255, 0.9),
+    2px -2px 0 rgba(255, 255, 255, 0.9),
+    -2px 2px 0 rgba(255, 255, 255, 0.9),
+    /* Layer 2 - làm dày thêm */
+    1px 1px 0 rgba(255, 255, 255, 0.8),
+    -1px -1px 0 rgba(255, 255, 255, 0.8),
+    1px -1px 0 rgba(255, 255, 255, 0.8),
+    -1px 1px 0 rgba(255, 255, 255, 0.8),
+    /* Layer 3 - làm dày thêm */
+    0px 2px 0 rgba(255, 255, 255, 0.7),
+    0px -2px 0 rgba(255, 255, 255, 0.7),
+    2px 0px 0 rgba(255, 255, 255, 0.7),
+    -2px 0px 0 rgba(255, 255, 255, 0.7),
+    /* Hiệu ứng glow */
+    0 0 15px rgba(255, 255, 255, 0.4),
+    0 0 30px rgba(255, 255, 255, 0.2);
 }
 
 .content-text h2 {
   font-size: 1.6rem;
-  color: var(--pastel-green); /* Màu xanh lá pastel */
+  color: var(--pastel-green);
   margin: 30px 0 18px 0;
+  /* Stroke vừa */
+  text-shadow: 
+    /* Layer 1 - viền chính */
+    1.5px 1.5px 0 rgba(255, 255, 255, 0.8),
+    -1.5px -1.5px 0 rgba(255, 255, 255, 0.8),
+    1.5px -1.5px 0 rgba(255, 255, 255, 0.8),
+    -1.5px 1.5px 0 rgba(255, 255, 255, 0.8),
+    /* Layer 2 - làm dày thêm */
+    0px 1.5px 0 rgba(255, 255, 255, 0.7),
+    0px -1.5px 0 rgba(255, 255, 255, 0.7),
+    1.5px 0px 0 rgba(255, 255, 255, 0.7),
+    -1.5px 0px 0 rgba(255, 255, 255, 0.7),
+    /* Hiệu ứng glow */
+    0 0 10px rgba(255, 255, 255, 0.3),
+    0 0 20px rgba(255, 255, 255, 0.15);
 }
 
 .content-text h3 {
   font-size: 1.3rem;
-  color: var(--pastel-yellow); /* Màu vàng pastel */
+  color: var(--pastel-yellow);
   margin: 25px 0 15px 0;
+  /* Stroke nhẹ */
+  text-shadow: 
+    /* Layer 1 - viền chính */
+    1px 1px 0 rgba(255, 255, 255, 0.7),
+    -1px -1px 0 rgba(255, 255, 255, 0.7),
+    1px -1px 0 rgba(255, 255, 255, 0.7),
+    -1px 1px 0 rgba(255, 255, 255, 0.7),
+    /* Layer 2 - làm dày thêm */
+    0px 1px 0 rgba(255, 255, 255, 0.6),
+    0px -1px 0 rgba(255, 255, 255, 0.6),
+    1px 0px 0 rgba(255, 255, 255, 0.6),
+    -1px 0px 0 rgba(255, 255, 255, 0.6),
+    /* Hiệu ứng glow */
+    0 0 8px rgba(255, 255, 255, 0.2),
+    0 0 15px rgba(255, 255, 255, 0.1);
 }
 
 .content-text p {
