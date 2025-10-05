@@ -5,14 +5,14 @@
   --glass-bg: rgba(255, 255, 255, 0.08);
   --glass-border: rgba(255, 255, 255, 0.15);
   --glass-shadow: rgba(0, 0, 0, 0.1);
-  --text-light: #fff27d;
+  --text-light: #fff389;
   --text-white: #ffffff;
   --accent-glow: rgba(251, 251, 214, 0.3);
 
   /* Thêm màu pastel mới */
   --pastel-blue: #a8d8ea;
   --pastel-green: #c1e1c1;
-  --pastel-yellow: #fff9c4;
+  --pastel-yellow: #fce484;
   --pastel-text: #535353;
 
   /* Font */
