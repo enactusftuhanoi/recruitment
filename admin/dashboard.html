@@ -1238,13 +1238,18 @@
             try {
                 console.log('📨 Đang gửi email thông báo...', application.fullname);
                 
+                // Lấy thời gian ứng viên điền đơn
+                const applicationTime = application.timestamp.toDate ? 
+                    application.timestamp.toDate() : 
+                    new Date(application.timestamp);
+                
                 const templateParams = {
                     applicant_name: application.fullname || 'Ứng viên',
                     applicant_email: application.email || 'Chưa cung cấp',
                     applicant_phone: application.phone || 'Chưa cung cấp',
                     priority_department: getDepartmentName(application.priority_position),
                     secondary_department: getDepartmentName(application.secondary_position),
-                    timestamp: new Date().toLocaleString('vi-VN'),
+                    timestamp: applicationTime.toLocaleString('vi-VN'), // SỬA: dùng thời gian ứng viên điền đơn
                     to_email: [
                         'recruitment.enactusftuhanoi@gmail.com',
                         'tuhm2567@gmail.com',
@@ -1273,7 +1278,7 @@
                 if (application.id) {
                     await db.collection('applications').doc(application.id).update({
                         notification_sent: true,
-                        notification_sent_at: new Date()
+                        notification_sent_at: new Date() // Thời gian gửi email
                     });
                     console.log('✅ Đã đánh dấu gửi thông báo cho:', application.fullname);
                 }
