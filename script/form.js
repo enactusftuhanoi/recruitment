@@ -17,6 +17,9 @@
         let applicationType = '';
         let currentSection = 0;
         const totalSections = 4;
+
+        // Khởi tạo EmailJS
+        emailjs.init('HJUuXcN5zo-hOZPoG'); // Public key của bạn
         
         // Hàm chọn hình thức ứng tuyển
         function selectApplicationType(type) {
@@ -984,6 +987,69 @@
                 console.error('❌ Lỗi khi khôi phục dữ liệu:', error);
             }
         }
+
+        // Hàm lấy tên ban
+        function getDepartmentName(code) {
+            const departments = {
+                'MD': 'Truyền thông (MD)',
+                'HR': 'Nhân sự (HR)',
+                'PD': 'Dự án (PD)',
+                'ER': 'Đối ngoại (ER)'
+            };
+            return departments[code] || code;
+        }
+
+        // Hàm gửi email thông báo
+        async function sendEmailNotification(application) {
+            try {
+                console.log('📨 Đang gửi email thông báo...', application.fullname);
+                
+                const templateParams = {
+                    applicant_name: application.fullname || 'Ứng viên',
+                    applicant_email: application.email || 'Chưa cung cấp',
+                    applicant_phone: application.phone || 'Chưa cung cấp',
+                    priority_department: getDepartmentName(application.priority_position),
+                    secondary_department: getDepartmentName(application.secondary_position),
+                    timestamp: new Date().toLocaleString('vi-VN'),
+                    to_email: [
+                        'recruitment.enactusftuhanoi@gmail.com',
+                        'tuhm2567@gmail.com',
+                        'lylm.enactusftu@gmail.com', 
+                        'phuongntt556.enactusftu@gmail.com',
+                        'lanntt.enactusftu@gmail.com',
+                        'anhtt19.enactusftu@gmail.com',
+                        'trangvd.enactusftu@gmail.com',
+                        'ngandlb.enactusftu@gmail.com',
+                        'vinhntc.enactusftu@gmail.com',
+                        'tuannta.enactusftu@gmail.com',
+                        'huyentt.enactusftu@gmail.com'
+                    ]
+                };
+
+                // Gửi email qua EmailJS
+                const result = await emailjs.send(
+                    'service_oxo8n38',     // Service ID
+                    'template_1fwgrrk',    // Template ID
+                    templateParams
+                );
+                
+                console.log('✅ Email thông báo đã gửi thành công!', result);
+                
+                // Đánh dấu đã gửi thông báo trong database
+                if (application.id) {
+                    await db.collection('applications').doc(application.id).update({
+                        notification_sent: true,
+                        notification_sent_at: new Date()
+                    });
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('❌ Lỗi gửi email:', error);
+                // Không hiển thị lỗi cho người dùng, chỉ log
+                return false;
+            }
+        }
         
         // Handle form submission
         document.getElementById('recruitmentForm').addEventListener('submit', async function (e) {
@@ -1036,6 +1102,12 @@
 
                 // Save to Firebase
                 await db.collection('applications').add(formObject);
+
+                // ✅ GỬI EMAIL THÔNG BÁO KHI CÓ ĐƠN MỚI
+                await sendEmailNotification({
+                    id: docRef.id,
+                    ...formObject
+                });
 
                 // ✅ Xóa dữ liệu tạm sau khi gửi thành công
                 localStorage.removeItem('enactus_form_data');
