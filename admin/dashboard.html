@@ -9,6 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         :root {
             --primary: #F8F3CE;
@@ -1048,6 +1049,9 @@
         let applications = [];
         let currentApplicationId = null;
 
+        // Khởi tạo EmailJS với Public Key của bạn
+        emailjs.init('YHJUuXcN5zo-hOZPoG');
+
         // Check authentication
         if (!userEmail || !userRole) {
             window.location.href = "login.html";
@@ -1097,6 +1101,7 @@
                 window.location.href = 'login.html';
             }
         });
+        
 
         // Update user info in the sidebar
         function updateUserInfo(fullname, role, department) {
@@ -1132,22 +1137,22 @@
 
         // Load applications from Firestore
         async function loadApplications() {
-          try {
+        try {
             // 1) Lấy toàn bộ (orderBy timestamp nếu có index; nếu chưa có index, bỏ orderBy rồi sort client-side)
             let snapshot;
             try {
-              // Try with orderBy (if index exists this is faster)
-              snapshot = await db.collection('applications').orderBy('timestamp', 'desc').get();
+            // Try with orderBy (if index exists this is faster)
+            snapshot = await db.collection('applications').orderBy('timestamp', 'desc').get();
             } catch (e) {
-              console.warn('OrderBy failed (index?), falling back to unsorted fetch', e);
-              snapshot = await db.collection('applications').get();
+            console.warn('OrderBy failed (index?), falling back to unsorted fetch', e);
+            snapshot = await db.collection('applications').get();
             }
 
             // 2) Map documents -> ứng dụng
             const allApps = [];
             snapshot.forEach(doc => {
-              const data = doc.data();
-              allApps.push({
+            const data = doc.data();
+            allApps.push({
                 id: doc.id,
                 ...data,
                 // normalize commonly used flat status fields (fallbacks)
@@ -1160,35 +1165,108 @@
                 round4_priority_status: data.round4_priority_status || (data.round4 && data.round4.priority_status) || null,
                 round4_secondary_status: data.round4_secondary_status || (data.round4 && data.round4.secondary_status) || null,
                 current_round: data.current_round || 'round1'
-              });
+            });
+
+            // === THÊM CODE GỬI EMAIL Ở ĐÂY ===
+            // Kiểm tra và gửi email cho đơn mới (trong vòng 10 phút)
+            const isNew = isApplicationNew(data.timestamp);
+            const notNotified = !data.notification_sent;
+            
+            if (isNew && notNotified && data.fullname && data.email) {
+                console.log('🆕 Phát hiện đơn mới, gửi email...', data.fullname);
+                sendEmailNotification({
+                id: doc.id,
+                ...data
+                });
+            }
+            // === KẾT THÚC CODE THÊM ===
             });
 
             // 3) Nếu fallback (không có orderBy), sort client-side by timestamp (tương thích)
             if (!snapshot.query || !snapshot.query.explicitOrderBy) {
-              allApps.sort((a,b) => {
+            allApps.sort((a,b) => {
                 const ta = a.timestamp && a.timestamp.toMillis ? a.timestamp.toMillis() : (a.timestamp || 0);
                 const tb = b.timestamp && b.timestamp.toMillis ? b.timestamp.toMillis() : (b.timestamp || 0);
                 return tb - ta;
-              });
+            });
             }
 
             // 4) Filter theo role: admin chỉ thấy apps của ban mình; superadmin thấy tất cả
             if (userRole === 'admin') {
-              applications = allApps.filter(app =>
+            applications = allApps.filter(app =>
                 app.priority_position === userDept || app.secondary_position === userDept ||
                 // nếu bạn có all_departments field
                 (Array.isArray(app.all_departments) && app.all_departments.includes(userDept))
-              );
+            );
             } else {
-              applications = allApps; // superadmin / others (member redirected elsewhere)
+            applications = allApps; // superadmin / others (member redirected elsewhere)
             }
 
             renderApplications();
             updateStats();
-          } catch (error) {
+        } catch (error) {
             console.error('Error loading applications:', error);
             alert('Không thể tải danh sách ứng viên: ' + error.message);
-          }
+        }
+        }
+
+        // === THÊM CÁC HÀM HỖ TRỢ SAU HÀM loadApplications ===
+
+        // Helper function để lấy tên ban
+        function getDepartmentName(code) {
+        const departments = {
+            'MD': 'Truyền thông (MD)',
+            'HR': 'Nhân sự (HR)',
+            'PD': 'Dự án (PD)',
+            'ER': 'Đối ngoại (ER)'
+        };
+        return departments[code] || code;
+        }
+
+        // Hàm kiểm tra đơn mới (trong vòng 10 phút)
+        function isApplicationNew(timestamp) {
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+        const appTime = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        return appTime > tenMinutesAgo;
+        }
+
+        // Hàm gửi email thông báo
+        async function sendEmailNotification(application) {
+        try {
+            console.log('📨 Đang gửi email thông báo...', application.fullname);
+            
+            const templateParams = {
+            applicant_name: application.fullname || 'Ứng viên',
+            applicant_email: application.email || 'Chưa cung cấp',
+            applicant_phone: application.phone || 'Chưa cung cấp',
+            priority_department: getDepartmentName(application.priority_position),
+            secondary_department: getDepartmentName(application.secondary_position),
+            timestamp: new Date().toLocaleString('vi-VN'),
+            to_email: 'recruitment.enactusftuhanoi@gmail.com'
+            };
+
+            // Gửi email qua EmailJS
+            const result = await emailjs.send(
+            'service_oxo8n38',     // Thay bằng Service ID thật
+            'template_1fwgrrk',    // Thay bằng Template ID thật
+            templateParams
+            );
+            
+            console.log('✅ Email thông báo đã gửi thành công!', result);
+            
+            // Đánh dấu đã gửi thông báo
+            if (application.id) {
+            await db.collection('applications').doc(application.id).update({
+                notification_sent: true,
+                notification_sent_at: new Date()
+            });
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('❌ Lỗi gửi email:', error);
+            return false;
+        }
         }
 
         // Render applications to the table
