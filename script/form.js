@@ -20,19 +20,6 @@
         
         // Hàm chọn hình thức ứng tuyển
         function selectApplicationType(type) {
-            if (type === 'interview') {
-                Swal.fire({
-                    icon: 'warning',
-                    title: '⚠️ Cảnh báo',
-                    html: `
-                            <p style="text-align:center; line-height:1.6; white-space:normal;">
-                                Hình thức <b>Phỏng vấn thay đơn</b> chưa mở
-                                <br>
-                                Vui lòng quay lại sau.
-                            </p>`,
-                });
-                return; // không cho chọn
-            }
 
             applicationType = type;
             document.getElementById('application_type').value = type;
