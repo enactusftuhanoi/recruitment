@@ -1168,15 +1168,14 @@
                         current_round: data.current_round || 'round1'
                     });
 
-                    // === CODE GỬI EMAIL ĐÃ SỬA ===
-                    const isNew = isApplicationNew(data.timestamp);
+                    // === SỬA: Gửi email cho CẢ HAI loại ứng viên ===
+                    const isNew = isApplicationNew(data.timestamp || data.createdAt || data.submittedAt);
                     const notNotified = !data.notification_sent;
                     
-                    // THÊM: Kiểm tra thêm điều kiện timestamp tồn tại và hợp lệ
-                    if (data.timestamp && isNew && notNotified && data.fullname && data.email) {
-                        console.log('🆕 Phát hiện đơn mới, gửi email...', data.fullname, doc.id);
+                    // Điều kiện gửi email mở rộng - kiểm tra cả ứng viên form và phỏng vấn
+                    if (isNew && notNotified && data.fullname && data.email) {
+                        console.log('🆕 Phát hiện đơn mới, gửi email...', data.fullname, doc.id, 'Loại:', data.application_type || 'form');
                         
-                        // THÊM: Gọi hàm gửi email với await để đảm bảo hoàn thành
                         sendEmailNotification({
                             id: doc.id,
                             ...data
@@ -1230,14 +1229,32 @@
 
         // Hàm kiểm tra đơn mới (trong vòng 10 phút)
         function isApplicationNew(timestamp) {
+            if (!timestamp) return false;
+            
             const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000); // 10 phút trước
-            const appTime = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            
+            let appTime;
+            if (timestamp.toDate) {
+                // Firestore Timestamp
+                appTime = timestamp.toDate();
+            } else if (timestamp instanceof Date) {
+                // JavaScript Date
+                appTime = timestamp;
+            } else if (typeof timestamp === 'string') {
+                // String date
+                appTime = new Date(timestamp);
+            } else if (typeof timestamp === 'number') {
+                // Unix timestamp
+                appTime = new Date(timestamp);
+            } else {
+                return false;
+            }
+            
             return appTime > tenMinutesAgo;
         }
 
         // Hàm gửi email thông báo
         async function sendEmailNotification(application) {
-            // THÊM: Kiểm tra nếu email đang được gửi cho ứng viên này
             if (emailSendingInProgress.has(application.id)) {
                 console.log('⏳ Email đang được gửi cho ứng viên này:', application.fullname);
                 return false;
@@ -1246,12 +1263,11 @@
             try {
                 console.log('📨 Đang gửi email thông báo...', application.fullname);
                 
-                // THÊM: Đánh dấu email đang được gửi
                 emailSendingInProgress.add(application.id);
                 
-                const applicationTime = application.timestamp.toDate ? 
+                const applicationTime = application.timestamp?.toDate ? 
                     application.timestamp.toDate() : 
-                    new Date(application.timestamp);
+                    new Date(application.timestamp || application.createdAt || application.submittedAt);
                 
                 const templateParams = {
                     applicant_name: application.fullname || 'Ứng viên',
@@ -1259,6 +1275,7 @@
                     applicant_phone: application.phone || 'Chưa cung cấp',
                     priority_department: getDepartmentName(application.priority_position),
                     secondary_department: getDepartmentName(application.secondary_position),
+                    application_type: application.application_type === 'interview' ? 'Phỏng vấn thay đơn' : 'Điền form',
                     timestamp: applicationTime.toLocaleString('vi-VN'),
                     to_email: [
                         'recruitment.enactusftuhanoi@gmail.com',
@@ -1306,7 +1323,6 @@
                 
                 return false;
             } finally {
-                // THÊM: Dù thành công hay thất bại, đều xóa khỏi danh sách đang gửi
                 emailSendingInProgress.delete(application.id);
             }
         }
