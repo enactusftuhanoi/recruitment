@@ -42,10 +42,60 @@
         }
         }
 
+        // Thiết lập sự kiện cho các checkbox phỏng vấn
+        function setupInterviewCheckboxListeners() {
+            const interviewContainer = document.getElementById('interview-questions');
+            if (interviewContainer) {
+                // Xóa sự kiện cũ nếu có
+                interviewContainer.removeEventListener('change', handleInterviewCheckboxChange);
+                
+                // Thêm sự kiện mới
+                interviewContainer.addEventListener('change', handleInterviewCheckboxChange);
+            }
+        }
+
+        // Xử lý khi checkbox thay đổi
+        function handleInterviewCheckboxChange(e) {
+            if (e.target.type === 'checkbox') {
+                updateInterviewSelectionCount();
+                saveFormDataComprehensive();
+                
+                // Highlight visual feedback
+                const checkedCount = document.querySelectorAll('#interview-schedule input[type="checkbox"]:checked').length;
+                const checkboxGroups = document.querySelectorAll('.interview-checkbox-group');
+                
+                checkboxGroups.forEach(group => {
+                    if (checkedCount < 3) {
+                        group.style.border = '2px solid #ffcdd2';
+                        group.style.backgroundColor = '#ffebee';
+                    } else {
+                        group.style.border = '2px solid #c8e6c9';
+                        group.style.backgroundColor = '#e8f5e8';
+                    }
+                });
+            }
+        }
+
         function renderInterviewSchedule() {
             const container = document.getElementById('interview-questions');
             container.innerHTML = '';
 
+            // Thêm hướng dẫn chi tiết
+            const instruction = document.createElement('div');
+            instruction.className = 'interview-instruction';
+            instruction.innerHTML = `
+                <div style="background: #e3f2fd; padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
+                    <strong style="color: #1976d2;"> Hướng dẫn chọn lịch phỏng vấn:</strong>
+                    <p style="margin: 10px 0 0 0; color: #555; line-height: 1.5;">
+                        • Vui lòng chọn <strong style="color: #d32f2f;">ít nhất 3 khung giờ</strong> phỏng vấn mà bạn có thể tham gia<br>
+                        • Việc chọn nhiều khung giờ giúp BTC dễ dàng sắp xếp lịch phỏng vấn phù hợp<br>
+                        • Bạn có thể chọn nhiều hơn 3 ca nếu có thể sắp xếp thời gian
+                    </p>
+                </div>
+            `;
+            container.appendChild(instruction);
+
+            // Render các câu hỏi phỏng vấn
             interview.forEach(q => {
                 const div = document.createElement('div');
                 div.className = 'form-group question-item';
@@ -55,21 +105,82 @@
                 div.appendChild(label);
 
                 const group = document.createElement('div');
-                group.className = 'checkbox-group';
+                group.className = 'checkbox-group interview-checkbox-group';
                 q.options.forEach((opt, idx) => {
-                const optionId = `${q.id}_${idx}`;
-                const item = document.createElement('div');
-                item.className = 'checkbox-item';
-                item.innerHTML = `
-                    <input type="checkbox" id="${optionId}" name="${q.id}[]" value="${opt}">
-                    <label for="${optionId}">${opt}</label>
-                `;
-                group.appendChild(item);
+                    const optionId = `${q.id}_${idx}`;
+                    const item = document.createElement('div');
+                    item.className = 'checkbox-item';
+                    item.innerHTML = `
+                        <input type="checkbox" id="${optionId}" name="${q.id}[]" value="${opt}">
+                        <label for="${optionId}">${opt}</label>
+                    `;
+                    group.appendChild(item);
                 });
                 div.appendChild(group);
                 container.appendChild(div);
             });
+
+            // Khởi tạo đếm số lượng
+            updateInterviewSelectionCount();
+        }
+
+        // Thêm CSS cho phần phỏng vấn
+        const interviewStyle = document.createElement('style');
+        interviewStyle.textContent = `
+            .interview-instruction {
+                margin-bottom: 20px;
             }
+            
+            #interview-selection-count {
+                transition: all 0.3s ease;
+                font-size: 1.1em;
+            }
+            
+            .interview-checkbox-group {
+                transition: all 0.3s ease;
+                padding: 12px;
+                border-radius: 8px;
+                border: 2px solid transparent;
+            }
+            
+            /* Hiệu ứng khi hover */
+            .interview-checkbox-group:hover {
+                background-color: #f5f5f5 !important;
+            }
+            
+            /* Style cho checkbox items */
+            #interview-schedule .checkbox-item {
+                margin: 8px 0;
+                padding: 8px 12px;
+                border-radius: 6px;
+                transition: background-color 0.2s;
+            }
+            
+            #interview-schedule .checkbox-item:hover {
+                background-color: #e3f2fd;
+            }
+            
+            #interview-schedule .checkbox-item input[type="checkbox"]:checked + label {
+                font-weight: 600;
+                color: #1976d2;
+            }
+            
+            /* Progress indicator */
+            .interview-progress {
+                height: 6px;
+                background: #e0e0e0;
+                border-radius: 3px;
+                margin: 10px 0;
+                overflow: hidden;
+            }
+            
+            .interview-progress-bar {
+                height: 100%;
+                background: #4caf50;
+                transition: width 0.3s ease;
+            }
+        `;
+        document.head.appendChild(interviewStyle);
 
         // Helper: chuyển newline -> <p> và <br>, giữ paragraph
         function formatQuestionText(str) {
@@ -389,6 +500,12 @@
                         document.querySelector('.tab-container').style.display = 'none';
                         document.getElementById('interview-schedule').style.display = 'block';
                         renderInterviewSchedule();
+                        
+                        // Thiết lập sự kiện và cập nhật số lượng
+                        setTimeout(() => {
+                            setupInterviewCheckboxListeners();
+                            updateInterviewSelectionCount();
+                        }, 100);
                     } else {
                         document.querySelector('.tab-container').style.display = 'block';
                         document.getElementById('interview-schedule').style.display = 'none';
@@ -507,7 +624,46 @@
             
             document.querySelector(`.tab-button[onclick="showTab('${tabName}')"]`).classList.add('active');
         }
-        
+
+        // Hàm cập nhật số lượng ca đã chọn và hiển thị
+        function updateInterviewSelectionCount() {
+            const checkedCount = document.querySelectorAll('#interview-schedule input[type="checkbox"]:checked').length;
+            const countElement = document.getElementById('interview-selection-count') || createInterviewCountElement();
+            
+            countElement.textContent = `Đã chọn: ${checkedCount}/3 ca phỏng vấn`;
+            
+            if (checkedCount < 3) {
+                countElement.style.color = 'var(--error)';
+                countElement.innerHTML += ' <span style="font-size: 0.9em;">(Cần chọn thêm ' + (3 - checkedCount) + ' ca)</span>';
+            } else {
+                countElement.style.color = 'var(--success)';
+                countElement.innerHTML += ' <span style="font-size: 0.9em;">✓ Đã đủ điều kiện</span>';
+            }
+        }
+
+        // Hàm tạo phần tử hiển thị số lượng
+        function createInterviewCountElement() {
+            const countElement = document.createElement('div');
+            countElement.id = 'interview-selection-count';
+            countElement.style.cssText = `
+                margin: 15px 0;
+                padding: 12px 16px;
+                background: #f8f9fa;
+                border-radius: 8px;
+                font-weight: 600;
+                text-align: center;
+                border: 2px solid #e9ecef;
+                transition: all 0.3s ease;
+            `;
+            
+            const interviewContainer = document.getElementById('interview-questions');
+            if (interviewContainer) {
+                interviewContainer.parentNode.insertBefore(countElement, interviewContainer);
+            }
+            
+            return countElement;
+        }
+
         // Hàm validation tùy chỉnh cho checkbox và radio groups
         function validateFormSection(section) {
             let isValid = true;
@@ -569,10 +725,16 @@
             
             if (current === 3) {
                 if (applicationType === 'interview') {
-                    // validate chọn lịch phỏng vấn
-                    const anyChecked = document.querySelector('#interview-schedule input[type="checkbox"]:checked');
-                    if (!anyChecked) {
-                        alert('Vui lòng chọn ít nhất một khung giờ phỏng vấn trước khi tiếp tục.');
+                    // validate chọn lịch phỏng vấn - YÊU CẦU ÍT NHẤT 3 CA
+                    const checkedBoxes = document.querySelectorAll('#interview-schedule input[type="checkbox"]:checked');
+                    if (checkedBoxes.length < 3) {
+                        // Sử dụng SweetAlert2 thay vì alert thông thường
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Chưa đủ lịch phỏng vấn',
+                            html: `Bạn đã chọn <strong>${checkedBoxes.length}</strong> ca. Vui lòng chọn ít nhất <strong>3 ca phỏng vấn</strong> trước khi tiếp tục.`,
+                            confirmButtonText: 'Đã hiểu'
+                        });
                         return;
                     }
                     showSection(4);
