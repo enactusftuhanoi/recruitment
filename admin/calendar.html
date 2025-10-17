@@ -977,29 +977,73 @@
             }
         });
 
-        // Export schedule
+        // Export schedule - RENDER THEO SCHEDULE THỰC TẾ
         document.getElementById('export-schedule-btn').addEventListener('click', function() {
-            // Prepare data for export
+            // Chuẩn bị dữ liệu theo mẫu Excel nhưng với các ca thực tế
             const exportData = [];
             
+            // Tạo header row với các ca từ schedule thực tế
+            const headerRow = {
+                'STT': 'STT',
+                'Họ và tên': 'Họ và tên',
+                'Ban ưu tiên': 'Ban ưu tiên', 
+                'Ban dự bị': 'Ban dự bị'
+            };
+            
+            // Tạo danh sách các ca từ interviewSchedule
+            const timeSlots = [];
+            interviewSchedule.forEach(day => {
+                day.slots.forEach((slot, slotIndex) => {
+                    const slotName = `${day.date} - ${slot}`;
+                    timeSlots.push(slotName);
+                    headerRow[slotName] = slotName;
+                });
+            });
+            
+            exportData.push(headerRow);
+            
+            // Dữ liệu ứng viên
+            let stt = 1;
             applications.forEach(app => {
                 if (app.interview_schedule && app.interview_schedule.length > 0) {
-                    const interviewSlots = app.interview_schedule.map(slot => {
-                        // Extract day and time from slot ID
-                        const [dayId, time] = slot.split('_');
-                        const day = interviewSchedule.find(d => d.id === dayId);
-                        return day ? `${day.date} - ${time.replace(/_/g, ' ')}` : slot;
-                    }).join('; ');
+                    const rowData = {
+                        'STT': stt++,
+                        'Họ và tên': app.fullname || 'Chưa có tên',
+                        'Ban ưu tiên': app.priority_position ? getDepartmentName(app.priority_position) : '',
+                        'Ban dự bị': app.backup_position ? getDepartmentName(app.backup_position) : ''
+                    };
                     
-                    exportData.push({
-                        'Họ và tên': app.fullname || 'Chưa có',
-                        'Email': app.email,
-                        'Số điện thoại': app.phone || '',
-                        'Vị trí ứng tuyển': app.priority_position ? getDepartmentName(app.priority_position) : '',
-                        'Lịch phỏng vấn đã chọn': interviewSlots
+                    // Khởi tạo tất cả các ca là rỗng
+                    timeSlots.forEach(slot => {
+                        rowData[slot] = '';
                     });
+                    
+                    // Đánh dấu X cho các ca đã chọn
+                    app.interview_schedule.forEach(slotId => {
+                        // Tìm slot tương ứng
+                        const matchedSlot = findMatchingTimeSlot(slotId);
+                        if (matchedSlot) {
+                            rowData[matchedSlot] = 'X';
+                        }
+                    });
+                    
+                    exportData.push(rowData);
                 }
             });
+            
+            // Nếu không có ứng viên nào, thêm hàng trống
+            if (exportData.length === 1) {
+                const emptyRow = {
+                    'STT': 1,
+                    'Họ và tên': 'Không có dữ liệu',
+                    'Ban ưu tiên': '',
+                    'Ban dự bị': ''
+                };
+                timeSlots.forEach(slot => {
+                    emptyRow[slot] = '';
+                });
+                exportData.push(emptyRow);
+            }
             
             // Convert to worksheet
             const ws = XLSX.utils.json_to_sheet(exportData);
@@ -1009,6 +1053,23 @@
             // Export to file
             XLSX.writeFile(wb, 'lich_phong_van_enactus_' + new Date().toISOString().split('T')[0] + '.xlsx');
         });
+
+        // Hàm helper để tìm slot thực tế
+        function findMatchingTimeSlot(slotId) {
+            // slotId có dạng: "day1_08:00_-_09:00"
+            const [dayId, timePart] = slotId.split('_');
+            const timeSlot = timePart.replace(/_/g, ' ');
+            
+            // Tìm day trong schedule
+            const day = interviewSchedule.find(d => d.id === dayId);
+            if (!day) return null;
+            
+            // Tìm slot trong day
+            const slot = day.slots.find(s => s.replace(/\s+/g, '_') === timePart);
+            if (!slot) return null;
+            
+            return `${day.date} - ${slot}`;
+        }
 
         // Tab switching
         document.querySelectorAll('.tab').forEach(tab => {
