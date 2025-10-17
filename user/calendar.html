@@ -1,681 +1,661 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendar | Enactus FTU Hanoi</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #4361ee;
-      --primary-dark: #3a56d4;
-      --secondary: #3f37c9;
-      --success: #4cc9f0;
-      --warning: #f8961e;
-      --danger: #f72585;
-      --light: #f8f9fa;
-      --dark: #212529;
-      --gray: #6c757d;
-      --light-gray: #e9ecef;
-    }
-    
-    * {
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: 'Montserrat', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-      color: var(--dark);
-      min-height: 100vh;
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    
-    /* Header */
-    .header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    
-    .header h1 {
-      color: var(--primary);
-      font-weight: 700;
-      margin-bottom: 10px;
-      font-size: 2.2rem;
-    }
-    
-    .header p {
-      color: var(--gray);
-      font-size: 1rem;
-    }
-    
-    /* User Info */
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      background: #fff;
-      padding: 25px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-      border-radius: 12px;
-      margin-bottom: 30px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      border-left: 5px solid var(--primary);
-    }
-    
-    .user-info:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 24px rgba(0,0,0,0.12);
-    }
-    
-    .user-info img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid var(--primary);
-      box-shadow: 0 4px 8px rgba(67, 97, 238, 0.2);
-    }
-    
-    .user-info-details {
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-    }
-    
-    .user-info-details h2 {
-      margin: 0;
-      font-size: 1.4rem;
-      color: var(--dark);
-      font-weight: 600;
-    }
-    
-    .user-info-details span {
-      font-size: 1rem;
-      color: var(--gray);
-      margin-top: 5px;
-    }
-    
-    /* Schedule List */
-    #schedule-list {
-      display: grid;
-      gap: 25px;
-      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-      margin-bottom: 40px;
-    }
-    
-    .schedule-card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 25px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      transition: all 0.3s ease;
-      border-top: 3px solid var(--primary);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .schedule-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 5px;
-      background: linear-gradient(90deg, var(--primary), var(--success));
-    }
-    
-    .schedule-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 24px rgba(0,0,0,0.12);
-    }
-    
-    .schedule-card h3 {
-      margin: 0;
-      font-size: 1.3rem;
-      color: var(--primary);
-      font-weight: 600;
-    }
-    
-    .schedule-card .schedule-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.9rem;
-      color: var(--gray);
-      margin: 5px 0;
-    }
-    
-    .schedule-card .schedule-meta i {
-      color: var(--primary);
-      width: 18px;
-      text-align: center;
-    }
-    
-    .schedule-card .slots-container {
-      margin-top: 10px;
-      border-top: 1px dashed var(--light-gray);
-      padding-top: 10px;
-    }
-    
-    .schedule-card .slot-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .schedule-card .slot-item:last-child {
-      border-bottom: none;
-    }
-    
-    .schedule-card .slot-time {
-      font-weight: 500;
-      color: var(--dark);
-    }
-    
-    .schedule-card .slot-number {
-      background: var(--primary);
-      color: white;
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8rem;
-    }
-    
-    .schedule-card .action-buttons {
-      margin-top: 15px;
-      display: flex;
-      gap: 10px;
-    }
-    
-    .schedule-card button {
-      padding: 10px 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.9rem;
-    }
-    
-    .vote-btn {
-      background: var(--primary);
-      color: #fff;
-      flex-grow: 1;
-    }
-    
-    .vote-btn:hover {
-      background: var(--primary-dark);
-      transform: translateY(-2px);
-    }
-    
-    .edit-btn {
-      background: var(--warning);
-      color: #000;
-    }
-    
-    .edit-btn:hover {
-      background: #e07e0c;
-      color: #fff;
-      transform: translateY(-2px);
-    }
-    
-    .voted-badge {
-      background: var(--success);
-      color: white;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    /* Modal */
-    #vote-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-    }
-    
-    #vote-modal.active {
-      opacity: 1;
-      visibility: visible;
-    }
-    
-    .modal-content {
-      background: #fff;
-      border-radius: 16px;
-      padding: 30px;
-      width: 480px;
-      max-width: 95%;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.2);
-      transform: translateY(20px);
-      transition: all 0.3s ease;
-      position: relative;
-    }
-    
-    #vote-modal.active .modal-content {
-      transform: translateY(0);
-    }
-    
-    .modal-content h3 {
-      margin-top: 0;
-      margin-bottom: 15px;
-      font-size: 1.4rem;
-      color: var(--primary);
-      font-weight: 600;
-    }
-    
-    .modal-content .modal-details {
-      color: var(--gray);
-      margin-bottom: 20px;
-      line-height: 1.5;
-    }
-    
-    .modal-slot-item {
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-    }
-    
-    .modal-slot-item input[type="radio"],
-    .modal-slot-item input[type="checkbox"] {
-      margin-right: 12px;
-      width: 18px;
-      height: 18px;
-    }
-    
-    .modal-slot-item label {
-      font-size: 0.95rem;
-      color: var(--dark);
-      cursor: pointer;
-      flex-grow: 1;
-      padding: 10px;
-      border-radius: 8px;
-      transition: all 0.2s ease;
-    }
-    
-    .modal-slot-item label:hover {
-      background: rgba(67, 97, 238, 0.1);
-    }
-    
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 25px;
-    }
-    
-    .modal-actions button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s ease;
-    }
-    
-    #confirm-vote {
-      background: var(--primary);
-      color: #fff;
-    }
-    
-    #confirm-vote:hover {
-      background: var(--primary-dark);
-      transform: translateY(-2px);
-    }
-    
-    #close-modal {
-      background: var(--light-gray);
-      color: var(--dark);
-    }
-    
-    #close-modal:hover {
-      background: #d1d7e0;
-      transform: translateY(-2px);
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-      #schedule-list {
-        grid-template-columns: 1fr;
-      }
-      
-      .user-info {
-        flex-direction: column;
-        text-align: center;
-      }
-      
-      .user-info-details {
-        align-items: center;
-      }
-    }
-    
-    /* Animations */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .schedule-card {
-      animation: fadeIn 0.5s ease forwards;
-    }
-    
-    /* Loading state */
-    .skeleton {
-      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: 4px;
-      color: transparent;
-    }
-    
-    @keyframes shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar | Enactus FTU Hanoi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Clash+Display:wght@600;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <style>
+        :root {
+            --primary: #F8F3CE;
+            --primary-light: #FFD54F;
+            --gray-50: #FAFAFA;
+            --gray-100: #F5F5F5;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            --white: #FFFFFF;
+            --error: #EF4444;
+            --error-light: #FEE2E2;
+            --success: #10B981;
+            --success-light: #D1FAE5;
+            --warning: #F59E0B;
+            --warning-light: #FEF3C7;
+            --info: #3B82F6;
+            --info-light: #DBEAFE;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--gray-50);
+            color: var(--gray-800);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background-color: var(--white);
+            padding: 16px 24px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 50px;
+            width: auto;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background-color: var(--gray-100);
+            border: none;
+            border-radius: var(--border-radius);
+            color: var(--gray-700);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+        }
+
+        .logout-btn:hover {
+            background-color: var(--error-light);
+            color: var(--error);
+        }
+
+        .logout-btn i {
+            margin-right: 8px;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Calendar Card */
+        .calendar-card {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+
+        .calendar-header {
+            margin-bottom: 24px;
+        }
+
+        .calendar-title {
+            font-family: 'Clash Display', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+
+        .calendar-subtitle {
+            color: var(--gray-600);
+            margin-bottom: 16px;
+        }
+
+        .selection-count {
+            background-color: var(--info-light);
+            color: var(--info);
+            padding: 12px 16px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .selection-count.error {
+            background-color: var(--error-light);
+            color: var(--error);
+        }
+
+        .selection-count.success {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+
+        /* Interview Days */
+        .interview-day {
+            margin-bottom: 32px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .day-header {
+            background-color: var(--gray-100);
+            padding: 16px;
+            font-weight: 600;
+            color: var(--gray-800);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .time-slot {
+            position: relative;
+        }
+
+        .time-slot input {
+            display: none;
+        }
+
+        .time-slot label {
+            display: block;
+            padding: 12px 16px;
+            background-color: var(--gray-50);
+            border: 2px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .time-slot input:checked + label {
+            background-color: var(--success-light);
+            border-color: var(--success);
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .time-slot label:hover {
+            background-color: var(--gray-100);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--gray-800);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+        }
+
+        .btn-secondary {
+            background-color: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--gray-300);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .loading i {
+            font-size: 32px;
+            color: var(--gray-400);
+            margin-bottom: 16px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Success Message */
+        .success-message {
+            text-align: center;
+            padding: 40px 20px;
+            display: none;
+        }
+
+        .success-message i {
+            font-size: 64px;
+            color: var(--success);
+            margin-bottom: 16px;
+        }
+
+        .success-message h3 {
+            font-size: 24px;
+            color: var(--gray-800);
+            margin-bottom: 16px;
+        }
+
+        .success-message p {
+            color: var(--gray-600);
+            margin-bottom: 24px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .time-slots {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
+    <!-- Header -->
     <div class="header">
-      <h1><i class="fas fa-calendar-alt"></i> Calendar</h1>
-      <p>Chọn ca phỏng vấn phù hợp với lịch trình của bạn</p>
-    </div>
-    
-    <div class="user-info">
-      <img id="user-avatar" src="" alt="Avatar">
-      <div class="user-info-details">
-        <h2 id="user-name"></h2>
-        <span id="user-email"></span>
-      </div>
-    </div>
-    
-    <div id="schedule-list">
-      <!-- Schedules will be loaded here -->
-    </div>
-  </div>
-
-  <!-- Vote Modal -->
-  <div id="vote-modal">
-    <div class="modal-content">
-      <h3 id="modal-title"></h3>
-      <p class="modal-details" id="modal-details"></p>
-      <div id="modal-slots"></div>
-      <div class="modal-actions">
-        <button id="close-modal">Đóng</button>
-        <button id="confirm-vote">Xác nhận lựa chọn</button>
-      </div>
-    </div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDuTvBn8Xl01DYddVXQ7M0L24K3l-GyG0c",
-      authDomain: "enactusftuhanoi-tracuu.firebaseapp.com",
-      projectId: "enactusftuhanoi-tracuu",
-      storageBucket: "enactusftuhanoi-tracuu.appspot.com",
-      messagingSenderId: "611356979403",
-      appId: "1:611356979403:web:2c9a4cffb2b323ce3deb4e"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    let currentUser;
-
-    // Show loading skeleton
-    function showLoadingSkeleton() {
-      const list = document.getElementById('schedule-list');
-      list.innerHTML = '';
-      
-      for (let i = 0; i < 3; i++) {
-        const card = document.createElement('div');
-        card.className = 'schedule-card';
-        card.innerHTML = `
-          <h3 class="skeleton" style="width: 70%">&nbsp;</h3>
-          <p class="skeleton" style="width: 90%">&nbsp;</p>
-          <p class="skeleton" style="width: 80%">&nbsp;</p>
-          <div class="slots-container">
-            <div class="slot-item">
-              <span class="skeleton" style="width: 60%">&nbsp;</span>
-            </div>
-            <div class="slot-item">
-              <span class="skeleton" style="width: 60%">&nbsp;</span>
-            </div>
-          </div>
-          <div class="action-buttons">
-            <button class="skeleton" style="width: 100%; height: 40px; border: none">&nbsp;</button>
-          </div>
-        `;
-        list.appendChild(card);
-      }
-    }
-
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = "/";
-        return;
-      }
-      
-      showLoadingSkeleton();
-      
-      currentUser = user;
-      document.getElementById('user-avatar').src = user.photoURL || 'https://via.placeholder.com/80';
-      document.getElementById('user-name').textContent = user.displayName || 'Ứng viên';
-      document.getElementById('user-email').textContent = user.email || '';
-      
-      // Simulate loading delay for better UX
-      setTimeout(() => {
-        loadSchedules();
-      }, 800);
-    });
-
-    async function loadSchedules() {
-      const list = document.getElementById('schedule-list');
-      list.innerHTML = '';
-      
-      try {
-        const schedulesSnap = await getDocs(collection(db, 'schedules'));
-        const userRef = doc(db, 'users', currentUser.uid);
-        const userSnap = await getDoc(userRef);
-        const userData = userSnap.data() || {};
-
-        if (schedulesSnap.empty) {
-          list.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-              <i class="fas fa-calendar-times" style="font-size: 3rem; color: var(--gray); margin-bottom: 15px;"></i>
-              <h3 style="color: var(--gray);">Hiện chưa có lịch phỏng vấn nào</h3>
-              <p>Vui lòng quay lại sau...</p>
-            </div>
-          `;
-          return;
-        }
-
-        schedulesSnap.forEach(docSnap => {
-          const s = docSnap.data();
-          const voteData = userData.votes?.[docSnap.id];
-          
-          const card = document.createElement('div');
-          card.className = 'schedule-card';
-          card.style.animationDelay = `${Math.random() * 0.3}s`;
-          
-          card.innerHTML = `
-            <h3>${s.title}</h3>
-            <div class="schedule-meta">
-              <i class="fas fa-calendar-day"></i>
-              <span>${s.date}</span>
-            </div>
-            <div class="schedule-meta">
-              <i class="fas fa-map-marker-alt"></i>
-              <span>${s.location} (${s.type})</span>
-            </div>
-            <div class="slots-container">
-              ${s.slots.map((slot, idx) => `
-                <div class="slot-item">
-                  <span class="slot-time">${slot.start} - ${slot.end}</span>
-                  <span class="slot-number">${idx+1}</span>
-                </div>
-              `).join('')}
-            </div>
-            <div class="action-buttons">
-              ${voteData ? `
-                <div class="voted-badge">
-                  <i class="fas fa-check-circle"></i>
-                  <span>Đã chọn ca ${voteData.slots.map(s => s+1).join(', ')}</span>
-                </div>
-                ${s.allowEdit ? `<button data-id="${docSnap.id}" class="edit-btn"><i class="fas fa-edit"></i> Sửa lựa chọn</button>` : ''}
-              ` : `<button data-id="${docSnap.id}" class="vote-btn"><i class="fas fa-vote-yea"></i> Chọn ca phỏng vấn</button>`}
-            </div>
-          `;
-          
-          list.appendChild(card);
-        });
-
-        document.querySelectorAll('.vote-btn, .edit-btn').forEach(btn => {
-          btn.addEventListener('click', () => openVoteModal(btn.dataset.id));
-        });
-      } catch (error) {
-        console.error("Error loading schedules:", error);
-        list.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger); margin-bottom: 15px;"></i>
-            <h3 style="color: var(--danger);">Đã xảy ra lỗi khi tải dữ liệu</h3>
-            <p>Vui lòng tải lại trang hoặc thử lại sau...</p>
-            <button onclick="window.location.reload()" style="margin-top: 15px; padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer;">
-              <i class="fas fa-sync-alt"></i> Tải lại trang
+        <div class="logo">
+            <img src="/assets/logo_den.png" alt="Enactus FTU Hanoi Logo">
+        </div>
+        
+        <div class="user-info">
+            <div class="user-avatar" id="user-avatar">U</div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Đăng xuất
             </button>
-          </div>
-        `;
-      }
-    }
+        </div>
+    </div>
 
-    let currentScheduleId = null;
-    function openVoteModal(scheduleId) {
-      currentScheduleId = scheduleId;
-      document.getElementById('modal-slots').innerHTML = '';
-      document.getElementById('vote-modal').classList.add('active');
-      
-      getDoc(doc(db, 'schedules', scheduleId)).then(snap => {
-        if (!snap.exists()) {
-          alert('Không tìm thấy lịch phỏng vấn này');
-          closeModal();
-          return;
+    <!-- Main Content -->
+    <div class="main-content">
+        <div id="loading" class="loading">
+            <i class="fas fa-spinner"></i>
+            <p>Đang tải lịch phỏng vấn...</p>
+        </div>
+
+        <div id="calendar-content" class="calendar-card" style="display: none;">
+            <div class="calendar-header">
+                <h1 class="calendar-title">Chọn lịch phỏng vấn</h1>
+                <p class="calendar-subtitle">Vui lòng chọn ít nhất 3 khung giờ phỏng vấn mà bạn có thể tham gia</p>
+                <div id="selection-count" class="selection-count">
+                    Đã chọn: 0/3 ca phỏng vấn
+                </div>
+            </div>
+
+            <div id="interview-days">
+                <!-- Interview days will be populated by JavaScript -->
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-secondary" id="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Quay lại
+                </button>
+                <button class="btn btn-primary" id="save-btn" disabled>
+                    <i class="fas fa-save"></i>
+                    Lưu lịch phỏng vấn
+                </button>
+            </div>
+        </div>
+
+        <div id="success-message" class="success-message">
+            <i class="fas fa-check-circle"></i>
+            <h3>Đã lưu lịch phỏng vấn thành công!</h3>
+            <p>Lịch phỏng vấn của bạn đã được ghi nhận. BTC sẽ liên hệ với bạn để xác nhận lịch phỏng vấn chính thức.</p>
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="profile-btn">
+                    <i class="fas fa-user"></i>
+                    Xem hồ sơ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAOP2j0qV0Ge-q2-Y9zo9Qc3eLmgtVOK3k",
+            authDomain: "recruitment-enactusftuhanoi.firebaseapp.com",
+            projectId: "recruitment-enactusftuhanoi",
+            storageBucket: "recruitment-enactusftuhanoi.firebasestorage.app",
+            messagingSenderId: "658928769643",
+            appId: "1:658928769643:web:ef4e26633b7c41c922ef2e",
+            measurementId: "G-BJT7ZPKYE3"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Global State
+        let userData = null;
+        let applicationData = null;
+        let interviewSchedule = [];
+        let selectedSlots = [];
+
+        // Check authentication
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                // User is signed in
+                document.getElementById('user-avatar').textContent = user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U';
+                
+                try {
+                    // Check if user has an application
+                    const snapshot = await db.collection('applications')
+                                          .where('email', '==', user.email)
+                                          .limit(1)
+                                          .get();
+                    
+                    if (snapshot.empty) {
+                        // No application found, redirect to form
+                        window.location.href = 'form.html';
+                    } else {
+                        // Application found
+                        applicationData = snapshot.docs[0].data();
+                        applicationData.id = snapshot.docs[0].id;
+                        
+                        // Check if user already has interview schedule
+                        if (applicationData.interview_schedule) {
+                            selectedSlots = applicationData.interview_schedule;
+                        }
+                        
+                        // Load interview schedule
+                        await loadInterviewSchedule();
+                        
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('calendar-content').style.display = 'block';
+                        
+                        // Update selection count
+                        updateSelectionCount();
+                    }
+                } catch (error) {
+                    console.error('Error checking application:', error);
+                    alert('Có lỗi xảy ra khi kiểm tra thông tin ứng viên');
+                }
+            } else {
+                // User is not signed in, redirect to login
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Load interview schedule from Firestore or use default
+        async function loadInterviewSchedule() {
+            try {
+                // Try to load from Firestore first
+                const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
+                
+                if (scheduleDoc.exists) {
+                    interviewSchedule = scheduleDoc.data().schedule;
+                } else {
+                    // Use default schedule
+                    interviewSchedule = [
+                        {
+                            id: 'day1',
+                            date: 'Thứ Hai, 25/10/2025',
+                            slots: [
+                                '08:00 - 09:00',
+                                '09:00 - 10:00',
+                                '10:00 - 11:00',
+                                '14:00 - 15:00',
+                                '15:00 - 16:00',
+                                '16:00 - 17:00'
+                            ]
+                        },
+                        {
+                            id: 'day2',
+                            date: 'Thứ Ba, 26/10/2025',
+                            slots: [
+                                '08:00 - 09:00',
+                                '09:00 - 10:00',
+                                '10:00 - 11:00',
+                                '14:00 - 15:00',
+                                '15:00 - 16:00',
+                                '16:00 - 17:00'
+                            ]
+                        },
+                        {
+                            id: 'day3',
+                            date: 'Thứ Tư, 27/10/2025',
+                            slots: [
+                                '08:00 - 09:00',
+                                '09:00 - 10:00',
+                                '10:00 - 11:00',
+                                '14:00 - 15:00',
+                                '15:00 - 16:00',
+                                '16:00 - 17:00'
+                            ]
+                        }
+                    ];
+                }
+                
+                renderInterviewSchedule();
+            } catch (error) {
+                console.error('Error loading interview schedule:', error);
+                // Use default schedule as fallback
+                interviewSchedule = [
+                    {
+                        id: 'day1',
+                        date: 'Thứ Hai, 25/10/2025',
+                        slots: [
+                            '08:00 - 09:00',
+                            '09:00 - 10:00',
+                            '10:00 - 11:00',
+                            '14:00 - 15:00',
+                            '15:00 - 16:00',
+                            '16:00 - 17:00'
+                        ]
+                    },
+                    {
+                        id: 'day2',
+                        date: 'Thứ Ba, 26/10/2025',
+                        slots: [
+                            '08:00 - 09:00',
+                            '09:00 - 10:00',
+                            '10:00 - 11:00',
+                            '14:00 - 15:00',
+                            '15:00 - 16:00',
+                            '16:00 - 17:00'
+                        ]
+                    },
+                    {
+                        id: 'day3',
+                        date: 'Thứ Tư, 27/10/2025',
+                        slots: [
+                            '08:00 - 09:00',
+                            '09:00 - 10:00',
+                            '10:00 - 11:00',
+                            '14:00 - 15:00',
+                            '15:00 - 16:00',
+                            '16:00 - 17:00'
+                        ]
+                    }
+                ];
+                renderInterviewSchedule();
+            }
         }
+
+        // Render interview schedule
+        function renderInterviewSchedule() {
+            const container = document.getElementById('interview-days');
+            container.innerHTML = '';
+            
+            interviewSchedule.forEach(day => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'interview-day';
+                
+                let dayHTML = `
+                    <div class="day-header">${day.date}</div>
+                    <div class="time-slots">
+                `;
+                
+                day.slots.forEach(slot => {
+                    const slotId = `${day.id}_${slot.replace(/\s+/g, '_')}`;
+                    const isChecked = selectedSlots.includes(slotId);
+                    
+                    dayHTML += `
+                        <div class="time-slot">
+                            <input type="checkbox" id="${slotId}" value="${slotId}" ${isChecked ? 'checked' : ''}>
+                            <label for="${slotId}">${slot}</label>
+                        </div>
+                    `;
+                });
+                
+                dayHTML += `</div>`;
+                dayElement.innerHTML = dayHTML;
+                container.appendChild(dayElement);
+            });
+            
+            // Add event listeners to checkboxes
+            document.querySelectorAll('.time-slot input').forEach(checkbox => {
+                checkbox.addEventListener('change', handleSlotSelection);
+            });
+        }
+
+        // Handle slot selection
+        function handleSlotSelection(e) {
+            const slotId = e.target.value;
+            
+            if (e.target.checked) {
+                selectedSlots.push(slotId);
+            } else {
+                const index = selectedSlots.indexOf(slotId);
+                if (index > -1) {
+                    selectedSlots.splice(index, 1);
+                }
+            }
+            
+            updateSelectionCount();
+        }
+
+        // Update selection count display
+        function updateSelectionCount() {
+            const countElement = document.getElementById('selection-count');
+            const saveButton = document.getElementById('save-btn');
+            
+            countElement.textContent = `Đã chọn: ${selectedSlots.length}/3 ca phỏng vấn`;
+            
+            if (selectedSlots.length < 3) {
+                countElement.className = 'selection-count error';
+                countElement.innerHTML += ` <span style="font-size: 0.9em;">(Cần chọn thêm ${3 - selectedSlots.length} ca)</span>`;
+                saveButton.disabled = true;
+            } else {
+                countElement.className = 'selection-count success';
+                countElement.innerHTML += ` <span style="font-size: 0.9em;">✓ Đã đủ điều kiện</span>`;
+                saveButton.disabled = false;
+            }
+        }
+
+        // Save interview schedule
+        async function saveInterviewSchedule() {
+            try {
+                // Update application with interview schedule
+                await db.collection('applications').doc(applicationData.id).update({
+                    interview_schedule: selectedSlots,
+                    interview_updated: new Date()
+                });
+                
+                // Show success message
+                document.getElementById('calendar-content').style.display = 'none';
+                document.getElementById('success-message').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error saving interview schedule:', error);
+                alert('Có lỗi xảy ra khi lưu lịch phỏng vấn. Vui lòng thử lại.');
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('save-btn').addEventListener('click', saveInterviewSchedule);
         
-        const s = snap.data();
-        document.getElementById('modal-title').textContent = s.title;
-        document.getElementById('modal-details').textContent = s.details || 'Vui lòng chọn ca phỏng vấn phù hợp với bạn.';
-        
-        const container = document.getElementById('modal-slots');
-        s.slots.forEach((slot, idx) => {
-          const item = document.createElement('div');
-          item.className = 'modal-slot-item';
-          item.innerHTML = `
-            <input type="${s.canVoteMultiple ? 'checkbox' : 'radio'}" name="slot" value="${idx}" id="slot-${idx}">
-            <label for="slot-${idx}">
-              <strong>Ca ${idx+1}:</strong> ${slot.start} - ${slot.end}
-              ${slot.note ? `<br><small style="color: var(--gray);">${slot.note}</small>` : ''}
-            </label>
-          `;
-          container.appendChild(item);
+        document.getElementById('back-btn').addEventListener('click', () => {
+            window.location.href = 'profile.html';
         });
-      }).catch(error => {
-        console.error("Error loading schedule:", error);
-        alert('Đã xảy ra lỗi khi tải thông tin lịch phỏng vấn');
-        closeModal();
-      });
-    }
-
-    function closeModal() {
-      document.getElementById('vote-modal').classList.remove('active');
-      currentScheduleId = null;
-    }
-
-    document.getElementById('close-modal').addEventListener('click', closeModal);
-
-    document.getElementById('confirm-vote').addEventListener('click', async () => {
-      const selected = Array.from(document.querySelectorAll('#modal-slots input:checked')).map(i => parseInt(i.value));
-      
-      if (!selected.length) {
-        alert('Vui lòng chọn ít nhất một ca phỏng vấn');
-        return;
-      }
-      
-      try {
-        const userRef = doc(db, 'users', currentUser.uid);
-        const userSnap = await getDoc(userRef);
-        const userData = userSnap.data() || {};
-        const newVotes = userData.votes || {};
         
-        newVotes[currentScheduleId] = { slots: selected };
-        
-        await updateDoc(userRef, {
-          votes: newVotes,
-          'rounds.round_4': {
-            status: 'Đã chọn lịch',
-            scheduleId: currentScheduleId,
-            slots: selected,
-            updatedAt: new Date()
-          }
+        document.getElementById('profile-btn').addEventListener('click', () => {
+            window.location.href = 'profile.html';
         });
-        
-        closeModal();
-        showLoadingSkeleton();
-        
-        // Simulate loading delay for better UX
-        setTimeout(() => {
-          loadSchedules();
-        }, 500);
-        
-      } catch (error) {
-        console.error("Error updating vote:", error);
-        alert('Đã xảy ra lỗi khi cập nhật lựa chọn của bạn');
-      }
-    });
 
-    // Close modal when clicking outside
-    document.getElementById('vote-modal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeModal();
-      }
-    });
-  </script>
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            });
+        });
+    </script>
 </body>
 </html>
