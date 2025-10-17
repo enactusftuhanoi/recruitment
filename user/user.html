@@ -780,6 +780,84 @@
             });
         }
 
+        // Check authentication và quyền truy cập
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                // User is signed in
+                document.getElementById('user-avatar').textContent = user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U';
+                
+                try {
+                    // Kiểm tra quyền truy cập calendar
+                    const hasAccess = await checkCalendarAccess(user.email);
+                    
+                    if (!hasAccess) {
+                        alert('Bạn không có quyền truy cập lịch phỏng vấn. Vui lòng liên hệ BTC nếu đây là nhầm lẫn.');
+                        window.location.href = 'profile.html';
+                        return;
+                    }
+                    
+                    // Kiểm tra lịch đã được công bố chưa
+                    const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
+                    
+                    if (!scheduleDoc.exists || scheduleDoc.data().published !== true) {
+                        alert('Lịch phỏng vấn chưa được công bố. Vui lòng quay lại sau.');
+                        window.location.href = 'profile.html';
+                        return;
+                    }
+                    
+                    // Check if user has an application
+                    const snapshot = await db.collection('applications')
+                                        .where('email', '==', user.email)
+                                        .limit(1)
+                                        .get();
+                    
+                    if (snapshot.empty) {
+                        // No application found, redirect to form
+                        window.location.href = 'form.html';
+                    } else {
+                        // Application found
+                        applicationData = snapshot.docs[0].data();
+                        applicationData.id = snapshot.docs[0].id;
+                        
+                        // Check if user already has interview schedule
+                        if (applicationData.interview_schedule) {
+                            selectedSlots = applicationData.interview_schedule;
+                        }
+                        
+                        // Load interview schedule
+                        await loadInterviewSchedule();
+                        
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('calendar-content').style.display = 'block';
+                        
+                        // Update selection count
+                        updateSelectionCount();
+                    }
+                } catch (error) {
+                    console.error('Error checking application:', error);
+                    alert('Có lỗi xảy ra khi kiểm tra thông tin ứng viên');
+                }
+            } else {
+                // User is not signed in, redirect to login
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Kiểm tra quyền truy cập calendar
+        async function checkCalendarAccess(userEmail) {
+            try {
+                const votingCandidate = await db.collection('voting_candidates')
+                    .where('email', '==', userEmail)
+                    .limit(1)
+                    .get();
+                    
+                return !votingCandidate.empty;
+            } catch (error) {
+                console.error('Error checking calendar access:', error);
+                return false;
+            }
+        }
+
         async function loadUserApplication() {
             try {
                 console.log('Loading application for:', currentUser.email);

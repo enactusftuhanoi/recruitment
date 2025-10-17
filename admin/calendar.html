@@ -243,45 +243,6 @@
             color: var(--gray-600);
         }
 
-        /* Vote Results */
-        .vote-results {
-            margin-top: 20px;
-        }
-
-        .vote-item {
-            margin-bottom: 16px;
-            padding: 16px;
-            background-color: var(--gray-50);
-            border-radius: var(--border-radius);
-        }
-
-        .vote-meta {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
-        .vote-option {
-            font-weight: 600;
-        }
-
-        .vote-count {
-            color: var(--gray-600);
-        }
-
-        .vote-bar-wrap {
-            height: 8px;
-            background-color: var(--gray-200);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .vote-bar {
-            height: 100%;
-            background-color: var(--success);
-            transition: width 0.3s ease;
-        }
-
         /* Form Elements */
         .form-group {
             margin-bottom: 16px;
@@ -355,6 +316,15 @@
             background-color: #0da271;
         }
 
+        .btn-danger {
+            background-color: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
         .btn i {
             margin-right: 8px;
         }
@@ -382,6 +352,180 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Statistics */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: var(--gray-600);
+            font-size: 14px;
+        }
+
+        .stat-voted {
+            color: var(--success);
+        }
+
+        .stat-not-voted {
+            color: var(--warning);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-family: 'Clash Display', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--gray-500);
+        }
+
+        .close-modal:hover {
+            color: var(--gray-700);
+        }
+
+        /* Candidate List */
+        .candidate-list {
+            margin-top: 20px;
+        }
+
+        .candidate-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            margin-bottom: 12px;
+        }
+
+        .candidate-info {
+            flex: 1;
+        }
+
+        .candidate-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .candidate-email {
+            color: var(--gray-600);
+            font-size: 14px;
+        }
+
+        .candidate-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Improved Remove Slot Button */
+        .remove-slot-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: var(--error-light);
+            color: var(--error);
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: var(--transition);
+        }
+
+        .remove-slot-btn:hover {
+            background-color: var(--error);
+            color: white;
+        }
+
+        /* New Candidate Action Buttons */
+        .candidate-delete-btn {
+            background-color: var(--error-light);
+            color: var(--error);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .candidate-delete-btn:hover {
+            background-color: var(--error);
+            color: white;
+        }
+
+        .candidate-reset-btn {
+            background-color: var(--warning-light);
+            color: var(--warning);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .candidate-reset-btn:hover {
+            background-color: var(--warning);
+            color: white;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .header {
@@ -400,6 +544,10 @@
             
             .action-buttons {
                 flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -430,8 +578,8 @@
     <div class="main-content">
         <div class="tabs">
             <button class="tab active" data-tab="schedule">Lịch phỏng vấn</button>
-            <button class="tab" data-tab="votes">Kết quả Vote</button>
             <button class="tab" data-tab="manage">Quản lý Lịch</button>
+            <button class="tab" data-tab="settings">Cài đặt</button>
         </div>
 
         <div id="loading" class="loading">
@@ -447,6 +595,22 @@
                     <p class="card-subtitle">Tổng quan về lịch phỏng vấn đã được ứng viên chọn</p>
                 </div>
 
+                <!-- Statistics Section -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-candidates">0</div>
+                        <div class="stat-label">Tổng số ứng viên</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value stat-voted" id="voted-candidates">0</div>
+                        <div class="stat-label">Đã chọn lịch</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value stat-not-voted" id="not-voted-candidates">0</div>
+                        <div class="stat-label">Chưa chọn lịch</div>
+                    </div>
+                </div>
+
                 <div id="interview-schedule">
                     <!-- Interview schedule will be populated by JavaScript -->
                 </div>
@@ -456,27 +620,6 @@
                         <i class="fas fa-download"></i>
                         Xuất lịch phỏng vấn
                     </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Votes Tab -->
-        <div id="votes-tab" class="tab-content" style="display: none;">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Kết quả Vote ứng viên</h2>
-                    <p class="card-subtitle">Tổng hợp kết quả vote từ các ban cho ứng viên</p>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Chọn ứng viên</label>
-                    <select class="form-select" id="candidate-select">
-                        <option value="">-- Chọn ứng viên --</option>
-                    </select>
-                </div>
-
-                <div id="vote-results">
-                    <!-- Vote results will be populated by JavaScript -->
                 </div>
             </div>
         </div>
@@ -523,6 +666,65 @@
                 </div>
             </div>
         </div>
+
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Cài đặt hệ thống</h2>
+                    <p class="card-subtitle">Quản lý dữ liệu ứng viên và cài đặt hệ thống</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nạp dữ liệu ứng viên</label>
+                    <p class="card-subtitle">Nhập danh sách email ứng viên để cấp quyền truy cập lịch phỏng vấn</p>
+                    <textarea class="form-textarea" id="candidate-emails" placeholder="Nhập email ứng viên, mỗi email một dòng"></textarea>
+                    <button class="btn btn-primary" id="load-candidates-btn" style="margin-top: 12px;">
+                        <i class="fas fa-upload"></i>
+                        Nạp dữ liệu ứng viên
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Danh sách ứng viên có quyền vote</label>
+                    <div id="candidate-list">
+                        <!-- Candidate list will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-danger" id="lock-schedule-btn">
+                        <i class="fas fa-lock"></i>
+                        Khóa lịch phỏng vấn
+                    </button>
+                    <button class="btn btn-danger" id="clear-votes-btn">
+                        <i class="fas fa-trash"></i>
+                        Xóa dữ liệu vote
+                    </button>
+                    <button class="btn btn-danger" id="clear-candidates-btn">
+                        <i class="fas fa-trash-alt"></i>
+                        Xóa toàn bộ ứng viên khỏi danh sách vote
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Candidate Confirmation Modal -->
+    <div id="candidate-confirm-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Xác nhận dữ liệu ứng viên</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div id="candidate-confirm-list">
+                <!-- Candidate confirmation list will be populated by JavaScript -->
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="confirm-candidates-btn">Xác nhận và nạp dữ liệu</button>
+                <button class="btn btn-secondary close-modal">Hủy</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -547,6 +749,8 @@
         let interviewSchedule = [];
         let applications = [];
         let votes = [];
+        let votingCandidates = []; // Danh sách ứng viên có quyền vote
+        let candidates = []; // Danh sách ứng viên đầy đủ thông tin
 
         // Check authentication and admin role
         auth.onAuthStateChanged(async (user) => {
@@ -555,11 +759,11 @@
                 document.getElementById('user-avatar').textContent = user.displayName ? user.displayName.charAt(0).toUpperCase() : 'A';
                 
                 try {
-                    // Check if user is admin or superadmin - SỬA LẠI ĐÂY
+                    // Check if user is admin or superadmin
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     
                     if (!userDoc.exists) {
-                        // Try to check in account collection (theo cấu trúc response.js)
+                        // Try to check in account collection
                         const accountSnapshot = await db.collection('account')
                             .where('email', '==', user.email)
                             .limit(1)
@@ -569,7 +773,7 @@
                             const accountData = accountSnapshot.docs[0].data();
                             const userRole = accountData.role;
                             
-                            // Allow both admin and superadmin - SỬA LẠI ĐÂY
+                            // Allow both admin and superadmin
                             if (userRole !== 'admin' && userRole !== 'superadmin') {
                                 window.location.href = '../user/profile.html';
                                 return;
@@ -581,7 +785,7 @@
                         }
                     } else {
                         const userData = userDoc.data();
-                        // Allow both admin and superadmin - SỬA LẠI ĐÂY
+                        // Allow both admin and superadmin
                         if (userData.role !== 'admin' && userData.role !== 'superadmin') {
                             window.location.href = '../user/profile.html';
                             return;
@@ -592,12 +796,14 @@
                     await Promise.all([
                         loadInterviewSchedule(),
                         loadApplications(),
-                        loadVotes()
+                        loadVotes(),
+                        loadVotingCandidates()
                     ]);
                     
                     document.getElementById('loading').style.display = 'none';
                     renderInterviewSchedule();
-                    populateCandidateSelect();
+                    renderStatistics();
+                    renderCandidateList();
                     
                 } catch (error) {
                     console.error('Error checking admin role:', error);
@@ -615,13 +821,14 @@
                 const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
                 
                 if (scheduleDoc.exists) {
-                    interviewSchedule = scheduleDoc.data().schedule;
+                    const data = scheduleDoc.data();
+                    interviewSchedule = data.schedule || [];
                 } else {
-                    
                     // Save default schedule
                     await db.collection('system').doc('interview_schedule').set({
                         schedule: interviewSchedule,
-                        published: false
+                        published: false,
+                        locked: false
                     });
                 }
             } catch (error) {
@@ -661,6 +868,72 @@
             }
         }
 
+        // Load danh sách ứng viên có quyền vote
+        async function loadVotingCandidates() {
+            try {
+                const snapshot = await db.collection('voting_candidates').get();
+                votingCandidates = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        email: data.email,
+                        addedAt: data.addedAt || new Date(),
+                        addedBy: data.addedBy || ''
+                    };
+                });
+                
+                // Đồng bộ với applications để lấy thông tin đầy đủ
+                await syncVotingCandidatesWithApplications();
+            } catch (error) {
+                console.error('Error loading voting candidates:', error);
+                // Nếu collection chưa tồn tại, tạo collection mới
+                votingCandidates = [];
+            }
+        }
+
+        // Đồng bộ danh sách voting candidates với applications
+        async function syncVotingCandidatesWithApplications() {
+            try {
+                // Tạo danh sách candidates đầy đủ thông tin
+                candidates = votingCandidates.map(vc => {
+                    const app = applications.find(a => a.email === vc.email);
+                    return {
+                        id: vc.id,
+                        email: vc.email,
+                        name: app ? app.fullname || '' : '',
+                        priority: app ? app.priority_position || '' : '',
+                        backup: app ? app.backup_position || '' : '',
+                        phone: app ? app.phone || '' : '',
+                        interview_schedule: app ? app.interview_schedule || [] : [],
+                        addedAt: vc.addedAt
+                    };
+                });
+            } catch (error) {
+                console.error('Error syncing voting candidates:', error);
+            }
+        }
+
+        // Render statistics
+        function renderStatistics() {
+            // Total candidates
+            document.getElementById('total-candidates').textContent = candidates.length;
+            
+            // Count voted and not voted
+            let votedCount = 0;
+            let notVotedCount = 0;
+            
+            candidates.forEach(candidate => {
+                if (candidate.interview_schedule && candidate.interview_schedule.length > 0) {
+                    votedCount++;
+                } else {
+                    notVotedCount++;
+                }
+            });
+            
+            document.getElementById('voted-candidates').textContent = votedCount;
+            document.getElementById('not-voted-candidates').textContent = notVotedCount;
+        }
+
         // Render interview schedule
         function renderInterviewSchedule() {
             const container = document.getElementById('interview-schedule');
@@ -674,9 +947,9 @@
             // Calculate counts for each slot
             const slotCounts = {};
             
-            applications.forEach(app => {
-                if (app.interview_schedule) {
-                    app.interview_schedule.forEach(slot => {
+            candidates.forEach(candidate => {
+                if (candidate.interview_schedule) {
+                    candidate.interview_schedule.forEach(slot => {
                         slotCounts[slot] = (slotCounts[slot] || 0) + 1;
                     });
                 }
@@ -732,9 +1005,9 @@
                 let dayHTML = `
                     <div class="day-header">
                         <span>${day.date}</span>
-                        <button class="btn btn-secondary remove-day-btn" data-day="${day.id}">
+                        <button class="btn btn-danger remove-day-btn" data-day-id="${day.id}">
                             <i class="fas fa-trash"></i>
-                            Xóa
+                            Xóa ngày
                         </button>
                     </div>
                     <div class="time-slots">
@@ -744,6 +1017,9 @@
                     dayHTML += `
                         <div class="time-slot">
                             <div class="slot-time">${slot}</div>
+                            <button class="remove-slot-btn" data-day-id="${day.id}" data-slot="${slot}">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
                     `;
                 });
@@ -753,415 +1029,516 @@
                 container.appendChild(dayElement);
             });
             
-            // Add event listeners to remove buttons
+            // Add event listeners for remove buttons
             document.querySelectorAll('.remove-day-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const dayId = this.getAttribute('data-day');
+                    const dayId = this.getAttribute('data-day-id');
                     removeDay(dayId);
+                });
+            });
+            
+            document.querySelectorAll('.remove-slot-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const dayId = this.getAttribute('data-day-id');
+                    const slot = this.getAttribute('data-slot');
+                    removeSlot(dayId, slot);
                 });
             });
         }
 
-        // Remove day from schedule
+        // Remove a day from schedule
         function removeDay(dayId) {
-            if (confirm('Bạn có chắc chắn muốn xóa ngày này khỏi lịch phỏng vấn?')) {
+            if (confirm('Bạn có chắc chắn muốn xóa ngày này?')) {
                 interviewSchedule = interviewSchedule.filter(day => day.id !== dayId);
                 renderCurrentSchedule();
             }
         }
 
-        // Populate candidate select
-        function populateCandidateSelect() {
-            const select = document.getElementById('candidate-select');
-            select.innerHTML = '<option value="">-- Chọn ứng viên --</option>';
+        // Remove a slot from schedule
+        function removeSlot(dayId, slot) {
+            if (confirm('Bạn có chắc chắn muốn xóa khung giờ này?')) {
+                const dayIndex = interviewSchedule.findIndex(day => day.id === dayId);
+                if (dayIndex !== -1) {
+                    interviewSchedule[dayIndex].slots = interviewSchedule[dayIndex].slots.filter(s => s !== slot);
+                    renderCurrentSchedule();
+                }
+            }
+        }
+
+        // Render candidate list - CHỈ HIỂN THỊ ỨNG VIÊN CÓ QUYỀN VOTE
+        function renderCandidateList() {
+            const container = document.getElementById('candidate-list');
+            container.innerHTML = '';
             
-            applications.forEach(app => {
-                const option = document.createElement('option');
-                option.value = app.id;
-                option.textContent = `${app.fullname || 'Chưa có tên'} - ${app.email}`;
-                select.appendChild(option);
+            if (candidates.length === 0) {
+                container.innerHTML = '<p>Chưa có ứng viên nào trong danh sách vote.</p>';
+                return;
+            }
+            
+            candidates.forEach(candidate => {
+                const candidateElement = document.createElement('div');
+                candidateElement.className = 'candidate-item';
+                
+                const hasVoted = candidate.interview_schedule && candidate.interview_schedule.length > 0;
+                const voteStatus = hasVoted ? 'Đã chọn lịch' : 'Chưa chọn lịch';
+                const statusClass = hasVoted ? 'stat-voted' : 'stat-not-voted';
+                
+                candidateElement.innerHTML = `
+                    <div class="candidate-info">
+                        <div class="candidate-name">${candidate.name || 'Chưa có tên'}</div>
+                        <div class="candidate-email">${candidate.email}</div>
+                        <div class="${statusClass}" style="font-size: 12px; margin-top: 4px;">${voteStatus}</div>
+                    </div>
+                    <div class="candidate-actions">
+                        <button class="candidate-delete-btn" data-candidate-id="${candidate.id}" data-candidate-email="${candidate.email}">
+                            <i class="fas fa-trash"></i>
+                            Xóa
+                        </button>
+                        <button class="candidate-reset-btn" data-candidate-id="${candidate.id}" data-candidate-email="${candidate.email}">
+                            <i class="fas fa-undo"></i>
+                            Reset
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(candidateElement);
             });
             
-            // Add change event
-            select.addEventListener('change', function() {
-                if (this.value) {
-                    showVoteResults(this.value);
+            // Add event listeners
+            document.querySelectorAll('.candidate-delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const candidateId = this.getAttribute('data-candidate-id');
+                    const candidateEmail = this.getAttribute('data-candidate-email');
+                    removeCandidateFromVoting(candidateId, candidateEmail);
+                });
+            });
+            
+            document.querySelectorAll('.candidate-reset-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const candidateEmail = this.getAttribute('data-candidate-email');
+                    resetCandidateVote(candidateEmail);
+                });
+            });
+        }
+
+        // Xóa ứng viên khỏi danh sách có quyền vote (KHÔNG xóa khỏi applications)
+        async function removeCandidateFromVoting(candidateId, candidateEmail) {
+            if (confirm('Bạn có chắc chắn muốn xóa ứng viên này khỏi danh sách có quyền vote?')) {
+                try {
+                    // Xóa khỏi collection voting_candidates
+                    await db.collection('voting_candidates').doc(candidateId).delete();
+                    
+                    // Reload data
+                    await loadVotingCandidates();
+                    renderCandidateList();
+                    renderStatistics();
+                    
+                    alert('Đã xóa ứng viên khỏi danh sách vote thành công');
+                } catch (error) {
+                    console.error('Error removing candidate from voting:', error);
+                    alert('Có lỗi xảy ra khi xóa ứng viên khỏi danh sách vote');
+                }
+            }
+        }
+
+        // Reset vote của ứng viên (chỉ reset trong applications)
+        async function resetCandidateVote(candidateEmail) {
+            if (confirm('Bạn có chắc chắn muốn reset kết quả vote của ứng viên này?')) {
+                try {
+                    // Tìm application của ứng viên
+                    const application = applications.find(app => app.email === candidateEmail);
+                    
+                    if (application) {
+                        // Reset interview_schedule trong applications
+                        await db.collection('applications').doc(application.id).update({
+                            interview_schedule: []
+                        });
+                    }
+                    
+                    // Xóa votes của ứng viên này
+                    const voteQuery = await db.collection('votes')
+                        .where('candidateEmail', '==', candidateEmail)
+                        .get();
+                    
+                    if (!voteQuery.empty) {
+                        const batch = db.batch();
+                        voteQuery.docs.forEach(doc => {
+                            batch.delete(doc.ref);
+                        });
+                        await batch.commit();
+                    }
+                    
+                    // Reload data
+                    await loadApplications();
+                    await syncVotingCandidatesWithApplications();
+                    renderCandidateList();
+                    renderStatistics();
+                    
+                    alert('Đã reset kết quả vote của ứng viên thành công');
+                } catch (error) {
+                    console.error('Error resetting candidate vote:', error);
+                    alert('Có lỗi xảy ra khi reset kết quả vote');
+                }
+            }
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    // Hide all tab contents
+                    document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Show corresponding tab content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).style.display = 'block';
+                });
+            });
+            
+            // Logout button
+            document.getElementById('logout-btn').addEventListener('click', function() {
+                if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                    auth.signOut().then(() => {
+                        window.location.href = '../user/login.html';
+                    }).catch(error => {
+                        console.error('Error signing out:', error);
+                    });
+                }
+            });
+            
+            // Add day button
+            document.getElementById('add-day-btn').addEventListener('click', function() {
+                const date = document.getElementById('interview-date').value;
+                const slotsText = document.getElementById('time-slots').value;
+                
+                if (!date) {
+                    alert('Vui lòng chọn ngày phỏng vấn');
+                    return;
+                }
+                
+                if (!slotsText.trim()) {
+                    alert('Vui lòng nhập ít nhất một khung giờ');
+                    return;
+                }
+                
+                const slots = slotsText.split('\n').map(s => s.trim()).filter(s => s);
+                
+                // Format date to dd/mm/yyyy
+                const dateObj = new Date(date);
+                const formattedDate = `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
+                
+                // Check if day already exists
+                const existingDayIndex = interviewSchedule.findIndex(day => day.date === formattedDate);
+                
+                if (existingDayIndex !== -1) {
+                    // Add slots to existing day
+                    interviewSchedule[existingDayIndex].slots = [...new Set([...interviewSchedule[existingDayIndex].slots, ...slots])];
                 } else {
-                    document.getElementById('vote-results').innerHTML = '';
+                    // Create new day
+                    const newDay = {
+                        id: 'day_' + Date.now(),
+                        date: formattedDate,
+                        slots: slots
+                    };
+                    
+                    interviewSchedule.push(newDay);
                 }
-            });
-        }
-
-        // Show vote results for a candidate
-        function showVoteResults(candidateId) {
-            const candidate = applications.find(app => app.id === candidateId);
-            const candidateVotes = votes.filter(vote => vote.candidate_id === candidateId);
-            
-            const container = document.getElementById('vote-results');
-            
-            if (!candidate) {
-                container.innerHTML = '<p>Không tìm thấy thông tin ứng viên.</p>';
-                return;
-            }
-            
-            let html = `
-                <div class="vote-results">
-                    <h3>Kết quả vote cho ${candidate.fullname || 'Ứng viên'}</h3>
-                    <p>Email: ${candidate.email}</p>
-                    <p>Vị trí ứng tuyển: ${candidate.priority_position ? getDepartmentName(candidate.priority_position) : 'Chưa có'}</p>
-            `;
-            
-            if (candidateVotes.length === 0) {
-                html += '<p>Chưa có vote nào cho ứng viên này.</p>';
-            } else {
-                // Group votes by department
-                const deptVotes = {};
                 
-                candidateVotes.forEach(vote => {
-                    if (!deptVotes[vote.department]) {
-                        deptVotes[vote.department] = {
-                            yes: 0,
-                            no: 0,
-                            total: 0
-                        };
-                    }
-                    
-                    if (vote.vote === 'yes') {
-                        deptVotes[vote.department].yes++;
-                    } else {
-                        deptVotes[vote.department].no++;
-                    }
-                    
-                    deptVotes[vote.department].total++;
-                });
+                // Reset form
+                document.getElementById('interview-date').value = '';
+                document.getElementById('time-slots').value = '';
                 
-                // Render vote results by department
-                for (const dept in deptVotes) {
-                    const deptVote = deptVotes[dept];
-                    const yesPercentage = (deptVote.yes / deptVote.total) * 100;
-                    
-                    html += `
-                        <div class="vote-item">
-                            <div class="vote-meta">
-                                <span class="vote-option">${dept}</span>
-                                <span class="vote-count">${deptVote.yes}/${deptVote.total} (${yesPercentage.toFixed(1)}%)</span>
-                            </div>
-                            <div class="vote-bar-wrap">
-                                <div class="vote-bar" style="width: ${yesPercentage}%"></div>
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-            
-            html += '</div>';
-            container.innerHTML = html;
-        }
-
-        // Helper function to get department name
-        function getDepartmentName(code) {
-            const departments = {
-                'MD': 'Truyền thông',
-                'HR': 'Nhân sự',
-                'ER': 'Đối ngoại',
-                'PD': 'Dự án'
-            };
-            return departments[code] || code;
-        }
-
-        // Add day to schedule
-        document.getElementById('add-day-btn').addEventListener('click', function() {
-            const dateInput = document.getElementById('interview-date');
-            const slotsTextarea = document.getElementById('time-slots');
-            
-            if (!dateInput.value) {
-                alert('Vui lòng chọn ngày phỏng vấn');
-                return;
-            }
-            
-            if (!slotsTextarea.value.trim()) {
-                alert('Vui lòng nhập ít nhất một khung giờ');
-                return;
-            }
-            
-            // Parse date
-            const date = new Date(dateInput.value);
-            const formattedDate = date.toLocaleDateString('vi-VN', {
-                weekday: 'long',
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
+                // Update UI
+                renderCurrentSchedule();
             });
             
-            // Parse time slots
-            const slots = slotsTextarea.value.split('\n')
-                .map(slot => slot.trim())
-                .filter(slot => slot.length > 0);
+            // Save schedule button
+            document.getElementById('save-schedule-btn').addEventListener('click', async function() {
+                try {
+                    await db.collection('system').doc('interview_schedule').set({
+                        schedule: interviewSchedule,
+                        published: false,
+                        locked: false
+                    }, { merge: true });
+                    
+                    alert('Lịch phỏng vấn đã được lưu thành công!');
+                } catch (error) {
+                    console.error('Error saving schedule:', error);
+                    alert('Có lỗi xảy ra khi lưu lịch phỏng vấn');
+                }
+            });
             
-            // Add to schedule
-            const newDay = {
-                id: 'day_' + Date.now(),
-                date: formattedDate,
-                slots: slots
-            };
-            
-            interviewSchedule.push(newDay);
-            renderCurrentSchedule();
-            
-            // Clear inputs
-            dateInput.value = '';
-            slotsTextarea.value = '';
-        });
-
-        // Save schedule
-        document.getElementById('save-schedule-btn').addEventListener('click', async function() {
-            try {
-                await db.collection('system').doc('interview_schedule').set({
-                    schedule: interviewSchedule,
-                    updated: new Date()
-                });
+            // Publish schedule button
+            document.getElementById('publish-schedule-btn').addEventListener('click', async function() {
+                if (interviewSchedule.length === 0) {
+                    alert('Vui lòng tạo lịch phỏng vấn trước khi công bố');
+                    return;
+                }
                 
-                alert('Đã lưu lịch phỏng vấn thành công!');
-            } catch (error) {
-                console.error('Error saving schedule:', error);
-                alert('Có lỗi xảy ra khi lưu lịch phỏng vấn');
-            }
+                if (confirm('Bạn có chắc chắn muốn công bố lịch phỏng vấn này?')) {
+                    try {
+                        await db.collection('system').doc('interview_schedule').set({
+                            schedule: interviewSchedule,
+                            published: true,
+                            locked: false
+                        }, { merge: true });
+                        
+                        alert('Lịch phỏng vấn đã được công bố thành công!');
+                    } catch (error) {
+                        console.error('Error publishing schedule:', error);
+                        alert('Có lỗi xảy ra khi công bố lịch phỏng vấn');
+                    }
+                }
+            });
+            
+            // Load candidates from email list - THÊM VÀO DANH SÁCH CÓ QUYỀN VOTE
+            document.getElementById('load-candidates-btn').addEventListener('click', async function() {
+                const emailsText = document.getElementById('candidate-emails').value.trim();
+                
+                if (!emailsText) {
+                    alert('Vui lòng nhập danh sách email ứng viên');
+                    return;
+                }
+                
+                const emails = emailsText.split('\n').map(email => email.trim()).filter(email => email);
+                
+                // Validate emails
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const invalidEmails = emails.filter(email => !emailRegex.test(email));
+                
+                if (invalidEmails.length > 0) {
+                    alert(`Các email sau không hợp lệ: ${invalidEmails.join(', ')}`);
+                    return;
+                }
+                
+                try {
+                    let addedCount = 0;
+                    let existingCount = 0;
+                    
+                    for (const email of emails) {
+                        // Kiểm tra xem ứng viên đã có trong danh sách vote chưa
+                        const existing = votingCandidates.find(vc => vc.email === email);
+                        
+                        if (!existing) {
+                            // Thêm vào collection voting_candidates
+                            await db.collection('voting_candidates').add({
+                                email: email,
+                                addedAt: new Date(),
+                                addedBy: currentUser.email
+                            });
+                            addedCount++;
+                        } else {
+                            existingCount++;
+                        }
+                    }
+                    
+                    // Reload data
+                    await loadVotingCandidates();
+                    renderCandidateList();
+                    renderStatistics();
+                    
+                    // Clear input
+                    document.getElementById('candidate-emails').value = '';
+                    
+                    let message = `Đã thêm ${addedCount} ứng viên vào danh sách có quyền vote`;
+                    if (existingCount > 0) {
+                        message += ` (${existingCount} ứng viên đã tồn tại trong danh sách)`;
+                    }
+                    alert(message);
+                } catch (error) {
+                    console.error('Error adding candidates to voting list:', error);
+                    alert('Có lỗi xảy ra khi thêm ứng viên vào danh sách vote');
+                }
+            });
+            
+            // Xóa toàn bộ ứng viên khỏi danh sách vote (KHÔNG xóa khỏi applications)
+            document.getElementById('clear-candidates-btn').addEventListener('click', async function() {
+                if (confirm('Bạn có chắc chắn muốn xóa TOÀN BỘ ứng viên khỏi danh sách có quyền vote? Hành động này không thể hoàn tác.')) {
+                    try {
+                        // Xóa toàn bộ documents trong collection voting_candidates
+                        const snapshot = await db.collection('voting_candidates').get();
+                        
+                        if (snapshot.empty) {
+                            alert('Không có ứng viên nào trong danh sách vote để xóa');
+                            return;
+                        }
+                        
+                        const batch = db.batch();
+                        
+                        snapshot.docs.forEach(doc => {
+                            batch.delete(doc.ref);
+                        });
+                        
+                        await batch.commit();
+                        
+                        // Reload data
+                        await loadVotingCandidates();
+                        renderCandidateList();
+                        renderStatistics();
+                        
+                        alert('Đã xóa toàn bộ ứng viên khỏi danh sách vote thành công');
+                    } catch (error) {
+                        console.error('Error clearing voting candidates:', error);
+                        alert('Có lỗi xảy ra khi xóa ứng viên khỏi danh sách vote');
+                    }
+                }
+            });
+            
+            // Xóa dữ liệu vote (chỉ reset interview_schedule và xóa votes)
+            document.getElementById('clear-votes-btn').addEventListener('click', async function() {
+                if (confirm('Bạn có chắc chắn muốn xóa toàn bộ dữ liệu vote? Hành động này không thể hoàn tác.')) {
+                    try {
+                        // Reset interview_schedule cho tất cả applications
+                        const batch = db.batch();
+                        
+                        applications.forEach(app => {
+                            const appRef = db.collection('applications').doc(app.id);
+                            batch.update(appRef, { interview_schedule: [] });
+                        });
+                        
+                        await batch.commit();
+                        
+                        // Xóa toàn bộ votes
+                        const votesSnapshot = await db.collection('votes').get();
+                        const deleteBatch = db.batch();
+                        
+                        votesSnapshot.docs.forEach(doc => {
+                            deleteBatch.delete(doc.ref);
+                        });
+                        
+                        await deleteBatch.commit();
+                        
+                        // Reload data
+                        await Promise.all([
+                            loadApplications(),
+                            loadVotes()
+                        ]);
+                        await syncVotingCandidatesWithApplications();
+                        
+                        renderCandidateList();
+                        renderStatistics();
+                        
+                        alert('Đã xóa toàn bộ dữ liệu vote thành công');
+                    } catch (error) {
+                        console.error('Error clearing votes:', error);
+                        alert('Có lỗi xảy ra khi xóa dữ liệu vote');
+                    }
+                }
+            });
+            
+            // Lock schedule button
+            document.getElementById('lock-schedule-btn').addEventListener('click', async function() {
+                if (confirm('Bạn có chắc chắn muốn khóa lịch phỏng vấn? Ứng viên sẽ không thể chọn lịch sau khi khóa.')) {
+                    try {
+                        await db.collection('system').doc('interview_schedule').set({
+                            locked: true
+                        }, { merge: true });
+                        
+                        alert('Đã khóa lịch phỏng vấn thành công!');
+                    } catch (error) {
+                        console.error('Error locking schedule:', error);
+                        alert('Có lỗi xảy ra khi khóa lịch phỏng vấn');
+                    }
+                }
+            });
+            
+            // Export schedule button
+            document.getElementById('export-schedule-btn').addEventListener('click', function() {
+                exportScheduleToExcel();
+            });
+            
+            // Close modal buttons
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.style.display = 'none';
+                    });
+                });
+            });
         });
 
-        // Publish schedule
+        // Export schedule to Excel
+        function exportScheduleToExcel() {
+            if (interviewSchedule.length === 0) {
+                alert('Không có lịch phỏng vấn để xuất');
+                return;
+            }
+            
+            // Create data array
+            const data = [];
+            
+            // Add headers
+            data.push(['Ngày', 'Khung giờ', 'Số lượng ứng viên', 'Danh sách ứng viên']);
+            
+            // Calculate counts for each slot
+            const slotCandidates = {};
+            
+            candidates.forEach(candidate => {
+                if (candidate.interview_schedule) {
+                    candidate.interview_schedule.forEach(slot => {
+                        if (!slotCandidates[slot]) {
+                            slotCandidates[slot] = [];
+                        }
+                        slotCandidates[slot].push(candidate.name || candidate.email);
+                    });
+                }
+            });
+            
+            // Add data rows
+            interviewSchedule.forEach(day => {
+                day.slots.forEach(slot => {
+                    const slotId = `${day.id}_${slot.replace(/\s+/g, '_')}`;
+                    const candidatesList = slotCandidates[slotId] || [];
+                    const count = candidatesList.length;
+                    
+                    data.push([
+                        day.date, 
+                        slot, 
+                        count,
+                        candidatesList.join(', ')
+                    ]);
+                });
+            });
+            
+            // Create worksheet
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Lịch phỏng vấn');
+            
+            // Generate file and download
+            XLSX.writeFile(wb, 'lich_phong_van.xlsx');
+        }
+        
+        // Publish schedule button - CẬP NHẬT
         document.getElementById('publish-schedule-btn').addEventListener('click', async function() {
             if (interviewSchedule.length === 0) {
                 alert('Vui lòng tạo lịch phỏng vấn trước khi công bố');
                 return;
             }
             
-            if (confirm('Bạn có chắc chắn muốn công bố lịch phỏng vấn này cho ứng viên?')) {
+            if (confirm('Bạn có chắc chắn muốn công bố lịch phỏng vấn này?')) {
                 try {
-                    await db.collection('system').doc('interview_schedule').update({
+                    await db.collection('system').doc('interview_schedule').set({
+                        schedule: interviewSchedule,
                         published: true,
-                        published_at: new Date()
-                    });
+                        locked: false,
+                        published_at: new Date() // Thêm thời gian công bố
+                    }, { merge: true });
                     
-                    alert('Đã công bố lịch phỏng vấn thành công!');
+                    alert('Lịch phỏng vấn đã được công bố thành công!');
                 } catch (error) {
                     console.error('Error publishing schedule:', error);
                     alert('Có lỗi xảy ra khi công bố lịch phỏng vấn');
                 }
             }
-        });
-
-// Export schedule - FIXED SLOT MATCHING
-document.getElementById('export-schedule-btn').addEventListener('click', function() {
-    // Chuẩn bị dữ liệu
-    const data = [];
-    
-    // Tạo header
-    const header = ['STT', 'Họ và tên', 'Email', 'SĐT', 'Ban ưu tiên', 'Ban dự bị'];
-    
-    // Tạo mapping slot - QUAN TRỌNG: tạo đúng format slotId
-    const slotMapping = [];
-    let currentHeaderIndex = 6; // Bắt đầu từ cột thứ 7
-
-    interviewSchedule.forEach(day => {
-        day.slots.forEach(slot => {
-            const headerName = `${day.date} - ${slot}`;
-            header.push(headerName);
-            
-            // Tạo slotKey theo ĐÚNG format đang dùng trong ứng dụng
-            // Format phải khớp với cách lưu trong interview_schedule của ứng viên
-            const slotKey = `${day.id}_${slot.replace(/\s+/g, '_').replace(/-/g, '_')}`;
-            
-            slotMapping.push({
-                key: slotKey,
-                header: headerName,
-                index: currentHeaderIndex
-            });
-            
-            currentHeaderIndex++;
-        });
-    });
-
-    data.push(header);
-    
-    // DEBUG: Log tất cả slot mapping
-    console.log('=== SLOT MAPPING ===');
-    slotMapping.forEach(slot => {
-        console.log(`Slot: ${slot.key} -> Column: ${slot.index}`);
-    });
-
-    // Dữ liệu ứng viên
-    let stt = 1;
-    let hasData = false;
-    
-    applications.forEach(app => {
-        // Lấy ban dự bị - thử nhiều field
-        const backupDept = app.backup_position || app.backup_department || app.secondary_position || app.backup || '';
-        
-        const row = [
-            stt++,
-            app.fullname || 'Chưa có tên',
-            app.email || '',
-            app.phone || '',
-            app.priority_position ? getDepartmentName(app.priority_position) : '',
-            backupDept ? getDepartmentName(backupDept) : ''
-        ];
-        
-        // Khởi tạo tất cả các ca là rỗng
-        for (let i = 0; i < header.length - 6; i++) {
-            row.push('');
-        }
-
-        // Đánh dấu X cho các ca đã chọn - FIX QUAN TRỌNG
-        if (app.interview_schedule && app.interview_schedule.length > 0) {
-            hasData = true;
-            
-            console.log(`=== ỨNG VIÊN: ${app.fullname} ===`);
-            console.log('Slot đã chọn:', app.interview_schedule);
-            
-            app.interview_schedule.forEach(slotId => {
-                console.log(`🔍 Đang tìm slot: "${slotId}"`);
-                
-                // TÌM SLOT THEO NHIỀU CÁCH KHÁC NHAU
-                let foundSlot = null;
-                
-                // Cách 1: So sánh chính xác
-                foundSlot = slotMapping.find(item => item.key === slotId);
-                
-                // Cách 2: Nếu không tìm thấy, thử normalize
-                if (!foundSlot) {
-                    const normalizedSlotId = slotId.replace(/\s+/g, '_').replace(/-/g, '_');
-                    foundSlot = slotMapping.find(item => item.key === normalizedSlotId);
-                }
-                
-                // Cách 3: Thử tìm bằng phần đầu (dayId)
-                if (!foundSlot) {
-                    const dayIdPart = slotId.split('_')[0];
-                    foundSlot = slotMapping.find(item => item.key.startsWith(dayIdPart + '_'));
-                }
-                
-                // Cách 4: Thử tìm bằng contains
-                if (!foundSlot) {
-                    foundSlot = slotMapping.find(item => slotId.includes(item.key.split('_')[1]));
-                }
-                
-                if (foundSlot) {
-                    row[foundSlot.index] = 'X';
-                    console.log(`✅ Đã đánh dấu X tại cột ${foundSlot.index}: ${foundSlot.header}`);
-                } else {
-                    console.log(`❌ KHÔNG tìm thấy slot: ${slotId}`);
-                    console.log('Các slot available:', slotMapping.map(s => s.key));
-                    
-                    // THỬ TẠO SLOT KEY TỪ DỮ LIỆU GỐC
-                    const dayMatch = interviewSchedule.find(day => 
-                        slotId.includes(day.id) || day.id.includes(slotId.split('_')[0])
-                    );
-                    
-                    if (dayMatch) {
-                        // Thử tìm slot time trong day đó
-                        const timeMatch = dayMatch.slots.find(slot => {
-                            const slotTime = slot.replace(/\s+/g, '_').replace(/-/g, '_');
-                            return slotId.includes(slotTime) || slotTime.includes(slotId.split('_')[1]);
-                        });
-                        
-                        if (timeMatch) {
-                            const reconstructedKey = `${dayMatch.id}_${timeMatch.replace(/\s+/g, '_').replace(/-/g, '_')}`;
-                            const reconstructedSlot = slotMapping.find(item => item.key === reconstructedKey);
-                            if (reconstructedSlot) {
-                                row[reconstructedSlot.index] = 'X';
-                                console.log(`✅ Đánh dấu X bằng reconstructed key: ${reconstructedKey}`);
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        data.push(row);
-    });
-
-    // Nếu không có ứng viên nào có lịch
-    if (!hasData) {
-        const emptyRow = ['1', 'Không có ứng viên nào chọn lịch', '', '', '', ''];
-        for (let i = 0; i < header.length - 6; i++) {
-            emptyRow.push('');
-        }
-        data.push(emptyRow);
-    }
-
-    // Tạo worksheet
-    const ws = XLSX.utils.aoa_to_sheet(data);
-    
-    // Set column widths
-    const colWidths = [];
-    for (let i = 0; i < header.length; i++) {
-        if (i === 1) colWidths.push({wch: 25}); // Họ tên
-        else if (i === 2) colWidths.push({wch: 30}); // Email
-        else if (i >= 6) colWidths.push({wch: 22}); // Các cột slot (rộng hơn)
-        else colWidths.push({wch: 15});
-    }
-    ws['!cols'] = colWidths;
-    
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Lịch phỏng vấn');
-    
-    // Export
-    XLSX.writeFile(wb, 'lich_phong_van_enactus_' + new Date().toISOString().split('T')[0] + '.xlsx');
-    
-    alert('Đã export lịch phỏng vấn thành công!');
-});
-
-// Helper function FIXED - tìm index của time slot trong header
-function findTimeSlotIndex(slotId, slotMapping, header) {
-    console.log('🔍 Tìm slotId:', slotId);
-    
-    // Tìm trong mapping trước
-    const mappedSlot = slotMapping.find(item => item.key === slotId);
-    if (mappedSlot) {
-        const index = header.indexOf(mappedSlot.header);
-        console.log('📍 Tìm thấy qua mapping:', index);
-        return index;
-    }
-    
-    // Fallback: thử các format khác
-    const alternativeFormats = [
-        slotId,
-        slotId.replace(/_/g, ' '),
-        slotId.replace(/_/g, ' - ')
-    ];
-    
-    for (const format of alternativeFormats) {
-        const index = header.findIndex(h => h.includes(format));
-        if (index !== -1) {
-            console.log('📍 Tìm thấy với format thay thế:', index);
-            return index;
-        }
-    }
-    
-    console.log('❌ Không tìm thấy slot:', slotId);
-    return -1;
-}
-        
-        // Tab switching
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                // Update active tab
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Show corresponding content
-                const tabId = this.getAttribute('data-tab');
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.style.display = 'none';
-                });
-                document.getElementById(`${tabId}-tab`).style.display = 'block';
-            });
-        });
-
-        // Logout
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            auth.signOut().then(() => {
-                window.location.href = '../user/login.html';
-            });
         });
     </script>
 </body>
