@@ -380,6 +380,28 @@
             margin-top: 16px;
         }
 
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--gray-800);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+        }
+
         /* Loading */
         .loading {
             text-align: center;
@@ -444,6 +466,42 @@
         </div>
 
         <div id="profile-content" style="display: none;">
+            <!-- Interview Schedule Notification - ĐƯA LÊN TRÊN CÙNG -->
+            <div id="interview-notification" class="notification-card" style="display: none;">
+                <div class="notification-header">
+                    <i class="fas fa-calendar-alt" style="color: #FFD54F; font-size: 24px;"></i>
+                    <h3>Chọn lịch phỏng vấn</h3>
+                </div>
+                <div class="notification-content">
+                    <p>Ban tổ chức đã công bố lịch phỏng vấn. Vui lòng chọn ít nhất 3 khung giờ phỏng vấn mà bạn có thể tham gia.</p>
+                    <p><strong>Thời hạn:</strong> <span id="notification-deadline">Đang cập nhật</span></p>
+                </div>
+                <div class="notification-actions">
+                    <button class="btn btn-primary" id="go-to-calendar-btn">
+                        <i class="fas fa-arrow-right"></i>
+                        Đến trang chọn lịch
+                    </button>
+                </div>
+            </div>
+
+            <!-- Vote Status Card -->
+            <div id="vote-status" class="notification-card" style="display: none; background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%); border: 2px solid #10B981;">
+                <div class="notification-header">
+                    <i class="fas fa-check-circle" style="color: #10B981; font-size: 24px;"></i>
+                    <h3>Đã chọn lịch phỏng vấn</h3>
+                </div>
+                <div class="notification-content">
+                    <p>Bạn đã hoàn thành việc chọn lịch phỏng vấn. BTC sẽ liên hệ với bạn để xác nhận lịch phỏng vấn chính thức.</p>
+                    <p><strong>Số ca đã chọn:</strong> <span id="selected-slots-count">0</span>/3 ca</p>
+                </div>
+                <div class="notification-actions">
+                    <button class="btn btn-secondary" id="view-calendar-btn">
+                        <i class="fas fa-eye"></i>
+                        Xem lại lịch đã chọn
+                    </button>
+                </div>
+            </div>
+
             <!-- Profile Card -->
             <div class="profile-card">
                 <div class="profile-header">
@@ -473,24 +531,6 @@
                         <div class="info-label">Thời gian ứng tuyển</div>
                         <div class="info-value" id="application-time">Chưa có thông tin</div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Interview Schedule Notification -->
-            <div id="interview-notification" class="notification-card" style="display: none;">
-                <div class="notification-header">
-                    <i class="fas fa-calendar-alt" style="color: #FFD54F; font-size: 24px;"></i>
-                    <h3>Chọn lịch phỏng vấn</h3>
-                </div>
-                <div class="notification-content">
-                    <p>Ban tổ chức đã công bố lịch phỏng vấn. Vui lòng chọn ít nhất 3 khung giờ phỏng vấn mà bạn có thể tham gia.</p>
-                    <p><strong>Thời hạn:</strong> <span id="notification-deadline">Đang cập nhật</span></p>
-                </div>
-                <div class="notification-actions">
-                    <button class="btn btn-primary" id="go-to-calendar-btn">
-                        <i class="fas fa-arrow-right"></i>
-                        Chọn lịch ngay
-                    </button>
                 </div>
             </div>
 
@@ -833,34 +873,70 @@ function renderApplicationData() {
         async function checkInterviewNotification() {
             try {
                 const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
+                const notificationElement = document.getElementById('interview-notification');
+                const voteStatusElement = document.getElementById('vote-status');
                 
                 if (scheduleDoc.exists) {
                     const scheduleData = scheduleDoc.data();
-                    const notificationElement = document.getElementById('interview-notification');
                     
                     // Kiểm tra nếu lịch đã được công bố VÀ user có quyền chọn lịch
                     if (scheduleData.published === true) {
                         const hasVotingRights = await checkVotingRights();
                         
                         if (hasVotingRights) {
-                            // Hiển thị thông báo
-                            notificationElement.style.display = 'block';
+                            // KIỂM TRA ỨNG VIÊN ĐÃ VOTE CHƯA
+                            const hasVoted = applicationData.interview_schedule && applicationData.interview_schedule.length >= 3;
                             
-                            // Hiển thị thời gian công bố
-                            if (scheduleData.published_at) {
-                                const publishDate = scheduleData.published_at.toDate();
-                                document.getElementById('notification-deadline').textContent = 
-                                    `Đến hết ngày ${publishDate.getDate() + 3}/${publishDate.getMonth() + 1}`;
+                            if (!hasVoted) {
+                                // CHƯA vote đủ - hiển thị thông báo chọn lịch
+                                notificationElement.style.display = 'block';
+                                voteStatusElement.style.display = 'none';
+                                
+                                // Hiển thị thời gian công bố
+                                if (scheduleData.published_at) {
+                                    const publishDate = scheduleData.published_at.toDate();
+                                    const deadlineDate = new Date(publishDate);
+                                    deadlineDate.setDate(deadlineDate.getDate() + 3);
+                                    
+                                    document.getElementById('notification-deadline').textContent = 
+                                        `Đến hết ngày ${deadlineDate.getDate()}/${deadlineDate.getMonth() + 1}`;
+                                }
+                            } else {
+                                // ĐÃ vote đủ - hiển thị trạng thái hoàn thành
+                                notificationElement.style.display = 'none';
+                                voteStatusElement.style.display = 'block';
+                                
+                                // Hiển thị số ca đã chọn
+                                document.getElementById('selected-slots-count').textContent = 
+                                    applicationData.interview_schedule.length;
                             }
+                        } else {
+                            // Không có quyền vote
+                            notificationElement.style.display = 'none';
+                            voteStatusElement.style.display = 'none';
                         }
                     } else {
+                        // Lịch chưa công bố
                         notificationElement.style.display = 'none';
+                        voteStatusElement.style.display = 'none';
                     }
+                } else {
+                    // Không có lịch
+                    notificationElement.style.display = 'none';
+                    voteStatusElement.style.display = 'none';
                 }
             } catch (error) {
                 console.error('Error checking interview notification:', error);
+                // Ẩn cả hai thông báo nếu có lỗi
+                document.getElementById('interview-notification').style.display = 'none';
+                document.getElementById('vote-status').style.display = 'none';
             }
         }
+
+        // Thêm event listener cho nút xem lại lịch
+        document.getElementById('view-calendar-btn').addEventListener('click', function() {
+            checkCalendarAccessBeforeRedirect();
+        });
 
         // Kiểm tra user có trong danh sách được vote không
         async function checkVotingRights() {
@@ -880,10 +956,40 @@ function renderApplicationData() {
             }
         }
 
-        // Thêm event listener cho nút chuyển đến calendar
+        // Thêm event listener cho nút chuyển đến calendar - CẬP NHẬT
         document.getElementById('go-to-calendar-btn').addEventListener('click', function() {
-            window.location.href = 'calendar.html';
+            // Kiểm tra lại quyền trước khi chuyển trang
+            checkCalendarAccessBeforeRedirect();
         });
+
+        // 🔒 KIỂM TRA QUYỀN TRƯỚC KHI CHUYỂN ĐẾN CALENDAR
+        async function checkCalendarAccessBeforeRedirect() {
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const hasAccess = await checkVotingRights();
+                if (!hasAccess) {
+                    alert('Bạn không có quyền truy cập lịch phỏng vấn. Vui lòng liên hệ BTC.');
+                    return;
+                }
+
+                const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
+                if (!scheduleDoc.exists || scheduleDoc.data().published !== true) {
+                    alert('Lịch phỏng vấn chưa được công bố. Vui lòng quay lại sau.');
+                    return;
+                }
+
+                // Tất cả điều kiện đều hợp lệ, chuyển đến calendar
+                window.location.href = 'calendar.html';
+            } catch (error) {
+                console.error('Error checking access before redirect:', error);
+                alert('Có lỗi xảy ra khi kiểm tra quyền truy cập.');
+            }
+        }
 
         /* ---------- toggleRoundDetails (giữ nguyên) ---------- */
         function toggleRoundDetails(roundId) {

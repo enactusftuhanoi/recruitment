@@ -415,11 +415,27 @@
                 document.getElementById('user-avatar').textContent = user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U';
                 
                 try {
+                    // 🔒 KIỂM TRA QUYỀN TRUY CẬP CALENDAR
+                    const hasCalendarAccess = await checkCalendarAccess(user.email);
+                    if (!hasCalendarAccess) {
+                        alert('Bạn không có quyền truy cập lịch phỏng vấn. Vui lòng liên hệ BTC nếu đây là nhầm lẫn.');
+                        window.location.href = 'profile.html';
+                        return;
+                    }
+
+                    // 🔒 KIỂM TRA LỊCH ĐÃ ĐƯỢC CÔNG BỐ CHƯA
+                    const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
+                    if (!scheduleDoc.exists || scheduleDoc.data().published !== true) {
+                        alert('Lịch phỏng vấn chưa được công bố. Vui lòng quay lại sau.');
+                        window.location.href = 'profile.html';
+                        return;
+                    }
+
                     // Check if user has an application
                     const snapshot = await db.collection('applications')
-                                          .where('email', '==', user.email)
-                                          .limit(1)
-                                          .get();
+                                        .where('email', '==', user.email)
+                                        .limit(1)
+                                        .get();
                     
                     if (snapshot.empty) {
                         // No application found, redirect to form
@@ -452,6 +468,21 @@
                 window.location.href = 'login.html';
             }
         });
+
+        // 🔒 HÀM KIỂM TRA QUYỀN TRUY CẬP CALENDAR
+        async function checkCalendarAccess(userEmail) {
+            try {
+                const votingCandidate = await db.collection('voting_candidates')
+                    .where('email', '==', userEmail)
+                    .limit(1)
+                    .get();
+                    
+                return !votingCandidate.empty;
+            } catch (error) {
+                console.error('Error checking calendar access:', error);
+                return false;
+            }
+        }
 
         // Load interview schedule from Firestore or use default
         async function loadInterviewSchedule() {
