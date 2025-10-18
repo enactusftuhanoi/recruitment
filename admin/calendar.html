@@ -693,9 +693,14 @@
                 </div>
 
                 <div class="action-buttons">
-                    <button class="btn btn-danger" id="lock-schedule-btn">
+                   <button class="btn btn-danger" id="lock-schedule-btn" style="display: none;">
                         <i class="fas fa-lock"></i>
                         Khóa lịch phỏng vấn
+                    </button>
+
+                    <button class="btn btn-success" id="unlock-schedule-btn" style="display: none;">
+                        <i class="fas fa-unlock"></i>
+                        Mở khóa lịch phỏng vấn
                     </button>
                     <button class="btn btn-danger" id="clear-votes-btn">
                         <i class="fas fa-trash"></i>
@@ -816,7 +821,7 @@
         });
 
         // Load interview schedule
-        async function loadInterviewSchedule() {
+       async function loadInterviewSchedule() {
             try {
                 const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
                 
@@ -831,6 +836,9 @@
                         locked: false
                     });
                 }
+                
+                // Cập nhật trạng thái nút sau khi load schedule
+                await updateLockButtonStatus();
             } catch (error) {
                 console.error('Error loading interview schedule:', error);
             }
@@ -912,6 +920,75 @@
                 console.error('Error syncing voting candidates:', error);
             }
         }
+
+        // Function để cập nhật trạng thái nút khóa/mở
+        async function updateLockButtonStatus() {
+            const lockBtn = document.getElementById('lock-schedule-btn');
+            const unlockBtn = document.getElementById('unlock-schedule-btn');
+            
+            try {
+                // Get data from Firestore to check locked status
+                const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
+                
+                if (scheduleDoc.exists) {
+                    const data = scheduleDoc.data();
+                    const isLocked = data.locked || false;
+                    
+                    if (isLocked) {
+                        lockBtn.style.display = 'none';
+                        unlockBtn.style.display = 'inline-flex';
+                    } else {
+                        lockBtn.style.display = 'inline-flex';
+                        unlockBtn.style.display = 'none';
+                    }
+                } else {
+                    // If document doesn't exist, default to unlocked
+                    lockBtn.style.display = 'inline-flex';
+                    unlockBtn.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error checking lock status:', error);
+                // In case of error, default to showing lock button
+                lockBtn.style.display = 'inline-flex';
+                unlockBtn.style.display = 'none';
+            }
+        }
+
+        document.getElementById('lock-schedule-btn').addEventListener('click', async function() {
+            if (confirm('Bạn có chắc chắn muốn KHÓA lịch phỏng vấn? Ứng viên sẽ KHÔNG THỂ chọn/thay đổi lịch sau khi khóa.')) {
+                try {
+                    await db.collection('system').doc('interview_schedule').set({
+                        locked: true,
+                        locked_at: new Date(),
+                        locked_by: currentUser.email
+                    }, { merge: true });
+                    
+                    alert('✅ Đã khóa lịch phỏng vấn thành công!');
+                    await updateLockButtonStatus(); // Cập nhật lại nút
+                } catch (error) {
+                    console.error('Error locking schedule:', error);
+                    alert('❌ Có lỗi xảy ra khi khóa lịch phỏng vấn');
+                }
+            }
+        });
+
+        document.getElementById('unlock-schedule-btn').addEventListener('click', async function() {
+            if (confirm('Bạn có chắc chắn muốn MỞ KHÓA lịch phỏng vấn? Ứng viên sẽ có thể chọn/thay đổi lịch lại.')) {
+                try {
+                    await db.collection('system').doc('interview_schedule').set({
+                        locked: false,
+                        unlocked_at: new Date(),
+                        unlocked_by: currentUser.email
+                    }, { merge: true });
+                    
+                    alert('✅ Đã mở khóa lịch phỏng vấn thành công!');
+                    await updateLockButtonStatus(); // Cập nhật lại nút
+                } catch (error) {
+                    console.error('Error unlocking schedule:', error);
+                    alert('❌ Có lỗi xảy ra khi mở khóa lịch phỏng vấn');
+                }
+            }
+        });
 
         // Render statistics
         function renderStatistics() {
@@ -1105,6 +1182,23 @@
             });
             
             // Add event listeners
+            document.getElementById('unlock-schedule-btn').addEventListener('click', async function() {
+                if (confirm('Bạn có chắc chắn muốn MỞ KHÓA lịch phỏng vấn? Ứng viên sẽ có thể chọn/thay đổi lịch lại.')) {
+                    try {
+                        await db.collection('system').doc('interview_schedule').set({
+                            locked: false,
+                            unlocked_at: new Date(),
+                            unlocked_by: currentUser.email
+                        }, { merge: true });
+                        
+                        alert('✅ Đã mở khóa lịch phỏng vấn thành công!');
+                    } catch (error) {
+                        console.error('Error unlocking schedule:', error);
+                        alert('❌ Có lỗi xảy ra khi mở khóa lịch phỏng vấn');
+                    }
+                }
+            });
+
             document.querySelectorAll('.candidate-delete-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const candidateId = this.getAttribute('data-candidate-id');
@@ -1428,22 +1522,6 @@
                     } catch (error) {
                         console.error('Error clearing votes:', error);
                         alert('Có lỗi xảy ra khi xóa dữ liệu vote');
-                    }
-                }
-            });
-            
-            // Lock schedule button
-            document.getElementById('lock-schedule-btn').addEventListener('click', async function() {
-                if (confirm('Bạn có chắc chắn muốn khóa lịch phỏng vấn? Ứng viên sẽ không thể chọn lịch sau khi khóa.')) {
-                    try {
-                        await db.collection('system').doc('interview_schedule').set({
-                            locked: true
-                        }, { merge: true });
-                        
-                        alert('Đã khóa lịch phỏng vấn thành công!');
-                    } catch (error) {
-                        console.error('Error locking schedule:', error);
-                        alert('Có lỗi xảy ra khi khóa lịch phỏng vấn');
                     }
                 }
             });

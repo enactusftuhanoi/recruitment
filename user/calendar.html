@@ -431,6 +431,13 @@
                         return;
                     }
 
+                    // 🔒 THÊM: KIỂM TRA LỊCH ĐÃ BỊ KHÓA CHƯA
+                    if (scheduleDoc.data().locked === true) {
+                        alert('Lịch phỏng vấn đã bị khóa. Bạn không thể chọn/thay đổi lịch nữa.');
+                        window.location.href = 'profile.html';
+                        return;
+                    }
+
                     // Check if user has an application
                     const snapshot = await db.collection('applications')
                                         .where('email', '==', user.email)
