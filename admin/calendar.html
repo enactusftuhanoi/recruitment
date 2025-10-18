@@ -561,8 +561,8 @@
         
         <div class="nav-links">
             <a href="dashboard.html" class="nav-link">Dashboard</a>
-            <a href="calendar.html" class="nav-link active">Lịch & Vote</a>
-            <a href="accounts.html" class="nav-link">Tài khoản</a>
+            <a href="calendar.html" class="nav-link active">Calendar</a>
+            <a href="accounts.html" class="nav-link">Account</a>
         </div>
         
         <div class="user-info">
@@ -811,7 +811,7 @@
                 }
             } else {
                 // User is not signed in, redirect to login
-                window.location.href = '../user/login.html';
+                window.location.href = '../admin/login.html';
             }
         });
 
@@ -1205,7 +1205,7 @@
             document.getElementById('logout-btn').addEventListener('click', function() {
                 if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
                     auth.signOut().then(() => {
-                        window.location.href = '../user/login.html';
+                        window.location.href = '../admin/login.html';
                     }).catch(error => {
                         console.error('Error signing out:', error);
                     });
