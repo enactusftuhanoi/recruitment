@@ -802,7 +802,7 @@ function renderApplicationData() {
             var roundDefs = [
                 { id: 'round1', title: 'Vòng 1: Đơn ứng tuyển', status: computeRoundStatus('round1') },
                 { id: 'round2', title: 'Vòng 2: Phỏng vấn nhóm', status: computeRoundStatus('round2') },
-                { id: 'round3', title: 'Vòng 3: Thử thách', status: computeRoundStatus('round3') },
+                { id: 'round3', title: 'Vòng 3: Teamwork', status: computeRoundStatus('round3') },
                 { id: 'round4', title: 'Vòng 4: Phỏng vấn cá nhân', status: computeRoundStatus('round4') },
             ];
 
@@ -1235,7 +1235,7 @@ function formatTimestamp(timestamp) {
             switch(round) {
                 case "round1": return "Vòng 1: Đơn";
                 case "round2": return "Vòng 2: Phỏng vấn nhóm";
-                case "round3": return "Vòng 3: Thử thách";
+                case "round3": return "Vòng 3: Teamwork";
                 case "round4": return "Vòng 4: Phỏng vấn cá nhân";
                 case "success": return "Thành viên chính thức";
                 default: return "Chưa xác định";
