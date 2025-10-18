@@ -1086,17 +1086,13 @@ async function acceptDepartment(departmentType) {
         if (departmentType === 'priority') {
             updateData.priorityAccepted = true;
             updateData.priorityRejected = false;
-            // Đảm bảo không đồng thời accept cả hai
-            if (application.secondaryAccepted) {
-                updateData.secondaryAccepted = false;
-            }
+            // 🟢 XÓA: Không tự động hủy ban dự bị
+            // Ứng viên có thể được accept cả 2 ban
         } else {
             updateData.secondaryAccepted = true;
             updateData.secondaryRejected = false;
-            // Đảm bảo không đồng thời accept cả hai
-            if (application.priorityAccepted) {
-                updateData.priorityAccepted = false;
-            }
+            // 🟢 XÓA: Không tự động hủy ban ưu tiên
+            // Ứng viên có thể được accept cả 2 ban
         }
 
         await db.collection('applications').doc(currentApplicationId).update(updateData);
@@ -1186,6 +1182,11 @@ function getDepartmentName(code) {
 }
 
 function computeOverallStatus(app) {
+    // 🔥 THÊM: Ưu tiên kiểm tra trường status trực tiếp
+    if (app.status === 'reviewed') return 'reviewed';
+    if (app.status === 'accepted') return 'accepted';
+    if (app.status === 'rejected') return 'rejected';
+    
     // Nếu là ứng viên phỏng vấn, xử lý khác với form
     if (app.application_type === 'interview') {
         // Nếu có ít nhất một ban được chấp nhận -> accepted
