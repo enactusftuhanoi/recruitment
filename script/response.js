@@ -827,21 +827,63 @@ function showApplicationDetail(appId) {
             detailSections.appendChild(interviewEvaluationSection);
         }
         
-        // THÊM NÚT ĐÁNH GIÁ PHỎNG VẤN CHO ADMIN
+        // THÊM NÚT ĐÁNH GIÁ PHỎNG VẤN CHO ADMIN - PHÂN THEO TỪNG BAN
         if (canActOnDepartment(application, 'priority') || canActOnDepartment(application, 'secondary')) {
             const interviewActions = document.createElement('div');
             interviewActions.className = 'action-buttons';
-            interviewActions.innerHTML = `
-                <button class="action-button btn-accept" onclick="evaluateInterview('accepted')">
-                    <i class="fas fa-check"></i> Đậu phỏng vấn
-                </button>
-                <button class="action-button btn-reject" onclick="evaluateInterview('rejected')">
-                    <i class="fas fa-times"></i> Trượt phỏng vấn
-                </button>
-                <button class="action-button btn-notes" onclick="addInterviewNotes()">
-                    <i class="fas fa-edit"></i> Thêm ghi chú
+            
+            let actionsHTML = '';
+            
+            // Nút cho ban ưu tiên
+            if (canActOnDepartment(application, 'priority')) {
+                const priorityStatus = application.priorityAccepted ? 
+                    '<span style="color: var(--success); margin-left: 8px;">(Đã đậu)</span>' : 
+                    application.priorityRejected ? 
+                    '<span style="color: var(--error); margin-left: 8px;">(Đã trượt)</span>' : 
+                    '<span style="color: var(--warning); margin-left: 8px;">(Chưa đánh giá)</span>';
+                    
+                actionsHTML += `
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">${getDepartmentName(application.priority_position)} (Ưu tiên) ${priorityStatus}</div>
+                        <button class="action-button btn-accept" onclick="evaluateInterview('accepted', 'priority')">
+                            <i class="fas fa-check"></i> Đậu ban ưu tiên
+                        </button>
+                        <button class="action-button btn-reject" onclick="evaluateInterview('rejected', 'priority')">
+                            <i class="fas fa-times"></i> Trượt ban ưu tiên
+                        </button>
+                    </div>
+                `;
+            }
+            
+            // Nút cho ban dự bị (nếu có)
+            if (application.secondary_position && application.secondary_position !== 'None' && 
+                canActOnDepartment(application, 'secondary')) {
+                const secondaryStatus = application.secondaryAccepted ? 
+                    '<span style="color: var(--success); margin-left: 8px;">(Đã đậu)</span>' : 
+                    application.secondaryRejected ? 
+                    '<span style="color: var(--error); margin-left: 8px;">(Đã trượt)</span>' : 
+                    '<span style="color: var(--warning); margin-left: 8px;">(Chưa đánh giá)</span>';
+                    
+                actionsHTML += `
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">${getDepartmentName(application.secondary_position)} (Dự bị) ${secondaryStatus}</div>
+                        <button class="action-button btn-accept" onclick="evaluateInterview('accepted', 'secondary')">
+                            <i class="fas fa-check"></i> Đậu ban dự bị
+                        </button>
+                        <button class="action-button btn-reject" onclick="evaluateInterview('rejected', 'secondary')">
+                            <i class="fas fa-times"></i> Trượt ban dự bị
+                        </button>
+                    </div>
+                `;
+            }
+          
+            actionsHTML += `
+                <button class="action-button btn-notes" onclick="addInterviewNotes()" style="margin-top: 10px;">
+                    <i class="fas fa-edit"></i> Thêm ghi chú chung
                 </button>
             `;
+            
+            interviewActions.innerHTML = actionsHTML;
             detailSections.appendChild(interviewActions);
         }
     }
@@ -893,15 +935,66 @@ async function addInterviewNotes() {
     }
 }
 
-// Đánh giá kết quả phỏng vấn
-async function evaluateInterview(result) {
+// Đánh giá kết quả phỏng vấn CHO TỪNG BAN - FIXED
+async function evaluateInterview(result, departmentType = null) {
     if (!currentApplicationId) return;
     
     const application = applications.find(app => app.id === currentApplicationId);
     if (!application || application.application_type !== 'interview') return;
     
+    // Kiểm tra quyền trước
+    let targetDepartment = departmentType;
+    
+    // Nếu không chỉ định departmentType, hỏi user muốn đánh giá ban nào
+    if (!targetDepartment) {
+        const departments = [];
+        if (application.priority_position && canActOnDepartment(application, 'priority')) {
+            departments.push({
+                value: 'priority',
+                text: `${getDepartmentName(application.priority_position)} (Ưu tiên)`
+            });
+        }
+        if (application.secondary_position && application.secondary_position !== 'None' && 
+            canActOnDepartment(application, 'secondary')) {
+            departments.push({
+                value: 'secondary',
+                text: `${getDepartmentName(application.secondary_position)} (Dự bị)`
+            });
+        }
+        
+        if (departments.length === 0) {
+            Swal.fire('Không có quyền', 'Bạn không có quyền đánh giá ứng viên này.', 'error');
+            return;
+        }
+        
+        if (departments.length === 1) {
+            targetDepartment = departments[0].value;
+        } else {
+            const { value: selectedDept } = await Swal.fire({
+                title: 'Chọn ban để đánh giá',
+                input: 'select',
+                inputOptions: departments.reduce((options, dept) => {
+                    options[dept.value] = dept.text;
+                    return options;
+                }, {}),
+                showCancelButton: true,
+                confirmButtonText: 'Tiếp tục',
+                cancelButtonText: 'Hủy'
+            });
+            
+            if (!selectedDept) return;
+            targetDepartment = selectedDept;
+        }
+    }
+    
+    // KIỂM TRA QUYỀN LẠI SAU KHI ĐÃ XÁC ĐỊNH BAN
+    if (!canActOnDepartment(application, targetDepartment)) {
+        Swal.fire('Không có quyền', 'Bạn không có quyền đánh giá ứng viên cho ban này.', 'error');
+        return;
+    }
+    
     const { value: notes } = await Swal.fire({
-        title: result === 'accepted' ? 'Đậu phỏng vấn' : 'Trượt phỏng vấn',
+        title: result === 'accepted' ? `Đậu phỏng vấn - ${getDepartmentName(application[targetDepartment + '_position'])}` : `Trượt phỏng vấn - ${getDepartmentName(application[targetDepartment + '_position'])}`,
         input: 'textarea',
         inputLabel: 'Ghi chú đánh giá',
         inputPlaceholder: 'Nhập đánh giá chi tiết về ứng viên...',
@@ -913,40 +1006,52 @@ async function evaluateInterview(result) {
     if (notes !== undefined) {
         try {
             const updateData = {
-                interview_notes: notes,
-                interview_result: result,
                 interview_evaluated_at: new Date(),
                 interview_evaluated_by: window.currentUserFullname || 'Unknown'
             };
             
-            // Cập nhật trạng thái chung
+            // Cập nhật ghi chú theo ban
+            if (targetDepartment === 'priority') {
+                updateData.priority_interview_notes = notes;
+            } else {
+                updateData.secondary_interview_notes = notes;
+            }
+            
+            // Cập nhật trạng thái theo ban
             if (result === 'accepted') {
-                updateData.status = 'accepted';
-                if (application.priority_position) {
+                if (targetDepartment === 'priority') {
                     updateData.priorityAccepted = true;
-                }
-                if (application.secondary_position && application.secondary_position !== 'None') {
+                    updateData.priorityRejected = false;
+                } else {
                     updateData.secondaryAccepted = true;
+                    updateData.secondaryRejected = false;
                 }
             } else {
-                updateData.status = 'rejected';
-                if (application.priority_position) {
+                if (targetDepartment === 'priority') {
                     updateData.priorityRejected = true;
-                }
-                if (application.secondary_position && application.secondary_position !== 'None') {
+                    updateData.priorityAccepted = false;
+                    updateData.rejectionReason = notes || 'Không phù hợp';
+                } else {
                     updateData.secondaryRejected = true;
+                    updateData.secondaryAccepted = false;
+                    updateData.rejectionReason = notes || 'Không phù hợp';
                 }
             }
+            
+            // Cập nhật trạng thái tổng dựa trên kết quả cả 2 ban
+            const finalStatus = computeInterviewOverallStatus(application, updateData);
+            updateData.status = finalStatus.status;
+            updateData.interview_result = finalStatus.interviewResult;
             
             await db.collection('applications').doc(currentApplicationId).update(updateData);
             
             // Cập nhật local data
             const appIndex = applications.findIndex(app => app.id === currentApplicationId);
             if (appIndex !== -1) {
-                applications[appIndex] = { ...applications[appIndex], ...updateData };
+                Object.assign(applications[appIndex], updateData);
             }
             
-            Swal.fire('Thành công', `Đã ${result === 'accepted' ? 'chấp nhận' : 'từ chối'} ứng viên`, 'success');
+            Swal.fire('Thành công', `Đã ${result === 'accepted' ? 'chấp nhận' : 'từ chối'} ứng viên cho ${getDepartmentName(application[targetDepartment + '_position'])}`, 'success');
             showApplicationDetail(currentApplicationId);
             
         } catch (error) {
@@ -954,6 +1059,40 @@ async function evaluateInterview(result) {
             Swal.fire('Lỗi', 'Không thể cập nhật đánh giá phỏng vấn', 'error');
         }
     }
+}
+
+// Hàm tính trạng thái tổng cho ứng viên phỏng vấn - NEW
+function computeInterviewOverallStatus(application, updateData = {}) {
+    // Kết hợp dữ liệu hiện tại và dữ liệu mới
+    const currentData = { ...application, ...updateData };
+    
+    // Nếu có ít nhất một ban được chấp nhận -> accepted
+    if (currentData.priorityAccepted || currentData.secondaryAccepted) {
+        return { status: 'accepted', interviewResult: 'accepted' };
+    }
+    
+    // Nếu cả hai ban đều bị từ chối -> rejected
+    const hasPriority = currentData.priority_position && currentData.priority_position !== 'None';
+    const hasSecondary = currentData.secondary_position && currentData.secondary_position !== 'None';
+    
+    if (hasPriority && hasSecondary) {
+        if (currentData.priorityRejected && currentData.secondaryRejected) {
+            return { status: 'rejected', interviewResult: 'rejected' };
+        }
+    } else if (hasPriority && currentData.priorityRejected) {
+        return { status: 'rejected', interviewResult: 'rejected' };
+    } else if (hasSecondary && currentData.secondaryRejected) {
+        return { status: 'rejected', interviewResult: 'rejected' };
+    }
+    
+    // Nếu có ít nhất một ban đã được đánh giá -> reviewed
+    if (currentData.priorityAccepted || currentData.priorityRejected || 
+        currentData.secondaryAccepted || currentData.secondaryRejected) {
+        return { status: 'reviewed', interviewResult: 'reviewed' };
+    }
+    
+    // Mặc định là new
+    return { status: 'new', interviewResult: 'pending' };
 }
 
 // Hàm hiển thị lịch phỏng vấn
@@ -1182,18 +1321,23 @@ function getDepartmentName(code) {
 }
 
 function computeOverallStatus(app) {
+    // 🔥 SỬA: Kiểm tra accepted TRƯỚC trường status tổng
+    if (app.priorityAccepted || app.secondaryAccepted) return 'accepted';
+
     // 🔥 THÊM: Ưu tiên kiểm tra trường status trực tiếp
-    if (app.status === 'reviewed') return 'reviewed';
-    if (app.status === 'accepted') return 'accepted';
     if (app.status === 'rejected') return 'rejected';
-    
-    // Nếu là ứng viên phỏng vấn, xử lý khác với form
+    if (app.status === 'reviewed') return 'reviewed';
+
+    // Nếu là ứng viên phỏng vấn
     if (app.application_type === 'interview') {
         // Nếu có ít nhất một ban được chấp nhận -> accepted
         if (app.priorityAccepted || app.secondaryAccepted) return 'accepted';
         
         // Nếu cả hai ban đều bị từ chối -> rejected
-        if (app.priorityRejected && app.secondaryRejected) return 'rejected';
+        if ((app.priorityRejected && (!app.secondary_position || app.secondaryRejected)) ||
+            (app.secondaryRejected && (!app.priority_position || app.priorityRejected))) {
+            return 'rejected';
+        }
         
         // Nếu có ít nhất một ban đã được đánh giá (accept hoặc reject) -> reviewed
         if (app.priorityAccepted || app.priorityRejected || 
@@ -1202,14 +1346,13 @@ function computeOverallStatus(app) {
         // Mặc định là new
         return 'new';
     } else {
-        // 🔥 SỬA QUAN TRỌNG: Xử lý cho ứng viên điền đơn
+        // Xử lý cho ứng viên điền đơn
         if (app.priorityAccepted || app.secondaryAccepted) return 'accepted';
         if ((app.priorityRejected && (!app.secondary_position || app.secondaryRejected)) ||
             (app.secondaryRejected && (!app.priority_position || app.priorityRejected))) {
             return 'rejected';
         }
         
-        // 🔥 THÊM DÒNG NÀY: Kiểm tra trực tiếp trường status
         if (app.status === 'reviewed') return 'reviewed';
         
         if (app.priorityRejected || app.secondaryRejected) return 'reviewed';
