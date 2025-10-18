@@ -902,7 +902,7 @@
                         email: vc.email,
                         name: app ? app.fullname || '' : '',
                         priority: app ? app.priority_position || '' : '',
-                        backup: app ? app.backup_position || '' : '',
+                        backup: app ? app.secondary_position || '' : '',
                         phone: app ? app.phone || '' : '',
                         interview_schedule: app ? app.interview_schedule || [] : [],
                         addedAt: vc.addedAt
@@ -1470,51 +1470,115 @@
                 return;
             }
             
-            // Create data array
+            // Tạo data array
             const data = [];
             
-            // Add headers
-            data.push(['Ngày', 'Khung giờ', 'Số lượng ứng viên', 'Danh sách ứng viên']);
+            // Tạo headers
+            const headers = ['STT', 'Họ và tên', 'Email', 'SĐT', 'Nguyện vọng 1', 'Nguyện vọng 2'];
             
-            // Calculate counts for each slot
-            const slotCandidates = {};
-            
-            candidates.forEach(candidate => {
-                if (candidate.interview_schedule) {
-                    candidate.interview_schedule.forEach(slot => {
-                        if (!slotCandidates[slot]) {
-                            slotCandidates[slot] = [];
-                        }
-                        slotCandidates[slot].push(candidate.name || candidate.email);
-                    });
-                }
-            });
-            
-            // Add data rows
+            // Thêm tất cả các khung giờ làm headers
             interviewSchedule.forEach(day => {
                 day.slots.forEach(slot => {
-                    const slotId = `${day.id}_${slot.replace(/\s+/g, '_')}`;
-                    const candidatesList = slotCandidates[slotId] || [];
-                    const count = candidatesList.length;
-                    
-                    data.push([
-                        day.date, 
-                        slot, 
-                        count,
-                        candidatesList.join(', ')
-                    ]);
+                    headers.push(`${day.date} - ${slot}`);
                 });
             });
             
-            // Create worksheet
+            data.push(headers);
+            
+            // Tạo mapping cho các slot
+            const slotMap = {};
+            let slotIndex = 6; // Bắt đầu từ cột thứ 6 (sau các thông tin cơ bản)
+            
+            interviewSchedule.forEach(day => {
+                day.slots.forEach(slot => {
+                    const slotId = `${day.id}_${slot.replace(/\s+/g, '_')}`;
+                    slotMap[slotId] = slotIndex;
+                    slotIndex++;
+                });
+            });
+            
+            // Map tên ban đầy đủ
+            const banMapping = {
+                'PD': 'Dự án',
+                'ER': 'Đối ngoại', 
+                'HR': 'Nhân sự',
+                'MD': 'Truyền thông',
+            };
+            
+            // Thêm dữ liệu ứng viên
+            candidates.forEach((candidate, index) => {
+                // Tìm application đầy đủ để lấy ban dự bị
+                const fullApplication = applications.find(app => app.email === candidate.email);
+                
+                // Xử lý tên ban ưu tiên
+                let banUuTien = candidate.priority || '';
+                if (banUuTien && banMapping[banUuTien]) {
+                    banUuTien = banMapping[banUuTien];
+                }
+                
+                // Xử lý ban dự bị
+                let banDuBi = '';
+                if (fullApplication) {
+                    banDuBi = fullApplication.secondary_position || '';
+                    if (banDuBi && banMapping[banDuBi]) {
+                        banDuBi = banMapping[banDuBi];
+                    }
+                }
+                
+                const row = [
+                    index + 1, // STT
+                    candidate.name || '', // Họ và tên
+                    candidate.email, // Email
+                    candidate.phone || '', // SĐT
+                    banUuTien, // Ban ưu tiên (đầy đủ tên)
+                    banDuBi // Ban dự bị (đầy đủ tên)
+                ];
+                
+                // Khởi tạo tất cả các khung giờ là rỗng
+                for (let i = 6; i < headers.length; i++) {
+                    row.push('');
+                }
+                
+                // Đánh dấu X vào các khung giờ ứng viên đã chọn
+                if (candidate.interview_schedule) {
+                    candidate.interview_schedule.forEach(slotId => {
+                        const colIndex = slotMap[slotId];
+                        if (colIndex !== undefined) {
+                            row[colIndex] = 'X';
+                        }
+                    });
+                }
+                
+                data.push(row);
+            });
+            
+            // Tạo worksheet
             const ws = XLSX.utils.aoa_to_sheet(data);
             
-            // Create workbook
+            // Điều chỉnh độ rộng cột
+            const colWidths = [
+                { wch: 5 },  // STT
+                { wch: 25 }, // Họ và tên
+                { wch: 30 }, // Email
+                { wch: 15 }, // SĐT
+                { wch: 10 }, // Ban ưu tiên
+                { wch: 10 }  // Ban dự bị
+            ];
+            
+            // Thêm độ rộng cho các cột khung giờ
+            for (let i = 6; i < headers.length; i++) {
+                colWidths.push({ wch: 25 });
+            }
+            
+            ws['!cols'] = colWidths;
+            
+            // Tạo workbook
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Lịch phỏng vấn');
             
-            // Generate file and download
-            XLSX.writeFile(wb, 'lich_phong_van.xlsx');
+            // Tạo file và download
+            const fileName = `lich_phong_van_enactus_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(wb, fileName);
         }
         
         // Publish schedule button - CẬP NHẬT
