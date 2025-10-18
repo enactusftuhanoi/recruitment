@@ -770,9 +770,44 @@ function renderApplicationData() {
                         frag.appendChild(createDetailItem('Địa điểm', data.location || 'Đang cập nhật'));
                         frag.appendChild(createDetailItem('Ghi chú', data.note || 'Không có'));
                     } else if (roundId === 'round3') {
-                        frag.appendChild(createDetailItem('Thử thách', data.challenge || 'Đang cập nhật'));
-                        frag.appendChild(createDetailItem('Thời hạn', data.deadline || 'Đang cập nhật'));
-                        frag.appendChild(createDetailItem('Hướng dẫn', data.instructions || 'Đang cập nhật'));
+                        const roundObj = applicationData.round3 || {};
+                        const teamName = roundObj.team || 'Chưa có thông tin';
+                        const advisor = roundObj.advisor || 'Chưa có thông tin';
+                        
+                        frag.appendChild(createDetailItem('Team', teamName));
+                        frag.appendChild(createDetailItem('Advisor', advisor));
+
+                        // 🔥 Nếu có teamName, truy vấn Firestore để lấy danh sách các thành viên cùng team
+                        if (teamName && teamName !== 'Chưa có thông tin') {
+                            const membersContainer = createDetailItem('Thành viên Team', 'Đang tải...');
+                            frag.appendChild(membersContainer);
+
+                            db.collection('applications')
+                                .where('round3.team', '==', teamName)
+                                .get()
+                                .then(snapshot => {
+                                    if (snapshot.empty) {
+                                        membersContainer.querySelector('.detail-value').textContent = 'Chưa có thành viên nào';
+                                        return;
+                                    }
+
+                                    const memberNames = [];
+                                    snapshot.forEach(doc => {
+                                        const data = doc.data();
+                                        memberNames.push(data.fullname || 'Ứng viên không tên');
+                                    });
+
+                                    membersContainer.querySelector('.detail-value').textContent = memberNames.join(', ');
+                                })
+                                .catch(err => {
+                                    console.error('Lỗi khi lấy danh sách team:', err);
+                                    membersContainer.querySelector('.detail-value').textContent = 'Không thể tải danh sách';
+                                });
+                        } else {
+                            frag.appendChild(createDetailItem('Thành viên Team', 'Chưa có thông tin'));
+                        }
+
+                        return frag;
                     } else if (roundId === 'round4') {
                         frag.appendChild(createDetailItem('Thời gian', data.time || 'Đang cập nhật'));
                         frag.appendChild(createDetailItem('Địa điểm', data.location || 'Đang cập nhật'));
