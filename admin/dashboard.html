@@ -836,6 +836,36 @@
             }
         }
 
+        /* Thêm vào phần CSS */
+        .duplicate-row {
+            background-color: var(--warning-light) !important;
+            border-left: 4px solid var(--warning);
+        }
+
+        .duplicate-row:hover {
+            background-color: #fef3cd !important;
+        }
+
+        .delete-btn {
+            background-color: var(--error-light) !important;
+            color: var(--error) !important;
+        }
+
+        .delete-btn:hover {
+            background-color: var(--error) !important;
+            color: var(--white) !important;
+        }
+
+        .duplicate-badge {
+            background-color: var(--warning);
+            color: var(--white);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
         /* CSS cho thống kê ban */
         .department-stats-header {
             grid-column: 1 / -1;
@@ -1117,7 +1147,45 @@
                     </thead>
                     <tbody id="round1-table-body"></tbody>
                 </table>
+                <div style="margin-top: 30px; padding: 20px; background: var(--white); border-radius: var(--border-radius); box-shadow: var(--shadow);">
+                    <h3 style="color: var(--error); margin-bottom: 16px;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Ứng viên apply nhiều lần
+                    </h3>
+                    
+                    <div style="margin-bottom: 16px; display: flex; gap: 12px; align-items: center;">
+                        <button class="action-btn" id="scan-duplicates-btn" style="background: var(--warning-light); color: var(--warning);">
+                            <i class="fas fa-search"></i>
+                            Quét đơn trùng
+                        </button>
+                        <span id="duplicates-count" style="font-size: 14px; color: var(--gray-600);">
+                            Chưa quét
+                        </span>
+                    </div>
+                    
+                    <div id="duplicates-container" style="display: none;">
+                        <table class="applications-table">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Số đơn</th>
+                                    <th>Thông tin ứng viên</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="duplicates-table-body">
+                                <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="no-duplicates-message" style="display: none; padding: 20px; text-align: center; color: var(--success);">
+                        <i class="fas fa-check-circle"></i>
+                        Không có ứng viên nào apply nhiều lần
+                    </div>
+                </div>
             </div>
+
             <!-- Round 2 Content -->
             <div id="round2-content" class="round-content" style="display: none">
                 <table class="applications-table">
@@ -1542,6 +1610,343 @@
                 alert("Không thể tải danh sách ứng viên: " + error.message);
             }
         }
+
+        // Thêm vào phần JavaScript, sau các hàm khác
+
+// Hàm tìm và hiển thị ứng viên apply nhiều lần
+function findAndDisplayDuplicateApplications() {
+    console.log("🔍 Đang tìm ứng viên apply nhiều lần...");
+    
+    // Nhóm ứng viên theo email
+    const applicantsByEmail = {};
+    
+    applications.forEach(app => {
+        const email = app.email?.toLowerCase().trim();
+        if (!email) return;
+        
+        if (!applicantsByEmail[email]) {
+            applicantsByEmail[email] = [];
+        }
+        applicantsByEmail[email].push(app);
+    });
+    
+    // Lọc những email có từ 2 đơn trở lên
+    const duplicates = {};
+    let totalDuplicates = 0;
+    
+    Object.keys(applicantsByEmail).forEach(email => {
+        if (applicantsByEmail[email].length > 1) {
+            duplicates[email] = applicantsByEmail[email];
+            totalDuplicates += applicantsByEmail[email].length;
+        }
+    });
+    
+    // Hiển thị kết quả trong console
+    console.log(`📊 Tổng số ứng viên apply nhiều lần: ${Object.keys(duplicates).length}`);
+    console.log(`📝 Tổng số đơn trùng: ${totalDuplicates}`);
+    
+    // Hiển thị kết quả trong UI
+    displayDuplicatesInUI(duplicates);
+    
+    return duplicates;
+}
+
+// Hiển thị danh sách đơn trùng trong UI
+function displayDuplicatesInUI(duplicates) {
+    const container = document.getElementById('duplicates-container');
+    const noDuplicatesMessage = document.getElementById('no-duplicates-message');
+    const countElement = document.getElementById('duplicates-count');
+    const tbody = document.getElementById('duplicates-table-body');
+    
+    tbody.innerHTML = '';
+    
+    if (Object.keys(duplicates).length === 0) {
+        container.style.display = 'none';
+        noDuplicatesMessage.style.display = 'block';
+        countElement.textContent = 'Không có đơn trùng';
+        countElement.style.color = 'var(--success)';
+        return;
+    }
+    
+    container.style.display = 'block';
+    noDuplicatesMessage.style.display = 'none';
+    countElement.textContent = `Tìm thấy ${Object.keys(duplicates).length} ứng viên apply nhiều lần (${Object.values(duplicates).flat().length} đơn)`;
+    countElement.style.color = 'var(--error)';
+    
+    Object.keys(duplicates).forEach(email => {
+        const apps = duplicates[email];
+        const row = document.createElement('tr');
+        row.className = 'duplicate-row';
+        
+        // Tạo dropdown cho từng ứng viên
+        let applicationsHTML = '';
+        apps.forEach((app, index) => {
+            const formattedTime = formatApplicationTime(app.timestamp);
+            const applicationType = app.application_type === 'interview' ? 'Phỏng vấn' : 'Form';
+            const currentRound = getRoundText(app.current_round);
+            
+            applicationsHTML += `
+                <div style="padding: 8px; margin: 4px 0; background: var(--gray-50); border-radius: 4px; border-left: 3px solid var(--info);">
+                    <div style="display: flex; justify-content: between; align-items: start;">
+                        <div style="flex: 1;">
+                            <strong>${index + 1}. ${app.fullname || 'Chưa có tên'}</strong>
+                            <span class="duplicate-badge">${applicationType}</span>
+                        </div>
+                        <div style="font-size: 12px; color: var(--gray-500);">
+                            ID: ${app.id}
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; margin-top: 4px;">
+                        <div>SĐT: ${app.phone || 'Chưa có'}</div>
+                        <div>Vòng: ${currentRound}</div>
+                        <div>Ban ưu tiên: ${getDepartmentName(app.priority_position)}</div>
+                        <div>Ban dự bị: ${getDepartmentName(app.secondary_position)}</div>
+                        <div>Thời gian: ${formattedTime}</div>
+                        ${app.round1 && app.round1.time ? `<div>Thời gian PV: ${app.round1.time}</div>` : ''}
+                        ${app.round1 && app.round1.link ? `<div>Link: <a href="${app.round1.link}" target="_blank">${app.round1.link}</a></div>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        
+        row.innerHTML = `
+            <td style="font-weight: 600; color: var(--error);">${email}</td>
+            <td>
+                <span class="duplicate-badge" style="background: var(--error);">${apps.length} đơn</span>
+            </td>
+            <td>${applicationsHTML}</td>
+            <td>
+                ${userRole === 'superadmin' ? `
+                    <button class="action-btn delete-btn" onclick="showDeleteOptions('${email}')" 
+                            style="margin-bottom: 8px; width: 100%;">
+                        <i class="fas fa-trash"></i>
+                        Xử lý đơn trùng
+                    </button>
+                    <button class="action-btn" onclick="mergeApplications('${email}')" 
+                            style="margin-bottom: 8px; width: 100%; background: var(--info-light); color: var(--info);">
+                        <i class="fas fa-compress"></i>
+                        Gộp đơn
+                    </button>
+                ` : `
+                    <span style="color: var(--gray-500); font-size: 12px;">
+                        Chỉ Super Admin
+                    </span>
+                `}
+            </td>
+        `;
+        
+        tbody.appendChild(row);
+    });
+}
+
+// Định dạng thời gian ứng dụng
+function formatApplicationTime(timestamp) {
+    if (!timestamp) return "Chưa có thời gian";
+    
+    try {
+        let appTime;
+        if (timestamp.toDate) {
+            appTime = timestamp.toDate();
+        } else if (timestamp instanceof Date) {
+            appTime = timestamp;
+        } else if (typeof timestamp === 'string') {
+            appTime = new Date(timestamp);
+        } else if (typeof timestamp === 'number') {
+            appTime = new Date(timestamp);
+        } else {
+            return "Lỗi định dạng";
+        }
+        
+        if (appTime) {
+            return appTime.toLocaleString('vi-VN', {
+                timeZone: 'Asia/Ho_Chi_Minh',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            }) + ' GMT+7';
+        }
+    } catch (e) {
+        return "Lỗi định dạng thời gian";
+    }
+    
+    return "Chưa có thời gian";
+}
+
+// Hiển thị options xóa đơn trùng
+function showDeleteOptions(email) {
+    const duplicates = findAndDisplayDuplicateApplications();
+    const apps = duplicates[email];
+    
+    if (!apps || apps.length === 0) return;
+    
+    let optionsHTML = `
+        <h4 style="margin-bottom: 16px;">Xử lý đơn trùng - ${email}</h4>
+        <p style="color: var(--gray-600); margin-bottom: 16px;">Chọn đơn để xóa (giữ lại đơn có thông tin đầy đủ nhất):</p>
+    `;
+    
+    apps.forEach((app, index) => {
+        const formattedTime = formatApplicationTime(app.timestamp);
+        const applicationType = app.application_type === 'interview' ? 'Phỏng vấn' : 'Form';
+        const hasPhone = app.phone && app.phone.trim() !== '';
+        const hasFullname = app.fullname && app.fullname.trim() !== '';
+        
+        optionsHTML += `
+            <div style="padding: 12px; margin: 8px 0; border: 1px solid var(--gray-300); border-radius: 8px; background: ${hasPhone && hasFullname ? 'var(--success-light)' : 'var(--gray-50)'};">
+                <label style="display: block; cursor: pointer;">
+                    <input type="radio" name="deleteApp" value="${app.id}" style="margin-right: 8px;">
+                    <strong>Đơn ${index + 1}:</strong> ${app.fullname || 'Chưa có tên'} 
+                    <span class="duplicate-badge" style="background: ${applicationType === 'Phỏng vấn' ? 'var(--info)' : 'var(--warning)'};">${applicationType}</span>
+                    ${hasPhone && hasFullname ? '<span class="duplicate-badge" style="background: var(--success);">Đầy đủ</span>' : ''}
+                </label>
+                <div style="font-size: 12px; color: var(--gray-600); margin-left: 24px;">
+                    <div>SĐT: ${app.phone || 'Chưa có'}</div>
+                    <div>Thời gian: ${formattedTime}</div>
+                    <div>ID: ${app.id}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    optionsHTML += `
+        <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end;">
+            <button class="action-btn" onclick="closeDeleteModal()">Hủy</button>
+            <button class="action-btn delete-btn" onclick="deleteSelectedApplication('${email}')">Xóa đơn đã chọn</button>
+        </div>
+    `;
+    
+    // Tạo modal tạm thời
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-trash" style="color: var(--error);"></i>
+                    Xử lý đơn trùng
+                </h2>
+                <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                ${optionsHTML}
+            </div>
+        </div>
+    `;
+    
+    modal.id = 'delete-duplicates-modal';
+    document.body.appendChild(modal);
+}
+
+// Đóng modal xóa
+function closeDeleteModal() {
+    const modal = document.getElementById('delete-duplicates-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Xóa đơn đã chọn
+async function deleteSelectedApplication(email) {
+    const selectedRadio = document.querySelector('input[name="deleteApp"]:checked');
+    
+    if (!selectedRadio) {
+        alert('Vui lòng chọn một đơn để xóa');
+        return;
+    }
+    
+    const appIdToDelete = selectedRadio.value;
+    const appToDelete = applications.find(app => app.id === appIdToDelete);
+    
+    if (!appToDelete) {
+        alert('Không tìm thấy đơn ứng tuyển');
+        return;
+    }
+    
+    if (!confirm(`Bạn có chắc muốn xóa đơn của "${appToDelete.fullname || 'ứng viên'}"?\n\nEmail: ${appToDelete.email}\nID: ${appToDelete.id}\n\nHành động này không thể hoàn tác!`)) {
+        return;
+    }
+    
+    try {
+        await db.collection('applications').doc(appIdToDelete).delete();
+        alert('✅ Đã xóa đơn ứng tuyển thành công');
+        
+        // Cập nhật lại danh sách
+        closeDeleteModal();
+        await refreshApplications();
+        findAndDisplayDuplicateApplications();
+        
+    } catch (error) {
+        console.error('Lỗi khi xóa đơn:', error);
+        alert('❌ Lỗi khi xóa đơn: ' + error.message);
+    }
+}
+
+// Gộp đơn (chức năng nâng cao)
+async function mergeApplications(email) {
+    const duplicates = findAndDisplayDuplicateApplications();
+    const apps = duplicates[email];
+    
+    if (!apps || apps.length < 2) return;
+    
+    // Tìm đơn có thông tin đầy đủ nhất
+    let bestApp = apps[0];
+    let maxScore = 0;
+    
+    apps.forEach(app => {
+        let score = 0;
+        if (app.fullname && app.fullname.trim()) score += 3;
+        if (app.phone && app.phone.trim()) score += 2;
+        if (app.answers && Object.keys(app.answers).length > 0) score += Object.keys(app.answers).length;
+        if (app.application_type === 'interview') score += 1;
+        
+        if (score > maxScore) {
+            maxScore = score;
+            bestApp = app;
+        }
+    });
+    
+    const otherApps = apps.filter(app => app.id !== bestApp.id);
+    
+    let confirmMessage = `Gộp ${otherApps.length} đơn vào đơn chính?\n\n`;
+    confirmMessage += `Đơn chính: ${bestApp.fullname} (${bestApp.email})\n`;
+    confirmMessage += `Số đơn sẽ xóa: ${otherApps.length}\n\n`;
+    confirmMessage += `Đơn chính sẽ được giữ lại, các đơn khác sẽ bị xóa.`;
+    
+    if (!confirm(confirmMessage)) {
+        return;
+    }
+    
+    try {
+        // Xóa các đơn trùng
+        const batch = db.batch();
+        otherApps.forEach(app => {
+            const appRef = db.collection('applications').doc(app.id);
+            batch.delete(appRef);
+        });
+        
+        await batch.commit();
+        alert(`✅ Đã gộp thành công! Đã xóa ${otherApps.length} đơn trùng`);
+        
+        // Cập nhật lại danh sách
+        await refreshApplications();
+        findAndDisplayDuplicateApplications();
+        
+    } catch (error) {
+        console.error('Lỗi khi gộp đơn:', error);
+        alert('❌ Lỗi khi gộp đơn: ' + error.message);
+    }
+}
+
+// Thêm event listener cho nút quét đơn trùng
+document.addEventListener('DOMContentLoaded', function() {
+    const scanBtn = document.getElementById('scan-duplicates-btn');
+    if (scanBtn) {
+        scanBtn.addEventListener('click', findAndDisplayDuplicateApplications);
+    }
+});
 
         // Thêm hàm này sau hàm loadApplications()
         async function refreshApplications() {
@@ -2686,28 +3091,42 @@
         // Thêm các hàm filter sau
 
         function filterRound1Applications() {
-            const departmentFilter =
-                document.getElementById("filter-department").value;
+            const departmentFilter = document.getElementById("filter-department").value;
             const statusFilter = document.getElementById("filter-status").value;
-            const searchText = document
-                .getElementById("search-input")
-                .value.toLowerCase();
+            const searchText = document.getElementById("search-input").value.toLowerCase();
 
             return applications.filter((app) => {
-                if (app.current_round !== "round1") return false;
+                // SỬA: BỎ điều kiện "app.current_round !== "round1"" 
+                // Tab vòng 1 cần hiển thị TẤT CẢ ứng viên để xem đơn ứng tuyển
 
                 // Department filter
                 if (departmentFilter) {
                     const hasPriorityDept = app.priority_position === departmentFilter;
-                    const hasSecondaryDept =
-                        app.secondary_position === departmentFilter;
+                    const hasSecondaryDept = app.secondary_position === departmentFilter;
                     if (!hasPriorityDept && !hasSecondaryDept) return false;
                 }
 
-                // Status filter
+                // Status filter - SỬA: Sử dụng trạng thái thực tế của vòng 1
                 if (statusFilter) {
-                    const round1Status = computeOverallStatus(app);
-                    if (round1Status !== statusFilter) return false;
+                    // Lấy trạng thái thực tế từ vòng 1 (priority_status và secondary_status)
+                    const hasPassPriority = app.priority_status === "pass";
+                    const hasPassSecondary = app.secondary_status === "pass";
+                    const hasNotPassPriority = app.priority_status === "not-pass";
+                    const hasNotPassSecondary = app.secondary_status === "not-pass";
+                    const isPending = !hasPassPriority && !hasPassSecondary && !hasNotPassPriority && !hasNotPassSecondary;
+
+                    let actualStatus;
+                    if (hasPassPriority || hasPassSecondary) {
+                        actualStatus = "pass";
+                    } else if (hasNotPassPriority && hasNotPassSecondary) {
+                        actualStatus = "not-pass";
+                    } else if (isPending) {
+                        actualStatus = "pending";
+                    } else {
+                        actualStatus = "new";
+                    }
+
+                    if (actualStatus !== statusFilter) return false;
                 }
 
                 // Search filter
@@ -2718,8 +3137,7 @@
                         (app.email || "").toLowerCase().includes(searchText) ||
                         (app.phone || "").toLowerCase().includes(searchText)
                     )
-                )
-                    return false;
+                ) return false;
 
                 return true;
             });
@@ -3229,6 +3647,10 @@
                     window.open(`response.html?id=${appId}`, "_blank");
                 });
             });
+            // Tự động quét đơn trùng khi vào tab round1
+            setTimeout(() => {
+                findAndDisplayDuplicateApplications();
+            }, 1000);
         }
 
         function renderRound2() {
