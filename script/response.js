@@ -1571,56 +1571,39 @@ function getDepartmentName(code) {
 }
 
 function computeOverallStatus(app) {
-  // 🔥 SỬA: Kiểm tra accepted TRƯỚC trường status tổng
-  if (app.priorityAccepted || app.secondaryAccepted) return "accepted";
+  if (!app) return "new";
 
-  // 🔥 THÊM: Ưu tiên kiểm tra trường status trực tiếp
-  if (app.status === "rejected") return "rejected";
-  if (app.status === "reviewed") return "reviewed";
-
-  // Nếu là ứng viên phỏng vấn
-  if (app.application_type === "interview") {
-    // Nếu có ít nhất một ban được chấp nhận -> accepted
-    if (app.priorityAccepted || app.secondaryAccepted) return "accepted";
-
-    // Nếu cả hai ban đều bị từ chối -> rejected
-    if (
-      (app.priorityRejected &&
-        (!app.secondary_position || app.secondaryRejected)) ||
-      (app.secondaryRejected &&
-        (!app.priority_position || app.priorityRejected))
-    ) {
-      return "rejected";
-    }
-
-    // Nếu có ít nhất một ban đã được đánh giá (accept hoặc reject) -> reviewed
-    if (
-      app.priorityAccepted ||
-      app.priorityRejected ||
-      app.secondaryAccepted ||
-      app.secondaryRejected
-    )
-      return "reviewed";
-
-    // Mặc định là new
-    return "new";
-  } else {
-    // Xử lý cho ứng viên điền đơn
-    if (app.priorityAccepted || app.secondaryAccepted) return "accepted";
-    if (
-      (app.priorityRejected &&
-        (!app.secondary_position || app.secondaryRejected)) ||
-      (app.secondaryRejected &&
-        (!app.priority_position || app.priorityRejected))
-    ) {
-      return "rejected";
-    }
-
-    if (app.status === "reviewed") return "reviewed";
-
-    if (app.priorityRejected || app.secondaryRejected) return "reviewed";
-    return "new";
+  // 1. ACCEPTED: Nếu có ít nhất 1 ban được chấp nhận
+  if (app.priorityAccepted || app.secondaryAccepted) {
+    return "accepted";
   }
+
+  // 2. REJECTED: Nếu tất cả ban đều bị từ chối
+  const hasPriority = app.priority_position && app.priority_position !== "None";
+  const hasSecondary = app.secondary_position && app.secondary_position !== "None";
+  
+  if (hasPriority && hasSecondary) {
+    if (app.priorityRejected && app.secondaryRejected) {
+      return "rejected";
+    }
+  } else if (hasPriority && app.priorityRejected) {
+    return "rejected";
+  } else if (hasSecondary && app.secondaryRejected) {
+    return "rejected";
+  }
+
+  // 3. REVIEWED: Nếu đã có đánh giá từ admin
+  const hasEvaluation = 
+    app.priorityRejected || app.secondaryRejected ||
+    app.priorityAccepted || app.secondaryAccepted ||
+    app.status === "reviewed";
+    
+  if (hasEvaluation) {
+    return "reviewed";
+  }
+
+  // 4. NEW: Mặc định
+  return "new";
 }
 
 // Hiển thị modal export
