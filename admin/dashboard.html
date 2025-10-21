@@ -917,6 +917,40 @@
             margin-left: 8px;
         }
 
+        /* Tabs trong modal */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.modal .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: 0;
+    padding: 0 24px;
+}
+
+.modal .tab {
+    padding: 12px 24px;
+    font-weight: 500;
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: var(--transition);
+    border-bottom: 2px solid transparent;
+}
+
+.modal .tab:hover {
+    color: var(--gray-800);
+}
+
+.modal .tab.active {
+    color: var(--info);
+    border-bottom: 2px solid var(--info);
+}
+
         /* Responsive */
         @media (max-width: 1024px) {
             .sidebar {
@@ -1360,34 +1394,43 @@
 
     <!-- Archive Modal -->
     <div class="modal" id="archive-modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
                 <h2 class="modal-title">
                     <i class="fas fa-archive" style="color: var(--warning);"></i>
-                    Lưu trữ ứng viên
+                    Quản lý Lưu trữ & Khôi phục
                 </h2>
                 <button class="modal-close" id="archive-modal-close">&times;</button>
             </div>
+            
+            <!-- Tabs -->
+            <div class="tabs" style="margin: 0; padding: 0 24px;">
+                <div class="tab active" data-tab="archive">Lưu trữ</div>
+                <div class="tab" data-tab="restore">Khôi phục</div>
+            </div>
+
             <div class="modal-body">
-                <div id="archive-options">
-                    <h4 style="margin-bottom: 16px;">Chọn phương thức lưu trữ</h4>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-                        <div style="padding: 16px; border: 2px solid var(--info-light); border-radius: 8px; text-align: center; cursor: pointer;" 
-                            onclick="selectArchiveMethod('single')">
-                            <i class="fas fa-user" style="font-size: 24px; color: var(--info); margin-bottom: 8px;"></i>
-                            <div style="font-weight: 600; margin-bottom: 4px;">Lưu trữ từng ứng viên</div>
-                            <div style="font-size: 12px; color: var(--gray-500);">Chọn ứng viên cụ thể để lưu trữ</div>
-                        </div>
+                <!-- Tab Lưu trữ (giữ nguyên) -->
+                <div id="archive-tab" class="tab-content">
+                    <div id="archive-options">
+                        <h4 style="margin-bottom: 16px;">Chọn phương thức lưu trữ</h4>
                         
-                        <div style="padding: 16px; border: 2px solid var(--warning-light); border-radius: 8px; text-align: center; cursor: pointer;" 
-                            onclick="selectArchiveMethod('duplicate')">
-                            <i class="fas fa-copy" style="font-size: 24px; color: var(--warning); margin-bottom: 8px;"></i>
-                            <div style="font-weight: 600; margin-bottom: 4px;">Lưu trữ đơn trùng</div>
-                            <div style="font-size: 12px; color: var(--gray-500);">Lưu trữ ứng viên apply nhiều lần</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                            <div style="padding: 16px; border: 2px solid var(--info-light); border-radius: 8px; text-align: center; cursor: pointer;" 
+                                onclick="selectArchiveMethod('single')">
+                                <i class="fas fa-user" style="font-size: 24px; color: var(--info); margin-bottom: 8px;"></i>
+                                <div style="font-weight: 600; margin-bottom: 4px;">Lưu trữ từng ứng viên</div>
+                                <div style="font-size: 12px; color: var(--gray-500);">Chọn ứng viên cụ thể để lưu trữ</div>
+                            </div>
+                            
+                            <div style="padding: 16px; border: 2px solid var(--warning-light); border-radius: 8px; text-align: center; cursor: pointer;" 
+                                onclick="selectArchiveMethod('duplicate')">
+                                <i class="fas fa-copy" style="font-size: 24px; color: var(--warning); margin-bottom: 8px;"></i>
+                                <div style="font-weight: 600; margin-bottom: 4px;">Lưu trữ đơn trùng</div>
+                                <div style="font-size: 12px; color: var(--gray-500);">Lưu trữ ứng viên apply nhiều lần</div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
                 <div id="single-archive-section" style="display: none;">
                     <h4 style="margin-bottom: 16px;">Lưu trữ ứng viên</h4>
@@ -1428,8 +1471,52 @@
                     </div>
                 </div>
 
+                 <!-- Tab Khôi phục (MỚI) -->
+                <div id="restore-tab" class="tab-content" style="display: none;">
+                    <h4 style="margin-bottom: 16px;">
+                        <i class="fas fa-history" style="color: var(--success);"></i>
+                        Khôi phục ứng viên đã lưu trữ
+                    </h4>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">Tìm kiếm ứng viên đã lưu trữ</label>
+                        <div class="filter-input">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="restore-search" placeholder="Tìm theo tên, email..." oninput="searchArchivedApplications()">
+                        </div>
+                    </div>
+                    
+                    <div id="restore-results" style="max-height: 400px; overflow-y: auto; margin-top: 16px;">
+                        <table class="applications-table" style="font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th>Họ tên</th>
+                                    <th>Email</th>
+                                    <th>Ban chính</th>
+                                    <th>Thời gian lưu trữ</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="restore-results-body">
+                                <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="no-restore-results" style="display: none; padding: 20px; text-align: center; color: var(--gray-500);">
+                        <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px;"></i>
+                        <div>Không có ứng viên nào trong danh sách lưu trữ</div>
+                    </div>
+
+                    <div id="restore-loading" style="display: none; padding: 20px; text-align: center; color: var(--gray-500);">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 16px;"></i>
+                        <div>Đang tải danh sách lưu trữ...</div>
+                    </div>
+                </div>
+
+                <!-- Buttons chung -->
                 <div style="margin-top: 20px; display: flex; gap: 8px; justify-content: flex-end;">
-                    <button class="action-btn" onclick="closeArchiveModal()">Hủy</button>
+                    <button class="action-btn" onclick="closeArchiveModal()">Đóng</button>
                     <button class="action-btn archive-btn" id="confirm-archive-btn" onclick="confirmArchive()" style="display: none;">
                         <i class="fas fa-archive"></i>
                         Xác nhận lưu trữ
@@ -2459,6 +2546,229 @@ async function restoreApplication(archivedAppId) {
         alert('❌ Lỗi khi khôi phục: ' + error.message);
         return false;
     }
+}
+
+// Biến toàn cục mới
+let archivedApplications = [];
+
+// Xử lý chuyển tab
+function setupArchiveModalTabs() {
+    const tabs = document.querySelectorAll('#archive-modal .tab');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Xóa active tất cả tabs
+            tabs.forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Active tab được click
+            tab.classList.add('active');
+            const tabName = tab.getAttribute('data-tab');
+            document.getElementById(`${tabName}-tab`).style.display = 'block';
+            
+            // Nếu là tab restore, load dữ liệu
+            if (tabName === 'restore') {
+                loadArchivedApplications();
+            }
+        });
+    });
+}
+
+// Tải danh sách ứng viên đã lưu trữ
+async function loadArchivedApplications() {
+    const loadingElement = document.getElementById('restore-loading');
+    const resultsElement = document.getElementById('restore-results');
+    const noResultsElement = document.getElementById('no-restore-results');
+    
+    loadingElement.style.display = 'block';
+    resultsElement.style.display = 'none';
+    noResultsElement.style.display = 'none';
+    
+    try {
+        const snapshot = await db.collection('archived_applications')
+            .orderBy('archived_at', 'desc')
+            .get();
+        
+        archivedApplications = [];
+        snapshot.forEach(doc => {
+            archivedApplications.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+        
+        displayArchivedApplications(archivedApplications);
+    } catch (error) {
+        console.error('Lỗi khi tải danh sách lưu trữ:', error);
+        alert('Lỗi khi tải danh sách: ' + error.message);
+    } finally {
+        loadingElement.style.display = 'none';
+    }
+}
+
+// Hiển thị danh sách ứng viên đã lưu trữ
+function displayArchivedApplications(apps) {
+    const tbody = document.getElementById('restore-results-body');
+    const noResults = document.getElementById('no-restore-results');
+    const resultsContainer = document.getElementById('restore-results');
+    
+    tbody.innerHTML = '';
+    
+    if (apps.length === 0) {
+        resultsContainer.style.display = 'none';
+        noResults.style.display = 'block';
+        return;
+    }
+    
+    resultsContainer.style.display = 'block';
+    noResults.style.display = 'none';
+    
+    apps.forEach(app => {
+        const tr = document.createElement('tr');
+        const archiveTime = app.archived_at?.toDate 
+            ? app.archived_at.toDate().toLocaleString('vi-VN')
+            : 'Không rõ';
+        
+        const archivedBy = app.archived_by || 'Không rõ';
+            
+        tr.innerHTML = `
+            <td>
+                <div style="font-weight: 500;">${app.fullname || 'Chưa có tên'}</div>
+                <div style="font-size: 11px; color: var(--gray-500);">ID: ${app.id.substring(0, 8)}...</div>
+            </td>
+            <td>${app.email}</td>
+            <td>
+                <span class="department-badge department-priority">
+                    ${getDepartmentName(app.priority_position)}
+                </span>
+            </td>
+            <td style="font-size: 11px; color: var(--gray-500);">
+                <div>${archiveTime}</div>
+                <div>Bởi: ${archivedBy}</div>
+            </td>
+            <td style="min-width: 120px;">
+                <button class="action-btn restore-btn" onclick="restoreApplication('${app.id}')" 
+                        style="margin-bottom: 4px; width: 100%;">
+                    <i class="fas fa-undo"></i>
+                    Khôi phục
+                </button>
+                <button class="action-btn delete-btn" onclick="permanentlyDelete('${app.id}')" 
+                        style="width: 100%; font-size: 11px; padding: 4px 8px;">
+                    <i class="fas fa-trash"></i>
+                    Xóa vĩnh viễn
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// Tìm kiếm ứng viên đã lưu trữ
+function searchArchivedApplications() {
+    const searchTerm = document.getElementById('restore-search').value.toLowerCase().trim();
+    
+    if (!searchTerm) {
+        displayArchivedApplications(archivedApplications);
+        return;
+    }
+    
+    const filteredApps = archivedApplications.filter(app => 
+        (app.fullname && app.fullname.toLowerCase().includes(searchTerm)) ||
+        (app.email && app.email.toLowerCase().includes(searchTerm)) ||
+        (app.phone && app.phone.toLowerCase().includes(searchTerm))
+    );
+    
+    displayArchivedApplications(filteredApps);
+}
+
+// Khôi phục ứng viên
+async function restoreApplication(archivedAppId) {
+    if (!confirm('Bạn có chắc muốn khôi phục ứng viên này về danh sách chính?')) {
+        return;
+    }
+    
+    try {
+        // Lấy dữ liệu từ archive
+        const archivedDoc = await db.collection('archived_applications').doc(archivedAppId).get();
+        if (!archivedDoc.exists) {
+            alert('Không tìm thấy ứng viên trong archive');
+            return;
+        }
+        
+        const archivedData = archivedDoc.data();
+        
+        // Chuẩn bị dữ liệu để khôi phục
+        const restoreData = { ...archivedData };
+        
+        // Xóa các trường metadata của archive
+        delete restoreData.archived_at;
+        delete restoreData.archived_by;
+        delete restoreData.original_id;
+        
+        // Khôi phục về collection applications
+        await db.collection('applications').doc(archivedAppId).set(restoreData);
+        
+        // Xóa khỏi archive
+        await db.collection('archived_applications').doc(archivedAppId).delete();
+        
+        alert('✅ Đã khôi phục ứng viên thành công!');
+        
+        // Refresh lại danh sách
+        loadArchivedApplications();
+        
+    } catch (error) {
+        console.error('Lỗi khi khôi phục ứng viên:', error);
+        alert('❌ Lỗi khi khôi phục: ' + error.message);
+    }
+}
+
+// Xóa vĩnh viễn ứng viên
+async function permanentlyDelete(archivedAppId) {
+    if (!confirm('⚠️ Bạn có CHẮC CHẮN muốn xóa VĨNH VIỄN ứng viên này?\n\nHành động này không thể hoàn tác!')) {
+        return;
+    }
+    
+    try {
+        await db.collection('archived_applications').doc(archivedAppId).delete();
+        alert('✅ Đã xóa vĩnh viễn ứng viên');
+        loadArchivedApplications();
+    } catch (error) {
+        console.error('Lỗi khi xóa vĩnh viễn:', error);
+        alert('❌ Lỗi khi xóa: ' + error.message);
+    }
+}
+
+// Sửa hàm resetArchiveModal để reset cả tabs
+function resetArchiveModal() {
+    selectedArchiveMethod = null;
+    selectedAppsForArchive.clear();
+    currentDuplicateEmail = null;
+    
+    // Reset về tab archive
+    document.querySelectorAll('#archive-modal .tab').forEach((tab, index) => {
+        if (index === 0) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+    
+    document.querySelectorAll('.tab-content').forEach((content, index) => {
+        if (index === 0) {
+            content.style.display = 'block';
+        } else {
+            content.style.display = 'none';
+        }
+    });
+    
+    document.getElementById('archive-options').style.display = 'block';
+    document.getElementById('single-archive-section').style.display = 'none';
+    document.getElementById('duplicate-archive-section').style.display = 'none';
+    document.getElementById('confirm-archive-btn').style.display = 'none';
+    
+    // Clear search
+    document.getElementById('restore-search').value = '';
 }
 
 // Hàm debounce cho search
@@ -5670,6 +5980,12 @@ document.getElementById('archive-modal-close').addEventListener('click', closeAr
 
         // Thêm vào cuối phần event listeners
         document.getElementById('archive-apps-btn').addEventListener('click', openArchiveModal);
+
+        // Khởi tạo tabs khi modal được mở
+        document.getElementById('archive-apps-btn').addEventListener('click', () => {
+            openArchiveModal();
+            setTimeout(setupArchiveModalTabs, 100); // Đảm bảo DOM đã render
+        });
 
         function applyFiltersToCurrentTab() {
             const activeTab = document
