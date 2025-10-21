@@ -1888,7 +1888,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Vòng đơn
   const formStart = new Date("2025-10-01T21:00:00+07:00"); 
-  const formEnd   = new Date("2025-10-21T20:00:00+07:00"); 
+  const formEnd   = new Date("2025-10-22T00:30:00+07:00"); 
 
   let allowedType = null;
 
