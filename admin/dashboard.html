@@ -2508,58 +2508,50 @@
         }
       });
 
-      // Thêm event listener cho nút reset team
-      document
-        .getElementById("reset-teams-btn")
-        .addEventListener("click", async () => {
-          if (
-            !confirm(
-              "Bạn có chắc muốn reset toàn bộ team? Tất cả thông tin team hiện tại sẽ bị xóa."
-            )
-          ) {
+      // Sửa hàm resetTeams trong phần event listener
+document.getElementById("reset-teams-btn").addEventListener("click", async () => {
+    if (!confirm("Bạn có chắc muốn reset toàn bộ team? Tất cả thông tin team hiện tại sẽ bị xóa.")) {
+        return;
+    }
+
+    try {
+        // Tìm tất cả ứng viên đang có team trong vòng 3
+        const round3Apps = applications.filter(app => 
+            app.current_round === "round3" && app.round3 && app.round3.team
+        );
+
+        if (round3Apps.length === 0) {
+            alert("Không có team nào để reset!");
             return;
-          }
+        }
 
-          try {
-            // Tìm tất cả ứng viên đang có team trong vòng 3
-            const round3Apps = applications.filter(
-              (app) =>
-                app.current_round === "round3" && app.round3 && app.round3.team
-            );
+        const batch = db.batch();
 
-            if (round3Apps.length === 0) {
-              alert("Không có team nào để reset!");
-              return;
-            }
-
-            const batch = db.batch();
-
-            // Xóa thông tin team của tất cả ứng viên
-            round3Apps.forEach((app) => {
-              const appRef = db.collection("applications").doc(app.id);
-              batch.update(appRef, {
+        // Xóa thông tin team VÀ ADVISOR của tất cả ứng viên
+        round3Apps.forEach(app => {
+            const appRef = db.collection("applications").doc(app.id);
+            batch.update(appRef, {
                 "round3.team": firebase.firestore.FieldValue.delete(),
                 "round3.teamId": firebase.firestore.FieldValue.delete(),
                 "round3.teamOrder": firebase.firestore.FieldValue.delete(),
                 "round3.advisor1": firebase.firestore.FieldValue.delete(),
                 "round3.advisor2": firebase.firestore.FieldValue.delete(),
-              });
+                "round3.supporter": firebase.firestore.FieldValue.delete() // Thêm cả supporter nếu có
             });
-
-            await batch.commit();
-
-            alert(
-              `✅ Đã reset ${round3Apps.length} ứng viên về trạng thái chưa có team!`
-            );
-
-            // Đóng modal và refresh dữ liệu
-            document.getElementById("team-modal").style.display = "none";
-            await refreshApplications();
-          } catch (error) {
-            console.error("Lỗi khi reset team:", error);
-            alert("❌ Lỗi khi reset team: " + error.message);
-          }
         });
+
+        await batch.commit();
+
+        alert(`✅ Đã reset ${round3Apps.length} ứng viên về trạng thái chưa có team!`);
+
+        // Đóng modal và refresh dữ liệu
+        document.getElementById("team-modal").style.display = "none";
+        await refreshApplications();
+    } catch (error) {
+        console.error("Lỗi khi reset team:", error);
+        alert("❌ Lỗi khi reset team: " + error.message);
+    }
+});
 
       // Biến toàn cục
       let selectedArchiveMethod = null;

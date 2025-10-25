@@ -714,119 +714,181 @@ function renderApplicationData() {
         }
 
         /* ---------- build fragment chi tiết cho 1 vòng (không dùng innerHTML) ---------- */
-        function buildRoundDetailsFragment(roundId) {
-            var frag = document.createDocumentFragment();
-            if (!applicationData) {
-                frag.appendChild(createDetailItem('', 'Chưa có thông tin chi tiết'));
-                return frag;
-            }
+       function buildRoundDetailsFragment(roundId) {
+    var frag = document.createDocumentFragment();
+    if (!applicationData) {
+        frag.appendChild(createDetailItem('', 'Chưa có thông tin chi tiết'));
+        return frag;
+    }
 
-            if (roundId === 'round1') {
-                ['priority', 'secondary'].forEach(function(type) {
-                    var dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
-                    if (!dept) return;
-                    var status = getRound1Status(type);
-                    frag.appendChild(createDetailItem('Ban ' + getDepartmentName(dept) + ' (' + type + ')', 'Trạng thái: ' + getStatusText(status)));
-                });
-                frag.appendChild(createDetailItem('Hình thức ứng tuyển', applicationData.application_type || 'Form trực tuyến'));
-                
-                var ts = 'Đang cập nhật';
-                if (applicationData.timestamp) {
-                    try {
-                        let date;
-                        if (applicationData.timestamp.toDate && typeof applicationData.timestamp.toDate === 'function') {
-                            date = applicationData.timestamp.toDate();
-                        } else if (applicationData.timestamp.seconds) {
-                            date = new Date(applicationData.timestamp.seconds * 1000);
-                        } else if (typeof applicationData.timestamp === 'string') {
-                            date = new Date(applicationData.timestamp);
-                        } else if (typeof applicationData.timestamp === 'number') {
-                            date = new Date(applicationData.timestamp);
-                        }
-                        if (date) {
-                            ts = date.toLocaleString('vi-VN');
-                        }
-                    } catch (error) {
-                        console.error('Error parsing timestamp:', error);
-                    }
+    if (roundId === 'round1') {
+        ['priority', 'secondary'].forEach(function(type) {
+            var dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
+            if (!dept) return;
+            var status = getRound1Status(type);
+            frag.appendChild(createDetailItem('Ban ' + getDepartmentName(dept) + ' (' + type + ')', 'Trạng thái: ' + getStatusText(status)));
+        });
+        frag.appendChild(createDetailItem('Hình thức ứng tuyển', applicationData.application_type || 'Form trực tuyến'));
+        
+        var ts = 'Đang cập nhật';
+        if (applicationData.timestamp) {
+            try {
+                let date;
+                if (applicationData.timestamp.toDate && typeof applicationData.timestamp.toDate === 'function') {
+                    date = applicationData.timestamp.toDate();
+                } else if (applicationData.timestamp.seconds) {
+                    date = new Date(applicationData.timestamp.seconds * 1000);
+                } else if (typeof applicationData.timestamp === 'string') {
+                    date = new Date(applicationData.timestamp);
+                } else if (typeof applicationData.timestamp === 'number') {
+                    date = new Date(applicationData.timestamp);
                 }
-                frag.appendChild(createDetailItem('Thời gian nộp đơn', ts));
-                return frag;
+                if (date) {
+                    ts = date.toLocaleString('vi-VN');
+                }
+            } catch (error) {
+                console.error('Error parsing timestamp:', error);
             }
-
-            if (roundId === 'round2' || roundId === 'round3' || roundId === 'round4') {
-                var roundObj = applicationData[roundId] || {};
-                var roundNum = (roundId === 'round2' ? 2 : (roundId === 'round3' ? 3 : 4));
-                ['priority', 'secondary'].forEach(function(type) {
-                    if (isEliminatedBefore(type, roundNum)) return; // nếu ban đã out trước đó thì ko show detail
-                    var dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
-                    if (!dept) return;
-                    var data = roundObj[type] || {};
-                    var status = applicationData[roundId + '_' + type + '_status'] || 'pending';
-                    frag.appendChild(createDetailItem('Ban ' + getDepartmentName(dept) + ' (' + type + ')', 'Trạng thái: ' + getStatusText(status)));
-
-                    if (roundId === 'round2') {
-                        frag.appendChild(createDetailItem('Thời gian', data.time || 'Đang cập nhật'));
-                        frag.appendChild(createDetailItem('Địa điểm', data.location || 'Đang cập nhật'));
-                        frag.appendChild(createDetailItem('Ghi chú', data.note || 'Không có'));
-                    } else if (roundId === 'round3') {
-                        const roundObj = applicationData.round3 || {};
-                        const teamName = roundObj.team || 'Chưa có thông tin';
-                        const advisor = roundObj.advisor || 'Chưa có thông tin';
-                        
-                        frag.appendChild(createDetailItem('Team', teamName));
-                        frag.appendChild(createDetailItem('Advisor', advisor));
-
-                        // 🔥 Nếu có teamName, truy vấn Firestore để lấy danh sách các thành viên cùng team
-                        if (teamName && teamName !== 'Chưa có thông tin') {
-                            const membersContainer = createDetailItem('Thành viên Team', 'Đang tải...');
-                            frag.appendChild(membersContainer);
-
-                            db.collection('applications')
-                                .where('round3.team', '==', teamName)
-                                .get()
-                                .then(snapshot => {
-                                    if (snapshot.empty) {
-                                        membersContainer.querySelector('.detail-value').textContent = 'Chưa có thành viên nào';
-                                        return;
-                                    }
-
-                                    const memberNames = [];
-                                    snapshot.forEach(doc => {
-                                        const data = doc.data();
-                                        memberNames.push(data.fullname || 'Ứng viên không tên');
-                                    });
-
-                                    membersContainer.querySelector('.detail-value').textContent = memberNames.join(', ');
-                                })
-                                .catch(err => {
-                                    console.error('Lỗi khi lấy danh sách team:', err);
-                                    membersContainer.querySelector('.detail-value').textContent = 'Không thể tải danh sách';
-                                });
-                        } else {
-                            frag.appendChild(createDetailItem('Thành viên Team', 'Chưa có thông tin'));
-                        }
-
-                        return frag;
-                    } else if (roundId === 'round4') {
-                        frag.appendChild(createDetailItem('Thời gian', data.time || 'Đang cập nhật'));
-                        frag.appendChild(createDetailItem('Địa điểm', data.location || 'Đang cập nhật'));
-                        frag.appendChild(createDetailItem('Người phỏng vấn', data.interviewer || 'Đang cập nhật'));
-                        frag.appendChild(createDetailItem('Hình thức', data.method || 'Đang cập nhật'));
-                        frag.appendChild(createDetailItem('Ghi chú', data.note || 'Không có'));
-                    }
-                });
-                return frag;
-            }
-
-            if (roundId === 'success') {
-                frag.appendChild(createDetailItem('Kết quả cuối cùng', getStatusText(applicationData.final_status || 'pending')));
-                return frag;
-            }
-
-            frag.appendChild(createDetailItem('', 'Chưa có thông tin chi tiết'));
-            return frag;
         }
+        frag.appendChild(createDetailItem('Thời gian nộp đơn', ts));
+        return frag;
+    }
+
+    // VÒNG 2 - CẬP NHẬT THEO DỮ LIỆU MỚI
+    if (roundId === 'round2') {
+        var roundObj = applicationData.round2 || {};
+        
+        // Lấy thông tin chung từ round2
+        var commonData = roundObj.priority || roundObj.secondary || {};
+        
+        // Thông tin chung
+        if (commonData.time) frag.appendChild(createDetailItem('Thời gian', commonData.time));
+        if (commonData.location) frag.appendChild(createDetailItem('Địa điểm/Link', commonData.location));
+        if (commonData.method) frag.appendChild(createDetailItem('Hình thức', commonData.method === 'online' ? 'Online' : 'Offline'));
+        if (commonData.note) frag.appendChild(createDetailItem('Ghi chú', commonData.note));
+        
+        // Thông tin theo ban
+        ['priority', 'secondary'].forEach(function(type) {
+            if (isEliminatedBefore(type, 2)) return;
+            var dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
+            if (!dept) return;
+            var status = applicationData['round2_' + type + '_status'] || 'pending';
+            frag.appendChild(createDetailItem('Ban ' + getDepartmentName(dept), 'Trạng thái: ' + getStatusText(status)));
+        });
+        return frag;
+    }
+
+    // VÒNG 3 - CẬP NHẬT THEO DỮ LIỆU MỚI
+    if (roundId === 'round3') {
+        var roundObj = applicationData.round3 || {};
+        
+        // Thông tin team
+        if (roundObj.team) {
+            frag.appendChild(createDetailItem('Team', roundObj.team));
+        }
+        
+        // Thông tin advisor/supporter
+        if (roundObj.advisor1 || roundObj.advisor2 || roundObj.supporter) {
+            var advisors = [];
+            if (roundObj.advisor1) advisors.push(roundObj.advisor1);
+            if (roundObj.advisor2) advisors.push(roundObj.advisor2);
+            if (roundObj.supporter) advisors.push(roundObj.supporter);
+            frag.appendChild(createDetailItem('Advisor/Supporter', advisors.join(', ')));
+        }
+        
+        // Thông tin theo ban
+        ['priority', 'secondary'].forEach(function(type) {
+            if (isEliminatedBefore(type, 3)) return;
+            var dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
+            if (!dept) return;
+            
+            var data = roundObj[type] || {};
+            var status = applicationData['round3_' + type + '_status'] || 'pending';
+            
+            frag.appendChild(createDetailItem('Ban ' + getDepartmentName(dept), 'Trạng thái: ' + getStatusText(status)));
+            if (data.note) frag.appendChild(createDetailItem('Ghi chú ' + getDepartmentName(dept), data.note));
+        });
+
+        // 🔥 Hiển thị thành viên team nếu có team
+        if (roundObj.team && roundObj.team !== 'Chưa có team') {
+            const membersContainer = createDetailItem('Thành viên Team', 'Đang tải...');
+            frag.appendChild(membersContainer);
+
+            db.collection('applications')
+                .where('round3.team', '==', roundObj.team)
+                .get()
+                .then(snapshot => {
+                    if (snapshot.empty) {
+                        membersContainer.querySelector('.detail-value').textContent = 'Chưa có thành viên nào';
+                        return;
+                    }
+
+                    const memberNames = [];
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        memberNames.push(data.fullname || 'Ứng viên không tên');
+                    });
+
+                    membersContainer.querySelector('.detail-value').textContent = memberNames.join(', ');
+                })
+                .catch(err => {
+                    console.error('Lỗi khi lấy danh sách team:', err);
+                    membersContainer.querySelector('.detail-value').textContent = 'Không thể tải danh sách';
+                });
+        }
+        return frag;
+    }
+
+    if (roundId === 'round4') {
+        var roundObj = applicationData.round4 || {};
+        ['priority', 'secondary'].forEach(function(type) {
+            if (isEliminatedBefore(type, 4)) return;
+            var dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
+            if (!dept) return;
+            var data = roundObj[type] || {};
+            var status = applicationData['round4_' + type + '_status'] || 'pending';
+            frag.appendChild(createDetailItem('Ban ' + getDepartmentName(dept) + ' (' + type + ')', 'Trạng thái: ' + getStatusText(status)));
+
+            if (data.time) frag.appendChild(createDetailItem('Thời gian', data.time));
+            if (data.location) frag.appendChild(createDetailItem('Địa điểm', data.location));
+            if (data.interviewer) frag.appendChild(createDetailItem('Người phỏng vấn', data.interviewer));
+            if (data.method) frag.appendChild(createDetailItem('Hình thức', data.method));
+            if (data.note) frag.appendChild(createDetailItem('Ghi chú', data.note));
+        });
+        return frag;
+    }
+
+    if (roundId === 'success') {
+        frag.appendChild(createDetailItem('Kết quả cuối cùng', getStatusText(applicationData.final_status || 'pending')));
+        return frag;
+    }
+
+    frag.appendChild(createDetailItem('', 'Chưa có thông tin chi tiết'));
+    return frag;
+}
+
+// Helper function để tạo detail item
+function createDetailItem(label, value) {
+    var wrap = document.createElement('div');
+    wrap.className = 'detail-item';
+    var lab = document.createElement('div');
+    lab.className = 'detail-label';
+    lab.textContent = label;
+    var val = document.createElement('div');
+    val.className = 'detail-value';
+    val.textContent = value;
+    wrap.appendChild(lab);
+    wrap.appendChild(val);
+    return wrap;
+}
+
+// Helper function để toggle hiển thị chi tiết
+function toggleRoundDetails(roundId) {
+    var detailsElement = document.getElementById('details-' + roundId);
+    if (!detailsElement) return;
+    if (detailsElement.classList.contains('active')) detailsElement.classList.remove('active');
+    else detailsElement.classList.add('active');
+}
 
         /* ---------- renderRounds (DOM-based, không dùng template literals) ---------- */
         function renderRounds() {
