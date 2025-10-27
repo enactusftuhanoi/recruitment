@@ -1142,6 +1142,51 @@
   font-weight: 500;
 }
 
+/* Thêm vào phần CSS */
+#export-modal .modal-content {
+    max-width: 500px;
+}
+
+#export-modal .modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#export-modal .action-btn {
+    width: 100%;
+    padding: 12px;
+    text-align: center;
+    justify-content: center;
+}
+
+#department-filter {
+    border-top: 1px solid var(--gray-200);
+    padding-top: 16px;
+    margin-top: 16px;
+}
+
+/* Thêm vào phần CSS */
+#round-filter {
+    border-top: 1px solid var(--gray-200);
+    padding-top: 16px;
+    margin-top: 16px;
+}
+
+#export-modal .modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#export-modal .action-btn {
+    width: 100%;
+    padding: 12px;
+    text-align: center;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
       /* Tab khôi phục */
       #restore-tab .applications-table {
         font-size: 12px;
@@ -1686,8 +1731,8 @@
             <button class="action-btn" onclick="exportData('byDepartment')">
               Theo ban
             </button>
-            <button class="action-btn" onclick="exportData('byCandidate')">
-              Theo ứng viên
+            <button class="action-btn" onclick="exportData('byRound')">
+              Theo vòng
             </button>
             <button
               class="action-btn"
@@ -1890,7 +1935,7 @@
                   <tr>
                     <th>Họ tên</th>
                     <th>Email</th>
-                    <th>Ban chính</th>
+                    <th>Nguyện vọng 1</th>
                     <th>Thời gian lưu trữ</th>
                     <th>Hành động</th>
                   </tr>
@@ -2449,10 +2494,10 @@
                     <div style="font-size: 12px; margin-top: 4px;">
                         <div>SĐT: ${app.phone || "Chưa có"}</div>
                         <div>Vòng: ${currentRound}</div>
-                        <div>Ban ưu tiên: ${getDepartmentName(
+                        <div>Nguyện vọng 1 ${getDepartmentName(
                           app.priority_position
                         )}</div>
-                        <div>Ban dự bị: ${getDepartmentName(
+                        <div>Nguyện vọng 2: ${getDepartmentName(
                           app.secondary_position
                         )}</div>
                         <div>Thời gian: ${formattedTime}</div>
@@ -3103,6 +3148,348 @@ function findCandidateByName(name) {
   });
 }
 
+// Biến toàn cục để lưu loại export
+let currentExportType = '';
+
+// Mở modal export
+document.getElementById('export-btn').addEventListener('click', function() {
+    document.getElementById('export-modal').style.display = 'flex';
+});
+
+// Đóng modal export
+document.getElementById('export-modal-close').addEventListener('click', function() {
+    document.getElementById('export-modal').style.display = 'none';
+});
+
+// Hàm export chính
+async function exportData(type) {
+    try {
+        currentExportType = type;
+        let data = [];
+        let fileName = '';
+        
+        switch(type) {
+            case 'all':
+                data = exportAllData();
+                fileName = 'Toan_bo_ung_vien.xlsx';
+                break;
+            case 'personal':
+                data = exportPersonalInfo();
+                fileName = 'Thong_tin_ca_nhan.xlsx';
+                break;
+            case 'results':
+                data = exportResults();
+                fileName = 'Ket_qua_ung_tuyen.xlsx';
+                break;
+            case 'byDepartment':
+                // Hiển thị bộ lọc department
+                document.getElementById('department-filter').style.display = 'block';
+                document.getElementById('round-filter').style.display = 'none';
+                return;
+            case 'byRound':
+                // Hiển thị bộ lọc vòng
+                document.getElementById('department-filter').style.display = 'none';
+                document.getElementById('round-filter').style.display = 'block';
+                return;
+            case 'personalWithResults':
+                data = exportPersonalWithResults();
+                fileName = 'Thong_tin_va_ket_qua.xlsx';
+                break;
+        }
+        
+        if (data.length > 0) {
+            exportToExcel(data, fileName);
+            document.getElementById('export-modal').style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Lỗi khi export:', error);
+        alert('Lỗi khi xuất file: ' + error.message);
+    }
+}
+
+// Export theo department
+function exportDepartmentData() {
+    const department = document.getElementById('export-department').value;
+    const data = exportByDepartment(department);
+    const fileName = `Ung_vien_${getDepartmentName(department)}.xlsx`;
+    
+    exportToExcel(data, fileName);
+    document.getElementById('export-modal').style.display = 'none';
+}
+
+// Các hàm export cụ thể
+function exportAllData() {
+    const data = [['DANH SÁCH TOÀN BỘ ỨNG VIÊN']];
+    
+    // Tiêu đề
+    data.push([
+        'STT', 'Họ và tên', 'Email', 'SĐT', 
+        'Nguyện vọng 1', 'Trạng thái NV1',
+        'Nguyện vọng 2', 'Trạng thái NV2',
+        'Vòng hiện tại', 'Trạng thái tổng',
+        'Thời gian apply', 'Loại đơn'
+    ]);
+    
+    // Dữ liệu
+    applications.forEach((app, index) => {
+        data.push([
+            index + 1,
+            app.fullname || '',
+            app.email || '',
+            app.phone || '',
+            getDepartmentName(app.priority_position),
+            getStatusText(app.priority_status || 'pending'),
+            app.secondary_position && app.secondary_position !== 'None' 
+                ? getDepartmentName(app.secondary_position) 
+                : 'Không có',
+            app.secondary_position && app.secondary_position !== 'None' 
+                ? getStatusText(app.secondary_status || 'pending') 
+                : '',
+            getRoundText(app.current_round),
+            getStatusText(computeOverallStatus(app)),
+            formatApplicationTime(app.timestamp),
+            app.application_type === 'interview' ? 'Phỏng vấn' : 'Form'
+        ]);
+    });
+    
+    return data;
+}
+
+function exportPersonalInfo() {
+    const data = [['THÔNG TIN CÁ NHÂN ỨNG VIÊN']];
+    
+    data.push([
+        'STT', 'Họ và tên', 'Email', 'SĐT', 
+        'Nguyện vọng 1', 'Nguyện vọng 2',
+        'Thời gian apply', 'Loại đơn'
+    ]);
+    
+    applications.forEach((app, index) => {
+        data.push([
+            index + 1,
+            app.fullname || '',
+            app.email || '',
+            app.phone || '',
+            getDepartmentName(app.priority_position),
+            app.secondary_position && app.secondary_position !== 'None' 
+                ? getDepartmentName(app.secondary_position) 
+                : 'Không có',
+            formatApplicationTime(app.timestamp),
+            app.application_type === 'interview' ? 'Phỏng vấn' : 'Form'
+        ]);
+    });
+    
+    return data;
+}
+
+function exportResults() {
+    const data = [['KẾT QUẢ ỨNG TUYỂN']];
+    
+    data.push([
+        'STT', 'Họ và tên', 'Email',
+        'Nguyện vọng 1', 'Vòng 1 (NV1)', 'Vòng 2 (NV1)', 'Vòng 3 (NV1)', 'Vòng 4 (NV1)',
+        'Nguyện vọng 2', 'Vòng 1 (NV2)', 'Vòng 2 (NV2)', 'Vòng 3 (NV2)', 'Vòng 4 (NV2)',
+        'Vòng hiện tại', 'Ban chính thức'
+    ]);
+    
+    applications.forEach((app, index) => {
+        data.push([
+            index + 1,
+            app.fullname || '',
+            app.email || '',
+            getDepartmentName(app.priority_position),
+            getStatusText(app.priority_status || 'pending'),
+            getStatusText(app.round2_priority_status || 'pending'),
+            getStatusText(app.round3_priority_status || 'pending'),
+            getStatusText(app.round4_priority_status || 'pending'),
+            app.secondary_position && app.secondary_position !== 'None' 
+                ? getDepartmentName(app.secondary_position) 
+                : 'Không có',
+            app.secondary_position && app.secondary_position !== 'None' 
+                ? getStatusText(app.secondary_status || 'pending') 
+                : '',
+            app.secondary_position && app.secondary_position !== 'None' 
+                ? getStatusText(app.round2_secondary_status || 'pending') 
+                : '',
+            app.secondary_position && app.secondary_position !== 'None' 
+                ? getStatusText(app.round3_secondary_status || 'pending') 
+                : '',
+            app.secondary_position && app.secondary_position !== 'None' 
+                ? getStatusText(app.round4_secondary_status || 'pending') 
+                : '',
+            getRoundText(app.current_round),
+            app.final_department ? getDepartmentName(app.final_department) : 'Chưa có'
+        ]);
+    });
+    
+    return data;
+}
+
+function exportByDepartment(department) {
+    const data = [[`DANH SÁCH ỨNG VIÊN BAN ${getDepartmentName(department).toUpperCase()}`]];
+    
+    data.push([
+        'STT', 'Họ và tên', 'Email', 'SĐT',
+        'Vai trò', 'Vòng hiện tại', 'Trạng thái',
+        'Thời gian apply', 'Loại đơn'
+    ]);
+    
+    let count = 1;
+    applications.forEach((app) => {
+        // Kiểm tra ứng viên thuộc department nào
+        const isPriority = app.priority_position === department;
+        const isSecondary = app.secondary_position === department;
+        
+        if (isPriority || isSecondary) {
+            const role = isPriority ? 'Nguyện vọng 1' : 'Nguyện vọng 2';
+            const status = isPriority ? 
+                (app.round2_priority_status || app.priority_status || 'pending') : 
+                (app.round2_secondary_status || app.secondary_status || 'pending');
+            
+            data.push([
+                count++,
+                app.fullname || '',
+                app.email || '',
+                app.phone || '',
+                role,
+                getRoundText(app.current_round),
+                getStatusText(status),
+                formatApplicationTime(app.timestamp),
+                app.application_type === 'interview' ? 'Phỏng vấn' : 'Form'
+            ]);
+        }
+    });
+    
+    return data;
+}
+
+function exportByRound() {
+    const data = [['DANH SÁCH ỨNG VIÊN THEO VÒNG']];
+    
+    // Nhóm theo vòng
+    const rounds = {
+        'round1': 'Vòng 1: Đơn',
+        'round2': 'Vòng 2: Phỏng vấn nhóm', 
+        'round3': 'Vòng 3: Teamwork',
+        'round4': 'Vòng 4: Phỏng vấn cá nhân',
+        'success': 'Thành viên chính thức'
+    };
+    
+    Object.keys(rounds).forEach(roundKey => {
+        const roundApps = applications.filter(app => app.current_round === roundKey);
+        
+        if (roundApps.length > 0) {
+            data.push([]);
+            data.push([rounds[roundKey]]);
+            data.push(['STT', 'Họ và tên', 'Email', 'Nguyện vọng 1', 'Nguyện vọng 2', 'Trạng thái']);
+            
+            roundApps.forEach((app, index) => {
+                data.push([
+                    index + 1,
+                    app.fullname || '',
+                    app.email || '',
+                    getDepartmentName(app.priority_position),
+                    app.secondary_position && app.secondary_position !== 'None' 
+                        ? getDepartmentName(app.secondary_position) 
+                        : 'Không có',
+                    getStatusText(computeOverallStatus(app))
+                ]);
+            });
+        }
+    });
+    
+    return data;
+}
+
+function exportPersonalWithResults() {
+    const data = [['THÔNG TIN CÁ NHÂN VÀ KẾT QUẢ ỨNG TUYỂN']];
+    
+    data.push([
+        'STT', 'Họ và tên', 'Email', 'SĐT',
+        'Nguyện vọng 1', 'Kết quả nguyện vọng 1',
+        'Nguyện vọng 2', 'Kết quả nguyện vọng 2', 
+        'Vòng hiện tại', 'Thời gian apply'
+    ]);
+    
+    applications.forEach((app, index) => {
+        // Xác định kết quả cho từng nguyện vọng
+        const result1 = getDepartmentResult(app, 'priority');
+        const result2 = app.secondary_position && app.secondary_position !== 'None' 
+            ? getDepartmentResult(app, 'secondary') 
+            : 'Không có';
+        
+        data.push([
+            index + 1,
+            app.fullname || '',
+            app.email || '',
+            app.phone || '',
+            getDepartmentName(app.priority_position),
+            result1,
+            app.secondary_position && app.secondary_position !== 'None' 
+                ? getDepartmentName(app.secondary_position) 
+                : 'Không có',
+            result2,
+            getRoundText(app.current_round),
+            formatApplicationTime(app.timestamp)
+        ]);
+    });
+    
+    return data;
+}
+
+// Hàm helper để lấy kết quả của một department
+function getDepartmentResult(app, type) {
+    const prefix = type === 'priority' ? '' : 'secondary_';
+    const round1Status = app[`${prefix}status`] || 'pending';
+    const round2Status = app[`round2_${prefix}status`] || 'pending';
+    const round3Status = app[`round3_${prefix}status`] || 'pending';
+    const round4Status = app[`round4_${prefix}status`] || 'pending';
+    
+    if (app.current_round === 'success' && app.final_department === app[`${type}_position`]) {
+        return 'Trúng tuyển';
+    }
+    
+    // Kiểm tra nếu bị loại ở bất kỳ vòng nào
+    if (round1Status === 'not-pass') return 'Loại vòng 1';
+    if (round2Status === 'not-pass') return 'Loại vòng 2';
+    if (round3Status === 'not-pass') return 'Loại vòng 3';
+    if (round4Status === 'not-pass') return 'Loại vòng 4';
+    
+    // Kiểm tra trạng thái hiện tại
+    switch (app.current_round) {
+        case 'round1': return 'Đang chờ vòng 1';
+        case 'round2': return round1Status === 'pass' ? 'Pass vòng 1' : 'Đang chờ vòng 1';
+        case 'round3': return round2Status === 'pass' ? 'Pass vòng 2' : 'Đang chờ vòng 2';
+        case 'round4': return round3Status === 'pass' ? 'Pass vòng 3' : 'Đang chờ vòng 3';
+        default: return 'Đang xử lý';
+    }
+}
+
+// Hàm export chung sang Excel
+function exportToExcel(data, fileName) {
+    try {
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        
+        // Định dạng cột
+        const colWidths = [];
+        if (data.length > 0 && data[0].length > 0) {
+            for (let i = 0; i < data[0].length; i++) {
+                colWidths.push({ wch: 20 });
+            }
+            ws['!cols'] = colWidths;
+        }
+        
+        XLSX.utils.book_append_sheet(wb, ws, 'Data');
+        XLSX.writeFile(wb, fileName);
+        
+        console.log('✅ Export thành công:', fileName);
+    } catch (error) {
+        console.error('❌ Lỗi khi export Excel:', error);
+        alert('Lỗi khi xuất file Excel: ' + error.message);
+    }
+}
+
 // Export team thủ công
 function exportManualTeams() {
   const teams = collectManualTeams();
@@ -3151,28 +3538,55 @@ function exportManualTeams() {
       if (candidate) {
         email = candidate.email || '';
         
-        // Lấy các ban hợp lệ
+        // Lấy các ban hợp lệ với trạng thái
         if (candidate.round2_priority_status === 'pass') {
-          validDepartments.push(getDepartmentName(candidate.priority_position));
+          const status = candidate.round3_priority_status || 'pending';
+          validDepartments.push({
+            name: getDepartmentName(candidate.priority_position),
+            status: status
+          });
         }
         if (candidate.round2_secondary_status === 'pass') {
-          validDepartments.push(getDepartmentName(candidate.secondary_position));
+          const status = candidate.round3_secondary_status || 'pending';
+          validDepartments.push({
+            name: getDepartmentName(candidate.secondary_position),
+            status: status
+          });
         }
         
+        // Tạo chuỗi hiển thị với định dạng
+        const deptDisplay = validDepartments.map(dept => {
+          if (dept.status === 'not-pass') {
+            return `<span style="font-style: italic; text-decoration: line-through; color: #888;">${dept.name}</span>`;
+          } else {
+            return dept.name;
+          }
+        }).join(', ');
+        
         note = validDepartments.length === 2 ? 'Pass 2 ban' : '';
+        
+        data.push([
+          '', // Team
+          '', // Advisor 1
+          '', // Advisor 2
+          '', // Supporter
+          index + 1, // STT
+          memberName, // Họ và tên
+          email, // Email
+          deptDisplay, // Các ban hợp lệ (đã định dạng)
+          note // Ghi chú
+        ]);
+      } else {
+        // Nếu không tìm thấy candidate
+        data.push([
+          '', '', '', '',
+          index + 1,
+          memberName,
+          'Không tìm thấy trong hệ thống',
+          '',
+          'Lỗi: Không tìm thấy'
+        ]);
       }
-      
-      data.push([
-        '', // Team
-        '', // Advisor 1
-        '', // Advisor 2
-        '', // Supporter
-        index + 1, // STT
-        memberName, // Họ và tên
-        email, // Email
-        validDepartments.join(', '), // Các ban hợp lệ
-        note // Ghi chú
-      ]);
     });
     
     data.push([]); // Dòng trống giữa các team
@@ -3196,6 +3610,7 @@ function exportManualTeams() {
   XLSX.utils.book_append_sheet(wb, ws, 'Danh sách team thủ công');
   XLSX.writeFile(wb, 'Danh_sach_team_thu_cong_vong_3.xlsx');
 }
+
 
       // Biến toàn cục
       let selectedArchiveMethod = null;
@@ -5451,10 +5866,11 @@ function renderTeamPreview(teams) {
 
           // Round filter (simplified for demo)
           if (roundFilter) {
-            // This would need to be expanded based on your round data structure
-            if (roundFilter === "round1" && app.current_round !== "round1")
-              return false;
-            // Add similar checks for other rounds
+            if (roundFilter === "round1" && app.current_round !== "round1") return false;
+            if (roundFilter === "round2" && app.current_round !== "round2") return false;
+            if (roundFilter === "round3" && app.current_round !== "round3") return false;
+            if (roundFilter === "round4" && app.current_round !== "round4") return false;
+            if (roundFilter === "success" && app.current_round !== "success") return false;
           }
 
           // Status filter
@@ -6992,7 +7408,7 @@ function getTeamAdvisors(teamMembers) {
           </div>
           
           <div class="filter-group">
-            <label class="filter-label">Ban dự bị</label>
+            <label class="filter-label">Nguyện vọng 2</label>
             <select class="filter-select" id="edit-secondary-dept" style="width: 100%;">
               <option value="">Chọn ban</option>
               <option value="None" ${
@@ -7085,13 +7501,13 @@ function getTeamAdvisors(teamMembers) {
               Thông tin ứng tuyển
             </h4>
             <div class="info-item">
-              <span class="info-label">Ban ưu tiên:</span>
+              <span class="info-label">Nguyện vọng 1</span>
               <span class="info-value">${getDepartmentName(
                 application.priority_position
               )}</span>
             </div>
             <div class="info-item">
-              <span class="info-label">Ban dự bị:</span>
+              <span class="info-label">Nguyện vọng 2:</span>
               <span class="info-value">
                 ${
                   application.secondary_position &&
@@ -7737,24 +8153,518 @@ function getTeamAdvisors(teamMembers) {
         });
       }
 
-      // Export data functions (simplified for demo)
+// Hàm render department với định dạng đặc biệt cho trạng thái "not pass"
+function renderDepartmentForExport(deptCode, status, deptType = null) {
+  const deptName = getDepartmentName(deptCode);
+  
+  if (status === "not-pass") {
+    return `<span style="font-style: italic; text-decoration: line-through; color: var(--gray-500);">${deptName}</span>`;
+  } else if (status === "pass") {
+    return `<span style="font-weight: 600; color: var(--success);">${deptName}</span>`;
+  } else {
+    return deptName;
+  }
+}
 
-      function exportData(type) {
-        alert(
-          `Chức năng xuất dữ liệu ${type} sẽ được thực hiện ở phiên bản hoàn thiện.`
-        );
-        document.getElementById("export-modal").style.display = "none";
+// Hàm render trạng thái với màu sắc
+function renderStatusForExport(status) {
+  const statusText = getStatusText(status);
+  
+  switch(status) {
+    case 'pass':
+      return `<span style="color: #10b981; font-weight: 600;">${statusText}</span>`;
+    case 'not-pass':
+      return `<span style="color: #ef4444; font-weight: 600;">${statusText}</span>`;
+    case 'pending':
+      return `<span style="color: #f59e0b; font-weight: 600;">${statusText}</span>`;
+    default:
+      return statusText;
+  }
+}
+
+// Sửa hàm exportTeamsToExcel
+function exportTeamsToExcel(teams) {
+  const wb = XLSX.utils.book_new();
+  const data = [];
+
+  // Tiêu đề
+  data.push(["DANH SÁCH CHÍNH THỨC VÒNG 3 - TEAMWORK"]);
+  data.push(["Lưu ý: Mỗi ứng viên chỉ thuộc 1 team duy nhất"]);
+  data.push([
+    "Ứng viên có thể có 1 hoặc 2 ban hợp lệ (đã pass cả vòng 1 và vòng 2)",
+  ]);
+  data.push([]);
+  data.push([
+    "Team",
+    "Supporter",
+    "STT",
+    "Họ và tên",
+    "Các ban hợp lệ",
+    "Email",
+    "Ghi chú",
+  ]);
+
+  teams.forEach((team) => {
+    // Lấy supporter từ input
+    const supporterInput = document.getElementById(
+      `supporter-${team.id}`
+    );
+    const supporter = supporterInput ? supporterInput.value : "";
+
+    // Dòng team với supporter
+    data.push([team.name, supporter, "", "", "", "", ""]);
+
+    // Thành viên
+    team.members.forEach((member, index) => {
+      // Liệt kê tất cả các ban hợp lệ (đã pass cả 2 vòng)
+      const validDepartments = [];
+      const departmentDisplay = [];
+
+      if (member.originalCandidate) {
+        // Ban priority
+        if (
+          member.originalCandidate.priority_status === "pass" &&
+          member.originalCandidate.round2_priority_status === "pass"
+        ) {
+          const status = member.originalCandidate.round3_priority_status || "pending";
+          validDepartments.push({
+            name: getDepartmentName(member.originalCandidate.priority_position),
+            status: status
+          });
+        }
+
+        // Ban secondary
+        if (
+          member.originalCandidate.secondary_status === "pass" &&
+          member.originalCandidate.round2_secondary_status === "pass"
+        ) {
+          const status = member.originalCandidate.round3_secondary_status || "pending";
+          validDepartments.push({
+            name: getDepartmentName(member.originalCandidate.secondary_position),
+            status: status
+          });
+        }
       }
 
-      function exportDepartmentData() {
-        const dept = document.getElementById("export-department").value;
-        alert(
-          `Chức năng xuất dữ liệu cho ban ${getDepartmentName(
-            dept
-          )} sẽ được thực hiện ở phiên bản hoàn thiện.`
-        );
-        document.getElementById("export-modal").style.display = "none";
-      }
+      // Tạo chuỗi hiển thị với định dạng
+      const passedDepts = validDepartments.map(dept => {
+        if (dept.status === "not-pass") {
+          return `<span style="font-style: italic; text-decoration: line-through; color: #888;">${dept.name}</span>`;
+        } else {
+          return dept.name;
+        }
+      }).join(", ");
+
+      const note = validDepartments.length === 2 ? "Pass 2 ban" : "";
+
+      data.push([
+        "", // Team
+        "", // Supporter
+        index + 1, // STT
+        member.name, // Họ và tên
+        passedDepts, // Các ban hợp lệ (đã được định dạng)
+        member.email, // Email
+        note, // Ghi chú
+      ]);
+    });
+
+    data.push([]); // Dòng trống giữa các team
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+
+  // Định dạng cột
+  ws["!cols"] = [
+    { wch: 15 },
+    { wch: 25 },
+    { wch: 8 },
+    { wch: 25 },
+    { wch: 20 },
+    { wch: 30 },
+    { wch: 15 },
+  ];
+
+  XLSX.utils.book_append_sheet(wb, ws, "Danh sách team");
+  XLSX.writeFile(wb, "Danh_sach_team_vong_3.xlsx");
+}
+
+// Export theo vòng đã chọn
+function exportRoundData() {
+    const round = document.getElementById('export-round').value;
+    const data = exportByRound(round);
+    const fileName = `Ung_vien_${getRoundExportName(round)}.xlsx`;
+    
+    exportToExcel(data, fileName);
+    document.getElementById('export-modal').style.display = 'none';
+}
+
+// Hàm export theo vòng cụ thể
+function exportByRound(round = 'all') {
+    let title = '';
+    
+    if (round === 'all') {
+        title = 'DANH SÁCH ỨNG VIÊN THEO VÒNG';
+    } else {
+        title = `DANH SÁCH ỨNG VIÊN ${getRoundExportName(round).toUpperCase()}`;
+    }
+    
+    const data = [[title]];
+    
+    // Định nghĩa các vòng
+    const rounds = {
+        'all': 'Tất cả các vòng',
+        'round1': 'Vòng 1: Đơn',
+        'round2': 'Vòng 2: Phỏng vấn nhóm', 
+        'round3': 'Vòng 3: Teamwork',
+        'round4': 'Vòng 4: Phỏng vấn cá nhân',
+        'success': 'Thành viên chính thức'
+    };
+    
+    if (round === 'all') {
+        // Xuất tất cả các vòng
+        Object.keys(rounds).forEach(roundKey => {
+            if (roundKey === 'all') return;
+            
+            const roundApps = applications.filter(app => app.current_round === roundKey);
+            
+            if (roundApps.length > 0) {
+                data.push([]);
+                data.push([rounds[roundKey]]);
+                data.push([
+                    'STT', 'Họ và tên', 'Email', 'SĐT',
+                    'Nguyện vọng 1', 'Trạng thái NV1',
+                    'Nguyện vọng 2', 'Trạng thái NV2',
+                    'Trạng thái tổng', 'Thời gian apply', 'Loại đơn'
+                ]);
+                
+                roundApps.forEach((app, index) => {
+                    data.push([
+                        index + 1,
+                        app.fullname || '',
+                        app.email || '',
+                        app.phone || '',
+                        getDepartmentName(app.priority_position),
+                        getStatusText(app.priority_status || 'pending'),
+                        app.secondary_position && app.secondary_position !== 'None' 
+                            ? getDepartmentName(app.secondary_position) 
+                            : 'Không có',
+                        app.secondary_position && app.secondary_position !== 'None' 
+                            ? getStatusText(app.secondary_status || 'pending') 
+                            : '',
+                        getStatusText(computeOverallStatus(app)),
+                        formatApplicationTime(app.timestamp),
+                        app.application_type === 'interview' ? 'Phỏng vấn' : 'Form'
+                    ]);
+                });
+            }
+        });
+    } else {
+        // Xuất vòng cụ thể
+        const roundApps = applications.filter(app => app.current_round === round);
+        
+        if (roundApps.length === 0) {
+            data.push(['Không có ứng viên nào trong vòng này']);
+            return data;
+        }
+        
+        data.push([]);
+        
+        // Tiêu đề chi tiết theo vòng
+        switch(round) {
+            case 'round1':
+                data.push(['THÔNG TIN CHI TIẾT VÒNG 1 - ĐƠN ỨNG TUYỂN']);
+                data.push([
+                    'STT', 'Họ và tên', 'Email', 'SĐT',
+                    'Nguyện vọng 1', 'Trạng thái NV1',
+                    'Nguyện vọng 2', 'Trạng thái NV2',
+                    'Loại đơn', 'Thời gian apply', 'Ghi chú'
+                ]);
+                
+                roundApps.forEach((app, index) => {
+                    data.push([
+                        index + 1,
+                        app.fullname || '',
+                        app.email || '',
+                        app.phone || '',
+                        getDepartmentName(app.priority_position),
+                        getStatusText(app.priority_status || 'pending'),
+                        app.secondary_position && app.secondary_position !== 'None' 
+                            ? getDepartmentName(app.secondary_position) 
+                            : 'Không có',
+                        app.secondary_position && app.secondary_position !== 'None' 
+                            ? getStatusText(app.secondary_status || 'pending') 
+                            : '',
+                        app.application_type === 'interview' ? 'Phỏng vấn' : 'Form',
+                        formatApplicationTime(app.timestamp),
+                        app.round1?.note || ''
+                    ]);
+                });
+                break;
+                
+            case 'round2':
+                data.push(['THÔNG TIN CHI TIẾT VÒNG 2 - PHỎNG VẤN NHÓM']);
+                data.push([
+                    'STT', 'Họ và tên', 'Email', 'SĐT',
+                    'Nguyện vọng 1', 'Kết quả NV1',
+                    'Nguyện vọng 2', 'Kết quả NV2',
+                    'Thời gian PV', 'Địa điểm', 'Hình thức', 'Ghi chú'
+                ]);
+                
+                roundApps.forEach((app, index) => {
+                    const round2Data = app.round2 || {};
+                    const commonData = round2Data.priority || round2Data.secondary || {};
+                    
+                    data.push([
+                        index + 1,
+                        app.fullname || '',
+                        app.email || '',
+                        app.phone || '',
+                        getDepartmentName(app.priority_position),
+                        getStatusText(app.round2_priority_status || 'pending'),
+                        app.secondary_position && app.secondary_position !== 'None' 
+                            ? getDepartmentName(app.secondary_position) 
+                            : 'Không có',
+                        app.secondary_position && app.secondary_position !== 'None' 
+                            ? getStatusText(app.round2_secondary_status || 'pending') 
+                            : '',
+                        commonData.time || '',
+                        commonData.location || '',
+                        commonData.method === 'online' ? 'Online' : 'Offline',
+                        commonData.note || ''
+                    ]);
+                });
+                break;
+                
+            case 'round3':
+                data.push(['THÔNG TIN CHI TIẾT VÒNG 3 - TEAMWORK']);
+                data.push([
+                    'STT', 'Họ và tên', 'Email', 'Team',
+                    'Nguyện vọng 1', 'Kết quả NV1',
+                    'Nguyện vọng 2', 'Kết quả NV2',
+                    'Advisor', 'Supporter', 'Ghi chú'
+                ]);
+                
+                roundApps.forEach((app, index) => {
+                    const round3Data = app.round3 || {};
+                    
+                    data.push([
+                        index + 1,
+                        app.fullname || '',
+                        app.email || '',
+                        round3Data.team || 'Chưa có team',
+                        getDepartmentName(app.priority_position),
+                        getStatusText(app.round3_priority_status || 'pending'),
+                        app.secondary_position && app.secondary_position !== 'None' 
+                            ? getDepartmentName(app.secondary_position) 
+                            : 'Không có',
+                        app.secondary_position && app.secondary_position !== 'None' 
+                            ? getStatusText(app.round3_secondary_status || 'pending') 
+                            : '',
+                        `${round3Data.advisor1 || ''} ${round3Data.advisor2 || ''}`.trim(),
+                        round3Data.supporter || '',
+                        (app.round3?.priority?.note || app.round3?.secondary?.note || '')
+                    ]);
+                });
+                break;
+                
+            case 'round4':
+                data.push(['THÔNG TIN CHI TIẾT VÒNG 4 - PHỎNG VẤN CÁ NHÂN']);
+                data.push([
+                    'STT', 'Họ và tên', 'Email', 'SĐT',
+                    'Nguyện vọng 1', 'Kết quả NV1',
+                    'Nguyện vọng 2', 'Kết quả NV2',
+                    'Thời gian PV', 'Địa điểm', 'Người PV', 'Hình thức', 'Ghi chú'
+                ]);
+                
+                roundApps.forEach((app, index) => {
+                    const round4Data = app.round4 || {};
+                    const commonData = round4Data.priority || round4Data.secondary || {};
+                    
+                    data.push([
+                        index + 1,
+                        app.fullname || '',
+                        app.email || '',
+                        app.phone || '',
+                        getDepartmentName(app.priority_position),
+                        getStatusText(app.round4_priority_status || 'pending'),
+                        app.secondary_position && app.secondary_position !== 'None' 
+                            ? getDepartmentName(app.secondary_position) 
+                            : 'Không có',
+                        app.secondary_position && app.secondary_position !== 'None' 
+                            ? getStatusText(app.round4_secondary_status || 'pending') 
+                            : '',
+                        commonData.time || '',
+                        commonData.location || '',
+                        commonData.interviewer || '',
+                        commonData.method === 'online' ? 'Online' : 'Offline',
+                        commonData.note || ''
+                    ]);
+                });
+                break;
+                
+            case 'success':
+                data.push(['DANH SÁCH THÀNH VIÊN CHÍNH THỨC']);
+                data.push([
+                    'STT', 'Họ và tên', 'Email', 'SĐT',
+                    'Ban chính thức', 'Nguyện vọng 1', 'Nguyện vọng 2',
+                    'Thời gian trúng tuyển'
+                ]);
+                
+                roundApps.forEach((app, index) => {
+                    data.push([
+                        index + 1,
+                        app.fullname || '',
+                        app.email || '',
+                        app.phone || '',
+                        getDepartmentName(app.final_department),
+                        getDepartmentName(app.priority_position),
+                        app.secondary_position && app.secondary_position !== 'None' 
+                            ? getDepartmentName(app.secondary_position) 
+                            : 'Không có',
+                        formatApplicationTime(app.success_time || app.timestamp)
+                    ]);
+                });
+                break;
+        }
+    }
+    
+    return data;
+}
+
+// Hàm helper để lấy tên vòng cho export
+function getRoundExportName(round) {
+    const roundNames = {
+        'all': 'Tat_ca_cac_vong',
+        'round1': 'Vong_1_Don',
+        'round2': 'Vong_2_Phong_van_nhom',
+        'round3': 'Vong_3_Teamwork', 
+        'round4': 'Vong_4_Phong_van_ca_nhan',
+        'success': 'Thanh_vien_chinh_thuc'
+    };
+    return roundNames[round] || round;
+}
+
+// Thêm HTML cho round filter
+document.getElementById('export-modal').innerHTML += `
+  <div id="round-filter" style="margin-top: 20px; display: none;">
+    <label class="filter-label">Chọn vòng</label>
+    <select class="filter-select" id="export-round">
+      <option value="round1">Vòng 1: Đơn</option>
+      <option value="round2">Vòng 2: Phỏng vấn nhóm</option>
+      <option value="round3">Vòng 3: Teamwork</option>
+      <option value="round4">Vòng 4: Phỏng vấn cá nhân</option>
+      <option value="success">Thành viên chính thức</option>
+    </select>
+    <button class="action-btn" style="margin-top: 10px" onclick="exportRoundData()">
+      Xuất
+    </button>
+  </div>
+`;
+
+
+
+
+// Hàm export theo ứng viên
+function exportByCandidate() {
+  const data = [];
+  data.push(['DANH SÁCH CHI TIẾT THEO ỨNG VIÊN']);
+  data.push([]);
+  
+  applications.forEach((app, index) => {
+    data.push([`ỨNG VIÊN ${index + 1}: ${app.fullname || 'Chưa có tên'}`]);
+    data.push(['Thông tin cá nhân:', '', '']);
+    data.push(['Họ và tên:', app.fullname || 'Chưa có tên', '']);
+    data.push(['Email:', app.email || 'Chưa có email', '']);
+    data.push(['SĐT:', app.phone || 'Chưa có SĐT', '']);
+    data.push(['Loại đơn:', app.application_type === 'interview' ? 'Phỏng vấn' : 'Form', '']);
+    
+    data.push(['', '', '']);
+    data.push(['Kết quả các vòng:', '', '']);
+    data.push(['Vòng', 'Nguyện vọng 1', 'Nguyện vọng 2']);
+    
+    // Vòng 1
+    data.push([
+      'Vòng 1 - Đơn',
+      renderDepartmentForExport(app.priority_position, app.priority_status || 'pending') + ' - ' + renderStatusForExport(app.priority_status || 'pending'),
+      app.secondary_position && app.secondary_position !== 'None'
+        ? renderDepartmentForExport(app.secondary_position, app.secondary_status || 'pending') + ' - ' + renderStatusForExport(app.secondary_status || 'pending')
+        : 'Không có'
+    ]);
+    
+    // Vòng 2
+    data.push([
+      'Vòng 2 - Phỏng vấn nhóm',
+      renderDepartmentForExport(app.priority_position, app.round2_priority_status || 'pending') + ' - ' + renderStatusForExport(app.round2_priority_status || 'pending'),
+      app.secondary_position && app.secondary_position !== 'None'
+        ? renderDepartmentForExport(app.secondary_position, app.round2_secondary_status || 'pending') + ' - ' + renderStatusForExport(app.round2_secondary_status || 'pending')
+        : 'Không có'
+    ]);
+    
+    // Vòng 3
+    data.push([
+      'Vòng 3 - Teamwork',
+      renderDepartmentForExport(app.priority_position, app.round3_priority_status || 'pending') + ' - ' + renderStatusForExport(app.round3_priority_status || 'pending'),
+      app.secondary_position && app.secondary_position !== 'None'
+        ? renderDepartmentForExport(app.secondary_position, app.round3_secondary_status || 'pending') + ' - ' + renderStatusForExport(app.round3_secondary_status || 'pending')
+        : 'Không có'
+    ]);
+    
+    // Vòng 4
+    data.push([
+      'Vòng 4 - Phỏng vấn cá nhân',
+      renderDepartmentForExport(app.priority_position, app.round4_priority_status || 'pending') + ' - ' + renderStatusForExport(app.round4_priority_status || 'pending'),
+      app.secondary_position && app.secondary_position !== 'None'
+        ? renderDepartmentForExport(app.secondary_position, app.round4_secondary_status || 'pending') + ' - ' + renderStatusForExport(app.round4_secondary_status || 'pending')
+        : 'Không có'
+    ]);
+    
+    data.push(['', '', '']);
+    data.push(['Kết quả cuối cùng:', 
+      app.current_round === 'success' 
+        ? `<span style="color: #10b981; font-weight: 600;">THÀNH VIÊN CHÍNH THỨC</span>`
+        : `Đang ở: ${getRoundText(app.current_round)}`,
+      ''
+    ]);
+    
+    data.push(['', '', '']);
+    data.push(['', '', '']);
+  });
+  
+  return data;
+}
+
+
+
+
+// Thêm HTML cho department filter (nếu chưa có)
+document.getElementById('export-modal').innerHTML += `
+  <div id="department-filter" style="margin-top: 20px; display: none;">
+    <label class="filter-label">Chọn ban</label>
+    <select class="filter-select" id="export-department">
+      <option value="MD">Truyền thông</option>
+      <option value="HR">Nhân sự</option>
+      <option value="PD">Dự án</option>
+      <option value="ER">Đối ngoại</option>
+    </select>
+    <button class="action-btn" style="margin-top: 10px" onclick="exportDepartmentData()">
+      Xuất
+    </button>
+  </div>
+  <div id="round-filter" style="margin-top: 20px; display: none">
+    <label class="filter-label">Chọn vòng</label>
+    <select class="filter-select" id="export-round">
+        <option value="all">Tất cả các vòng</option>
+        <option value="round1">Vòng 1: Đơn</option>
+        <option value="round2">Vòng 2: Phỏng vấn nhóm</option>
+        <option value="round3">Vòng 3: Teamwork</option>
+        <option value="round4">Vòng 4: Phỏng vấn cá nhân</option>
+        <option value="success">Thành viên chính thức</option>
+    </select>
+    <button class="action-btn" style="margin-top: 10px" onclick="exportRoundData()">
+        Xuất
+    </button>
+</div>
+`;
 
       // Event listeners
       document.getElementById("logout-btn").addEventListener("click", () => {
