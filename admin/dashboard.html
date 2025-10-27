@@ -1609,7 +1609,7 @@
             <thead>
               <tr>
                 <th>Team</th>
-                <th>Advisor</th>
+                <th>Advisor/Supporter</th>
                 <th>Họ và tên</th>
                 <th>Ban ứng tuyển</th>
                 <th>Ghi chú</th>
@@ -6327,6 +6327,78 @@ function renderTeamPreview(teams) {
         return false;
       }
 
+function setupRound3SaveHandlers() {
+  const tbody = document.getElementById("round3-table-body");
+  
+  tbody.querySelectorAll(".save-btn").forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      const appId = btn.getAttribute("data-id");
+      const row = btn.closest("tr");
+      
+      if (!appId) {
+        alert("Không tìm thấy ID ứng viên");
+        return;
+      }
+
+      const app = applications.find(a => a.id === appId);
+      if (!app) {
+        alert("Không tìm thấy thông tin ứng viên");
+        return;
+      }
+
+      const updates = {};
+      let hasUpdates = false;
+
+      // Lấy các ban đã pass vòng 2
+      const passedDepartments = [];
+      if (app.round2_priority_status === "pass") passedDepartments.push("priority");
+      if (app.round2_secondary_status === "pass") passedDepartments.push("secondary");
+
+      // Thu thập tất cả các updates
+      passedDepartments.forEach(banType => {
+        // Lấy trạng thái
+        const statusSelect = row.querySelector(`select[data-field="${banType}.status"]`);
+        if (statusSelect) {
+          const newStatus = statusSelect.value;
+          updates[`round3_${banType}_status`] = newStatus;
+          hasUpdates = true;
+        }
+
+        // Lấy ghi chú
+        const noteInput = row.querySelector(`input[data-field="${banType}.note"]`);
+        if (noteInput) {
+          if (!updates.round3) updates.round3 = {};
+          if (!updates.round3[banType]) updates.round3[banType] = {};
+          updates.round3[banType].note = noteInput.value;
+          hasUpdates = true;
+        }
+      });
+
+      if (!hasUpdates) {
+        alert("Không có thay đổi nào để lưu");
+        return;
+      }
+
+      try {
+        console.log("🔄 Đang lưu dữ liệu round3:", updates);
+        
+        // Sử dụng set với merge: true để đảm bảo không ghi đè dữ liệu khác
+        await db.collection("applications").doc(appId).set(updates, { merge: true });
+        
+        console.log("✅ Đã lưu thành công round3 cho:", app.fullname);
+        alert("✅ Đã lưu thông tin thành công!");
+        
+        // Refresh để cập nhật UI
+        await refreshApplications();
+        
+      } catch (error) {
+        console.error("❌ Lỗi khi lưu round3:", error);
+        alert("❌ Lỗi khi lưu: " + error.message);
+      }
+    });
+  });
+}
+
 function renderRound3() {
   const tbody = document.getElementById("round3-table-body");
   tbody.innerHTML = "";
@@ -6383,69 +6455,75 @@ function renderRound3() {
   // Render từng team
   sortedTeamNames.forEach((teamName) => {
     const teamMembers = teams[teamName];
-    const teamAdvisors = getTeamAdvisors(teamMembers);
-    const teamSupporter = getTeamSupporter(teamMembers);
+    
+    // Lấy advisor và supporter từ member đầu tiên (vì cùng team nên giống nhau)
+    const firstMember = teamMembers[0];
+    const teamAdvisors = [
+      firstMember.teamInfo.advisor1 || "",
+      firstMember.teamInfo.advisor2 || ""
+    ];
+    const teamSupporter = firstMember.teamInfo.supporter || "";
 
     teamMembers.forEach((member, index) => {
       const { app, passedDepartments } = member;
       const tr = document.createElement("tr");
 
+      let rowHTML = "";
+
       // Cột Team - merge cho các thành viên cùng team
       if (index === 0) {
-        tr.innerHTML += `<td rowspan="${teamMembers.length}" style="font-weight: 600; color: var(--info); vertical-align: middle;">${teamName}</td>`;
+        rowHTML += `<td rowspan="${teamMembers.length}" style="font-weight: 600; color: var(--info); vertical-align: middle;">${teamName}</td>`;
       }
 
       // Cột Advisor & Supporter - merge cho các thành viên cùng team
       if (index === 0) {
         let advisorSupporterHTML = "";
         
-        // Advisor 1 (luôn hiển thị)
+        // Advisor 1
         advisorSupporterHTML += `
           <div style="margin-bottom: 8px;">
             <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Advisor 1:</label>
-            <input class="app-input" 
-                value="${teamAdvisors[0] || ""}" 
+            <input class="app-input advisor-input" 
+                value="${teamAdvisors[0]}" 
                 placeholder="Tên advisor 1"
-                data-field="team.advisor1"
                 data-team="${teamName}"
+                data-field="advisor1"
                 style="margin-bottom: 4px; width: 100%; font-size: 12px;">
           </div>
         `;
         
-        // Advisor 2 (chỉ hiển thị nếu có giá trị)
-        if (teamAdvisors[1]) {
-          advisorSupporterHTML += `
-            <div style="margin-bottom: 8px;">
-              <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Advisor 2:</label>
-              <input class="app-input" 
-                  value="${teamAdvisors[1]}" 
-                  placeholder="Tên advisor 2"
-                  data-field="team.advisor2"
-                  data-team="${teamName}"
-                  style="margin-bottom: 4px; width: 100%; font-size: 12px;">
-            </div>
-          `;
-        }
+        // Advisor 2
+        advisorSupporterHTML += `
+          <div style="margin-bottom: 8px;">
+            <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Advisor 2:</label>
+            <input class="app-input advisor-input" 
+                value="${teamAdvisors[1]}" 
+                placeholder="Tên advisor 2"
+                data-team="${teamName}"
+                data-field="advisor2"
+                style="margin-bottom: 4px; width: 100%; font-size: 12px;">
+          </div>
+        `;
         
-        // Supporter (luôn hiển thị)
+        // Supporter
         advisorSupporterHTML += `
           <div style="margin-bottom: 8px;">
             <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Supporter:</label>
-            <input class="app-input" 
-                value="${teamSupporter || ""}" 
+            <input class="app-input supporter-input" 
+                value="${teamSupporter}" 
                 placeholder="Tên supporter (cách nhau bằng dấu ,)"
-                data-field="team.supporter"
                 data-team="${teamName}"
+                data-field="supporter"
                 style="margin-bottom: 4px; width: 100%; font-size: 12px;">
             <small style="color: var(--gray-500); font-size: 10px;">Có thể có 2-3 supporter</small>
           </div>
         `;
 
-        tr.innerHTML += `<td rowspan="${teamMembers.length}" style="min-width: 180px; vertical-align: middle;">${advisorSupporterHTML}</td>`;
+        rowHTML += `<td rowspan="${teamMembers.length}" style="min-width: 180px; vertical-align: top;">${advisorSupporterHTML}</td>`;
       }
 
       // Cột Họ và tên
-      tr.innerHTML += `<td style="font-weight: 500;">${app.fullname}</td>`;
+      rowHTML += `<td style="font-weight: 500;">${app.fullname}</td>`;
 
       // Cột Ban ứng tuyển - CHỈ hiển thị ban đã PASS vòng 2
       let departmentsHTML = "";
@@ -6453,7 +6531,7 @@ function renderRound3() {
         const status = app[`round3_${pos.type}_status`] || "pending";
         departmentsHTML += renderDepartment(pos.dept, status);
       });
-      tr.innerHTML += `<td>${departmentsHTML}</td>`;
+      rowHTML += `<td>${departmentsHTML}</td>`;
 
       // Cột Ghi chú
       let noteHTML = "";
@@ -6462,18 +6540,19 @@ function renderRound3() {
         const canEditThisBan = canEditBan(app, pos.type);
 
         noteHTML += `
-          <input class="app-input" ${
-            !canEditThisBan ? "disabled" : ""
-          } 
+          <input class="app-input note-input" 
               value="${data.note || ""}" 
               placeholder="Ghi chú ${getDepartmentName(pos.dept)}"
-              data-field="${pos.type}.note"
+              data-app-id="${app.id}"
+              data-ban-type="${pos.type}"
+              data-field="note"
+              ${!canEditThisBan ? "disabled" : ""}
               style="margin-bottom: 4px; width: 100%;">
-      `;
+        `;
       });
-      tr.innerHTML += `<td style="min-width: 200px;">${noteHTML}</td>`;
+      rowHTML += `<td style="min-width: 200px;">${noteHTML}</td>`;
 
-      // Cột Trạng thái - SỬA LẠI ĐỂ GIỐNG VÒNG 2
+      // Cột Trạng thái
       let statusHTML = "";
       passedDepartments.forEach((pos, idx) => {
         const status = app[`round3_${pos.type}_status`] || "pending";
@@ -6491,51 +6570,49 @@ function renderRound3() {
                 ${getStatusText(status)}
               </span>
             </div>
-            <select class="app-select ban-status-select" 
-                    data-ban-type="${pos.type}" 
+            <select class="app-select status-select" 
+                    data-app-id="${app.id}"
+                    data-ban-type="${pos.type}"
+                    data-field="status"
                     ${!canEditThisBan ? "disabled" : ""}
                     style="width: 100%; font-size: 12px; padding: 6px 8px;">
-              <option value="pending" ${
-                status === "pending" ? "selected" : ""
-              }>Pending</option>
-              <option value="pass" ${
-                status === "pass" ? "selected" : ""
-              }>Pass</option>
-              <option value="not-pass" ${
-                status === "not-pass" ? "selected" : ""
-              }>Not pass</option>
+              <option value="pending" ${status === "pending" ? "selected" : ""}>Pending</option>
+              <option value="pass" ${status === "pass" ? "selected" : ""}>Pass</option>
+              <option value="not-pass" ${status === "not-pass" ? "selected" : ""}>Not pass</option>
             </select>
           </div>
         `;
       });
-      tr.innerHTML += `<td style="min-width: 120px;">${statusHTML}</td>`;
+      rowHTML += `<td style="min-width: 120px;">${statusHTML}</td>`;
 
       // Cột Hành động
       let actionHTML = "";
       if (passedDepartments.length > 0) {
-        const canEditAny = passedDepartments.some((pos) =>
-          canEditBan(app, pos.type)
-        );
+        const canEditAny = passedDepartments.some((pos) => canEditBan(app, pos.type));
         actionHTML = `
-          <button class="action-btn save-btn" data-id="${app.id}" 
+          <button class="action-btn save-btn" data-app-id="${app.id}" 
               style="background: var(--success-light); color: var(--success);" 
               ${!canEditAny ? "disabled" : ""}>
               Lưu
           </button>
-      `;
+        `;
       }
-      tr.innerHTML += `<td style="min-width: 80px;">${actionHTML}</td>`;
+      rowHTML += `<td style="min-width: 80px;">${actionHTML}</td>`;
 
+      tr.innerHTML = rowHTML;
       tbody.appendChild(tr);
     });
   });
 
-  // Event listeners cho nút lưu
+  // THIẾT LẬP EVENT LISTENERS
+
+  // 1. Event listeners cho nút lưu ứng viên
   tbody.querySelectorAll(".save-btn").forEach((btn) => {
     btn.addEventListener("click", async () => {
-      const id = btn.dataset.id;
+      const appId = btn.getAttribute("data-app-id");
       const row = btn.closest("tr");
-      const app = applications.find((a) => a.id === id);
+      const app = applications.find((a) => a.id === appId);
+      
       if (!app) {
         alert("Ứng viên không tồn tại");
         return;
@@ -6544,63 +6621,65 @@ function renderRound3() {
       // CHỈ lấy các ban đã PASS vòng 2
       const passedDepartments = [];
       if (app.round2_priority_status === "pass") {
-        passedDepartments.push({
-          type: "priority",
-          dept: app.priority_position,
-        });
+        passedDepartments.push("priority");
       }
       if (app.round2_secondary_status === "pass") {
-        passedDepartments.push({
-          type: "secondary",
-          dept: app.secondary_position,
-        });
+        passedDepartments.push("secondary");
       }
 
       const updates = {};
+      let hasUpdates = false;
 
-      // Thu thập tất cả dữ liệu từ các input
-      passedDepartments.forEach((pos) => {
-        if (!canEditBan(app, pos.type)) return;
+      // Thu thập dữ liệu từ các input
+      passedDepartments.forEach((banType) => {
+        if (!canEditBan(app, banType)) return;
 
         // Lấy ghi chú
-        const noteInput = row.querySelector(
-          `[data-field="${pos.type}.note"]`
-        );
+        const noteInput = row.querySelector(`.note-input[data-app-id="${appId}"][data-ban-type="${banType}"]`);
         if (noteInput) {
-          updates[`round3.${pos.type}.note`] = noteInput.value;
+          if (!updates.round3) updates.round3 = {};
+          if (!updates.round3[banType]) updates.round3[banType] = {};
+          updates.round3[banType].note = noteInput.value;
+          hasUpdates = true;
         }
 
         // Lấy trạng thái
-        const statusSelect = row.querySelector(
-          `[data-field="${pos.type}.status"]`
-        );
+        const statusSelect = row.querySelector(`.status-select[data-app-id="${appId}"][data-ban-type="${banType}"]`);
         if (statusSelect) {
-          updates[`round3_${pos.type}_status`] = statusSelect.value;
+          updates[`round3_${banType}_status`] = statusSelect.value;
+          hasUpdates = true;
         }
       });
 
-      if (Object.keys(updates).length === 0) {
-        alert("Không có quyền chỉnh sửa cho ứng viên này");
+      if (!hasUpdates) {
+        alert("Không có thay đổi nào để lưu hoặc không có quyền chỉnh sửa");
         return;
       }
 
       try {
-        await db.collection("applications").doc(id).update(updates);
-        alert("Đã lưu thay đổi!");
-        refreshApplications();
+        console.log("🔄 Đang lưu dữ liệu round3:", updates);
+        await db.collection("applications").doc(appId).update(updates);
+        alert("✅ Đã lưu thông tin thành công!");
+        
+        // Refresh dữ liệu
+        await refreshApplications();
+        
       } catch (error) {
-        alert(`Lỗi khi lưu: ${error.message}`);
+        console.error("❌ Lỗi khi lưu:", error);
+        alert("❌ Lỗi khi lưu: " + error.message);
       }
     });
   });
 
-  // Event listeners cho advisor và supporter (lưu cho cả team)
-  tbody
-    .querySelectorAll('[data-field^="team."]')
-    .forEach((input) => {
-      input.addEventListener("change", async () => {
-        const teamName = input.dataset.team;
-        const field = input.dataset.field;
+  // 2. Event listeners cho advisor và supporter (auto-save)
+  tbody.querySelectorAll(".advisor-input, .supporter-input").forEach((input) => {
+    // Sử dụng debounce để tránh lưu quá nhiều lần
+    let timeoutId;
+    input.addEventListener("input", () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(async () => {
+        const teamName = input.getAttribute("data-team");
+        const field = input.getAttribute("data-field");
         const value = input.value;
 
         // Tìm tất cả ứng viên trong team này
@@ -6610,25 +6689,89 @@ function renderRound3() {
           return teamInfo.team === teamName;
         });
 
-        if (teamMembers.length === 0) return;
+        if (teamMembers.length === 0) {
+          console.log("Không tìm thấy thành viên trong team:", teamName);
+          return;
+        }
+
+        console.log(`🔄 Đang cập nhật ${field} cho team ${teamName}`);
 
         // Cập nhật advisor/supporter cho tất cả thành viên trong team
         const batch = db.batch();
         teamMembers.forEach((app) => {
           const appRef = db.collection("applications").doc(app.id);
-          batch.update(appRef, {
-            [`round3.${field}`]: value,
-          });
+          const updateData = {};
+          
+          if (field === "advisor1" || field === "advisor2") {
+            updateData[`round3.${field}`] = value;
+          } else if (field === "supporter") {
+            updateData[`round3.supporter`] = value;
+          }
+          
+          batch.update(appRef, updateData);
         });
 
         try {
           await batch.commit();
-          console.log(`Đã cập nhật ${field} cho team ${teamName}`);
+          console.log(`✅ Đã cập nhật ${field} cho ${teamMembers.length} thành viên team ${teamName}`);
+          
+          // Cập nhật local data
+          teamMembers.forEach((app) => {
+            const appIndex = applications.findIndex(a => a.id === app.id);
+            if (appIndex !== -1) {
+              if (!applications[appIndex].round3) applications[appIndex].round3 = {};
+              if (field === "advisor1" || field === "advisor2") {
+                applications[appIndex].round3[field] = value;
+              } else if (field === "supporter") {
+                applications[appIndex].round3.supporter = value;
+              }
+            }
+          });
+          
         } catch (error) {
-          console.error("Lỗi khi cập nhật advisor/supporter:", error);
+          console.error("❌ Lỗi khi cập nhật advisor/supporter:", error);
+          alert("❌ Lỗi khi cập nhật: " + error.message);
         }
-      });
+      }, 1000); // Debounce 1 giây
     });
+  });
+
+  // 3. Event listeners cho status select (auto-save)
+  tbody.querySelectorAll(".status-select").forEach((select) => {
+    select.addEventListener("change", async () => {
+      const appId = select.getAttribute("data-app-id");
+      const banType = select.getAttribute("data-ban-type");
+      const newStatus = select.value;
+
+      const app = applications.find((a) => a.id === appId);
+      if (!app || !canEditBan(app, banType)) {
+        alert("Không có quyền chỉnh sửa ban này");
+        select.value = app?.[`round3_${banType}_status`] || "pending";
+        return;
+      }
+
+      try {
+        console.log(`🔄 Đang cập nhật trạng thái ${banType} cho ${app.fullname}`);
+        await db.collection("applications").doc(appId).update({
+          [`round3_${banType}_status`]: newStatus
+        });
+        
+        console.log("✅ Đã cập nhật trạng thái thành công");
+        
+        // Cập nhật local data
+        const appIndex = applications.findIndex(a => a.id === appId);
+        if (appIndex !== -1) {
+          applications[appIndex][`round3_${banType}_status`] = newStatus;
+        }
+        
+      } catch (error) {
+        console.error("❌ Lỗi khi cập nhật trạng thái:", error);
+        alert("❌ Lỗi khi cập nhật trạng thái: " + error.message);
+        // Rollback UI
+        select.value = app[`round3_${banType}_status`] || "pending";
+      }
+    });
+  });
 }
 
 // Hàm render phần trạng thái vòng 3 (giống vòng 2)
