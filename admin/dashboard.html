@@ -6359,78 +6359,6 @@ function renderTeamPreview(teams) {
         return false;
       }
 
-function setupRound3SaveHandlers() {
-  const tbody = document.getElementById("round3-table-body");
-  
-  tbody.querySelectorAll(".save-btn").forEach((btn) => {
-    btn.addEventListener("click", async (e) => {
-      const appId = btn.getAttribute("data-id");
-      const row = btn.closest("tr");
-      
-      if (!appId) {
-        alert("Không tìm thấy ID ứng viên");
-        return;
-      }
-
-      const app = applications.find(a => a.id === appId);
-      if (!app) {
-        alert("Không tìm thấy thông tin ứng viên");
-        return;
-      }
-
-      const updates = {};
-      let hasUpdates = false;
-
-      // Lấy các ban đã pass vòng 2
-      const passedDepartments = [];
-      if (app.round2_priority_status === "pass") passedDepartments.push("priority");
-      if (app.round2_secondary_status === "pass") passedDepartments.push("secondary");
-
-      // Thu thập tất cả các updates
-      passedDepartments.forEach(banType => {
-        // Lấy trạng thái
-        const statusSelect = row.querySelector(`select[data-field="${banType}.status"]`);
-        if (statusSelect) {
-          const newStatus = statusSelect.value;
-          updates[`round3_${banType}_status`] = newStatus;
-          hasUpdates = true;
-        }
-
-        // Lấy ghi chú
-        const noteInput = row.querySelector(`input[data-field="${banType}.note"]`);
-        if (noteInput) {
-          if (!updates.round3) updates.round3 = {};
-          if (!updates.round3[banType]) updates.round3[banType] = {};
-          updates.round3[banType].note = noteInput.value;
-          hasUpdates = true;
-        }
-      });
-
-      if (!hasUpdates) {
-        alert("Không có thay đổi nào để lưu");
-        return;
-      }
-
-      try {
-        console.log("🔄 Đang lưu dữ liệu round3:", updates);
-        
-        // Sử dụng set với merge: true để đảm bảo không ghi đè dữ liệu khác
-        await db.collection("applications").doc(appId).set(updates, { merge: true });
-        
-        console.log("✅ Đã lưu thành công round3 cho:", app.fullname);
-        alert("✅ Đã lưu thông tin thành công!");
-        
-        // Refresh để cập nhật UI
-        await refreshApplications();
-        
-      } catch (error) {
-        console.error("❌ Lỗi khi lưu round3:", error);
-        alert("❌ Lỗi khi lưu: " + error.message);
-      }
-    });
-  });
-}
-
 function renderRound3() {
     const tbody = document.getElementById("round3-table-body");
     tbody.innerHTML = "";
@@ -6528,17 +6456,10 @@ function renderRound3() {
                     ).join("")}
                 </td>
                 <td>
-                    ${passedDepartments.map((type) => {
-                        const status = app[`round3_${type}_status`] || "pending";
-                        return `
-                            <select class="app-select" data-field="${type}.status" data-id="${app.id}" 
-                                style="margin-bottom: 4px; width: 100%;" ${!canEditRound3(app, type) ? 'disabled' : ''}>
-                                <option value="pending" ${status === "pending" ? "selected" : ""}>Pending</option>
-                                <option value="pass" ${status === "pass" ? "selected" : ""}>Pass</option>
-                                <option value="not-pass" ${status === "not-pass" ? "selected" : ""}>Not pass</option>
-                            </select>
-                        `;
-                    }).join("")}
+                    <!-- SỬA PHẦN NÀY: Thay bằng trạng thái giống vòng 2 -->
+                    <div id="round3-status-section-${app.id}" style="min-width: 150px;">
+                        ${renderRound3StatusSection(app)}
+                    </div>
                 </td>
                 <td>
                     <button class="action-btn save-btn" data-id="${app.id}" 
@@ -6556,72 +6477,117 @@ function renderRound3() {
         tbody.appendChild(spacerRow);
     });
 
-    // Setup save handlers
+    // Setup save handlers - CẦN SỬA LẠI PHẦN NÀY
     setupRound3SaveHandlers();
 }
 
-// Hàm render phần trạng thái vòng 3 (giống vòng 2)
+// Hàm render phần trạng thái vòng 3 chia theo ban (GIỐNG VÒNG 2)
 function renderRound3StatusSection(app) {
-  let html = `<div id="round3-status-section-${app.id}">`;
-  const positions = [];
+    let html = "";
+    const positions = [];
 
-  // Thêm ban priority nếu có trạng thái và đã pass vòng 2
-  if (app.priority_position && app.round2_priority_status === "pass") {
-    positions.push({
-      type: "priority",
-      dept: app.priority_position,
-      status: app.round3_priority_status || "pending",
-      canEdit: canEditBan(app, "priority"),
+    // Thêm ban priority nếu có trạng thái và đã pass vòng 2
+    if (app.priority_position && app.round2_priority_status === "pass") {
+        positions.push({
+            type: "priority",
+            dept: app.priority_position,
+            status: app.round3_priority_status || "pending",
+            canEdit: canEditBan(app, "priority"),
+        });
+    }
+
+    // Thêm ban secondary nếu có trạng thái, không phải "None" và đã pass vòng 2
+    if (
+        app.secondary_position &&
+        app.secondary_position !== "None" &&
+        app.round2_secondary_status === "pass"
+    ) {
+        positions.push({
+            type: "secondary",
+            dept: app.secondary_position,
+            status: app.round3_secondary_status || "pending",
+            canEdit: canEditBan(app, "secondary"),
+        });
+    }
+
+    positions.forEach((pos, index) => {
+        html += `
+            <div style="margin-bottom: ${index < positions.length - 1 ? "8px" : "0"};">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span style="font-size: 12px; color: var(--gray-600);">${getDepartmentName(pos.dept)}:</span>
+                    <span class="status-badge ${getStatusClass(pos.status)}" style="font-size: 11px;">
+                        ${getStatusText(pos.status)}
+                    </span>
+                </div>
+                <select class="app-select ban-status-select" 
+                        data-ban-type="${pos.type}" 
+                        ${!pos.canEdit ? "disabled" : ""}
+                        style="width: 100%; font-size: 12px; padding: 4px 8px;">
+                    <option value="pending" ${pos.status === "pending" ? "selected" : ""}>Pending</option>
+                    <option value="pass" ${pos.status === "pass" ? "selected" : ""}>Pass</option>
+                    <option value="not-pass" ${pos.status === "not-pass" ? "selected" : ""}>Not pass</option>
+                </select>
+            </div>
+        `;
     });
-  }
 
-  // Thêm ban secondary nếu có trạng thái, không phải "None" và đã pass vòng 2
-  if (
-    app.secondary_position &&
-    app.secondary_position !== "None" &&
-    app.round2_secondary_status === "pass"
-  ) {
-    positions.push({
-      type: "secondary",
-      dept: app.secondary_position,
-      status: app.round3_secondary_status || "pending",
-      canEdit: canEditBan(app, "secondary"),
+    // Nếu không có ban nào, hiển thị thông báo
+    if (positions.length === 0) {
+        html = `<span style="font-size: 11px; color: var(--gray-500);">Không có ban hợp lệ</span>`;
+    }
+
+    return html;
+}
+
+// Sửa lại hàm setupRound3SaveHandlers để xử lý trạng thái mới
+function setupRound3SaveHandlers() {
+    const tbody = document.getElementById("round3-table-body");
+    
+    tbody.querySelectorAll(".save-btn").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+            const appId = btn.getAttribute("data-id");
+            const row = btn.closest("tr");
+            
+            const app = applications.find(a => a.id === appId);
+            if (!app) return;
+
+            const updates = {};
+
+            // Lưu ghi chú theo từng ban
+            const noteInputs = row.querySelectorAll('input[data-field$=".note"]');
+            noteInputs.forEach((input) => {
+                const field = input.dataset.field; // "priority.note" hoặc "secondary.note"
+                const [banType, fieldName] = field.split('.');
+                
+                if (canEditBan(app, banType)) {
+                    updates[`round3.${banType}.${fieldName}`] = input.value;
+                }
+            });
+
+            // THÊM: Lưu trạng thái theo ban (GIỐNG VÒNG 2)
+            const statusSection = document.getElementById(`round3-status-section-${appId}`);
+            if (statusSection) {
+                const statusSelects = statusSection.querySelectorAll(".ban-status-select");
+                statusSelects.forEach((select) => {
+                    const banType = select.dataset.banType;
+                    const newStatus = select.value;
+
+                    if (canEditBan(app, banType)) {
+                        updates[`round3_${banType}_status`] = newStatus;
+                    }
+                });
+            }
+
+            try {
+                await db.collection("applications").doc(appId).update(updates);
+                alert("✅ Đã lưu thông tin vòng 3!");
+                refreshApplications();
+            } catch (err) {
+                console.error(err);
+                alert("❌ Lưu thất bại: " + err.message);
+            }
+        });
     });
-  }
-
-  positions.forEach((pos, index) => {
-    html += `
-      <div style="margin-bottom: ${index < positions.length - 1 ? "12px" : "0"};">
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-          <span style="font-size: 12px; color: var(--gray-600); font-weight: 500;">${getDepartmentName(
-            pos.dept
-          )}:</span>
-          <span class="status-badge ${getStatusClass(
-            pos.status
-          )}" style="font-size: 11px;">
-            ${getStatusText(pos.status)}
-          </span>
-        </div>
-        <select class="app-select ban-status-select" 
-                data-ban-type="${pos.type}" 
-                ${!pos.canEdit ? "disabled" : ""}
-                style="width: 100%; font-size: 12px; padding: 6px 8px;">
-          <option value="pending" ${
-            pos.status === "pending" ? "selected" : ""
-          }>Pending</option>
-          <option value="pass" ${
-            pos.status === "pass" ? "selected" : ""
-          }>Pass</option>
-          <option value="not-pass" ${
-            pos.status === "not-pass" ? "selected" : ""
-          }>Not pass</option>
-        </select>
-      </div>
-    `;
-  });
-
-  html += `</div>`;
-  return html;
 }
 
 // Hàm lấy supporter từ team (lấy từ member đầu tiên)
