@@ -1187,6 +1187,40 @@
     margin-bottom: 8px;
 }
 
+/* Thêm vào phần CSS */
+.applications-table tr.team-header {
+    background-color: var(--primary-light) !important;
+    font-weight: 600;
+}
+
+.applications-table .team-member-row td:first-child {
+    border-left: 3px solid var(--primary);
+}
+
+.team-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 16px;
+    align-items: start;
+}
+
+.team-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.team-info-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-600);
+}
+
+.team-info-value {
+    font-size: 13px;
+    color: var(--gray-800);
+}
+
       /* Tab khôi phục */
       #restore-tab .applications-table {
         font-size: 12px;
@@ -1606,18 +1640,16 @@
         <!-- Round 3 Content -->
         <div id="round3-content" class="round-content" style="display: none">
           <table class="applications-table">
-            <thead>
-              <tr>
-                <th>Team</th>
-                <th>Advisor/Supporter</th>
-                <th>Họ và tên</th>
-                <th>Ban ứng tuyển</th>
-                <th>Ghi chú</th>
-                <th>Trạng thái</th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
-            <tbody id="round3-table-body"></tbody>
+              <thead>
+                  <tr>
+                      <th>Họ và tên</th>
+                      <th>Ban ứng tuyển</th>
+                      <th>Ghi chú</th>
+                      <th>Trạng thái</th>
+                      <th>Hành động</th>
+                  </tr>
+              </thead>
+              <tbody id="round3-table-body"></tbody>
           </table>
         </div>
         <!-- Round 4 Content -->
@@ -6400,378 +6432,132 @@ function setupRound3SaveHandlers() {
 }
 
 function renderRound3() {
-  const tbody = document.getElementById("round3-table-body");
-  tbody.innerHTML = "";
+    const tbody = document.getElementById("round3-table-body");
+    tbody.innerHTML = "";
 
-  const filteredApps = filterRound3Applications();
+    const filteredApps = filterRound3Applications();
 
-  // Nhóm ứng viên theo team
-  const teams = {};
-
-  filteredApps.forEach((app) => {
-    // CHỈ lấy các ban đã PASS vòng 2
-    const passedDepartments = [];
-
-    if (app.round2_priority_status === "pass") {
-      passedDepartments.push({
-        type: "priority",
-        dept: app.priority_position,
-        status: app.round3_priority_status || "pending",
-      });
-    }
-
-    if (app.round2_secondary_status === "pass") {
-      passedDepartments.push({
-        type: "secondary",
-        dept: app.secondary_position,
-        status: app.round3_secondary_status || "pending",
-      });
-    }
-
-    // Nếu không có ban nào pass vòng 2 thì bỏ qua
-    if (passedDepartments.length === 0) return;
-
-    const teamInfo = app.round3 || {};
-    const teamName = teamInfo.team || "Chưa có team";
-
-    if (!teams[teamName]) {
-      teams[teamName] = [];
-    }
-
-    teams[teamName].push({
-      app,
-      passedDepartments,
-      teamInfo,
-    });
-  });
-
-  // Sắp xếp teams theo thứ tự số
-  const sortedTeamNames = Object.keys(teams).sort((a, b) => {
-    const numA = parseInt(a.replace("Team", "")) || 0;
-    const numB = parseInt(b.replace("Team", "")) || 0;
-    return numA - numB;
-  });
-
-  // Render từng team
-  sortedTeamNames.forEach((teamName) => {
-    const teamMembers = teams[teamName];
+    // Nhóm ứng viên theo team
+    const teams = {};
     
-    // Lấy advisor và supporter từ member đầu tiên (vì cùng team nên giống nhau)
-    const firstMember = teamMembers[0];
-    const teamAdvisors = [
-      firstMember.teamInfo.advisor1 || "",
-      firstMember.teamInfo.advisor2 || ""
-    ];
-    const teamSupporter = firstMember.teamInfo.supporter || "";
-
-    teamMembers.forEach((member, index) => {
-      const { app, passedDepartments } = member;
-      const tr = document.createElement("tr");
-
-      let rowHTML = "";
-
-      // Cột Team - merge cho các thành viên cùng team
-      if (index === 0) {
-        rowHTML += `<td rowspan="${teamMembers.length}" style="font-weight: 600; color: var(--info); vertical-align: middle;">${teamName}</td>`;
-      }
-
-      // Cột Advisor & Supporter - merge cho các thành viên cùng team
-      if (index === 0) {
-        let advisorSupporterHTML = "";
+    filteredApps.forEach((app) => {
+        const teamName = app.round3?.team || "Chưa có team";
         
-        // Advisor 1
-        advisorSupporterHTML += `
-          <div style="margin-bottom: 8px;">
-            <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Advisor 1:</label>
-            <input class="app-input advisor-input" 
-                value="${teamAdvisors[0]}" 
-                placeholder="Tên advisor 1"
-                data-team="${teamName}"
-                data-field="advisor1"
-                style="margin-bottom: 4px; width: 100%; font-size: 12px;">
-          </div>
-        `;
-        
-        // Advisor 2
-        advisorSupporterHTML += `
-          <div style="margin-bottom: 8px;">
-            <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Advisor 2:</label>
-            <input class="app-input advisor-input" 
-                value="${teamAdvisors[1]}" 
-                placeholder="Tên advisor 2"
-                data-team="${teamName}"
-                data-field="advisor2"
-                style="margin-bottom: 4px; width: 100%; font-size: 12px;">
-          </div>
-        `;
-        
-        // Supporter
-        advisorSupporterHTML += `
-          <div style="margin-bottom: 8px;">
-            <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Supporter:</label>
-            <input class="app-input supporter-input" 
-                value="${teamSupporter}" 
-                placeholder="Tên supporter (cách nhau bằng dấu ,)"
-                data-team="${teamName}"
-                data-field="supporter"
-                style="margin-bottom: 4px; width: 100%; font-size: 12px;">
-            <small style="color: var(--gray-500); font-size: 10px;">Có thể có 2-3 supporter</small>
-          </div>
-        `;
-
-        rowHTML += `<td rowspan="${teamMembers.length}" style="min-width: 180px; vertical-align: top;">${advisorSupporterHTML}</td>`;
-      }
-
-      // Cột Họ và tên
-      rowHTML += `<td style="font-weight: 500;">${app.fullname}</td>`;
-
-      // Cột Ban ứng tuyển - CHỈ hiển thị ban đã PASS vòng 2
-      let departmentsHTML = "";
-      passedDepartments.forEach((pos) => {
-        const status = app[`round3_${pos.type}_status`] || "pending";
-        departmentsHTML += renderDepartment(pos.dept, status);
-      });
-      rowHTML += `<td>${departmentsHTML}</td>`;
-
-      // Cột Ghi chú
-      let noteHTML = "";
-      passedDepartments.forEach((pos) => {
-        const data = app.round3?.[pos.type] || {};
-        const canEditThisBan = canEditBan(app, pos.type);
-
-        noteHTML += `
-          <input class="app-input note-input" 
-              value="${data.note || ""}" 
-              placeholder="Ghi chú ${getDepartmentName(pos.dept)}"
-              data-app-id="${app.id}"
-              data-ban-type="${pos.type}"
-              data-field="note"
-              ${!canEditThisBan ? "disabled" : ""}
-              style="margin-bottom: 4px; width: 100%;">
-        `;
-      });
-      rowHTML += `<td style="min-width: 200px;">${noteHTML}</td>`;
-
-      // Cột Trạng thái
-      let statusHTML = "";
-      passedDepartments.forEach((pos, idx) => {
-        const status = app[`round3_${pos.type}_status`] || "pending";
-        const canEditThisBan = canEditBan(app, pos.type);
-
-        statusHTML += `
-          <div style="margin-bottom: ${idx < passedDepartments.length - 1 ? "12px" : "0"};">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-              <span style="font-size: 12px; color: var(--gray-600); font-weight: 500;">${getDepartmentName(
-                pos.dept
-              )}:</span>
-              <span class="status-badge ${getStatusClass(
-                status
-              )}" style="font-size: 11px;">
-                ${getStatusText(status)}
-              </span>
-            </div>
-            <select class="app-select status-select" 
-                    data-app-id="${app.id}"
-                    data-ban-type="${pos.type}"
-                    data-field="status"
-                    ${!canEditThisBan ? "disabled" : ""}
-                    style="width: 100%; font-size: 12px; padding: 6px 8px;">
-              <option value="pending" ${status === "pending" ? "selected" : ""}>Pending</option>
-              <option value="pass" ${status === "pass" ? "selected" : ""}>Pass</option>
-              <option value="not-pass" ${status === "not-pass" ? "selected" : ""}>Not pass</option>
-            </select>
-          </div>
-        `;
-      });
-      rowHTML += `<td style="min-width: 120px;">${statusHTML}</td>`;
-
-      // Cột Hành động
-      let actionHTML = "";
-      if (passedDepartments.length > 0) {
-        const canEditAny = passedDepartments.some((pos) => canEditBan(app, pos.type));
-        actionHTML = `
-          <button class="action-btn save-btn" data-app-id="${app.id}" 
-              style="background: var(--success-light); color: var(--success);" 
-              ${!canEditAny ? "disabled" : ""}>
-              Lưu
-          </button>
-        `;
-      }
-      rowHTML += `<td style="min-width: 80px;">${actionHTML}</td>`;
-
-      tr.innerHTML = rowHTML;
-      tbody.appendChild(tr);
-    });
-  });
-
-  // THIẾT LẬP EVENT LISTENERS
-
-  // 1. Event listeners cho nút lưu ứng viên
-  tbody.querySelectorAll(".save-btn").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const appId = btn.getAttribute("data-app-id");
-      const row = btn.closest("tr");
-      const app = applications.find((a) => a.id === appId);
-      
-      if (!app) {
-        alert("Ứng viên không tồn tại");
-        return;
-      }
-
-      // CHỈ lấy các ban đã PASS vòng 2
-      const passedDepartments = [];
-      if (app.round2_priority_status === "pass") {
-        passedDepartments.push("priority");
-      }
-      if (app.round2_secondary_status === "pass") {
-        passedDepartments.push("secondary");
-      }
-
-      const updates = {};
-      let hasUpdates = false;
-
-      // Thu thập dữ liệu từ các input
-      passedDepartments.forEach((banType) => {
-        if (!canEditBan(app, banType)) return;
-
-        // Lấy ghi chú
-        const noteInput = row.querySelector(`.note-input[data-app-id="${appId}"][data-ban-type="${banType}"]`);
-        if (noteInput) {
-          if (!updates.round3) updates.round3 = {};
-          if (!updates.round3[banType]) updates.round3[banType] = {};
-          updates.round3[banType].note = noteInput.value;
-          hasUpdates = true;
+        if (!teams[teamName]) {
+            teams[teamName] = {
+                name: teamName,
+                advisor1: app.round3?.advisor1 || "",
+                advisor2: app.round3?.advisor2 || "",
+                supporter: app.round3?.supporter || "",
+                members: []
+            };
         }
-
-        // Lấy trạng thái
-        const statusSelect = row.querySelector(`.status-select[data-app-id="${appId}"][data-ban-type="${banType}"]`);
-        if (statusSelect) {
-          updates[`round3_${banType}_status`] = statusSelect.value;
-          hasUpdates = true;
-        }
-      });
-
-      if (!hasUpdates) {
-        alert("Không có thay đổi nào để lưu hoặc không có quyền chỉnh sửa");
-        return;
-      }
-
-      try {
-        console.log("🔄 Đang lưu dữ liệu round3:", updates);
-        await db.collection("applications").doc(appId).update(updates);
-        alert("✅ Đã lưu thông tin thành công!");
         
-        // Refresh dữ liệu
-        await refreshApplications();
-        
-      } catch (error) {
-        console.error("❌ Lỗi khi lưu:", error);
-        alert("❌ Lỗi khi lưu: " + error.message);
-      }
+        teams[teamName].members.push(app);
     });
-  });
 
-  // 2. Event listeners cho advisor và supporter (auto-save)
-  tbody.querySelectorAll(".advisor-input, .supporter-input").forEach((input) => {
-    // Sử dụng debounce để tránh lưu quá nhiều lần
-    let timeoutId;
-    input.addEventListener("input", () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(async () => {
-        const teamName = input.getAttribute("data-team");
-        const field = input.getAttribute("data-field");
-        const value = input.value;
+    // Sắp xếp teams theo thứ tự
+    const sortedTeams = Object.values(teams).sort((a, b) => {
+        // Team "Chưa có team" luôn ở cuối
+        if (a.name === "Chưa có team") return 1;
+        if (b.name === "Chưa có team") return -1;
+        
+        // Sắp xếp các team khác theo thứ tự alphabet
+        return a.name.localeCompare(b.name);
+    });
 
-        // Tìm tất cả ứng viên trong team này
-        const teamMembers = applications.filter((app) => {
-          if (app.current_round !== "round3") return false;
-          const teamInfo = app.round3 || {};
-          return teamInfo.team === teamName;
+    // Render theo team đã sắp xếp
+    sortedTeams.forEach((team) => {
+        // Render team header row
+        const headerRow = document.createElement("tr");
+        headerRow.style.backgroundColor = "var(--gray-50)";
+        headerRow.innerHTML = `
+            <td style="font-weight: 600; border-right: 2px solid var(--primary);">
+                ${team.name}
+            </td>
+            <td colspan="6" style="padding: 12px 16px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: center;">
+                    <div>
+                        <strong style="font-size: 12px; color: var(--gray-600);">Advisor:</strong>
+                        <div style="font-size: 13px;">${team.advisor1 || "Chưa có"} ${team.advisor2 ? ', ' + team.advisor2 : ''}</div>
+                    </div>
+                    <div>
+                        <strong style="font-size: 12px; color: var(--gray-600);">Supporter:</strong>
+                        <div style="font-size: 13px;">${team.supporter || "Chưa có"}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 12px; color: var(--gray-500);">${team.members.length} thành viên</span>
+                    </div>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(headerRow);
+
+        // Render members của team
+        team.members.forEach((app, memberIndex) => {
+            const passedDepartments = [];
+            if (app.round2_priority_status === "pass") passedDepartments.push("priority");
+            if (app.round2_secondary_status === "pass") passedDepartments.push("secondary");
+
+            const memberRow = document.createElement("tr");
+            memberRow.innerHTML = `
+                <td style="padding-left: 32px; border-right: 2px solid var(--primary);">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600;">
+                            ${memberIndex + 1}
+                        </div>
+                        <div>
+                            <div style="font-weight: 500;">${app.fullname}</div>
+                            <div style="font-size: 11px; color: var(--gray-500);">${app.email}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    ${passedDepartments.map((type) =>
+                        renderDepartment(
+                            type === "priority" ? app.priority_position : app.secondary_position,
+                            app[`round3_${type}_status`] || "pending"
+                        )
+                    ).join("")}
+                </td>
+                <td>
+                    ${passedDepartments.map((type) =>
+                        `<input class="app-input" value="${app.round3?.[type]?.note || ""}" 
+                            data-field="${type}.note" data-id="${app.id}" 
+                            placeholder="Ghi chú" style="margin-bottom: 4px; width: 100%;">`
+                    ).join("")}
+                </td>
+                <td>
+                    ${passedDepartments.map((type) => {
+                        const status = app[`round3_${type}_status`] || "pending";
+                        return `
+                            <select class="app-select" data-field="${type}.status" data-id="${app.id}" 
+                                style="margin-bottom: 4px; width: 100%;" ${!canEditRound3(app, type) ? 'disabled' : ''}>
+                                <option value="pending" ${status === "pending" ? "selected" : ""}>Pending</option>
+                                <option value="pass" ${status === "pass" ? "selected" : ""}>Pass</option>
+                                <option value="not-pass" ${status === "not-pass" ? "selected" : ""}>Not pass</option>
+                            </select>
+                        `;
+                    }).join("")}
+                </td>
+                <td>
+                    <button class="action-btn save-btn" data-id="${app.id}" 
+                        style="padding: 6px 12px; font-size: 12px;">
+                        Lưu
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(memberRow);
         });
 
-        if (teamMembers.length === 0) {
-          console.log("Không tìm thấy thành viên trong team:", teamName);
-          return;
-        }
-
-        console.log(`🔄 Đang cập nhật ${field} cho team ${teamName}`);
-
-        // Cập nhật advisor/supporter cho tất cả thành viên trong team
-        const batch = db.batch();
-        teamMembers.forEach((app) => {
-          const appRef = db.collection("applications").doc(app.id);
-          const updateData = {};
-          
-          if (field === "advisor1" || field === "advisor2") {
-            updateData[`round3.${field}`] = value;
-          } else if (field === "supporter") {
-            updateData[`round3.supporter`] = value;
-          }
-          
-          batch.update(appRef, updateData);
-        });
-
-        try {
-          await batch.commit();
-          console.log(`✅ Đã cập nhật ${field} cho ${teamMembers.length} thành viên team ${teamName}`);
-          
-          // Cập nhật local data
-          teamMembers.forEach((app) => {
-            const appIndex = applications.findIndex(a => a.id === app.id);
-            if (appIndex !== -1) {
-              if (!applications[appIndex].round3) applications[appIndex].round3 = {};
-              if (field === "advisor1" || field === "advisor2") {
-                applications[appIndex].round3[field] = value;
-              } else if (field === "supporter") {
-                applications[appIndex].round3.supporter = value;
-              }
-            }
-          });
-          
-        } catch (error) {
-          console.error("❌ Lỗi khi cập nhật advisor/supporter:", error);
-          alert("❌ Lỗi khi cập nhật: " + error.message);
-        }
-      }, 1000); // Debounce 1 giây
+        // Thêm một dòng trống giữa các team
+        const spacerRow = document.createElement("tr");
+        spacerRow.innerHTML = `<td colspan="7" style="height: 16px; background: transparent;"></td>`;
+        tbody.appendChild(spacerRow);
     });
-  });
 
-  // 3. Event listeners cho status select (auto-save)
-  tbody.querySelectorAll(".status-select").forEach((select) => {
-    select.addEventListener("change", async () => {
-      const appId = select.getAttribute("data-app-id");
-      const banType = select.getAttribute("data-ban-type");
-      const newStatus = select.value;
-
-      const app = applications.find((a) => a.id === appId);
-      if (!app || !canEditBan(app, banType)) {
-        alert("Không có quyền chỉnh sửa ban này");
-        select.value = app?.[`round3_${banType}_status`] || "pending";
-        return;
-      }
-
-      try {
-        console.log(`🔄 Đang cập nhật trạng thái ${banType} cho ${app.fullname}`);
-        await db.collection("applications").doc(appId).update({
-          [`round3_${banType}_status`]: newStatus
-        });
-        
-        console.log("✅ Đã cập nhật trạng thái thành công");
-        
-        // Cập nhật local data
-        const appIndex = applications.findIndex(a => a.id === appId);
-        if (appIndex !== -1) {
-          applications[appIndex][`round3_${banType}_status`] = newStatus;
-        }
-        
-      } catch (error) {
-        console.error("❌ Lỗi khi cập nhật trạng thái:", error);
-        alert("❌ Lỗi khi cập nhật trạng thái: " + error.message);
-        // Rollback UI
-        select.value = app[`round3_${banType}_status`] || "pending";
-      }
-    });
-  });
+    // Setup save handlers
+    setupRound3SaveHandlers();
 }
 
 // Hàm render phần trạng thái vòng 3 (giống vòng 2)
