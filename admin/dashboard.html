@@ -954,6 +954,194 @@
         border-bottom: 2px solid var(--info);
       }
 
+      /* Thêm vào phần CSS hiện có */
+.manual-team-section {
+  margin-top: 20px;
+  display: none;
+}
+
+.manual-team-card {
+  background: var(--white);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--info);
+}
+
+.manual-team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.manual-team-name {
+  font-weight: 600;
+  color: var(--gray-800);
+  font-size: 16px;
+}
+
+.manual-team-members {
+  margin-bottom: 12px;
+}
+
+.member-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.manual-team-advisors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.manual-team-supporters {
+  margin-bottom: 12px;
+}
+
+.manual-team-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.add-team-btn {
+  background-color: var(--success-light);
+  color: var(--success);
+  border: none;
+  padding: 10px 16px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.add-team-btn:hover {
+  background-color: var(--success);
+  color: var(--white);
+}
+
+.remove-team-btn {
+  background-color: var(--error-light);
+  color: var(--error);
+  border: none;
+  padding: 6px 12px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.remove-team-btn:hover {
+  background-color: var(--error);
+  color: var(--white);
+}
+
+.team-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--gray-200);
+  margin-bottom: 20px;
+}
+
+.team-tab {
+  padding: 12px 24px;
+  font-weight: 500;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: var(--transition);
+  border-bottom: 2px solid transparent;
+}
+
+.team-tab:hover {
+  color: var(--gray-800);
+}
+
+.team-tab.active {
+  color: var(--info);
+  border-bottom: 2px solid var(--info);
+}
+
+.team-tab-content {
+  display: none;
+}
+
+.team-tab-content.active {
+  display: block;
+}
+
+.validation-message {
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.validation-success {
+  background-color: var(--success-light);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.validation-error {
+  background-color: var(--error-light);
+  color: var(--error);
+  border: 1px solid var(--error);
+}
+
+.validation-warning {
+  background-color: var(--warning-light);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+/* Thêm vào phần CSS */
+.ban-status-select {
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  padding: 6px 8px;
+  font-size: 12px;
+  background: var(--white);
+  color: var(--gray-800);
+  width: 100%;
+}
+
+.ban-status-select:disabled {
+  background-color: var(--gray-100);
+  color: var(--gray-500);
+  cursor: not-allowed;
+}
+
+.status-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ban-status-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ban-status-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ban-department-name {
+  font-size: 12px;
+  color: var(--gray-600);
+  font-weight: 500;
+}
+
       /* Tab khôi phục */
       #restore-tab .applications-table {
         font-size: 12px;
@@ -1770,92 +1958,150 @@
       </div>
     </div>
 
-    <!-- Thêm sau modal export -->
-    <div class="modal" id="team-modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title">Chia Team Vòng 3</h2>
-          <button class="modal-close" id="team-modal-close">&times;</button>
+<!-- Thay thế modal team hiện tại -->
+<div class="modal" id="team-modal">
+  <div class="modal-content" style="max-width: 1000px;">
+    <div class="modal-header">
+      <h2 class="modal-title">Chia Team Vòng 3</h2>
+      <button class="modal-close" id="team-modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Tabs cho chia team -->
+      <div class="team-tabs">
+        <div class="team-tab active" data-tab="auto">Chia tự động</div>
+        <div class="team-tab" data-tab="manual">Chia thủ công</div>
+      </div>
+
+      <!-- Tab chia tự động -->
+      <div id="auto-team-tab" class="team-tab-content active">
+        <div class="team-config">
+          <div class="filter-group">
+            <label class="filter-label">Phương thức chia</label>
+            <select class="filter-select" id="division-method">
+              <option value="byTeamCount">Chia theo số team</option>
+              <option value="byTeamSize">Chia theo số người mỗi team</option>
+            </select>
+          </div>
+          <div class="filter-group" id="team-count-group">
+            <label class="filter-label">Số team</label>
+            <input
+              type="number"
+              class="filter-input"
+              id="team-count"
+              min="2"
+              max="10"
+              value="6"
+            />
+          </div>
+          <div
+            class="filter-group"
+            id="team-size-group"
+            style="display: none"
+          >
+            <label class="filter-label">Số người mỗi team</label>
+            <input
+              type="number"
+              class="filter-input"
+              id="team-size"
+              min="3"
+              max="10"
+              value="5"
+            />
+          </div>
+          <button class="action-btn" id="generate-teams-btn">Tạo Team</button>
+          <button
+            class="action-btn"
+            id="reset-teams-btn"
+            style="
+              background-color: var(--warning-light);
+              color: var(--warning);
+            "
+          >
+            <i class="fas fa-undo" style="margin-right: 8px"></i> Reset Team
+          </button>
         </div>
-        <div class="modal-body">
-          <div class="team-config">
-            <div class="filter-group">
-              <label class="filter-label">Phương thức chia</label>
-              <select class="filter-select" id="division-method">
-                <option value="byTeamCount">Chia theo số team</option>
-                <option value="byTeamSize">Chia theo số người mỗi team</option>
-              </select>
-            </div>
-            <div class="filter-group" id="team-count-group">
-              <label class="filter-label">Số team</label>
-              <input
-                type="number"
-                class="filter-input"
-                id="team-count"
-                min="2"
-                max="10"
-                value="6"
-              />
-            </div>
-            <div
-              class="filter-group"
-              id="team-size-group"
-              style="display: none"
-            >
-              <label class="filter-label">Số người mỗi team</label>
-              <input
-                type="number"
-                class="filter-input"
-                id="team-size"
-                min="3"
-                max="10"
-                value="5"
-              />
-            </div>
-            <button class="action-btn" id="generate-teams-btn">Tạo Team</button>
+
+        <div id="team-preview" style="display: none; margin-top: 20px">
+          <h3>Preview Team</h3>
+          <div id="teams-container"></div>
+          <div
+            class="team-actions"
+            style="
+              margin-top: 20px;
+              display: flex;
+              gap: 10px;
+              flex-wrap: wrap;
+            "
+          >
+            <button class="action-btn" id="export-teams-btn">
+              Export Danh Sách
+            </button>
             <button
               class="action-btn"
-              id="reset-teams-btn"
+              id="confirm-teams-btn"
               style="
-                background-color: var(--warning-light);
-                color: var(--warning);
+                background-color: var(--success-light);
+                color: var(--success);
               "
             >
-              <i class="fas fa-undo" style="margin-right: 8px"></i> Reset Team
+              <i class="fas fa-check" style="margin-right: 8px"></i>
+              Xác Nhận Chia Team
             </button>
-          </div>
-
-          <div id="team-preview" style="display: none; margin-top: 20px">
-            <h3>Preview Team</h3>
-            <div id="teams-container"></div>
-            <div
-              class="team-actions"
-              style="
-                margin-top: 20px;
-                display: flex;
-                gap: 10px;
-                flex-wrap: wrap;
-              "
-            >
-              <button class="action-btn" id="export-teams-btn">
-                Export Danh Sách
-              </button>
-              <button
-                class="action-btn"
-                id="confirm-teams-btn"
-                style="
-                  background-color: var(--success-light);
-                  color: var(--success);
-                "
-              >
-                <i class="fas fa-check" style="margin-right: 8px"></i>
-                Xác Nhận Chia Team
-              </button>
-            </div>
           </div>
         </div>
       </div>
+
+      <!-- Tab chia thủ công -->
+      <div id="manual-team-tab" class="team-tab-content">
+        <div class="manual-team-config">
+          <div class="filter-group">
+            <label class="filter-label">Số team</label>
+            <input
+              type="number"
+              class="filter-input"
+              id="manual-team-count"
+              min="1"
+              max="20"
+              value="6"
+            />
+          </div>
+          <button class="action-btn" id="generate-manual-teams-btn">
+            Tạo Form Nhập Team
+          </button>
+        </div>
+
+        <div id="manual-teams-container" class="manual-team-section"></div>
+
+        <div id="manual-team-validation" style="margin-top: 16px;"></div>
+
+        <div
+          class="team-actions"
+          style="
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+          "
+        >
+          <button class="action-btn" id="export-manual-teams-btn">
+            Export Danh Sách
+          </button>
+          <button
+            class="action-btn"
+            id="confirm-manual-teams-btn"
+            style="
+              background-color: var(--success-light);
+              color: var(--success);
+            "
+          >
+            <i class="fas fa-check" style="margin-right: 8px"></i>
+            Xác Nhận Chia Team
+          </button>
+        </div>
+      </div>
     </div>
+  </div>
+</div>    
 
     <script>
       // Firebase configuration
@@ -2552,6 +2798,404 @@ document.getElementById("reset-teams-btn").addEventListener("click", async () =>
         alert("❌ Lỗi khi reset team: " + error.message);
     }
 });
+
+// Biến toàn cục cho team thủ công
+let manualTeams = [];
+
+// Xử lý tab chia team
+document.addEventListener('DOMContentLoaded', function() {
+  // Chuyển đổi tab
+  document.querySelectorAll('.team-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      const tabName = this.getAttribute('data-tab');
+      
+      // Xóa active tất cả tabs
+      document.querySelectorAll('.team-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.team-tab-content').forEach(c => c.classList.remove('active'));
+      
+      // Active tab được click
+      this.classList.add('active');
+      document.getElementById(`${tabName}-team-tab`).classList.add('active');
+    });
+  });
+
+  // Tạo form nhập team thủ công
+  document.getElementById('generate-manual-teams-btn').addEventListener('click', generateManualTeamForms);
+  
+  // Xác nhận team thủ công
+  document.getElementById('confirm-manual-teams-btn').addEventListener('click', confirmManualTeams);
+  
+  // Export team thủ công
+  document.getElementById('export-manual-teams-btn').addEventListener('click', exportManualTeams);
+});
+
+// Tạo form nhập team thủ công
+function generateManualTeamForms() {
+  const teamCount = parseInt(document.getElementById('manual-team-count').value);
+  const container = document.getElementById('manual-teams-container');
+  const validationDiv = document.getElementById('manual-team-validation');
+  
+  if (teamCount < 1) {
+    validationDiv.innerHTML = `
+      <div class="validation-error validation-message">
+        <i class="fas fa-exclamation-triangle"></i>
+        Số team phải lớn hơn 0
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = '';
+  validationDiv.innerHTML = '';
+  
+  for (let i = 1; i <= teamCount; i++) {
+    const teamCard = document.createElement('div');
+    teamCard.className = 'manual-team-card';
+    teamCard.innerHTML = `
+      <div class="manual-team-header">
+        <div class="manual-team-name">Team ${i}</div>
+        <button class="remove-team-btn" onclick="removeManualTeam(${i})">
+          <i class="fas fa-trash"></i> Xóa
+        </button>
+      </div>
+      
+      <div class="manual-team-members">
+        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Thành viên (mỗi dòng một người):</label>
+        <textarea 
+          class="member-input" 
+          id="manual-team-${i}-members" 
+          placeholder="Nhập tên thành viên, mỗi dòng một người&#10;VD:&#10;Nguyễn Văn A&#10;Trần Thị B&#10;Lê Văn C"
+          rows="5"
+        ></textarea>
+      </div>
+      
+      <div class="manual-team-advisors">
+        <div>
+          <label style="display: block; margin-bottom: 4px; font-weight: 500;">Advisor 1:</label>
+          <input type="text" class="member-input" id="manual-team-${i}-advisor1" placeholder="Tên advisor 1">
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 4px; font-weight: 500;">Advisor 2:</label>
+          <input type="text" class="member-input" id="manual-team-${i}-advisor2" placeholder="Tên advisor 2">
+        </div>
+      </div>
+      
+      <div class="manual-team-supporters">
+        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Supporter (có thể có 2-3 supporter, cách nhau bằng dấu phẩy):</label>
+        <input 
+          type="text" 
+          class="member-input" 
+          id="manual-team-${i}-supporter" 
+          placeholder="VD: Nguyễn Văn X, Trần Thị Y, Lê Văn Z"
+        >
+      </div>
+    `;
+    
+    container.appendChild(teamCard);
+  }
+  
+  // Hiển thị container
+  container.style.display = 'block';
+  
+  validationDiv.innerHTML = `
+    <div class="validation-success validation-message">
+      <i class="fas fa-check-circle"></i>
+      Đã tạo ${teamCount} form nhập team. Vui lòng nhập thông tin cho từng team.
+    </div>
+  `;
+}
+
+// Xóa team thủ công
+function removeManualTeam(teamNumber) {
+  const teamCard = document.querySelector(`#manual-teams-container .manual-team-card:nth-child(${teamNumber})`);
+  if (teamCard) {
+    teamCard.remove();
+    
+    // Cập nhật lại số thứ tự các team
+    const remainingTeams = document.querySelectorAll('#manual-teams-container .manual-team-card');
+    remainingTeams.forEach((card, index) => {
+      const teamNumber = index + 1;
+      const header = card.querySelector('.manual-team-name');
+      header.textContent = `Team ${teamNumber}`;
+      
+      // Cập nhật ID của các input
+      const membersTextarea = card.querySelector('textarea');
+      const advisor1Input = card.querySelector('input[id$="-advisor1"]');
+      const advisor2Input = card.querySelector('input[id$="-advisor2"]');
+      const supporterInput = card.querySelector('input[id$="-supporter"]');
+      
+      if (membersTextarea) membersTextarea.id = `manual-team-${teamNumber}-members`;
+      if (advisor1Input) advisor1Input.id = `manual-team-${teamNumber}-advisor1`;
+      if (advisor2Input) advisor2Input.id = `manual-team-${teamNumber}-advisor2`;
+      if (supporterInput) supporterInput.id = `manual-team-${teamNumber}-supporter`;
+    });
+    
+    const validationDiv = document.getElementById('manual-team-validation');
+    validationDiv.innerHTML = `
+      <div class="validation-warning validation-message">
+        <i class="fas fa-info-circle"></i>
+        Đã xóa team. Còn lại ${remainingTeams.length} team.
+      </div>
+    `;
+  }
+}
+
+// Kiểm tra và xác nhận team thủ công
+async function confirmManualTeams() {
+  const teams = collectManualTeams();
+  
+  if (teams.length === 0) {
+    alert('Chưa có team nào được tạo!');
+    return;
+  }
+  
+  // Kiểm tra tính hợp lệ
+  const validation = validateManualTeams(teams);
+  if (!validation.isValid) {
+    const errorMessage = validation.errors.join('\n');
+    alert(`Có lỗi trong dữ liệu team:\n\n${errorMessage}`);
+    return;
+  }
+  
+  if (!confirm(`Xác nhận chia ${teams.length} team này? Dữ liệu sẽ được lưu vào hệ thống.`)) {
+    return;
+  }
+  
+  try {
+    // Lưu thông tin team vào Firestore
+    const batch = db.batch();
+    let totalMembers = 0;
+    
+    for (const team of teams) {
+      for (const memberName of team.members) {
+        // Tìm ứng viên trong danh sách
+        const candidate = findCandidateByName(memberName);
+        
+        if (candidate) {
+          const appRef = db.collection('applications').doc(candidate.id);
+          
+          // Cập nhật thông tin team
+          const updates = {
+            'round3.team': team.name,
+            'round3.teamId': team.id,
+            'round3.teamOrder': team.members.indexOf(memberName) + 1,
+          };
+          
+          // Thêm advisor nếu có
+          if (team.advisor1) {
+            updates['round3.advisor1'] = team.advisor1;
+          }
+          if (team.advisor2) {
+            updates['round3.advisor2'] = team.advisor2;
+          }
+          
+          // Thêm supporter nếu có
+          if (team.supporter) {
+            updates['round3.supporter'] = team.supporter;
+          }
+          
+          batch.update(appRef, updates);
+          totalMembers++;
+        }
+      }
+    }
+    
+    await batch.commit();
+    alert(`✅ Đã lưu thông tin ${totalMembers} ứng viên vào ${teams.length} team thành công!`);
+    document.getElementById('team-modal').style.display = 'none';
+    
+    // Refresh dữ liệu
+    await refreshApplications();
+  } catch (error) {
+    console.error('Lỗi khi lưu team thủ công:', error);
+    alert('❌ Lỗi khi lưu team: ' + error.message);
+  }
+}
+
+// Thu thập dữ liệu team thủ công
+function collectManualTeams() {
+  const teams = [];
+  const teamCards = document.querySelectorAll('#manual-teams-container .manual-team-card');
+  
+  teamCards.forEach((card, index) => {
+    const teamNumber = index + 1;
+    const membersText = document.getElementById(`manual-team-${teamNumber}-members`).value;
+    const advisor1 = document.getElementById(`manual-team-${teamNumber}-advisor1`).value.trim();
+    const advisor2 = document.getElementById(`manual-team-${teamNumber}-advisor2`).value.trim();
+    const supporter = document.getElementById(`manual-team-${teamNumber}-supporter`).value.trim();
+    
+    // Xử lý danh sách thành viên
+    const members = membersText
+      .split('\n')
+      .map(name => name.trim())
+      .filter(name => name.length > 0);
+    
+    if (members.length > 0) {
+      teams.push({
+        id: teamNumber,
+        name: `Team ${teamNumber}`,
+        members: members,
+        advisor1: advisor1,
+        advisor2: advisor2,
+        supporter: supporter
+      });
+    }
+  });
+  
+  return teams;
+}
+
+// Kiểm tra tính hợp lệ của team thủ công
+function validateManualTeams(teams) {
+  const errors = [];
+  const allMembers = [];
+  
+  for (const team of teams) {
+    // Kiểm tra team có thành viên không
+    if (team.members.length === 0) {
+      errors.push(`- ${team.name}: Không có thành viên nào`);
+      continue;
+    }
+    
+    // Kiểm tra từng thành viên
+    for (const memberName of team.members) {
+      const candidate = findCandidateByName(memberName);
+      
+      if (!candidate) {
+        errors.push(`- ${team.name}: Không tìm thấy ứng viên "${memberName}" trong hệ thống`);
+      } else if (candidate.current_round !== "round3") {
+        errors.push(`- ${team.name}: Ứng viên "${memberName}" không ở vòng 3 (hiện tại ở ${getRoundText(candidate.current_round)})`);
+      }
+      
+      // Kiểm tra trùng lặp
+      if (allMembers.includes(memberName)) {
+        errors.push(`- Ứng viên "${memberName}" xuất hiện trong nhiều team`);
+      } else {
+        allMembers.push(memberName);
+      }
+    }
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors: errors
+  };
+}
+
+// Tìm ứng viên theo tên
+function findCandidateByName(name) {
+  // Chuẩn hóa tên để so sánh (bỏ dấu, chuyển chữ hoa)
+  const normalize = (str) => {
+    return str
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+  };
+  
+  const normalizedSearch = normalize(name);
+  
+  // CHỈ CẦN TÌM TRONG TOÀN BỘ ỨNG VIÊN
+  return applications.find(candidate => {
+    if (!candidate.fullname) return false;
+    const normalizedCandidate = normalize(candidate.fullname);
+    return normalizedCandidate === normalizedSearch;
+  });
+}
+
+// Export team thủ công
+function exportManualTeams() {
+  const teams = collectManualTeams();
+  
+  if (teams.length === 0) {
+    alert('Chưa có team nào để export!');
+    return;
+  }
+  
+  const wb = XLSX.utils.book_new();
+  const data = [];
+  
+  // Tiêu đề
+  data.push(['DANH SÁCH TEAM VÒNG 3 - CHIA THỦ CÔNG']);
+  data.push(['Lưu ý: Mỗi ứng viên chỉ thuộc 1 team duy nhất']);
+  data.push([]);
+  data.push([
+    'Team',
+    'Advisor 1',
+    'Advisor 2',
+    'Supporter',
+    'STT',
+    'Họ và tên',
+    'Email',
+    'Các ban hợp lệ',
+    'Ghi chú'
+  ]);
+  
+  teams.forEach(team => {
+    // Dòng team với advisors và supporter
+    data.push([
+      team.name,
+      team.advisor1 || '',
+      team.advisor2 || '',
+      team.supporter || '',
+      '', '', '', '', ''
+    ]);
+    
+    // Thành viên
+    team.members.forEach((memberName, index) => {
+      const candidate = findCandidateByName(memberName);
+      let email = '';
+      let validDepartments = [];
+      let note = '';
+      
+      if (candidate) {
+        email = candidate.email || '';
+        
+        // Lấy các ban hợp lệ
+        if (candidate.round2_priority_status === 'pass') {
+          validDepartments.push(getDepartmentName(candidate.priority_position));
+        }
+        if (candidate.round2_secondary_status === 'pass') {
+          validDepartments.push(getDepartmentName(candidate.secondary_position));
+        }
+        
+        note = validDepartments.length === 2 ? 'Pass 2 ban' : '';
+      }
+      
+      data.push([
+        '', // Team
+        '', // Advisor 1
+        '', // Advisor 2
+        '', // Supporter
+        index + 1, // STT
+        memberName, // Họ và tên
+        email, // Email
+        validDepartments.join(', '), // Các ban hợp lệ
+        note // Ghi chú
+      ]);
+    });
+    
+    data.push([]); // Dòng trống giữa các team
+  });
+  
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  
+  // Định dạng cột
+  ws['!cols'] = [
+    { wch: 15 }, // Team
+    { wch: 20 }, // Advisor 1
+    { wch: 20 }, // Advisor 2
+    { wch: 25 }, // Supporter
+    { wch: 8 },  // STT
+    { wch: 25 }, // Họ và tên
+    { wch: 30 }, // Email
+    { wch: 20 }, // Các ban hợp lệ
+    { wch: 15 }, // Ghi chú
+  ];
+  
+  XLSX.utils.book_append_sheet(wb, ws, 'Danh sách team thủ công');
+  XLSX.writeFile(wb, 'Danh_sach_team_thu_cong_vong_3.xlsx');
+}
 
       // Biến toàn cục
       let selectedArchiveMethod = null;
@@ -3551,140 +4195,6 @@ document.getElementById("reset-teams-btn").addEventListener("click", async () =>
         });
       }
 
-      // Validate template team
-      function validateTeamTemplate(data) {
-        const errors = [];
-        const candidateMap = new Map();
-        const teamStructure = {};
-
-        // Kiểm tra định dạng cơ bản
-        if (data.length < 3) {
-          errors.push("File không đúng định dạng template");
-          return { isValid: false, errors };
-        }
-
-        // Lấy danh sách ứng viên từ hệ thống (CHỈ những người có ban hợp lệ)
-        const round3Candidates = loadRound3Candidates();
-        const systemCandidateMap = new Map(
-          round3Candidates.map((c) => [c.email.toLowerCase(), c])
-        );
-
-        let currentTeam = null;
-
-        for (let i = 2; i < data.length; i++) {
-          const row = data[i];
-          if (!row || row.length < 6) continue;
-
-          const [team, supporter, stt, name, department, email] = row;
-
-          // Dòng mô tả team
-          if (team && !stt && !name && !email) {
-            currentTeam = team;
-            teamStructure[currentTeam] = teamStructure[currentTeam] || {
-              members: [],
-            };
-            continue;
-          }
-
-          // Dòng ứng viên
-          if (stt && name && email) {
-            const normalizedEmail = email.toLowerCase().trim();
-
-            // Kiểm tra email có trong hệ thống không
-            if (!systemCandidateMap.has(normalizedEmail)) {
-              errors.push(
-                `Ứng viên ${name} (${email}) không tồn tại trong hệ thống hoặc không đủ điều kiện vào vòng 3`
-              );
-              continue;
-            }
-
-            const systemCandidate = systemCandidateMap.get(normalizedEmail);
-
-            // Kiểm tra ứng viên đã được phân team chưa
-            if (candidateMap.has(normalizedEmail)) {
-              errors.push(
-                `Ứng viên ${name} (${email}) xuất hiện trong nhiều team`
-              );
-            }
-
-            // 🛠️ SỬA: Kiểm tra ban có khớp với ban CHÍNH THỨC (đã pass cả 2 vòng) không
-            let isValidDepartment = false;
-            let expectedDepartments = [];
-
-            // Kiểm tra ban priority hợp lệ
-            if (
-              systemCandidate.priority_status === "pass" &&
-              systemCandidate.round2_priority_status === "pass" &&
-              department === systemCandidate.priority_position
-            ) {
-              isValidDepartment = true;
-              expectedDepartments.push(systemCandidate.priority_position);
-            }
-
-            // Kiểm tra ban secondary hợp lệ
-            if (
-              systemCandidate.secondary_status === "pass" &&
-              systemCandidate.round2_secondary_status === "pass" &&
-              department === systemCandidate.secondary_position
-            ) {
-              isValidDepartment = true;
-              expectedDepartments.push(systemCandidate.secondary_position);
-            }
-
-            if (!isValidDepartment) {
-              errors.push(
-                `Ban của ${name} trong template (${department}) không khớp với ban chính thức trong hệ thống (${expectedDepartments.join(
-                  " hoặc "
-                )})`
-              );
-            }
-
-            candidateMap.set(normalizedEmail, {
-              id: systemCandidate.id,
-              name: name,
-              email: email,
-              department: department,
-              team: currentTeam,
-            });
-
-            if (currentTeam) {
-              teamStructure[currentTeam].members.push({
-                id: systemCandidate.id,
-                name: name,
-                email: email,
-                department: department,
-              });
-            }
-          }
-        }
-
-        // 🛠️ SỬA: Kiểm tra số lượng ứng viên (chỉ những người có ban hợp lệ)
-        const validCandidatesCount = round3Candidates.length;
-        if (candidateMap.size !== validCandidatesCount) {
-          const missingCount = validCandidatesCount - candidateMap.size;
-          errors.push(`Thiếu ${missingCount} ứng viên trong template`);
-
-          // Liệt kê ứng viên bị thiếu
-          round3Candidates.forEach((candidate) => {
-            const normalizedEmail = candidate.email.toLowerCase();
-            if (!candidateMap.has(normalizedEmail)) {
-              errors.push(
-                `Thiếu ứng viên: ${candidate.fullname} (${
-                  candidate.email
-                }) - Ban: ${getValidDepartments(candidate).join(", ")}`
-              );
-            }
-          });
-        }
-
-        return {
-          isValid: errors.length === 0,
-          errors,
-          candidateMap,
-          teamStructure,
-        };
-      }
-
       // 🛠️ Hàm helper để lấy danh sách ban hợp lệ của ứng viên
       function getValidDepartments(candidate) {
         const validDepts = [];
@@ -3732,94 +4242,6 @@ document.getElementById("reset-teams-btn").addEventListener("click", async () =>
         });
 
         return teams;
-      }
-
-      // Tải template mẫu
-      function downloadTeamTemplate() {
-        const candidates = loadRound3Candidates();
-
-        // Tạo dữ liệu template
-        const templateData = [
-          ["DANH SÁCH TEAM VÒNG 3 - TEMPLATE"],
-          ["Lưu ý:"],
-          ["- Mỗi ứng viên chỉ xuất hiện trong 1 team duy nhất"],
-          ["- Giữ nguyên cấu trúc file"],
-          [
-            "- Điền tên team vào cột A (các dòng trống sẽ thuộc team phía trên)",
-          ],
-          ["- Điền supporter vào cột B"],
-          ["- Không sửa cột STT, Họ và tên, Ban, Email"],
-          ["- Ban phải khớp với ban chính thức của ứng viên trong hệ thống"],
-          [
-            "- Ứng viên có thể có 1 hoặc 2 ban hợp lệ (đã pass cả vòng 1 và vòng 2)",
-          ],
-          [],
-          ["Team", "Supporter", "STT", "Họ và tên", "Ban", "Email", "Ghi chú"],
-        ];
-
-        // Thêm danh sách ứng viên mẫu (chỉ những người có ban hợp lệ)
-        let stt = 1;
-        candidates.forEach((candidate) => {
-          // 🛠️ SỬA: Lấy tất cả các ban hợp lệ (có thể 1 hoặc 2 ban)
-          const validDepartments = getValidDepartments(candidate);
-
-          if (validDepartments.length > 0) {
-            // Nếu có 2 ban hợp lệ, tạo 2 dòng (hoặc 1 dòng với ghi chú)
-            if (validDepartments.length === 2) {
-              templateData.push([
-                "", // Team - để trống cho người dùng điền
-                "", // Supporter - để trống
-                stt,
-                candidate.fullname,
-                validDepartments[0], // Ban chính thức 1
-                candidate.email,
-                "Có 2 ban hợp lệ",
-              ]);
-              stt++;
-
-              templateData.push([
-                "", // Team - để trống cho người dùng điền
-                "", // Supporter - để trống
-                stt,
-                candidate.fullname,
-                validDepartments[1], // Ban chính thức 2
-                candidate.email,
-                "Có 2 ban hợp lệ",
-              ]);
-              stt++;
-            } else {
-              // Chỉ có 1 ban hợp lệ
-              templateData.push([
-                "", // Team - để trống cho người dùng điền
-                "", // Supporter - để trống
-                stt,
-                candidate.fullname,
-                validDepartments[0], // Ban chính thức
-                candidate.email,
-                "",
-              ]);
-              stt++;
-            }
-          }
-        });
-
-        // Tạo file Excel
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet(templateData);
-
-        // Định dạng cột
-        ws["!cols"] = [
-          { wch: 15 },
-          { wch: 25 },
-          { wch: 8 },
-          { wch: 25 },
-          { wch: 15 },
-          { wch: 30 },
-          { wch: 15 },
-        ];
-
-        XLSX.utils.book_append_sheet(wb, ws, "Template Team");
-        XLSX.writeFile(wb, "Template_Chia_Team_Vong_3.xlsx");
       }
 
       // Tải danh sách ứng viên vòng 3
@@ -4179,142 +4601,159 @@ document.getElementById("reset-teams-btn").addEventListener("click", async () =>
       }
 
       // Render preview team
-      function renderTeamPreview(teams) {
-        const container = document.getElementById("teams-container");
-        container.innerHTML = "";
+      // Render preview team - SỬA LẠI ĐỂ HIỂN THỊ SUPPORTER
+function renderTeamPreview(teams) {
+  const container = document.getElementById("teams-container");
+  container.innerHTML = "";
 
-        teams.forEach((team) => {
-          const teamDiv = document.createElement("div");
-          teamDiv.className = "team-preview-card";
-          teamDiv.style.cssText = `
-            background: var(--white);
-            border-radius: var(--border-radius);
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow);
-        `;
+  teams.forEach((team) => {
+    const teamDiv = document.createElement("div");
+    teamDiv.className = "team-preview-card";
+    teamDiv.style.cssText = `
+      background: var(--white);
+      border-radius: var(--border-radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    `;
 
-          // Thêm input cho supporter
-          // Thêm input cho supporter
-          let supporterHTML = `
-  <div style="margin-bottom: 12px;">
-    <label style="font-weight: 500; margin-bottom: 8px; display: block;">Supporter:</label>
-    <input type="text" class="app-input" id="supporter-${team.id}" 
-        placeholder="Nhập tên supporter (cách nhau bằng dấu ,)" 
-        style="width: 100%; margin-bottom: 8px;">
-    <small style="color: var(--gray-500);">VD: Võ Hà Vy - PD, Đặng Vũ Quỳnh Trang - HR</small>
-  </div>
-`;
+    // Thêm input cho supporter và advisors
+    let advisorSupporterHTML = `
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Advisor 1:</label>
+          <input type="text" class="app-input" id="advisor1-${team.id}" 
+              value="${team.advisor1 || ""}" 
+              placeholder="Tên advisor 1"
+              style="width: 100%; margin-bottom: 8px;">
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Advisor 2:</label>
+          <input type="text" class="app-input" id="advisor2-${team.id}" 
+              value="${team.advisor2 || ""}" 
+              placeholder="Tên advisor 2"
+              style="width: 100%; margin-bottom: 8px;">
+        </div>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Supporter:</label>
+        <input type="text" class="app-input" id="supporter-${team.id}" 
+            value="${team.supporter || ""}" 
+            placeholder="Nhập tên supporter (cách nhau bằng dấu ,)" 
+            style="width: 100%; margin-bottom: 8px;">
+        <small style="color: var(--gray-500); font-size: 10px;">VD: Võ Hà Vy - PD, Đặng Vũ Quỳnh Trang - HR</small>
+      </div>
+    `;
 
-          let membersHTML = "";
-          team.members.forEach((member, index) => {
-            // 🛠️ SỬA: CHỈ hiển thị các ban đã PASS cả vòng 1 và vòng 2
-            let departmentBadges = "";
-            let validPassedDepartments = [];
+    let membersHTML = "";
+    team.members.forEach((member, index) => {
+      // 🛠️ SỬA: CHỈ hiển thị các ban đã PASS cả vòng 1 và vòng 2
+      let departmentBadges = "";
+      let validPassedDepartments = [];
 
-            // Kiểm tra ban priority
-            if (
-              member.originalCandidate &&
-              member.originalCandidate.priority_status === "pass" &&
-              member.originalCandidate.round2_priority_status === "pass"
-            ) {
-              validPassedDepartments.push({
-                department: member.originalCandidate.priority_position,
-                type: "priority",
-              });
-            }
-
-            // Kiểm tra ban secondary
-            if (
-              member.originalCandidate &&
-              member.originalCandidate.secondary_status === "pass" &&
-              member.originalCandidate.round2_secondary_status === "pass"
-            ) {
-              validPassedDepartments.push({
-                department: member.originalCandidate.secondary_position,
-                type: "secondary",
-              });
-            }
-
-            // Render badges chỉ cho các ban hợp lệ
-            validPassedDepartments.forEach((dept) => {
-              departmentBadges += `
-                    <span class="department-badge status-pass" style="margin-left: 4px;">
-                        ${getDepartmentName(dept.department)}
-                    </span>
-                `;
-            });
-
-            // 🛠️ SỬA: Hiển thị icon nếu ứng viên có 2 ban hợp lệ
-            const twoDeptIcon =
-              validPassedDepartments.length === 2
-                ? '<i class="fas fa-layer-group" style="margin-left: 8px; color: var(--warning);" title="Ứng viên pass 2 ban"></i>'
-                : "";
-
-            membersHTML += `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--gray-200);">
-                    <div style="flex: 1;">
-                        <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                            <strong>${index + 1}. ${member.name}</strong>
-                            ${departmentBadges}
-                            ${twoDeptIcon}
-                        </div>
-                        <div style="font-size: 12px; color: var(--gray-500);">${
-                          member.email
-                        }</div>
-                        ${
-                          validPassedDepartments.length === 0
-                            ? '<div style="font-size: 11px; color: var(--error); margin-top: 2px;">⚠️ Không có ban hợp lệ</div>'
-                            : ""
-                        }
-                    </div>
-                </div>
-            `;
-          });
-
-          // 🛠️ SỬA: Cập nhật thống kê department chỉ cho các ban hợp lệ
-          const validDepartmentCounts = { MD: 0, HR: 0, PD: 0, ER: 0 };
-          team.members.forEach((member) => {
-            if (member.originalCandidate) {
-              if (
-                member.originalCandidate.priority_status === "pass" &&
-                member.originalCandidate.round2_priority_status === "pass"
-              ) {
-                validDepartmentCounts[
-                  member.originalCandidate.priority_position
-                ]++;
-              }
-              if (
-                member.originalCandidate.secondary_status === "pass" &&
-                member.originalCandidate.round2_secondary_status === "pass"
-              ) {
-                validDepartmentCounts[
-                  member.originalCandidate.secondary_position
-                ]++;
-              }
-            }
-          });
-
-          teamDiv.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h4 style="margin: 0;">${team.name}</h4>
-                <div>
-                    <span style="margin-right: 12px;">Tổng: ${team.members.length}</span>
-                    <span style="margin-right: 8px; color: var(--info);">MD: ${validDepartmentCounts.MD}</span>
-                    <span style="margin-right: 8px; color: var(--success);">HR: ${validDepartmentCounts.HR}</span>
-                    <span style="margin-right: 8px; color: var(--warning);">PD: ${validDepartmentCounts.PD}</span>
-                    <span style="color: var(--error);">ER: ${validDepartmentCounts.ER}</span>
-                </div>
-            </div>
-            ${supporterHTML}
-            <div style="max-height: 300px; overflow-y: auto;">
-                ${membersHTML}
-            </div>
-        `;
-
-          container.appendChild(teamDiv);
+      // Kiểm tra ban priority
+      if (
+        member.originalCandidate &&
+        member.originalCandidate.priority_status === "pass" &&
+        member.originalCandidate.round2_priority_status === "pass"
+      ) {
+        validPassedDepartments.push({
+          department: member.originalCandidate.priority_position,
+          type: "priority",
         });
       }
+
+      // Kiểm tra ban secondary
+      if (
+        member.originalCandidate &&
+        member.originalCandidate.secondary_status === "pass" &&
+        member.originalCandidate.round2_secondary_status === "pass"
+      ) {
+        validPassedDepartments.push({
+          department: member.originalCandidate.secondary_position,
+          type: "secondary",
+        });
+      }
+
+      // Render badges chỉ cho các ban hợp lệ
+      validPassedDepartments.forEach((dept) => {
+        departmentBadges += `
+              <span class="department-badge status-pass" style="margin-left: 4px;">
+                  ${getDepartmentName(dept.department)}
+              </span>
+          `;
+      });
+
+      // 🛠️ SỬA: Hiển thị icon nếu ứng viên có 2 ban hợp lệ
+      const twoDeptIcon =
+        validPassedDepartments.length === 2
+          ? '<i class="fas fa-layer-group" style="margin-left: 8px; color: var(--warning);" title="Ứng viên pass 2 ban"></i>'
+          : "";
+
+      membersHTML += `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--gray-200);">
+              <div style="flex: 1;">
+                  <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                      <strong>${index + 1}. ${member.name}</strong>
+                      ${departmentBadges}
+                      ${twoDeptIcon}
+                  </div>
+                  <div style="font-size: 12px; color: var(--gray-500);">${
+                    member.email
+                  }</div>
+                  ${
+                    validPassedDepartments.length === 0
+                      ? '<div style="font-size: 11px; color: var(--error); margin-top: 2px;">⚠️ Không có ban hợp lệ</div>'
+                      : ""
+                  }
+              </div>
+          </div>
+      `;
+    });
+
+    // 🛠️ SỬA: Cập nhật thống kê department chỉ cho các ban hợp lệ
+    const validDepartmentCounts = { MD: 0, HR: 0, PD: 0, ER: 0 };
+    team.members.forEach((member) => {
+      if (member.originalCandidate) {
+        if (
+          member.originalCandidate.priority_status === "pass" &&
+          member.originalCandidate.round2_priority_status === "pass"
+        ) {
+          validDepartmentCounts[
+            member.originalCandidate.priority_position
+          ]++;
+        }
+        if (
+          member.originalCandidate.secondary_status === "pass" &&
+          member.originalCandidate.round2_secondary_status === "pass"
+        ) {
+          validDepartmentCounts[
+            member.originalCandidate.secondary_position
+          ]++;
+        }
+      }
+    });
+
+    teamDiv.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="margin: 0;">${team.name}</h4>
+          <div>
+              <span style="margin-right: 12px;">Tổng: ${team.members.length}</span>
+              <span style="margin-right: 8px; color: var(--info);">MD: ${validDepartmentCounts.MD}</span>
+              <span style="margin-right: 8px; color: var(--success);">HR: ${validDepartmentCounts.HR}</span>
+              <span style="margin-right: 8px; color: var(--warning);">PD: ${validDepartmentCounts.PD}</span>
+              <span style="color: var(--error);">ER: ${validDepartmentCounts.ER}</span>
+          </div>
+      </div>
+      ${advisorSupporterHTML}
+      <div style="max-height: 300px; overflow-y: auto;">
+          ${membersHTML}
+      </div>
+    `;
+
+    container.appendChild(teamDiv);
+  });
+}
 
       // Export danh sách team
       document
@@ -5472,276 +5911,402 @@ document.getElementById("reset-teams-btn").addEventListener("click", async () =>
         return false;
       }
 
-      function renderRound3() {
-        const tbody = document.getElementById("round3-table-body");
-        tbody.innerHTML = "";
+function renderRound3() {
+  const tbody = document.getElementById("round3-table-body");
+  tbody.innerHTML = "";
 
-        const filteredApps = filterRound3Applications();
+  const filteredApps = filterRound3Applications();
 
-        // Nhóm ứng viên theo team
-        const teams = {};
+  // Nhóm ứng viên theo team
+  const teams = {};
 
-        filteredApps.forEach((app) => {
-          // CHỈ lấy các ban đã PASS vòng 2
-          const passedDepartments = [];
+  filteredApps.forEach((app) => {
+    // CHỈ lấy các ban đã PASS vòng 2
+    const passedDepartments = [];
 
-          if (app.round2_priority_status === "pass") {
-            passedDepartments.push({
-              type: "priority",
-              dept: app.priority_position,
-              status: app.round3_priority_status || "pending",
-            });
-          }
+    if (app.round2_priority_status === "pass") {
+      passedDepartments.push({
+        type: "priority",
+        dept: app.priority_position,
+        status: app.round3_priority_status || "pending",
+      });
+    }
 
-          if (app.round2_secondary_status === "pass") {
-            passedDepartments.push({
-              type: "secondary",
-              dept: app.secondary_position,
-              status: app.round3_secondary_status || "pending",
-            });
-          }
+    if (app.round2_secondary_status === "pass") {
+      passedDepartments.push({
+        type: "secondary",
+        dept: app.secondary_position,
+        status: app.round3_secondary_status || "pending",
+      });
+    }
 
-          // Nếu không có ban nào pass vòng 2 thì bỏ qua
-          if (passedDepartments.length === 0) return;
+    // Nếu không có ban nào pass vòng 2 thì bỏ qua
+    if (passedDepartments.length === 0) return;
 
-          const teamInfo = app.round3 || {};
-          const teamName = teamInfo.team || "Chưa có team";
+    const teamInfo = app.round3 || {};
+    const teamName = teamInfo.team || "Chưa có team";
 
-          if (!teams[teamName]) {
-            teams[teamName] = [];
-          }
+    if (!teams[teamName]) {
+      teams[teamName] = [];
+    }
 
-          teams[teamName].push({
-            app,
-            passedDepartments,
-            teamInfo,
-          });
-        });
+    teams[teamName].push({
+      app,
+      passedDepartments,
+      teamInfo,
+    });
+  });
 
-        // Sắp xếp teams theo thứ tự số
-        const sortedTeamNames = Object.keys(teams).sort((a, b) => {
-          const numA = parseInt(a.replace("Team", "")) || 0;
-          const numB = parseInt(b.replace("Team", "")) || 0;
-          return numA - numB;
-        });
+  // Sắp xếp teams theo thứ tự số
+  const sortedTeamNames = Object.keys(teams).sort((a, b) => {
+    const numA = parseInt(a.replace("Team", "")) || 0;
+    const numB = parseInt(b.replace("Team", "")) || 0;
+    return numA - numB;
+  });
 
-        // Render từng team
-        sortedTeamNames.forEach((teamName) => {
-          const teamMembers = teams[teamName];
-          const teamAdvisors = getTeamAdvisors(teamMembers);
+  // Render từng team
+  sortedTeamNames.forEach((teamName) => {
+    const teamMembers = teams[teamName];
+    const teamAdvisors = getTeamAdvisors(teamMembers);
+    const teamSupporter = getTeamSupporter(teamMembers);
 
-          teamMembers.forEach((member, index) => {
-            const { app, passedDepartments } = member;
-            const tr = document.createElement("tr");
+    teamMembers.forEach((member, index) => {
+      const { app, passedDepartments } = member;
+      const tr = document.createElement("tr");
 
-            // Cột Team - merge cho các thành viên cùng team
-            if (index === 0) {
-              tr.innerHTML += `<td rowspan="${teamMembers.length}" style="font-weight: 600; color: var(--info); vertical-align: middle;">${teamName}</td>`;
-            }
-
-            // Cột Advisor - merge cho các thành viên cùng team
-            if (index === 0) {
-              let advisorHTML = "";
-              teamAdvisors.forEach((advisor, idx) => {
-                advisorHTML += `
-                        <input class="app-input" 
-                            value="${advisor || ""}" 
-                            placeholder="Advisor ${idx + 1}"
-                            data-field="team.advisor${idx + 1}"
-                            data-team="${teamName}"
-                            style="margin-bottom: 4px; width: 100%;">
-                    `;
-              });
-              // Thêm input trống nếu chưa đủ 2 advisor
-              while (teamAdvisors.length < 2) {
-                advisorHTML += `
-                        <input class="app-input" 
-                            value="" 
-                            placeholder="Advisor ${teamAdvisors.length + 1}"
-                            data-field="team.advisor${teamAdvisors.length + 1}"
-                            data-team="${teamName}"
-                            style="margin-bottom: 4px; width: 100%;">
-                    `;
-                teamAdvisors.push("");
-              }
-              tr.innerHTML += `<td rowspan="${teamMembers.length}" style="min-width: 150px; vertical-align: middle;">${advisorHTML}</td>`;
-            }
-
-            // Cột Họ và tên
-            tr.innerHTML += `<td style="font-weight: 500;">${app.fullname}</td>`;
-
-            // Cột Ban ứng tuyển - CHỈ hiển thị ban đã PASS vòng 2
-            let departmentsHTML = "";
-            passedDepartments.forEach((pos) => {
-              const status = app[`round3_${pos.type}_status`] || "pending";
-              departmentsHTML += renderDepartment(pos.dept, status);
-            });
-            tr.innerHTML += `<td>${departmentsHTML}</td>`;
-
-            // Cột Ghi chú
-            let noteHTML = "";
-            passedDepartments.forEach((pos) => {
-              const data = app.round3?.[pos.type] || {};
-              const canEditThisBan = canEditBan(app, pos.type);
-
-              noteHTML += `
-                    <input class="app-input" ${
-                      !canEditThisBan ? "disabled" : ""
-                    } 
-                        value="${data.note || ""}" 
-                        placeholder="Ghi chú ${getDepartmentName(pos.dept)}"
-                        data-field="${pos.type}.note"
-                        style="margin-bottom: 4px; width: 100%;">
-                `;
-            });
-            tr.innerHTML += `<td style="min-width: 200px;">${noteHTML}</td>`;
-
-            // Cột Trạng thái
-            let statusHTML = "";
-            passedDepartments.forEach((pos) => {
-              const status = app[`round3_${pos.type}_status`] || "pending";
-              const canEditThisBan = canEditBan(app, pos.type);
-
-              statusHTML += `
-                    <div style="margin-bottom: 8px;">
-                        <select class="app-select" ${
-                          !canEditThisBan ? "disabled" : ""
-                        } data-field="${pos.type}.status" style="width: 100%;">
-                            <option value="pending" ${
-                              status === "pending" ? "selected" : ""
-                            }>Pending</option>
-                            <option value="pass" ${
-                              status === "pass" ? "selected" : ""
-                            }>Pass</option>
-                            <option value="not-pass" ${
-                              status === "not-pass" ? "selected" : ""
-                            }>Not pass</option>
-                        </select>
-                    </div>
-                `;
-            });
-            tr.innerHTML += `<td style="min-width: 120px;">${statusHTML}</td>`;
-
-            // Cột Hành động
-            let actionHTML = "";
-            if (passedDepartments.length > 0) {
-              const canEditAny = passedDepartments.some((pos) =>
-                canEditBan(app, pos.type)
-              );
-              actionHTML = `
-                    <button class="action-btn save-btn" data-id="${app.id}" 
-                        style="background: var(--success-light); color: var(--success);" 
-                        ${!canEditAny ? "disabled" : ""}>
-                        Lưu
-                    </button>
-                `;
-            }
-            tr.innerHTML += `<td style="min-width: 80px;">${actionHTML}</td>`;
-
-            tbody.appendChild(tr);
-          });
-        });
-
-        // Event listeners cho nút lưu
-        tbody.querySelectorAll(".save-btn").forEach((btn) => {
-          btn.addEventListener("click", async () => {
-            const id = btn.dataset.id;
-            const row = btn.closest("tr");
-            const app = applications.find((a) => a.id === id);
-            if (!app) {
-              alert("Ứng viên không tồn tại");
-              return;
-            }
-
-            // CHỈ lấy các ban đã PASS vòng 2
-            const passedDepartments = [];
-            if (app.round2_priority_status === "pass") {
-              passedDepartments.push({
-                type: "priority",
-                dept: app.priority_position,
-              });
-            }
-            if (app.round2_secondary_status === "pass") {
-              passedDepartments.push({
-                type: "secondary",
-                dept: app.secondary_position,
-              });
-            }
-
-            const updates = {};
-
-            // Thu thập tất cả dữ liệu từ các input
-            passedDepartments.forEach((pos) => {
-              if (!canEditBan(app, pos.type)) return;
-
-              // Lấy ghi chú
-              const noteInput = row.querySelector(
-                `[data-field="${pos.type}.note"]`
-              );
-              if (noteInput) {
-                updates[`round3.${pos.type}.note`] = noteInput.value;
-              }
-
-              // Lấy trạng thái
-              const statusSelect = row.querySelector(
-                `[data-field="${pos.type}.status"]`
-              );
-              if (statusSelect) {
-                updates[`round3_${pos.type}_status`] = statusSelect.value;
-              }
-            });
-
-            if (Object.keys(updates).length === 0) {
-              alert("Không có quyền chỉnh sửa cho ứng viên này");
-              return;
-            }
-
-            try {
-              await db.collection("applications").doc(id).update(updates);
-              alert("Đã lưu thay đổi!");
-              refreshApplications();
-            } catch (error) {
-              alert(`Lỗi khi lưu: ${error.message}`);
-            }
-          });
-        });
-
-        // Event listeners cho advisor (lưu cho cả team)
-        tbody
-          .querySelectorAll('[data-field^="team.advisor"]')
-          .forEach((input) => {
-            input.addEventListener("change", async () => {
-              const teamName = input.dataset.team;
-              const advisorField = input.dataset.field;
-              const advisorValue = input.value;
-
-              // Tìm tất cả ứng viên trong team này
-              const teamMembers = applications.filter((app) => {
-                if (app.current_round !== "round3") return false;
-                const teamInfo = app.round3 || {};
-                return teamInfo.team === teamName;
-              });
-
-              if (teamMembers.length === 0) return;
-
-              // Cập nhật advisor cho tất cả thành viên trong team
-              const batch = db.batch();
-              teamMembers.forEach((app) => {
-                const appRef = db.collection("applications").doc(app.id);
-                batch.update(appRef, {
-                  [`round3.${advisorField}`]: advisorValue,
-                });
-              });
-
-              try {
-                await batch.commit();
-                console.log(`Đã cập nhật ${advisorField} cho team ${teamName}`);
-              } catch (error) {
-                console.error("Lỗi khi cập nhật advisor:", error);
-              }
-            });
-          });
+      // Cột Team - merge cho các thành viên cùng team
+      if (index === 0) {
+        tr.innerHTML += `<td rowspan="${teamMembers.length}" style="font-weight: 600; color: var(--info); vertical-align: middle;">${teamName}</td>`;
       }
+
+      // Cột Advisor & Supporter - merge cho các thành viên cùng team
+      if (index === 0) {
+        let advisorSupporterHTML = "";
+        
+        // Advisor 1 (luôn hiển thị)
+        advisorSupporterHTML += `
+          <div style="margin-bottom: 8px;">
+            <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Advisor 1:</label>
+            <input class="app-input" 
+                value="${teamAdvisors[0] || ""}" 
+                placeholder="Tên advisor 1"
+                data-field="team.advisor1"
+                data-team="${teamName}"
+                style="margin-bottom: 4px; width: 100%; font-size: 12px;">
+          </div>
+        `;
+        
+        // Advisor 2 (chỉ hiển thị nếu có giá trị)
+        if (teamAdvisors[1]) {
+          advisorSupporterHTML += `
+            <div style="margin-bottom: 8px;">
+              <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Advisor 2:</label>
+              <input class="app-input" 
+                  value="${teamAdvisors[1]}" 
+                  placeholder="Tên advisor 2"
+                  data-field="team.advisor2"
+                  data-team="${teamName}"
+                  style="margin-bottom: 4px; width: 100%; font-size: 12px;">
+            </div>
+          `;
+        }
+        
+        // Supporter (luôn hiển thị)
+        advisorSupporterHTML += `
+          <div style="margin-bottom: 8px;">
+            <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Supporter:</label>
+            <input class="app-input" 
+                value="${teamSupporter || ""}" 
+                placeholder="Tên supporter (cách nhau bằng dấu ,)"
+                data-field="team.supporter"
+                data-team="${teamName}"
+                style="margin-bottom: 4px; width: 100%; font-size: 12px;">
+            <small style="color: var(--gray-500); font-size: 10px;">Có thể có 2-3 supporter</small>
+          </div>
+        `;
+
+        tr.innerHTML += `<td rowspan="${teamMembers.length}" style="min-width: 180px; vertical-align: middle;">${advisorSupporterHTML}</td>`;
+      }
+
+      // Cột Họ và tên
+      tr.innerHTML += `<td style="font-weight: 500;">${app.fullname}</td>`;
+
+      // Cột Ban ứng tuyển - CHỈ hiển thị ban đã PASS vòng 2
+      let departmentsHTML = "";
+      passedDepartments.forEach((pos) => {
+        const status = app[`round3_${pos.type}_status`] || "pending";
+        departmentsHTML += renderDepartment(pos.dept, status);
+      });
+      tr.innerHTML += `<td>${departmentsHTML}</td>`;
+
+      // Cột Ghi chú
+      let noteHTML = "";
+      passedDepartments.forEach((pos) => {
+        const data = app.round3?.[pos.type] || {};
+        const canEditThisBan = canEditBan(app, pos.type);
+
+        noteHTML += `
+          <input class="app-input" ${
+            !canEditThisBan ? "disabled" : ""
+          } 
+              value="${data.note || ""}" 
+              placeholder="Ghi chú ${getDepartmentName(pos.dept)}"
+              data-field="${pos.type}.note"
+              style="margin-bottom: 4px; width: 100%;">
+      `;
+      });
+      tr.innerHTML += `<td style="min-width: 200px;">${noteHTML}</td>`;
+
+      // Cột Trạng thái - SỬA LẠI ĐỂ GIỐNG VÒNG 2
+      let statusHTML = "";
+      passedDepartments.forEach((pos, idx) => {
+        const status = app[`round3_${pos.type}_status`] || "pending";
+        const canEditThisBan = canEditBan(app, pos.type);
+
+        statusHTML += `
+          <div style="margin-bottom: ${idx < passedDepartments.length - 1 ? "12px" : "0"};">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <span style="font-size: 12px; color: var(--gray-600); font-weight: 500;">${getDepartmentName(
+                pos.dept
+              )}:</span>
+              <span class="status-badge ${getStatusClass(
+                status
+              )}" style="font-size: 11px;">
+                ${getStatusText(status)}
+              </span>
+            </div>
+            <select class="app-select ban-status-select" 
+                    data-ban-type="${pos.type}" 
+                    ${!canEditThisBan ? "disabled" : ""}
+                    style="width: 100%; font-size: 12px; padding: 6px 8px;">
+              <option value="pending" ${
+                status === "pending" ? "selected" : ""
+              }>Pending</option>
+              <option value="pass" ${
+                status === "pass" ? "selected" : ""
+              }>Pass</option>
+              <option value="not-pass" ${
+                status === "not-pass" ? "selected" : ""
+              }>Not pass</option>
+            </select>
+          </div>
+        `;
+      });
+      tr.innerHTML += `<td style="min-width: 120px;">${statusHTML}</td>`;
+
+      // Cột Hành động
+      let actionHTML = "";
+      if (passedDepartments.length > 0) {
+        const canEditAny = passedDepartments.some((pos) =>
+          canEditBan(app, pos.type)
+        );
+        actionHTML = `
+          <button class="action-btn save-btn" data-id="${app.id}" 
+              style="background: var(--success-light); color: var(--success);" 
+              ${!canEditAny ? "disabled" : ""}>
+              Lưu
+          </button>
+      `;
+      }
+      tr.innerHTML += `<td style="min-width: 80px;">${actionHTML}</td>`;
+
+      tbody.appendChild(tr);
+    });
+  });
+
+  // Event listeners cho nút lưu
+  tbody.querySelectorAll(".save-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      const row = btn.closest("tr");
+      const app = applications.find((a) => a.id === id);
+      if (!app) {
+        alert("Ứng viên không tồn tại");
+        return;
+      }
+
+      // CHỈ lấy các ban đã PASS vòng 2
+      const passedDepartments = [];
+      if (app.round2_priority_status === "pass") {
+        passedDepartments.push({
+          type: "priority",
+          dept: app.priority_position,
+        });
+      }
+      if (app.round2_secondary_status === "pass") {
+        passedDepartments.push({
+          type: "secondary",
+          dept: app.secondary_position,
+        });
+      }
+
+      const updates = {};
+
+      // Thu thập tất cả dữ liệu từ các input
+      passedDepartments.forEach((pos) => {
+        if (!canEditBan(app, pos.type)) return;
+
+        // Lấy ghi chú
+        const noteInput = row.querySelector(
+          `[data-field="${pos.type}.note"]`
+        );
+        if (noteInput) {
+          updates[`round3.${pos.type}.note`] = noteInput.value;
+        }
+
+        // Lấy trạng thái
+        const statusSelect = row.querySelector(
+          `[data-field="${pos.type}.status"]`
+        );
+        if (statusSelect) {
+          updates[`round3_${pos.type}_status`] = statusSelect.value;
+        }
+      });
+
+      if (Object.keys(updates).length === 0) {
+        alert("Không có quyền chỉnh sửa cho ứng viên này");
+        return;
+      }
+
+      try {
+        await db.collection("applications").doc(id).update(updates);
+        alert("Đã lưu thay đổi!");
+        refreshApplications();
+      } catch (error) {
+        alert(`Lỗi khi lưu: ${error.message}`);
+      }
+    });
+  });
+
+  // Event listeners cho advisor và supporter (lưu cho cả team)
+  tbody
+    .querySelectorAll('[data-field^="team."]')
+    .forEach((input) => {
+      input.addEventListener("change", async () => {
+        const teamName = input.dataset.team;
+        const field = input.dataset.field;
+        const value = input.value;
+
+        // Tìm tất cả ứng viên trong team này
+        const teamMembers = applications.filter((app) => {
+          if (app.current_round !== "round3") return false;
+          const teamInfo = app.round3 || {};
+          return teamInfo.team === teamName;
+        });
+
+        if (teamMembers.length === 0) return;
+
+        // Cập nhật advisor/supporter cho tất cả thành viên trong team
+        const batch = db.batch();
+        teamMembers.forEach((app) => {
+          const appRef = db.collection("applications").doc(app.id);
+          batch.update(appRef, {
+            [`round3.${field}`]: value,
+          });
+        });
+
+        try {
+          await batch.commit();
+          console.log(`Đã cập nhật ${field} cho team ${teamName}`);
+        } catch (error) {
+          console.error("Lỗi khi cập nhật advisor/supporter:", error);
+        }
+      });
+    });
+}
+
+// Hàm render phần trạng thái vòng 3 (giống vòng 2)
+function renderRound3StatusSection(app) {
+  let html = `<div id="round3-status-section-${app.id}">`;
+  const positions = [];
+
+  // Thêm ban priority nếu có trạng thái và đã pass vòng 2
+  if (app.priority_position && app.round2_priority_status === "pass") {
+    positions.push({
+      type: "priority",
+      dept: app.priority_position,
+      status: app.round3_priority_status || "pending",
+      canEdit: canEditBan(app, "priority"),
+    });
+  }
+
+  // Thêm ban secondary nếu có trạng thái, không phải "None" và đã pass vòng 2
+  if (
+    app.secondary_position &&
+    app.secondary_position !== "None" &&
+    app.round2_secondary_status === "pass"
+  ) {
+    positions.push({
+      type: "secondary",
+      dept: app.secondary_position,
+      status: app.round3_secondary_status || "pending",
+      canEdit: canEditBan(app, "secondary"),
+    });
+  }
+
+  positions.forEach((pos, index) => {
+    html += `
+      <div style="margin-bottom: ${index < positions.length - 1 ? "12px" : "0"};">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+          <span style="font-size: 12px; color: var(--gray-600); font-weight: 500;">${getDepartmentName(
+            pos.dept
+          )}:</span>
+          <span class="status-badge ${getStatusClass(
+            pos.status
+          )}" style="font-size: 11px;">
+            ${getStatusText(pos.status)}
+          </span>
+        </div>
+        <select class="app-select ban-status-select" 
+                data-ban-type="${pos.type}" 
+                ${!pos.canEdit ? "disabled" : ""}
+                style="width: 100%; font-size: 12px; padding: 6px 8px;">
+          <option value="pending" ${
+            pos.status === "pending" ? "selected" : ""
+          }>Pending</option>
+          <option value="pass" ${
+            pos.status === "pass" ? "selected" : ""
+          }>Pass</option>
+          <option value="not-pass" ${
+            pos.status === "not-pass" ? "selected" : ""
+          }>Not pass</option>
+        </select>
+      </div>
+    `;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+// Hàm lấy supporter từ team (lấy từ member đầu tiên)
+function getTeamSupporter(teamMembers) {
+  if (teamMembers.length === 0) return "";
+  
+  const firstMember = teamMembers[0];
+  const teamData = firstMember.app.round3 || {};
+  
+  return teamData.supporter || "";
+}
+
+// Hàm lấy advisors từ team (lấy từ member đầu tiên)
+function getTeamAdvisors(teamMembers) {
+  if (teamMembers.length === 0) return [];
+
+  const firstMember = teamMembers[0];
+  const advisors = [];
+
+  // Lấy advisor từ round3.advisor1 và round3.advisor2
+  const teamData = firstMember.app.round3 || {};
+  if (teamData.advisor1) {
+    advisors.push(teamData.advisor1);
+  }
+  if (teamData.advisor2) {
+    advisors.push(teamData.advisor2);
+  }
+
+  return advisors;
+}
 
       // Thêm hàm này để xử lý lưu dữ liệu vòng 3
       function setupRound3SaveHandlers() {

@@ -790,10 +790,19 @@ function renderApplicationData() {
         // Thông tin advisor/supporter
         if (roundObj.advisor1 || roundObj.advisor2 || roundObj.supporter) {
             var advisors = [];
+            var supporters = [];
+            
             if (roundObj.advisor1) advisors.push(roundObj.advisor1);
             if (roundObj.advisor2) advisors.push(roundObj.advisor2);
-            if (roundObj.supporter) advisors.push(roundObj.supporter);
-            frag.appendChild(createDetailItem('Advisor/Supporter', advisors.join(', ')));
+            if (roundObj.supporter) supporters.push(roundObj.supporter);
+            
+            if (advisors.length > 0) {
+                frag.appendChild(createDetailItem('Advisor', advisors.join(', ')));
+            }
+            
+            if (supporters.length > 0) {
+                frag.appendChild(createDetailItem('Supporter', supporters.join(', ')));
+            }
         }
         
         // Thông tin theo ban
@@ -829,7 +838,12 @@ function renderApplicationData() {
                         memberNames.push(data.fullname || 'Ứng viên không tên');
                     });
 
-                    membersContainer.querySelector('.detail-value').textContent = memberNames.join(', ');
+                    // Hiển thị theo số thứ tự hàng dọc
+                    const membersHTML = memberNames.map((name, index) => 
+                        `<div>${index + 1}. ${name}</div>`
+                    ).join('');
+                    
+                    membersContainer.querySelector('.detail-value').innerHTML = membersHTML;
                 })
                 .catch(err => {
                     console.error('Lỗi khi lấy danh sách team:', err);
