@@ -6619,66 +6619,6 @@ function getTeamAdvisors(teamMembers) {
   return advisors;
 }
 
-      // Thêm hàm này để xử lý lưu dữ liệu vòng 3
-      function setupRound3SaveHandlers() {
-        const tbody = document.getElementById("round3-table-body");
-
-        tbody.querySelectorAll(".save-btn").forEach((btn) => {
-          btn.addEventListener("click", async function () {
-            const appId = this.dataset.id;
-            const row = this.closest("tr");
-            const app = applications.find((a) => a.id === appId);
-
-            if (!app) {
-              alert("Ứng viên không tồn tại");
-              return;
-            }
-
-            const updates = {};
-
-            // Lấy các ban đã pass vòng 2
-            const passedDepartments = [];
-            if (app.round2_priority_status === "pass")
-              passedDepartments.push("priority");
-            if (app.round2_secondary_status === "pass")
-              passedDepartments.push("secondary");
-
-            // Thu thập dữ liệu từ các input
-            passedDepartments.forEach((banType) => {
-              // Lấy ghi chú
-              const noteInput = row.querySelector(
-                `[data-field="${banType}.note"]`
-              );
-              if (noteInput) {
-                updates[`round3.${banType}.note`] = noteInput.value;
-              }
-
-              // Lấy trạng thái
-              const statusSelect = row.querySelector(
-                `[data-field="${banType}.status"]`
-              );
-              if (statusSelect) {
-                updates[`round3_${banType}_status`] = statusSelect.value;
-              }
-            });
-
-            if (Object.keys(updates).length === 0) {
-              alert("Không có dữ liệu để lưu");
-              return;
-            }
-
-            try {
-              await db.collection("applications").doc(appId).update(updates);
-              alert("✅ Đã lưu thông tin vòng 3!");
-              refreshApplications();
-            } catch (error) {
-              console.error("Lỗi khi lưu:", error);
-              alert("❌ Lỗi khi lưu: " + error.message);
-            }
-          });
-        });
-      }
-
       // Hàm lấy advisors từ team (lấy từ member đầu tiên)
       function getTeamAdvisors(teamMembers) {
         if (teamMembers.length === 0) return [];
