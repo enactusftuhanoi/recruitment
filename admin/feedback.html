@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Feedback | Enactus FTU Hanoi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Clash+Display:wght@600;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #f8f3ce;
+            --primary-light: #ffd54f;
+            --gray-50: #fafafa;
+            --gray-100: #f5f5f5;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --white: #ffffff;
+            --error: #ef4444;
+            --error-light: #fee2e2;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --info: #3b82f6;
+            --info-light: #dbeafe;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Plus Jakarta Sans", sans-serif;
+        }
+
+        body {
+            background-color: var(--gray-50);
+            color: var(--gray-800);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background-color: var(--white);
+            padding: 16px 24px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 50px;
+            width: auto;
+        }
+
+        .logo-text {
+            margin-left: 12px;
+            font-family: "Clash Display", sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            background-color: var(--gray-100);
+            border: none;
+            border-radius: var(--border-radius);
+            color: var(--gray-700);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+        }
+
+        .action-btn:hover {
+            background-color: var(--gray-200);
+        }
+
+        .action-btn i {
+            margin-right: 8px;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--gray-200);
+            margin-bottom: 24px;
+            background: var(--white);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            padding: 0 24px;
+        }
+
+        .tab {
+            padding: 16px 24px;
+            font-weight: 500;
+            color: var(--gray-600);
+            cursor: pointer;
+            transition: var(--transition);
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab:hover {
+            color: var(--gray-800);
+        }
+
+        .tab.active {
+            color: var(--info);
+            border-bottom: 2px solid var(--info);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Stats */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-title {
+            font-size: 14px;
+            color: var(--gray-500);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 8px;
+        }
+
+        .stat-comparison {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .stat-comparison.positive {
+            color: var(--success);
+        }
+
+        /* Charts */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .chart-card {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 16px;
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        /* Filters */
+        .filters {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--gray-700);
+        }
+
+        .filter-select, .filter-input {
+            padding: 10px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            background-color: var(--white);
+        }
+
+        /* Feedback Results */
+        .feedback-results {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+        }
+
+        .feedback-item {
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .feedback-user {
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .feedback-team {
+            color: var(--gray-600);
+            font-size: 14px;
+        }
+
+        .feedback-time {
+            color: var(--gray-500);
+            font-size: 12px;
+        }
+
+        .question-response {
+            margin-bottom: 12px;
+        }
+
+        .question-text {
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .response-text {
+            color: var(--gray-600);
+            padding-left: 16px;
+            font-size: 14px;
+        }
+
+        .tag {
+            display: inline-block;
+            background-color: var(--info-light);
+            color: var(--info);
+            padding: 4px 8px;
+            border-radius: 16px;
+            margin: 2px;
+            font-size: 12px;
+        }
+
+        /* Permission Section */
+        .permission-section {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .permission-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .permission-stat {
+            text-align: center;
+            padding: 16px;
+            border-radius: var(--border-radius);
+            background: var(--gray-50);
+        }
+
+        .permission-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .search-results {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            margin-top: 16px;
+            display: none;
+        }
+
+        /* Settings */
+        .settings-section {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+        }
+
+        .setting-group {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .setting-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--gray-700);
+        }
+
+        .setting-description {
+            font-size: 14px;
+            color: var(--gray-500);
+            margin-bottom: 12px;
+        }
+
+        /* Status Messages */
+        .status-message {
+            padding: 12px 16px;
+            border-radius: var(--border-radius);
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .status-success {
+            background-color: var(--success-light);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .status-error {
+            background-color: var(--error-light);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        .status-warning {
+            background-color: var(--warning-light);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray-500);
+        }
+
+        .loading i {
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 1024px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                padding: 12px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">
+            <img src="../assets/logo_den.png" alt="Enactus FTU Hanoi Logo">
+            <div class="logo-text">Quản lý Feedback</div>
+        </div>
+        <div class="header-actions">
+            <button class="action-btn" onclick="exportAllFeedback()">
+                <i class="fas fa-download"></i>
+                Xuất Excel
+            </button>
+            <button class="action-btn" onclick="window.location.href='/admin/dashboard.html'">
+                <i class="fas fa-arrow-left"></i>
+                Về Dashboard
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-tab="overview">Tổng quan</div>
+            <div class="tab" data-tab="results">Kết quả Feedback</div>
+            <div class="tab" data-tab="permission">Cấp quyền</div>
+            <div class="tab" data-tab="settings">Cài đặt</div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="status-message" class="status-message"></div>
+
+        <!-- Tab Content: Overview -->
+        <div id="overview-tab" class="tab-content active">
+            <!-- Stats -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-title">Tổng số feedback</div>
+                    <div class="stat-value" id="total-feedback">0</div>
+                    <div class="stat-comparison positive" id="feedback-trend">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>0% so với tuần trước</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Số team có feedback</div>
+                    <div class="stat-value" id="teams-with-feedback">0</div>
+                    <div class="stat-comparison positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>Tỷ lệ phản hồi</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Điểm TB Team Lead</div>
+                    <div class="stat-value" id="avg-lead-rating">0</div>
+                    <div class="stat-comparison positive">
+                        <i class="fas fa-star"></i>
+                        <span>trên 5 sao</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Ứng viên có quyền</div>
+                    <div class="stat-value" id="eligible-candidates">0</div>
+                    <div class="stat-comparison positive">
+                        <i class="fas fa-users"></i>
+                        <span>được cấp quyền</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-container">
+                <div class="chart-card">
+                    <div class="chart-title">Phân bố feedback theo Team</div>
+                    <div class="chart-container">
+                        <canvas id="teamChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">Đánh giá Team Lead</div>
+                    <div class="chart-container">
+                        <canvas id="ratingChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">Không khí làm việc nhóm</div>
+                    <div class="chart-container">
+                        <canvas id="atmosphereChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">Đánh giá Supporters</div>
+                    <div class="chart-container">
+                        <canvas id="supporterChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Results -->
+        <div id="results-tab" class="tab-content">
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label class="filter-label">Lọc theo team</label>
+                    <select class="filter-select" id="filter-team">
+                        <option value="">Tất cả team</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Điểm Team Lead</label>
+                    <select class="filter-select" id="filter-rating">
+                        <option value="">Tất cả</option>
+                        <option value="5">5 sao</option>
+                        <option value="4">4 sao</option>
+                        <option value="3">3 sao</option>
+                        <option value="2">2 sao</option>
+                        <option value="1">1 sao</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Sắp xếp</label>
+                    <select class="filter-select" id="sort-by">
+                        <option value="newest">Mới nhất</option>
+                        <option value="oldest">Cũ nhất</option>
+                        <option value="team">Theo team</option>
+                        <option value="rating">Theo điểm</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Tìm kiếm</label>
+                    <input type="text" class="filter-input" id="search-feedback" placeholder="Tên ứng viên, team...">
+                </div>
+            </div>
+
+            <!-- Feedback Results -->
+            <div class="feedback-results" id="feedback-results">
+                <div class="loading" id="results-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <div>Đang tải dữ liệu feedback...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Permission -->
+        <div id="permission-tab" class="tab-content">
+            <div class="permission-section">
+                <h3 style="margin-bottom: 20px;">Quản lý quyền truy cập Feedback</h3>
+                
+                <!-- Permission Stats -->
+                <div class="permission-stats">
+                    <div class="permission-stat">
+                        <div style="font-size: 24px; font-weight: 700; color: var(--info);" id="total-eligible">0</div>
+                        <div style="font-size: 14px; color: var(--gray-600);">Tổng ứng viên vòng 3</div>
+                    </div>
+                    <div class="permission-stat">
+                        <div style="font-size: 24px; font-weight: 700; color: var(--success);" id="total-granted">0</div>
+                        <div style="font-size: 14px; color: var(--gray-600);">Đã cấp quyền</div>
+                    </div>
+                    <div class="permission-stat">
+                        <div style="font-size: 24px; font-weight: 700; color: var(--warning);" id="total-pending">0</div>
+                        <div style="font-size: 14px; color: var(--gray-600);">Chưa cấp quyền</div>
+                    </div>
+                    <div class="permission-stat">
+                        <div style="font-size: 24px; font-weight: 700; color: var(--primary);" id="response-rate">0%</div>
+                        <div style="font-size: 14px; color: var(--gray-600);">Tỷ lệ phản hồi</div>
+                    </div>
+                </div>
+
+                <!-- Permission Actions -->
+                <div class="permission-actions">
+                    <button class="action-btn" onclick="searchCandidates()" style="background-color: var(--info-light); color: var(--info);">
+                        <i class="fas fa-search"></i>
+                        Tìm ứng viên
+                    </button>
+                    <button class="action-btn" onclick="grantAllPermission()" style="background-color: var(--success-light); color: var(--success);">
+                        <i class="fas fa-check-double"></i>
+                        Cấp quyền tất cả
+                    </button>
+                    <button class="action-btn" onclick="revokeAllPermission()" style="background-color: var(--error-light); color: var(--error);">
+                        <i class="fas fa-times"></i>
+                        Thu hồi tất cả
+                    </button>
+                </div>
+
+                <!-- Search -->
+                <div class="filter-group">
+                    <label class="filter-label">Tìm ứng viên vòng 3</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" class="filter-input" id="permission-search" placeholder="Tìm theo tên, email, team..." style="flex: 1;">
+                        <button class="action-btn" onclick="searchCandidates()">
+                            <i class="fas fa-search"></i>
+                            Tìm
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Results -->
+                <div class="search-results" id="permission-results">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background-color: var(--gray-100);">
+                                <th style="padding: 12px; text-align: left; font-weight: 600; color: var(--gray-700);">Chọn</th>
+                                <th style="padding: 12px; text-align: left; font-weight: 600; color: var(--gray-700);">Họ tên</th>
+                                <th style="padding: 12px; text-align: left; font-weight: 600; color: var(--gray-700);">Email</th>
+                                <th style="padding: 12px; text-align: left; font-weight: 600; color: var(--gray-700);">Team</th>
+                                <th style="padding: 12px; text-align: left; font-weight: 600; color: var(--gray-700);">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="permission-results-body"></tbody>
+                    </table>
+                </div>
+
+                <!-- Selected Actions -->
+                <div style="margin-top: 20px; display: none;" id="selected-actions">
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span id="selected-count">0</span> ứng viên được chọn
+                        <button class="action-btn" onclick="grantSelectedPermission()" style="background-color: var(--success-light); color: var(--success);">
+                            <i class="fas fa-check"></i>
+                            Cấp quyền
+                        </button>
+                        <button class="action-btn" onclick="revokeSelectedPermission()" style="background-color: var(--error-light); color: var(--error);">
+                            <i class="fas fa-times"></i>
+                            Thu hồi
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Settings -->
+        <div id="settings-tab" class="tab-content">
+            <div class="settings-section">
+                <h3 style="margin-bottom: 24px;">Cài đặt Feedback</h3>
+                
+                <!-- Feedback Settings -->
+                <div class="setting-group">
+                    <div class="setting-label">Trạng thái hệ thống Feedback</div>
+                    <div class="setting-description">Cho phép hoặc tắt hệ thống feedback cho ứng viên</div>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="feedback-enabled" onchange="toggleFeedbackSystem()">
+                        <span>Kích hoạt hệ thống Feedback</span>
+                    </label>
+                </div>
+
+                <!-- Deadline Settings -->
+                <div class="setting-group">
+                    <div class="setting-label">Thời hạn feedback</div>
+                    <div class="setting-description">Thiết lập thời hạn cho ứng viên gửi feedback</div>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <input type="datetime-local" class="filter-input" id="feedback-deadline" style="flex: 1;">
+                        <button class="action-btn" onclick="setFeedbackDeadline()">
+                            <i class="fas fa-save"></i>
+                            Lưu
+                        </button>
+                    </div>
+                    <div style="font-size: 14px; color: var(--gray-500); margin-top: 8px;">
+                        Hiện tại: <span id="current-deadline">Chưa thiết lập</span>
+                    </div>
+                </div>
+
+                <!-- Notification Settings -->
+                <div class="setting-group">
+                    <div class="setting-label">Thông báo</div>
+                    <div class="setting-description">Gửi thông báo cho ứng viên về feedback</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="notify-new-feedback">
+                            <span>Thông báo khi có feedback mới</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="notify-deadline">
+                            <span>Nhắc nhở trước thời hạn 24h</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Data Management -->
+                <div class="setting-group">
+                    <div class="setting-label">Quản lý dữ liệu</div>
+                    <div class="setting-description">Các thao tác quản lý dữ liệu feedback</div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="action-btn" onclick="exportAllFeedback()" style="background-color: var(--info-light); color: var(--info);">
+                            <i class="fas fa-download"></i>
+                            Xuất toàn bộ
+                        </button>
+                        <button class="action-btn" onclick="backupFeedbackData()" style="background-color: var(--success-light); color: var(--success);">
+                            <i class="fas fa-database"></i>
+                            Sao lưu dữ liệu
+                        </button>
+                        <button class="action-btn" onclick="clearOldFeedback()" style="background-color: var(--warning-light); color: var(--warning);">
+                            <i class="fas fa-trash"></i>
+                            Dọn dữ liệu cũ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="setting-group" style="border-color: var(--error);">
+                    <div class="setting-label" style="color: var(--error);">Khu vực nguy hiểm</div>
+                    <div class="setting-description">Các thao tác không thể hoàn tác</div>
+                    <button class="action-btn" onclick="deleteAllFeedback()" style="background-color: var(--error-light); color: var(--error);">
+                        <i class="fas fa-trash"></i>
+                        Xóa toàn bộ feedback
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAOP2j0qV0Ge-q2-Y9zo9Qc3eLmgtVOK3k",
+            authDomain: "recruitment-enactusftuhanoi.firebaseapp.com",
+            projectId: "recruitment-enactusftuhanoi",
+            storageBucket: "recruitment-enactusftuhanoi.firebasestorage.app",
+            messagingSenderId: "658928769643",
+            appId: "1:658928769643:web:ef4e26633b7c41c922ef2e",
+            measurementId: "G-BJT7ZPKYE3",
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Global State
+        const userEmail = sessionStorage.getItem("email");
+        let userRole = sessionStorage.getItem("role") || null;
+        let allFeedback = [];
+        let allCandidates = [];
+        let charts = {};
+        let selectedCandidates = new Set();
+
+        // Check authentication and admin role
+        if (!userEmail || !userRole) {
+            window.location.href = "/admin/login.html";
+        }
+
+        if (userRole !== "superadmin" && userRole !== "admin") {
+            alert("Bạn không có quyền truy cập trang này");
+            window.location.href = "/admin/login.html";
+        }
+
+        // Auth state listener
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                await loadAllData();
+                initializeCharts();
+                setupEventListeners();
+            } else {
+                window.location.href = "../login.html";
+            }
+        });
+
+        // Load all data
+        async function loadAllData() {
+            try {
+                await Promise.all([
+                    loadFeedbackData(),
+                    loadCandidatesData(),
+                    loadSettings()
+                ]);
+                updateAllStats();
+            } catch (error) {
+                console.error("Lỗi khi tải dữ liệu:", error);
+                showStatus("Lỗi khi tải dữ liệu: " + error.message, "error");
+            }
+        }
+
+        // Load feedback data
+        async function loadFeedbackData() {
+            const snapshot = await db.collection('feedback')
+                .orderBy('timestamp', 'desc')
+                .get();
+
+            allFeedback = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                allFeedback.push({
+                    id: doc.id,
+                    ...data,
+                    timestamp: data.timestamp?.toDate?.() || data.timestamp
+                });
+            });
+        }
+
+        // Load candidates data
+        async function loadCandidatesData() {
+            const snapshot = await db.collection('applications')
+                .where('current_round', '==', 'round3')
+                .get();
+
+            allCandidates = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.round3 && data.round3.team) {
+                    allCandidates.push({
+                        id: doc.id,
+                        ...data
+                    });
+                }
+            });
+        }
+
+        // Load settings
+        async function loadSettings() {
+            // Implementation for loading settings
+        }
+
+        // Update all statistics
+        function updateAllStats() {
+            updateFeedbackStats();
+            updatePermissionStats();
+            updateCharts();
+        }
+
+        // Update feedback statistics
+        function updateFeedbackStats() {
+            document.getElementById('total-feedback').textContent = allFeedback.length;
+            
+            const uniqueTeams = new Set(allFeedback.map(fb => fb.team));
+            document.getElementById('teams-with-feedback').textContent = uniqueTeams.size;
+            
+            const ratings = allFeedback.map(fb => parseInt(fb.q3) || 0).filter(r => r > 0);
+            const avgRating = ratings.length > 0 ? (ratings.reduce((a, b) => a + b) / ratings.length).toFixed(1) : '0.0';
+            document.getElementById('avg-lead-rating').textContent = avgRating;
+        }
+
+        // Update permission statistics
+        function updatePermissionStats() {
+            const totalEligible = allCandidates.length;
+            const totalGranted = allCandidates.filter(c => c.feedback_permission).length;
+            const totalPending = totalEligible - totalGranted;
+            const responseRate = totalEligible > 0 ? Math.round((allFeedback.length / totalGranted) * 100) : 0;
+
+            document.getElementById('total-eligible').textContent = totalEligible;
+            document.getElementById('total-granted').textContent = totalGranted;
+            document.getElementById('total-pending').textContent = totalPending;
+            document.getElementById('response-rate').textContent = responseRate + '%';
+            document.getElementById('eligible-candidates').textContent = totalGranted;
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            const teamCtx = document.getElementById('teamChart').getContext('2d');
+            const ratingCtx = document.getElementById('ratingChart').getContext('2d');
+            const atmosphereCtx = document.getElementById('atmosphereChart').getContext('2d');
+            const supporterCtx = document.getElementById('supporterChart').getContext('2d');
+
+            charts.team = new Chart(teamCtx, {
+                type: 'bar',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: '#3B82F6' }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            charts.rating = new Chart(ratingCtx, {
+                type: 'doughnut',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#10B981', '#34D399', '#F59E0B', '#FBBF24', '#FCD34D'] }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            charts.atmosphere = new Chart(atmosphereCtx, {
+                type: 'pie',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#EF4444', '#F59E0B', '#10B981', '#3B82F6'] }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            charts.supporter = new Chart(supporterCtx, {
+                type: 'bar',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: '#8B5CF6' }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // Update charts with data
+        function updateCharts() {
+            // Team distribution
+            const teamData = {};
+            allFeedback.forEach(fb => {
+                teamData[fb.team] = (teamData[fb.team] || 0) + 1;
+            });
+            charts.team.data.labels = Object.keys(teamData);
+            charts.team.data.datasets[0].data = Object.values(teamData);
+            charts.team.update();
+
+            // Rating distribution
+            const ratingData = [0, 0, 0, 0, 0];
+            allFeedback.forEach(fb => {
+                const rating = parseInt(fb.q3) - 1;
+                if (rating >= 0 && rating < 5) ratingData[rating]++;
+            });
+            charts.rating.data.labels = ['5 sao', '4 sao', '3 sao', '2 sao', '1 sao'];
+            charts.rating.data.datasets[0].data = ratingData;
+            charts.rating.update();
+
+            // Atmosphere distribution
+            const atmosphereData = {};
+            allFeedback.forEach(fb => {
+                if (fb.q5) {
+                    atmosphereData[fb.q5] = (atmosphereData[fb.q5] || 0) + 1;
+                }
+            });
+            charts.atmosphere.data.labels = Object.keys(atmosphereData);
+            charts.atmosphere.data.datasets[0].data = Object.values(atmosphereData);
+            charts.atmosphere.update();
+
+            // Supporter evaluation
+            const supporterData = {};
+            allFeedback.forEach(fb => {
+                if (fb.q7) {
+                    supporterData[fb.q7] = (supporterData[fb.q7] || 0) + 1;
+                }
+            });
+            charts.supporter.data.labels = Object.keys(supporterData);
+            charts.supporter.data.datasets[0].data = Object.values(supporterData);
+            charts.supporter.update();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Tab switching
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.getAttribute('data-tab');
+                    switchTab(tabName);
+                });
+            });
+
+            // Results tab filters
+            document.getElementById('filter-team').addEventListener('change', renderFeedbackResults);
+            document.getElementById('filter-rating').addEventListener('change', renderFeedbackResults);
+            document.getElementById('sort-by').addEventListener('change', renderFeedbackResults);
+            document.getElementById('search-feedback').addEventListener('input', renderFeedbackResults);
+
+            // Permission search
+            document.getElementById('permission-search').addEventListener('input', debounce(searchCandidates, 300));
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+
+            // Update active content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+
+            // Load data for specific tabs
+            if (tabName === 'results') {
+                renderFeedbackResults();
+            } else if (tabName === 'permission') {
+                updatePermissionStats();
+            }
+        }
+
+        // Render feedback results
+        function renderFeedbackResults() {
+            const container = document.getElementById('feedback-results');
+            const teamFilter = document.getElementById('filter-team').value;
+            const ratingFilter = document.getElementById('filter-rating').value;
+            const sortBy = document.getElementById('sort-by').value;
+            const searchTerm = document.getElementById('search-feedback').value.toLowerCase();
+
+            // Populate team filter
+            const teamFilterSelect = document.getElementById('filter-team');
+            const uniqueTeams = [...new Set(allFeedback.map(fb => fb.team))].sort();
+            if (teamFilterSelect.options.length <= 1) {
+                uniqueTeams.forEach(team => {
+                    teamFilterSelect.innerHTML += `<option value="${team}">${team}</option>`;
+                });
+            }
+
+            let filteredFeedback = allFeedback.filter(fb => {
+                // Team filter
+                if (teamFilter && fb.team !== teamFilter) return false;
+                
+                // Rating filter
+                if (ratingFilter && fb.q3 !== ratingFilter) return false;
+                
+                // Search filter
+                if (searchTerm && !(
+                    fb.applicantName.toLowerCase().includes(searchTerm) ||
+                    fb.team.toLowerCase().includes(searchTerm) ||
+                    fb.applicantEmail.toLowerCase().includes(searchTerm)
+                )) return false;
+                
+                return true;
+            });
+
+            // Sort
+            if (sortBy === 'oldest') {
+                filteredFeedback.sort((a, b) => a.timestamp - b.timestamp);
+            } else if (sortBy === 'team') {
+                filteredFeedback.sort((a, b) => a.team.localeCompare(b.team));
+            } else if (sortBy === 'rating') {
+                filteredFeedback.sort((a, b) => (b.q3 || 0) - (a.q3 || 0));
+            }
+
+            // Hide loading
+            document.getElementById('results-loading').style.display = 'none';
+
+            if (filteredFeedback.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--gray-500);">
+                        <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px;"></i>
+                        <div>Không tìm thấy feedback nào phù hợp</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filteredFeedback.forEach(feedback => {
+                const time = feedback.timestamp?.toLocaleString?.('vi-VN') || 
+                            new Date(feedback.timestamp).toLocaleString('vi-VN');
+
+                html += `
+                    <div class="feedback-item">
+                        <div class="feedback-header">
+                            <div>
+                                <div class="feedback-user">${feedback.applicantName}</div>
+                                <div class="feedback-team">Team: ${feedback.team} • Email: ${feedback.applicantEmail}</div>
+                            </div>
+                            <div class="feedback-time">${time}</div>
+                        </div>
+
+                        <div class="question-response">
+                            <div class="question-text">Tuần teamwork của bạn là…</div>
+                            <div class="response-text">${feedback.q1}</div>
+                        </div>
+
+                        <div class="question-response">
+                            <div class="question-text">Bạn "level up" nhất ở điểm nào?</div>
+                            <div class="response-text">${feedback.q2}</div>
+                        </div>
+
+                        <div class="question-response">
+                            <div class="question-text">Điểm đánh giá Team Lead</div>
+                            <div class="response-text">${'🌟'.repeat(feedback.q3)} (${feedback.q3}/5)</div>
+                        </div>
+
+                        ${feedback.q4 ? `
+                        <div class="question-response">
+                            <div class="question-text">Điều thích nhất ở Lead</div>
+                            <div class="response-text">${feedback.q4}</div>
+                        </div>
+                        ` : ''}
+
+                        <div class="question-response">
+                            <div class="question-text">Không khí làm việc của nhóm</div>
+                            <div class="response-text">${feedback.q5}</div>
+                        </div>
+
+                        ${feedback.q6 && feedback.q6.length > 0 ? `
+                        <div class="question-response">
+                            <div class="question-text">Thành viên đáng học hỏi nhất</div>
+                            <div class="response-text">
+                                ${feedback.q6.map(tag => 
+                                    `<span class="tag">${tag.name}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <div class="question-response">
+                            <div class="question-text">Đánh giá về Supporters</div>
+                            <div class="response-text">${feedback.q7}</div>
+                        </div>
+
+                        <div class="question-response">
+                            <div class="question-text">Trải lòng về vòng 3</div>
+                            <div class="response-text">${feedback.q8}</div>
+                        </div>
+
+                        ${feedback.q9 && feedback.q9.length > 0 ? `
+                        <div class="question-response">
+                            <div class="question-text">Gửi gì đến BTC</div>
+                            <div class="response-text">
+                                ${feedback.q9.join(', ')}
+                                ${feedback.q9Details ? `<br><em>Chi tiết: ${feedback.q9Details}</em>` : ''}
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Search candidates for permission
+        function searchCandidates() {
+            const searchTerm = document.getElementById('permission-search').value.toLowerCase();
+            const resultsBody = document.getElementById('permission-results-body');
+            const resultsContainer = document.getElementById('permission-results');
+
+            const filteredCandidates = allCandidates.filter(candidate => 
+                candidate.fullname.toLowerCase().includes(searchTerm) ||
+                candidate.email.toLowerCase().includes(searchTerm) ||
+                (candidate.round3?.team || '').toLowerCase().includes(searchTerm)
+            );
+
+            resultsBody.innerHTML = '';
+
+            if (filteredCandidates.length === 0) {
+                resultsBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 20px; color: var(--gray-500);">
+                            Không tìm thấy ứng viên nào
+                        </td>
+                    </tr>
+                `;
+            } else {
+                filteredCandidates.forEach(candidate => {
+                    const hasPermission = candidate.feedback_permission === true;
+                    const isSelected = selectedCandidates.has(candidate.id);
+                    
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid var(--gray-200)';
+                    tr.innerHTML = `
+                        <td style="padding: 12px;">
+                            <input type="checkbox" ${hasPermission ? 'disabled' : ''} 
+                                   ${isSelected ? 'checked' : ''}
+                                   onchange="toggleCandidateSelection('${candidate.id}', this.checked)"
+                                   class="candidate-checkbox">
+                        </td>
+                        <td style="padding: 12px;">${candidate.fullname}</td>
+                        <td style="padding: 12px;">${candidate.email}</td>
+                        <td style="padding: 12px;">${candidate.round3?.team || 'Chưa có team'}</td>
+                        <td style="padding: 12px;">
+                            ${hasPermission ? 
+                                '<span style="color: var(--success); font-weight: 500;">✓ Đã cấp quyền</span>' : 
+                                '<span style="color: var(--warning);">Chưa cấp quyền</span>'
+                            }
+                        </td>
+                    `;
+                    resultsBody.appendChild(tr);
+                });
+            }
+
+            resultsContainer.style.display = 'block';
+            updateSelectedActions();
+        }
+
+        // Toggle candidate selection
+        function toggleCandidateSelection(candidateId, isSelected) {
+            if (isSelected) {
+                selectedCandidates.add(candidateId);
+            } else {
+                selectedCandidates.delete(candidateId);
+            }
+            updateSelectedActions();
+        }
+
+        // Update selected actions UI
+        function updateSelectedActions() {
+            const selectedActions = document.getElementById('selected-actions');
+            const selectedCount = document.getElementById('selected-count');
+            
+            selectedCount.textContent = selectedCandidates.size;
+            
+            if (selectedCandidates.size > 0) {
+                selectedActions.style.display = 'flex';
+            } else {
+                selectedActions.style.display = 'none';
+            }
+        }
+
+        // Grant permission to selected candidates
+        async function grantSelectedPermission() {
+            if (selectedCandidates.size === 0) {
+                showStatus('Vui lòng chọn ít nhất một ứng viên', 'warning');
+                return;
+            }
+
+            try {
+                const batch = db.batch();
+                
+                for (const candidateId of selectedCandidates) {
+                    const appRef = db.collection('applications').doc(candidateId);
+                    batch.update(appRef, {
+                        feedback_permission: true,
+                        feedback_permission_granted_at: new Date(),
+                        feedback_permission_granted_by: userEmail
+                    });
+                }
+                
+                await batch.commit();
+                showStatus(`✅ Đã cấp quyền feedback cho ${selectedCandidates.size} ứng viên`, 'success');
+                
+                // Refresh data
+                selectedCandidates.clear();
+                await loadCandidatesData();
+                updatePermissionStats();
+                searchCandidates(); // Refresh search results
+                
+            } catch (error) {
+                console.error('Lỗi khi cấp quyền:', error);
+                showStatus('❌ Lỗi khi cấp quyền: ' + error.message, 'error');
+            }
+        }
+
+        // Grant permission to all candidates
+        async function grantAllPermission() {
+            if (!confirm('Bạn có chắc muốn cấp quyền feedback cho TẤT CẢ ứng viên vòng 3?')) {
+                return;
+            }
+
+            try {
+                const batch = db.batch();
+                let count = 0;
+                
+                for (const candidate of allCandidates) {
+                    if (!candidate.feedback_permission) {
+                        const appRef = db.collection('applications').doc(candidate.id);
+                        batch.update(appRef, {
+                            feedback_permission: true,
+                            feedback_permission_granted_at: new Date(),
+                            feedback_permission_granted_by: userEmail
+                        });
+                        count++;
+                    }
+                }
+                
+                if (count > 0) {
+                    await batch.commit();
+                    showStatus(`✅ Đã cấp quyền feedback cho ${count} ứng viên`, 'success');
+                    await loadCandidatesData();
+                    updatePermissionStats();
+                } else {
+                    showStatus('Tất cả ứng viên đã được cấp quyền', 'info');
+                }
+                
+            } catch (error) {
+                console.error('Lỗi khi cấp quyền hàng loạt:', error);
+                showStatus('❌ Lỗi khi cấp quyền: ' + error.message, 'error');
+            }
+        }
+
+        // Revoke permission from selected candidates
+        async function revokeSelectedPermission() {
+            if (selectedCandidates.size === 0) {
+                showStatus('Vui lòng chọn ít nhất một ứng viên', 'warning');
+                return;
+            }
+
+            try {
+                const batch = db.batch();
+                
+                for (const candidateId of selectedCandidates) {
+                    const appRef = db.collection('applications').doc(candidateId);
+                    batch.update(appRef, {
+                        feedback_permission: firebase.firestore.FieldValue.delete(),
+                        feedback_permission_granted_at: firebase.firestore.FieldValue.delete(),
+                        feedback_permission_granted_by: firebase.firestore.FieldValue.delete()
+                    });
+                }
+                
+                await batch.commit();
+                showStatus(`✅ Đã thu hồi quyền feedback từ ${selectedCandidates.size} ứng viên`, 'success');
+                
+                // Refresh data
+                selectedCandidates.clear();
+                await loadCandidatesData();
+                updatePermissionStats();
+                searchCandidates();
+                
+            } catch (error) {
+                console.error('Lỗi khi thu hồi quyền:', error);
+                showStatus('❌ Lỗi khi thu hồi quyền: ' + error.message, 'error');
+            }
+        }
+
+        // Revoke permission from all candidates
+        async function revokeAllPermission() {
+            if (!confirm('Bạn có chắc muốn thu hồi quyền feedback từ TẤT CẢ ứng viên?')) {
+                return;
+            }
+
+            try {
+                const batch = db.batch();
+                let count = 0;
+                
+                for (const candidate of allCandidates) {
+                    if (candidate.feedback_permission) {
+                        const appRef = db.collection('applications').doc(candidate.id);
+                        batch.update(appRef, {
+                            feedback_permission: firebase.firestore.FieldValue.delete(),
+                            feedback_permission_granted_at: firebase.firestore.FieldValue.delete(),
+                            feedback_permission_granted_by: firebase.firestore.FieldValue.delete()
+                        });
+                        count++;
+                    }
+                }
+                
+                if (count > 0) {
+                    await batch.commit();
+                    showStatus(`✅ Đã thu hồi quyền feedback từ ${count} ứng viên`, 'success');
+                    await loadCandidatesData();
+                    updatePermissionStats();
+                } else {
+                    showStatus('Không có ứng viên nào có quyền feedback', 'info');
+                }
+                
+            } catch (error) {
+                console.error('Lỗi khi thu hồi quyền hàng loạt:', error);
+                showStatus('❌ Lỗi khi thu hồi quyền: ' + error.message, 'error');
+            }
+        }
+
+        // Export all feedback to Excel
+        async function exportAllFeedback() {
+            try {
+                const data = [['DANH SÁCH FEEDBACK VÒNG 3']];
+                
+                // Headers
+                data.push([
+                    'STT', 'Họ tên', 'Email', 'Team', 'Thời gian',
+                    'Tuần teamwork', 'Level up', 'Điểm Lead', 'Điều thích ở Lead',
+                    'Không khí nhóm', 'Thành viên đáng học hỏi', 
+                    'Đánh giá Supporters', 'Trải lòng', 'Gửi đến BTC', 'Chi tiết'
+                ]);
+
+                // Data
+                allFeedback.forEach((fb, index) => {
+                    data.push([
+                        index + 1,
+                        fb.applicantName,
+                        fb.applicantEmail,
+                        fb.team,
+                        fb.timestamp?.toLocaleString?.('vi-VN') || new Date(fb.timestamp).toLocaleString('vi-VN'),
+                        fb.q1,
+                        fb.q2,
+                        fb.q3,
+                        fb.q4 || '',
+                        fb.q5,
+                        fb.q6 ? fb.q6.map(t => t.name).join(', ') : '',
+                        fb.q7,
+                        fb.q8,
+                        fb.q9 ? fb.q9.join(', ') : '',
+                        fb.q9Details || ''
+                    ]);
+                });
+
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(data);
+                
+                // Set column widths
+                const colWidths = [
+                    { wch: 8 }, { wch: 25 }, { wch: 30 }, { wch: 15 }, { wch: 20 },
+                    { wch: 25 }, { wch: 30 }, { wch: 12 }, { wch: 25 }, { wch: 20 },
+                    { wch: 30 }, { wch: 25 }, { wch: 50 }, { wch: 20 }, { wch: 50 }
+                ];
+                ws['!cols'] = colWidths;
+
+                XLSX.utils.book_append_sheet(wb, ws, 'Feedback');
+                XLSX.writeFile(wb, `Feedback_Vong3_${new Date().toISOString().split('T')[0]}.xlsx`);
+                
+                showStatus('✅ Đã xuất file Excel thành công', 'success');
+            } catch (error) {
+                console.error('Lỗi khi xuất Excel:', error);
+                showStatus('❌ Lỗi khi xuất file: ' + error.message, 'error');
+            }
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status-message');
+            statusEl.textContent = message;
+            statusEl.className = `status-message status-${type}`;
+            statusEl.style.display = 'block';
+
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // Utility function for debouncing
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Placeholder functions for settings (to be implemented)
+        function toggleFeedbackSystem() {
+            const enabled = document.getElementById('feedback-enabled').checked;
+            showStatus(`Hệ thống feedback ${enabled ? 'đã được kích hoạt' : 'đã tắt'}`, 'success');
+        }
+
+        function setFeedbackDeadline() {
+            const deadline = document.getElementById('feedback-deadline').value;
+            showStatus(`Đã thiết lập thời hạn feedback: ${deadline}`, 'success');
+        }
+
+        function backupFeedbackData() {
+            showStatus('Tính năng sao lưu đang được phát triển', 'info');
+        }
+
+        function clearOldFeedback() {
+            showStatus('Tính năng dọn dữ liệu cũ đang được phát triển', 'info');
+        }
+
+        function deleteAllFeedback() {
+            if (confirm('Bạn có CHẮC CHẮN muốn xóa TOÀN BỘ feedback? Hành động này không thể hoàn tác!')) {
+                showStatus('Tính năng xóa toàn bộ đang được phát triển', 'warning');
+            }
+        }
+    </script>
+</body>
+</html>
