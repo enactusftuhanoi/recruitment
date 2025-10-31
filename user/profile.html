@@ -484,6 +484,36 @@
                 </div>
             </div>
 
+            <!-- Feedback Notification -->
+            <div id="feedback-notification" class="notification-card" style="display: none; background: linear-gradient(135deg, #DBEAFE 0%, #E0F2FE 100%); border: 2px solid #3B82F6;">
+                <div class="notification-header">
+                    <i class="fas fa-comment-dots" style="color: #3B82F6; font-size: 24px;"></i>
+                    <h3>Feedback Vòng 3</h3>
+                </div>
+                <div class="notification-content">
+                    <p>Hệ thống feedback đã được mở. Hãy chia sẻ trải nghiệm của bạn sau quá trình tham gia vòng 3.</p>
+                    <p><strong>Thời hạn:</strong> <span id="feedback-deadline">Đang cập nhật</span></p>
+                </div>
+                <div class="notification-actions">
+                    <button class="btn btn-primary" id="go-to-feedback-btn">
+                        <i class="fas fa-arrow-right"></i>
+                        Gửi Feedback ngay
+                    </button>
+                </div>
+            </div>
+
+            <!-- Feedback Status -->
+            <div id="feedback-status" class="notification-card" style="display: none; background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%); border: 2px solid #10B981;">
+                <div class="notification-header">
+                    <i class="fas fa-check-circle" style="color: #10B981; font-size: 24px;"></i>
+                    <h3>Đã gửi Feedback</h3>
+                </div>
+                <div class="notification-content">
+                    <p>Cảm ơn bạn đã gửi feedback! Ý kiến của bạn rất quan trọng với chúng mình ❤️</p>
+                    <p><strong>Thời gian gửi:</strong> <span id="feedback-time">Đang cập nhật</span></p>
+                </div>
+            </div>
+
             <!-- Vote Status Card -->
             <div id="vote-status" class="notification-card" style="display: none; background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%); border: 2px solid #10B981;">
                 <div class="notification-header">
@@ -599,6 +629,9 @@
                         
                         // Render application data
                         renderApplicationData();
+
+                        // Gọi hàm kiểm tra thông báo feedback
+                        checkFeedbackNotification();
 
                         checkInterviewNotification();
                         
@@ -879,6 +912,161 @@ function renderApplicationData() {
 
     frag.appendChild(createDetailItem('', 'Chưa có thông tin chi tiết'));
     return frag;
+}
+
+
+// 🔒 KIỂM TRA QUYỀN TRƯỚC KHI CHUYỂN ĐẾN FEEDBACK
+async function checkFeedbackAccessBeforeRedirect() {
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Kiểm tra hệ thống feedback có được kích hoạt không
+        const settingsDoc = await db.collection('system').doc('feedback_settings').get();
+        
+        if (!settingsDoc.exists || settingsDoc.data().enabled !== true) {
+            alert('Hệ thống feedback hiện chưa được kích hoạt. Vui lòng quay lại sau.');
+            return;
+        }
+
+        // Kiểm tra thời hạn
+        if (settingsDoc.data().deadline) {
+            const deadline = settingsDoc.data().deadline.toDate();
+            if (new Date() > deadline) {
+                alert('Thời hạn gửi feedback đã kết thúc.');
+                return;
+            }
+        }
+
+        // Kiểm tra ứng viên có trong vòng 3 không
+        const appSnapshot = await db.collection('applications')
+            .where('email', '==', user.email)
+            .limit(1)
+            .get();
+
+        if (appSnapshot.empty) {
+            alert('Không tìm thấy thông tin ứng viên.');
+            return;
+        }
+
+        const appData = appSnapshot.docs[0].data();
+        
+        if (appData.current_round !== 'round3') {
+            alert('Bạn không nằm trong danh sách ứng viên vòng 3.');
+            return;
+        }
+
+        if (!appData.feedback_permission) {
+            alert('Bạn chưa được cấp quyền gửi feedback. Vui lòng liên hệ BTC.');
+            return;
+        }
+
+        // Tất cả điều kiện đều hợp lệ, chuyển đến feedback
+        window.location.href = 'feedback.html';
+    } catch (error) {
+        console.error('Error checking access before redirect:', error);
+        alert('Có lỗi xảy ra khi kiểm tra quyền truy cập.');
+    }
+}
+
+// Check and show feedback notification
+async function checkFeedbackNotification() {
+    try {
+        const feedbackSettings = await db.collection('system').doc('feedback_settings').get();
+        const notificationElement = document.getElementById('feedback-notification');
+        const statusElement = document.getElementById('feedback-status');
+        
+        if (feedbackSettings.exists && feedbackSettings.data().enabled === true) {
+            // Kiểm tra ứng viên đã có feedback chưa
+            const hasFeedback = await checkExistingFeedback();
+            
+            if (!hasFeedback) {
+                // Hiển thị thông báo mời gửi feedback
+                notificationElement.style.display = 'block';
+                statusElement.style.display = 'none';
+                
+                // Hiển thị thời hạn nếu có
+                if (feedbackSettings.data().deadline) {
+                    const deadline = feedbackSettings.data().deadline.toDate();
+                    document.getElementById('feedback-deadline').textContent = 
+                        deadline.toLocaleDateString('vi-VN') + ' ' + deadline.toLocaleTimeString('vi-VN');
+                }
+            } else {
+                // Hiển thị trạng thái đã gửi
+                notificationElement.style.display = 'none';
+                statusElement.style.display = 'block';
+                
+                // Hiển thị thời gian gửi
+                const feedbackTime = await getFeedbackTime();
+                if (feedbackTime) {
+                    document.getElementById('feedback-time').textContent = feedbackTime;
+                }
+            }
+        } else {
+            // Ẩn cả hai thông báo nếu hệ thống chưa kích hoạt
+            notificationElement.style.display = 'none';
+            statusElement.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error checking feedback notification:', error);
+        document.getElementById('feedback-notification').style.display = 'none';
+        document.getElementById('feedback-status').style.display = 'none';
+    }
+}
+
+// Kiểm tra ứng viên đã gửi feedback chưa
+async function checkExistingFeedback() {
+    try {
+        const user = auth.currentUser;
+        if (!user) return false;
+        
+        const feedbackSnapshot = await db.collection('feedback')
+            .where('applicantEmail', '==', user.email)
+            .limit(1)
+            .get();
+            
+        return !feedbackSnapshot.empty;
+    } catch (error) {
+        console.error('Error checking existing feedback:', error);
+        return false;
+    }
+}
+
+// Lấy thời gian gửi feedback
+async function getFeedbackTime() {
+    try {
+        const user = auth.currentUser;
+        if (!user) return null;
+        
+        const feedbackSnapshot = await db.collection('feedback')
+            .where('applicantEmail', '==', user.email)
+            .limit(1)
+            .get();
+            
+        if (!feedbackSnapshot.empty) {
+            const feedbackData = feedbackSnapshot.docs[0].data();
+            const timestamp = feedbackData.timestamp;
+            
+            let date;
+            if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+                date = timestamp.toDate();
+            } else if (timestamp.seconds) {
+                date = new Date(timestamp.seconds * 1000);
+            } else {
+                date = new Date(timestamp);
+            }
+            
+            return date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN');
+        }
+        
+        return null;
+    } catch (error) {
+        console.error('Error getting feedback time:', error);
+        return null;
+    }
 }
 
 // Helper function để tạo detail item
@@ -1438,6 +1626,11 @@ function formatTimestamp(timestamp) {
 
             return 'pending';
         }
+
+        // Thêm event listener cho nút chuyển đến feedback
+document.getElementById('go-to-feedback-btn').addEventListener('click', function() {
+    checkFeedbackAccessBeforeRedirect();
+});
 
         // Logout
         document.getElementById('logout-btn').addEventListener('click', () => {

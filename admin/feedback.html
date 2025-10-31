@@ -755,7 +755,8 @@
             </div>
         </div>
     </div>
-
+    
+    <script src="/content/feedback.js"></script>
     <script>
         // Firebase configuration
         const firebaseConfig = {
@@ -802,20 +803,25 @@
             }
         });
 
-        // Load all data
-        async function loadAllData() {
-            try {
-                await Promise.all([
-                    loadFeedbackData(),
-                    loadCandidatesData(),
-                    loadSettings()
-                ]);
-                updateAllStats();
-            } catch (error) {
-                console.error("Lỗi khi tải dữ liệu:", error);
-                showStatus("Lỗi khi tải dữ liệu: " + error.message, "error");
-            }
-        }
+// Load all data
+async function loadAllData() {
+    try {
+        console.log('Loading all data...');
+        
+        await Promise.all([
+            loadFeedbackData(),
+            loadCandidatesData(),
+            loadSettings()
+        ]);
+        
+        console.log('All data loaded, updating stats...');
+        updateAllStats();
+        
+    } catch (error) {
+        console.error("Lỗi khi tải dữ liệu:", error);
+        showStatus("Lỗi khi tải dữ liệu: " + error.message, "error");
+    }
+}
 
         // Load feedback data
         async function loadFeedbackData() {
@@ -890,101 +896,217 @@
             document.getElementById('eligible-candidates').textContent = totalGranted;
         }
 
-        // Initialize charts
-        function initializeCharts() {
-            const teamCtx = document.getElementById('teamChart').getContext('2d');
-            const ratingCtx = document.getElementById('ratingChart').getContext('2d');
-            const atmosphereCtx = document.getElementById('atmosphereChart').getContext('2d');
-            const supporterCtx = document.getElementById('supporterChart').getContext('2d');
-
-            charts.team = new Chart(teamCtx, {
-                type: 'bar',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: '#3B82F6' }] },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-
-            charts.rating = new Chart(ratingCtx, {
-                type: 'doughnut',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#10B981', '#34D399', '#F59E0B', '#FBBF24', '#FCD34D'] }] },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-
-            charts.atmosphere = new Chart(atmosphereCtx, {
-                type: 'pie',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#EF4444', '#F59E0B', '#10B981', '#3B82F6'] }] },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-
-            charts.supporter = new Chart(supporterCtx, {
-                type: 'bar',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: '#8B5CF6' }] },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
+// Initialize charts
+function initializeCharts() {
+    console.log('Initializing charts...');
+    
+    try {
+        const teamCanvas = document.getElementById('teamChart');
+        const ratingCanvas = document.getElementById('ratingChart');
+        const atmosphereCanvas = document.getElementById('atmosphereChart');
+        const supporterCanvas = document.getElementById('supporterChart');
+        
+        // Kiểm tra nếu canvas elements tồn tại
+        if (!teamCanvas || !ratingCanvas || !atmosphereCanvas || !supporterCanvas) {
+            console.warn('Chart canvas elements not found');
+            return;
         }
 
-        // Update charts with data
-        function updateCharts() {
-            // Team distribution
-            const teamData = {};
-            allFeedback.forEach(fb => {
-                teamData[fb.team] = (teamData[fb.team] || 0) + 1;
-            });
-            charts.team.data.labels = Object.keys(teamData);
-            charts.team.data.datasets[0].data = Object.values(teamData);
-            charts.team.update();
+        const teamCtx = teamCanvas.getContext('2d');
+        const ratingCtx = ratingCanvas.getContext('2d');
+        const atmosphereCtx = atmosphereCanvas.getContext('2d');
+        const supporterCtx = supporterCanvas.getContext('2d');
 
-            // Rating distribution
-            const ratingData = [0, 0, 0, 0, 0];
-            allFeedback.forEach(fb => {
-                const rating = parseInt(fb.q3) - 1;
-                if (rating >= 0 && rating < 5) ratingData[rating]++;
-            });
-            charts.rating.data.labels = ['5 sao', '4 sao', '3 sao', '2 sao', '1 sao'];
-            charts.rating.data.datasets[0].data = ratingData;
-            charts.rating.update();
-
-            // Atmosphere distribution
-            const atmosphereData = {};
-            allFeedback.forEach(fb => {
-                if (fb.q5) {
-                    atmosphereData[fb.q5] = (atmosphereData[fb.q5] || 0) + 1;
+        charts.team = new Chart(teamCtx, {
+            type: 'bar',
+            data: { 
+                labels: [], 
+                datasets: [{ 
+                    data: [], 
+                    backgroundColor: '#3B82F6',
+                    borderColor: '#1D4ED8',
+                    borderWidth: 1
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
                 }
-            });
-            charts.atmosphere.data.labels = Object.keys(atmosphereData);
-            charts.atmosphere.data.datasets[0].data = Object.values(atmosphereData);
-            charts.atmosphere.update();
+            }
+        });
 
-            // Supporter evaluation
-            const supporterData = {};
-            allFeedback.forEach(fb => {
-                if (fb.q7) {
-                    supporterData[fb.q7] = (supporterData[fb.q7] || 0) + 1;
+        charts.rating = new Chart(ratingCtx, {
+            type: 'doughnut',
+            data: { 
+                labels: ['5 sao', '4 sao', '3 sao', '2 sao', '1 sao'], 
+                datasets: [{ 
+                    data: [0, 0, 0, 0, 0], 
+                    backgroundColor: ['#10B981', '#34D399', '#F59E0B', '#FBBF24', '#FCD34D'] 
+                }] 
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        charts.atmosphere = new Chart(atmosphereCtx, {
+            type: 'pie',
+            data: { 
+                labels: [], 
+                datasets: [{ 
+                    data: [], 
+                    backgroundColor: ['#EF4444', '#F59E0B', '#10B981', '#3B82F6'] 
+                }] 
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        charts.supporter = new Chart(supporterCtx, {
+            type: 'bar',
+            data: { 
+                labels: [], 
+                datasets: [{ 
+                    data: [], 
+                    backgroundColor: '#8B5CF6',
+                    borderColor: '#7C3AED',
+                    borderWidth: 1
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
                 }
-            });
-            charts.supporter.data.labels = Object.keys(supporterData);
-            charts.supporter.data.datasets[0].data = Object.values(supporterData);
-            charts.supporter.update();
+            }
+        });
+        
+        console.log('Charts initialized successfully');
+    } catch (error) {
+        console.error('Error initializing charts:', error);
+    }
+}
+
+// Update all statistics
+function updateAllStats() {
+    console.log('Updating all stats...');
+    
+    try {
+        updateFeedbackStats();
+        updatePermissionStats();
+        
+        // Chỉ update charts nếu đã được khởi tạo
+        if (charts.team && charts.rating && charts.atmosphere && charts.supporter) {
+            updateCharts();
+        } else {
+            console.warn('Charts not ready for update');
         }
+    } catch (error) {
+        console.error('Error updating stats:', error);
+    }
+}
 
-        // Setup event listeners
-        function setupEventListeners() {
-            // Tab switching
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabName = tab.getAttribute('data-tab');
-                    switchTab(tabName);
-                });
-            });
+// Update charts with data
+function updateCharts() {
+    // Kiểm tra nếu charts đã được khởi tạo
+    if (!charts.team || !charts.rating || !charts.atmosphere || !charts.supporter) {
+        console.warn('Charts chưa được khởi tạo');
+        return;
+    }
 
-            // Results tab filters
-            document.getElementById('filter-team').addEventListener('change', renderFeedbackResults);
-            document.getElementById('filter-rating').addEventListener('change', renderFeedbackResults);
-            document.getElementById('sort-by').addEventListener('change', renderFeedbackResults);
-            document.getElementById('search-feedback').addEventListener('input', renderFeedbackResults);
-
-            // Permission search
-            document.getElementById('permission-search').addEventListener('input', debounce(searchCandidates, 300));
+    // Team distribution
+    const teamData = {};
+    allFeedback.forEach(fb => {
+        if (fb.team) {
+            teamData[fb.team] = (teamData[fb.team] || 0) + 1;
         }
+    });
+    
+    if (Object.keys(teamData).length > 0) {
+        charts.team.data.labels = Object.keys(teamData);
+        charts.team.data.datasets[0].data = Object.values(teamData);
+        charts.team.update();
+    }
+
+    // Rating distribution
+    const ratingData = [0, 0, 0, 0, 0];
+    allFeedback.forEach(fb => {
+        const rating = parseInt(fb.q3) - 1;
+        if (rating >= 0 && rating < 5) ratingData[rating]++;
+    });
+    charts.rating.data.labels = ['5 sao', '4 sao', '3 sao', '2 sao', '1 sao'];
+    charts.rating.data.datasets[0].data = ratingData;
+    charts.rating.update();
+
+    // Atmosphere distribution
+    const atmosphereData = {};
+    allFeedback.forEach(fb => {
+        if (fb.q5) {
+            atmosphereData[fb.q5] = (atmosphereData[fb.q5] || 0) + 1;
+        }
+    });
+    if (Object.keys(atmosphereData).length > 0) {
+        charts.atmosphere.data.labels = Object.keys(atmosphereData);
+        charts.atmosphere.data.datasets[0].data = Object.values(atmosphereData);
+        charts.atmosphere.update();
+    }
+
+    // Supporter evaluation
+    const supporterData = {};
+    allFeedback.forEach(fb => {
+        if (fb.q7) {
+            supporterData[fb.q7] = (supporterData[fb.q7] || 0) + 1;
+        }
+    });
+    if (Object.keys(supporterData).length > 0) {
+        charts.supporter.data.labels = Object.keys(supporterData);
+        charts.supporter.data.datasets[0].data = Object.values(supporterData);
+        charts.supporter.update();
+    }
+}
+
+// Setup event listeners
+function setupEventListeners() {
+    console.log('Setting up event listeners...');
+    
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabName = tab.getAttribute('data-tab');
+            switchTab(tabName);
+        });
+    });
+
+    // Results tab filters - chỉ thêm nếu element tồn tại
+    const filterTeam = document.getElementById('filter-team');
+    const filterRating = document.getElementById('filter-rating');
+    const sortBy = document.getElementById('sort-by');
+    const searchFeedback = document.getElementById('search-feedback');
+    
+    if (filterTeam) filterTeam.addEventListener('change', renderFeedbackResults);
+    if (filterRating) filterRating.addEventListener('change', renderFeedbackResults);
+    if (sortBy) sortBy.addEventListener('change', renderFeedbackResults);
+    if (searchFeedback) searchFeedback.addEventListener('input', renderFeedbackResults);
+
+    // Permission search
+    const permissionSearch = document.getElementById('permission-search');
+    if (permissionSearch) {
+        permissionSearch.addEventListener('input', debounce(searchCandidates, 300));
+    }
+    
+    // Settings - chỉ thêm nếu element tồn tại
+    const notifyNewFeedback = document.getElementById('notify-new-feedback');
+    const notifyDeadline = document.getElementById('notify-deadline');
+    
+    if (notifyNewFeedback) notifyNewFeedback.addEventListener('change', saveNotificationSettings);
+    if (notifyDeadline) notifyDeadline.addEventListener('change', saveNotificationSettings);
+    
+    console.log('Event listeners setup completed');
+}
 
         // Switch tabs
         function switchTab(tabName) {
@@ -1292,39 +1414,61 @@
             }
         }
 
-        // Revoke permission from selected candidates
-        async function revokeSelectedPermission() {
-            if (selectedCandidates.size === 0) {
-                showStatus('Vui lòng chọn ít nhất một ứng viên', 'warning');
-                return;
-            }
+// Revoke permission from selected candidates
+async function revokeSelectedPermission() {
+    if (selectedCandidates.size === 0) {
+        showStatus('Vui lòng chọn ít nhất một ứng viên', 'warning');
+        return;
+    }
 
-            try {
-                const batch = db.batch();
-                
-                for (const candidateId of selectedCandidates) {
-                    const appRef = db.collection('applications').doc(candidateId);
-                    batch.update(appRef, {
-                        feedback_permission: firebase.firestore.FieldValue.delete(),
-                        feedback_permission_granted_at: firebase.firestore.FieldValue.delete(),
-                        feedback_permission_granted_by: firebase.firestore.FieldValue.delete()
-                    });
-                }
-                
-                await batch.commit();
-                showStatus(`✅ Đã thu hồi quyền feedback từ ${selectedCandidates.size} ứng viên`, 'success');
-                
-                // Refresh data
-                selectedCandidates.clear();
-                await loadCandidatesData();
-                updatePermissionStats();
-                searchCandidates();
-                
-            } catch (error) {
-                console.error('Lỗi khi thu hồi quyền:', error);
-                showStatus('❌ Lỗi khi thu hồi quyền: ' + error.message, 'error');
-            }
+    try {
+        const batch = db.batch();
+        
+        for (const candidateId of selectedCandidates) {
+            const appRef = db.collection('applications').doc(candidateId);
+            batch.update(appRef, {
+                feedback_permission: firebase.firestore.FieldValue.delete(),
+                feedback_permission_granted_at: firebase.firestore.FieldValue.delete(),
+                feedback_permission_granted_by: firebase.firestore.FieldValue.delete()
+            });
         }
+        
+        await batch.commit();
+        showStatus(`✅ Đã thu hồi quyền feedback từ ${selectedCandidates.size} ứng viên`, 'success');
+        
+        // Refresh data
+        selectedCandidates.clear();
+        await loadCandidatesData();
+        updatePermissionStats();
+        searchCandidates();
+        
+    } catch (error) {
+        console.error('Lỗi khi thu hồi quyền:', error);
+        showStatus('❌ Lỗi khi thu hồi quyền: ' + error.message, 'error');
+    }
+}
+
+// Lưu cài đặt thông báo
+async function saveNotificationSettings() {
+    console.log('Đang lưu cài đặt thông báo...');
+    
+    try {
+        await db.collection('system').doc('feedback_settings').set({
+            notifications: {
+                new_feedback: document.getElementById('notify-new-feedback').checked,
+                deadline_reminder: document.getElementById('notify-deadline').checked
+            },
+            updated_at: new Date(),
+            updated_by: userEmail
+        }, { merge: true });
+        
+        showStatus('✅ Đã lưu cài đặt thông báo', 'success');
+        console.log('Đã lưu cài đặt thông báo');
+    } catch (error) {
+        console.error('Lỗi khi lưu cài đặt thông báo:', error);
+        showStatus('❌ Lỗi khi lưu cài đặt: ' + error.message, 'error');
+    }
+}
 
         // Revoke permission from all candidates
         async function revokeAllPermission() {
@@ -1443,30 +1587,259 @@
             };
         }
 
-        // Placeholder functions for settings (to be implemented)
-        function toggleFeedbackSystem() {
-            const enabled = document.getElementById('feedback-enabled').checked;
-            showStatus(`Hệ thống feedback ${enabled ? 'đã được kích hoạt' : 'đã tắt'}`, 'success');
-        }
-
-        function setFeedbackDeadline() {
-            const deadline = document.getElementById('feedback-deadline').value;
-            showStatus(`Đã thiết lập thời hạn feedback: ${deadline}`, 'success');
-        }
-
-        function backupFeedbackData() {
-            showStatus('Tính năng sao lưu đang được phát triển', 'info');
-        }
-
-        function clearOldFeedback() {
-            showStatus('Tính năng dọn dữ liệu cũ đang được phát triển', 'info');
-        }
-
-        function deleteAllFeedback() {
-            if (confirm('Bạn có CHẮC CHẮN muốn xóa TOÀN BỘ feedback? Hành động này không thể hoàn tác!')) {
-                showStatus('Tính năng xóa toàn bộ đang được phát triển', 'warning');
+// Load settings from Firebase
+async function loadSettings() {
+    try {
+        console.log('Đang tải cài đặt từ Firebase...');
+        const settingsDoc = await db.collection('system').doc('feedback_settings').get();
+        
+        if (settingsDoc.exists) {
+            const settings = settingsDoc.data();
+            console.log('Cài đặt tìm thấy:', settings);
+            
+            // Cập nhật UI - toggle feedback system
+            document.getElementById('feedback-enabled').checked = settings.enabled || false;
+            
+            // Cập nhật deadline nếu có
+            if (settings.deadline) {
+                const deadlineDate = settings.deadline.toDate();
+                // Format for datetime-local input (YYYY-MM-DDTHH:MM)
+                const formattedDeadline = deadlineDate.toISOString().slice(0, 16);
+                document.getElementById('feedback-deadline').value = formattedDeadline;
+                document.getElementById('current-deadline').textContent = 
+                    deadlineDate.toLocaleString('vi-VN');
             }
+            
+            // Load notification settings nếu có
+            if (settings.notifications) {
+                document.getElementById('notify-new-feedback').checked = settings.notifications.new_feedback || false;
+                document.getElementById('notify-deadline').checked = settings.notifications.deadline_reminder || false;
+            }
+            
+            console.log('Đã cập nhật UI với cài đặt mới');
+        } else {
+            console.log('Chưa có cài đặt trong database');
         }
+    } catch (error) {
+        console.error('Lỗi khi tải cài đặt:', error);
+        showStatus('❌ Lỗi khi tải cài đặt: ' + error.message, 'error');
+    }
+}
+
+// Bật/tắt hệ thống feedback
+async function toggleFeedbackSystem() {
+    const enabled = document.getElementById('feedback-enabled').checked;
+    console.log('Đang ' + (enabled ? 'bật' : 'tắt') + ' hệ thống feedback...');
+    
+    try {
+        await db.collection('system').doc('feedback_settings').set({
+            enabled: enabled,
+            updated_at: new Date(),
+            updated_by: userEmail
+        }, { merge: true }); // merge: true để không ghi đè các field khác
+        
+        showStatus(`✅ Hệ thống feedback ${enabled ? 'đã được kích hoạt' : 'đã tắt'}`, 'success');
+        console.log('Đã lưu cài đặt hệ thống feedback');
+    } catch (error) {
+        console.error('Lỗi khi cập nhật hệ thống feedback:', error);
+        showStatus('❌ Lỗi khi cập nhật hệ thống: ' + error.message, 'error');
+    }
+}
+
+// Đặt thời hạn feedback
+async function setFeedbackDeadline() {
+    const deadline = document.getElementById('feedback-deadline').value;
+    console.log('Đang đặt thời hạn:', deadline);
+    
+    if (!deadline) {
+        showStatus('❌ Vui lòng chọn thời hạn', 'error');
+        return;
+    }
+    
+    try {
+        await db.collection('system').doc('feedback_settings').set({
+            deadline: new Date(deadline),
+            updated_at: new Date(),
+            updated_by: userEmail
+        }, { merge: true });
+        
+        const deadlineDate = new Date(deadline);
+        showStatus(`✅ Đã thiết lập thời hạn feedback: ${deadlineDate.toLocaleString('vi-VN')}`, 'success');
+        
+        // Cập nhật hiển thị
+        document.getElementById('current-deadline').textContent = 
+            deadlineDate.toLocaleString('vi-VN');
+            
+        console.log('Đã lưu thời hạn feedback');
+    } catch (error) {
+        console.error('Lỗi khi thiết lập thời hạn:', error);
+        showStatus('❌ Lỗi khi thiết lập thời hạn: ' + error.message, 'error');
+    }
+}
+
+// Sao lưu dữ liệu feedback
+async function backupFeedbackData() {
+    console.log('Đang bắt đầu sao lưu dữ liệu...');
+    
+    try {
+        showStatus('🔄 Đang sao lưu dữ liệu...', 'info');
+        
+        // Lấy tất cả feedback hiện tại
+        const feedbackSnapshot = await db.collection('feedback').get();
+        console.log('Tìm thấy', feedbackSnapshot.size, 'feedback để sao lưu');
+        
+        if (feedbackSnapshot.size === 0) {
+            showStatus('ℹ️ Không có dữ liệu feedback để sao lưu', 'info');
+            return;
+        }
+        
+        // Tạo bản sao trong collection backup
+        const batch = db.batch();
+        let count = 0;
+        
+        feedbackSnapshot.forEach(doc => {
+            const backupRef = db.collection('feedback_backup').doc(doc.id + '_' + Date.now());
+            batch.set(backupRef, {
+                ...doc.data(), // Copy toàn bộ dữ liệu
+                backed_up_at: new Date(),
+                backed_up_by: userEmail
+            });
+            count++;
+        });
+        
+        // Thực hiện sao lưu
+        await batch.commit();
+        showStatus(`✅ Đã sao lưu ${count} feedback thành công`, 'success');
+        console.log('Sao lưu hoàn thành:', count, 'bản ghi');
+        
+    } catch (error) {
+        console.error('Lỗi khi sao lưu:', error);
+        showStatus('❌ Lỗi khi sao lưu: ' + error.message, 'error');
+    }
+}
+
+// Xóa feedback cũ (trước 30 ngày)
+async function clearOldFeedback() {
+    if (!confirm('Bạn có chắc muốn xóa các feedback cũ (trước 30 ngày)?\n\nHành động này không thể hoàn tác!')) {
+        console.log('Người dùng hủy xóa dữ liệu cũ');
+        return;
+    }
+
+    try {
+        showStatus('🔄 Đang xóa dữ liệu cũ...', 'info');
+        console.log('Đang tìm feedback cũ...');
+        
+        // Tính ngày 30 ngày trước
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        console.log('Xóa feedback trước ngày:', thirtyDaysAgo);
+        
+        // Tìm feedback cũ
+        const oldFeedback = await db.collection('feedback')
+            .where('timestamp', '<', thirtyDaysAgo)
+            .get();
+            
+        console.log('Tìm thấy', oldFeedback.size, 'feedback cũ');
+        
+        if (oldFeedback.size === 0) {
+            showStatus('ℹ️ Không có feedback nào cũ hơn 30 ngày', 'info');
+            return;
+        }
+        
+        // Xóa từng cái
+        const batch = db.batch();
+        let count = 0;
+        
+        oldFeedback.forEach(doc => {
+            batch.delete(doc.ref);
+            count++;
+        });
+        
+        // Thực hiện xóa
+        await batch.commit();
+        showStatus(`✅ Đã xóa ${count} feedback cũ`, 'success');
+        console.log('Đã xóa', count, 'feedback cũ');
+        
+        // Load lại dữ liệu
+        await loadFeedbackData();
+        updateAllStats();
+        
+    } catch (error) {
+        console.error('Lỗi khi xóa dữ liệu cũ:', error);
+        showStatus('❌ Lỗi khi xóa dữ liệu: ' + error.message, 'error');
+    }
+}
+
+// Xóa toàn bộ feedback
+async function deleteAllFeedback() {
+    if (!confirm('⚠️ CẢNH BÁO NGUY HIỂM!\n\nBạn có CHẮC CHẮN muốn xóa TOÀN BỘ feedback?\n\nHành động này KHÔNG THỂ hoàn tác và sẽ xóa vĩnh viễn mọi dữ liệu feedback!')) {
+        console.log('Người dùng hủy xóa toàn bộ');
+        return;
+    }
+
+    // Xác nhận lần 2
+    if (!confirm('❌ XÁC NHẬN LẦN CUỐI: Bạn thực sự muốn xóa TOÀN BỘ feedback?')) {
+        return;
+    }
+
+    try {
+        showStatus('🔄 Đang xóa toàn bộ feedback...', 'warning');
+        console.log('Bắt đầu xóa toàn bộ feedback...');
+        
+        // Lấy tất cả feedback
+        const allFeedback = await db.collection('feedback').get();
+        console.log('Sẽ xóa', allFeedback.size, 'feedback');
+        
+        if (allFeedback.size === 0) {
+            showStatus('ℹ️ Không có feedback nào để xóa', 'info');
+            return;
+        }
+        
+        // Xóa từng cái
+        const batch = db.batch();
+        let count = 0;
+        
+        allFeedback.forEach(doc => {
+            batch.delete(doc.ref);
+            count++;
+        });
+        
+        // Thực hiện xóa
+        await batch.commit();
+        showStatus(`✅ Đã xóa ${count} feedback`, 'success');
+        console.log('Đã xóa toàn bộ', count, 'feedback');
+        
+        // Load lại dữ liệu
+        await loadFeedbackData();
+        updateAllStats();
+        
+    } catch (error) {
+        console.error('Lỗi khi xóa toàn bộ feedback:', error);
+        showStatus('❌ Lỗi khi xóa: ' + error.message, 'error');
+    }
+}
+
+// Lưu cài đặt thông báo
+async function saveNotificationSettings() {
+    console.log('Đang lưu cài đặt thông báo...');
+    
+    try {
+        await db.collection('system').doc('feedback_settings').set({
+            notifications: {
+                new_feedback: document.getElementById('notify-new-feedback').checked,
+                deadline_reminder: document.getElementById('notify-deadline').checked
+            },
+            updated_at: new Date(),
+            updated_by: userEmail
+        }, { merge: true });
+        
+        showStatus('✅ Đã lưu cài đặt thông báo', 'success');
+        console.log('Đã lưu cài đặt thông báo');
+    } catch (error) {
+        console.error('Lỗi khi lưu cài đặt thông báo:', error);
+        showStatus('❌ Lỗi khi lưu cài đặt: ' + error.message, 'error');
+    }
+}
     </script>
 </body>
 </html>

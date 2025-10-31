@@ -26,7 +26,7 @@
             --white: #ffffff;
             --error: #ef4444;
             --error-light: #fee2e2;
-            --success: #10b981;
+            --success: #fff421;
             --success-light: #d1fae5;
             --warning: #f59e0b;
             --warning-light: #fef3c7;
@@ -466,185 +466,7 @@
             <p class="feedback-subtitle">Chia sẻ trải nghiệm của bạn sau quá trình tham gia vòng 3</p>
 
             <form id="feedback-form">
-                <!-- Phần 1: Reflect bản thân -->
-                <div class="section">
-                    <h2 class="section-title">
-                        <i class="fas fa-brain"></i>
-                        Phần 1. Reflect bản thân
-                    </h2>
-
-                    <!-- Câu 1 -->
-                    <div class="question">
-                        <p class="question-text">Câu 1: Tuần teamwork của bạn là…</p>
-                        <div class="options-container">
-                            <div class="option">
-                                <input type="radio" id="q1-option1" name="q1" value="Một chuyến đi chill 😌">
-                                <label for="q1-option1">Một chuyến đi chill 😌</label>
-                            </div>
-                            <div class="option">
-                                <input type="radio" id="q1-option2" name="q1" value="Một cơn lốc deadline 🌀">
-                                <label for="q1-option2">Một cơn lốc deadline 🌀</label>
-                            </div>
-                            <div class="option">
-                                <input type="radio" id="q1-option3" name="q1" value="Một bài học lớn 🎓">
-                                <label for="q1-option3">Một bài học lớn 🎓</label>
-                            </div>
-                            <div class="option">
-                                <input type="radio" id="q1-option4" name="q1" value="Một kỷ niệm đáng nhớ 💛">
-                                <label for="q1-option4">Một kỷ niệm đáng nhớ 💛</label>
-                            </div>
-                            <div class="option">
-                                <input type="radio" id="q1-option5" name="q1" value="Một combo của tất cả những thứ trên 😅">
-                                <label for="q1-option5">Một combo của tất cả những thứ trên 😅</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Câu 2 -->
-                    <div class="question">
-                        <p class="question-text">Câu 2: Bạn thấy mình "level up" nhất ở điểm nào sau vòng này?</p>
-                        <input type="text" class="text-input" id="q2" placeholder="Câu ngắn (1 dòng)" maxlength="100">
-                    </div>
-                </div>
-
-                <!-- Phần 2: Team Lead -->
-                <div class="section">
-                    <h2 class="section-title">
-                        <i class="fas fa-crown"></i>
-                        Phần 2. Team Lead
-                    </h2>
-
-                    <!-- Câu 3 -->
-                    <div class="question">
-                        <p class="question-text">Câu 3: Nếu chấm điểm Team Lead của bạn trên thang 🌟1–5, bạn sẽ cho bao nhiêu?</p>
-                        <div class="rating-container">
-                            <div class="rating-option" data-value="1">🌟</div>
-                            <div class="rating-option" data-value="2">🌟🌟</div>
-                            <div class="rating-option" data-value="3">🌟🌟🌟</div>
-                            <div class="rating-option" data-value="4">🌟🌟🌟🌟</div>
-                            <div class="rating-option" data-value="5">🌟🌟🌟🌟🌟</div>
-                        </div>
-                        <input type="hidden" id="q3" name="q3">
-                    </div>
-
-                    <!-- Câu 4 -->
-                    <div class="question">
-                        <p class="question-text">Câu 4: Một điều bạn thích nhất ở Lead là gì?</p>
-                        <input type="text" class="text-input" id="q4" placeholder="Câu ngắn (optional)" maxlength="100">
-                    </div>
-                </div>
-
-                <!-- Phần 3: Thành viên nhóm -->
-                <div class="section">
-                    <h2 class="section-title">
-                        <i class="fas fa-users"></i>
-                        Phần 3. Thành viên nhóm
-                    </h2>
-
-                    <!-- Câu 5 -->
-                    <div class="question">
-                        <p class="question-text">Câu 5: Không khí làm việc của nhóm bạn là kiểu:</p>
-                        <div class="options-container">
-                            <div class="option">
-                                <input type="radio" id="q5-option1" name="q5" value="Năng lượng dồi dào 😆">
-                                <label for="q5-option1">Năng lượng dồi dào 😆</label>
-                            </div>
-                            <div class="option">
-                                <input type="radio" id="q5-option2" name="q5" value="Tập trung và nghiêm túc 🤔">
-                                <label for="q5-option2">Tập trung và nghiêm túc 🤔</label>
-                            </div>
-                            <div class="option">
-                                <input type="radio" id="q5-option3" name="q5" value="Chill và nhẹ nhàng 😌">
-                                <label for="q5-option3">Chill và nhẹ nhàng 😌</label>
-                            </div>
-                            <div class="option">
-                                <input type="radio" id="q5-option4" name="q5" value="Hỗn loạn nhưng đáng yêu 😭">
-                                <label for="q5-option4">Hỗn loạn nhưng đáng yêu 😭</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Câu 6 -->
-                    <div class="question">
-                        <p class="question-text">Câu 6: Hãy tag một người trong team mà bạn thấy đáng học hỏi nhất (và lý do nhỏ xíu nhé 💬)</p>
-                        <div class="tag-input-container">
-                            <input type="text" class="text-input tag-input" id="q6-input" placeholder="Gõ @ để tag thành viên">
-                            <div class="tag-suggestions" id="tag-suggestions"></div>
-                        </div>
-                        <div id="q6-tags" style="margin-top: 8px;"></div>
-                        <input type="hidden" id="q6" name="q6">
-                    </div>
-                </div>
-
-                <!-- Phần 4: Supporters -->
-                <div class="section">
-                    <h2 class="section-title">
-                        <i class="fas fa-hands-helping"></i>
-                        Phần 4. Supporters
-                    </h2>
-
-                    <!-- Câu 7 -->
-                    <div class="question">
-                        <p class="question-text">Câu 7: Supporters đã giúp team bạn thế nào?</p>
-                        <div class="options-container">
-                            <div class="option">
-                                <input type="radio" id="q7-option1" name="q7" value="Cực kỳ tận tâm">
-                                <label for="q7-option1">Cực kỳ tận tâm</label>
-                            </div>
-                            <div class="option">
-                                <input type="radio" id="q7-option2" name="q7" value="Luôn sẵn sàng hỗ trợ">
-                                <label for="q7-option2">Luôn sẵn sàng hỗ trợ</label>
-                            </div>
-                            <div class="option">
-                                <input type="radio" id="q7-option3" name="q7" value="Đôi khi hơi ít tương tác">
-                                <label for="q7-option3">Đôi khi hơi ít tương tác</label>
-                            </div>
-                            <div class="option">
-                                <input type="radio" id="q7-option4" name="q7" value="Khác">
-                                <label for="q7-option4">Khác (viết thêm nếu muốn)</label>
-                            </div>
-                        </div>
-                        <input type="text" class="text-input" id="q7-other" placeholder="Ghi chú thêm (nếu có)" style="margin-top: 8px; display: none;" maxlength="100">
-                    </div>
-                </div>
-
-                <!-- Phần 5: Trải lòng & góp ý -->
-                <div class="section">
-                    <h2 class="section-title">
-                        <i class="fas fa-comment-dots"></i>
-                        Phần 5. Trải lòng & góp ý
-                    </h2>
-
-                    <!-- Câu 8 -->
-                    <div class="question">
-                        <p class="question-text">Câu 8: Một câu "trải lòng" ngắn về vòng 3 này nè 💬</p>
-                        <textarea class="text-input" id="q8" placeholder="Giới hạn 200 ký tự" rows="3" maxlength="200"></textarea>
-                        <div class="char-counter"><span id="q8-counter">0</span>/200</div>
-                    </div>
-
-                    <!-- Câu 9 -->
-                    <div class="question">
-                        <p class="question-text">Câu 9: Nếu BTC vòng 3 là một người bạn, bạn muốn gửi gì cho họ?</p>
-                        <div class="options-container">
-                            <div class="option">
-                                <input type="checkbox" id="q9-option1" name="q9" value="Cảm ơn">
-                                <label for="q9-option1">❤️ Cảm ơn</label>
-                            </div>
-                            <div class="option">
-                                <input type="checkbox" id="q9-option2" name="q9" value="Góp ý nhỏ">
-                                <label for="q9-option2">💡 Góp ý nhỏ</label>
-                            </div>
-                            <div class="option">
-                                <input type="checkbox" id="q9-option3" name="q9" value="Cả hai">
-                                <label for="q9-option3">🌈 Cả hai</label>
-                            </div>
-                        </div>
-                        <textarea class="text-input" id="q9-details" placeholder="Chi tiết góp ý (nếu có)" rows="3" style="margin-top: 8px; display: none;" maxlength="300"></textarea>
-                        <div class="char-counter"><span id="q9-counter">0</span>/300</div>
-                    </div>
-                </div>
-
-                <button type="submit" class="submit-btn" id="submit-btn" disabled>Gửi Feedback</button>
+                <!-- Form sẽ được render động bằng JavaScript -->
             </form>
         </div>
     </div>
@@ -653,7 +475,7 @@
     <div class="footer">
         © 2023 Enactus FTU Hanoi. All rights reserved.
     </div>
-
+    <script src="/content/feedback.js"></script>
     <script>
         // Firebase configuration
         const firebaseConfig = {
@@ -733,54 +555,498 @@
             if (userAvatarEl) userAvatarEl.textContent = fullname.charAt(0).toUpperCase();
         }
 
-        // Check if user is eligible for feedback
-        async function checkEligibility() {
-            try {
-                // Check if user is in round 3 and has a team
-                const appSnapshot = await db
-                    .collection("applications")
-                    .where("email", "==", currentUser.email)
-                    .limit(1)
-                    .get();
-
-                if (appSnapshot.empty) {
-                    showAccessDenied();
-                    return;
-                }
-
-                const appDoc = appSnapshot.docs[0];
-                const appData = appDoc.data();
-
-                if (appData.current_round !== "round3") {
-                    showAccessDenied();
-                    return;
-                }
-
-                if (!appData.round3 || !appData.round3.team) {
-                    showAccessDenied();
-                    return;
-                }
-
-                // Check if user has permission
-                if (!appData.feedback_permission) {
-                    showAccessDenied();
-                    return;
-                }
-
-                // Get team members
-                await loadTeamMembers(appData.round3.team);
-
-                // Check if feedback already submitted
-                await checkFeedbackSubmission(appDoc.id);
-
-                // Show feedback form
-                showFeedbackForm();
-
-            } catch (error) {
-                console.error("Lỗi khi kiểm tra điều kiện:", error);
-                showStatus("Có lỗi xảy ra khi kiểm tra điều kiện", "error");
+// Check if user is eligible for feedback
+async function checkEligibility() {
+    try {
+        // Kiểm tra hệ thống feedback có được kích hoạt không
+        const settingsDoc = await db.collection('system').doc('feedback_settings').get();
+        
+        if (!settingsDoc.exists || settingsDoc.data().enabled !== true) {
+            showAccessDenied('Hệ thống feedback hiện chưa được kích hoạt');
+            return;
+        }
+        
+        // Kiểm tra thời hạn
+        if (settingsDoc.data().deadline) {
+            const deadline = settingsDoc.data().deadline.toDate();
+            if (new Date() > deadline) {
+                showAccessDenied('Thời hạn gửi feedback đã kết thúc');
+                return;
             }
         }
+
+        // Check if user is in round 3 and has a team
+        const appSnapshot = await db
+            .collection("applications")
+            .where("email", "==", currentUser.email)
+            .limit(1)
+            .get();
+
+        if (appSnapshot.empty) {
+            showAccessDenied('Không tìm thấy thông tin ứng viên');
+            return;
+        }
+
+        const appDoc = appSnapshot.docs[0];
+        const appData = appDoc.data();
+
+        if (appData.current_round !== "round3") {
+            showAccessDenied('Bạn không nằm trong danh sách ứng viên vòng 3');
+            return;
+        }
+
+        if (!appData.round3 || !appData.round3.team) {
+            showAccessDenied('Bạn chưa được xếp vào team cho vòng 3');
+            return;
+        }
+
+        // Check if user has permission
+        if (!appData.feedback_permission) {
+            showAccessDenied('Bạn chưa được cấp quyền gửi feedback');
+            return;
+        }
+
+        // Get team members
+        await loadTeamMembers(appData.round3.team);
+
+        // Check if feedback already submitted
+        await checkFeedbackSubmission(appDoc.id);
+
+        // Show feedback form và render questions
+        showFeedbackForm();
+        renderDynamicQuestions();
+        setupDynamicEventListeners();
+
+    } catch (error) {
+        console.error("Lỗi khi kiểm tra điều kiện:", error);
+        showStatus("Có lỗi xảy ra khi kiểm tra điều kiện", "error");
+    }
+}
+
+        // Render dynamic questions from feedback.js
+function renderDynamicQuestions() {
+    const form = document.getElementById('feedback-form');
+    if (!form) return;
+    
+    form.innerHTML = ''; // Xóa form cũ
+    
+    Object.keys(feedbackQuestions).forEach(partKey => {
+        const part = feedbackQuestions[partKey];
+        
+        // Tạo section
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.innerHTML = `
+            <h2 class="section-title">
+                <i class="fas fa-${part.icon || 'question'}"></i>
+                ${part.title}
+            </h2>
+        `;
+        
+        // Render từng câu hỏi
+        part.questions.forEach(question => {
+            const questionElement = renderQuestion(question);
+            if (questionElement) {
+                section.appendChild(questionElement);
+            }
+        });
+        
+        form.appendChild(section);
+    });
+    
+    // Thêm nút submit
+    const submitBtn = document.createElement('button');
+    submitBtn.type = 'submit';
+    submitBtn.className = 'submit-btn';
+    submitBtn.id = 'submit-btn';
+    submitBtn.textContent = 'Gửi Feedback';
+    submitBtn.disabled = feedbackSubmitted;
+    
+    form.appendChild(submitBtn);
+}
+
+// Render individual question
+function renderQuestion(question) {
+    const questionDiv = document.createElement('div');
+    questionDiv.className = 'question';
+    
+    // Question text
+    const questionText = document.createElement('p');
+    questionText.className = 'question-text';
+    questionText.textContent = question.question;
+    questionDiv.appendChild(questionText);
+    
+    // Render based on question type
+    switch(question.type) {
+        case 'radio':
+            questionDiv.appendChild(renderRadioQuestion(question));
+            break;
+        case 'text':
+            questionDiv.appendChild(renderTextQuestion(question));
+            break;
+        case 'rating':
+            questionDiv.appendChild(renderRatingQuestion(question));
+            break;
+        case 'tag':
+            questionDiv.appendChild(renderTagQuestion(question));
+            break;
+        case 'textarea':
+            questionDiv.appendChild(renderTextareaQuestion(question));
+            break;
+        case 'checkbox':
+            questionDiv.appendChild(renderCheckboxQuestion(question));
+            break;
+        default:
+            console.warn('Unknown question type:', question.type);
+    }
+    
+    return questionDiv;
+}
+
+// Render radio question
+function renderRadioQuestion(question) {
+    const container = document.createElement('div');
+    container.className = 'options-container';
+    
+    question.options.forEach((option, index) => {
+        const optionId = `${question.id}-option${index + 1}`;
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'option';
+        
+        optionDiv.innerHTML = `
+            <input type="radio" id="${optionId}" name="${question.id}" value="${option}" ${question.required ? 'required' : ''}>
+            <label for="${optionId}">${option}</label>
+        `;
+        
+        container.appendChild(optionDiv);
+    });
+    
+    return container;
+}
+
+// Render text question
+function renderTextQuestion(question) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'text-input';
+    input.id = question.id;
+    input.placeholder = question.placeholder || '';
+    input.maxLength = question.maxLength || 100;
+    input.required = question.required || false;
+    
+    return input;
+}
+
+// Render rating question
+function renderRatingQuestion(question) {
+    const container = document.createElement('div');
+    container.className = 'rating-container';
+    
+    for (let i = 1; i <= question.maxRating; i++) {
+        const ratingOption = document.createElement('div');
+        ratingOption.className = 'rating-option';
+        ratingOption.setAttribute('data-value', i);
+        ratingOption.textContent = '🌟'.repeat(i);
+        container.appendChild(ratingOption);
+    }
+    
+    const hiddenInput = document.createElement('input');
+    hiddenInput.type = 'hidden';
+    hiddenInput.id = question.id;
+    hiddenInput.name = question.id;
+    hiddenInput.required = question.required || false;
+    
+    container.appendChild(hiddenInput);
+    return container;
+}
+
+// Render tag question
+function renderTagQuestion(question) {
+    const container = document.createElement('div');
+    
+    const tagInputContainer = document.createElement('div');
+    tagInputContainer.className = 'tag-input-container';
+    
+    tagInputContainer.innerHTML = `
+        <input type="text" class="text-input tag-input" id="${question.id}-input" placeholder="${question.placeholder || 'Gõ @ để tag thành viên'}">
+        <div class="tag-suggestions" id="${question.id}-suggestions"></div>
+    `;
+    
+    const tagsContainer = document.createElement('div');
+    tagsContainer.id = `${question.id}-tags`;
+    tagsContainer.style.marginTop = '8px';
+    
+    const hiddenInput = document.createElement('input');
+    hiddenInput.type = 'hidden';
+    hiddenInput.id = question.id;
+    hiddenInput.name = question.id;
+    
+    container.appendChild(tagInputContainer);
+    container.appendChild(tagsContainer);
+    container.appendChild(hiddenInput);
+    
+    return container;
+}
+
+// Render textarea question
+function renderTextareaQuestion(question) {
+    const container = document.createElement('div');
+    
+    const textarea = document.createElement('textarea');
+    textarea.className = 'text-input';
+    textarea.id = question.id;
+    textarea.placeholder = question.placeholder || '';
+    textarea.rows = 3;
+    textarea.maxLength = question.maxLength || 200;
+    textarea.required = question.required || false;
+    
+    const counter = document.createElement('div');
+    counter.className = 'char-counter';
+    counter.innerHTML = `<span id="${question.id}-counter">0</span>/${question.maxLength || 200}`;
+    
+    container.appendChild(textarea);
+    container.appendChild(counter);
+    
+    return container;
+}
+
+// Handle form submission
+async function handleFormSubmit(event) {
+    event.preventDefault();
+    
+    // Validate form
+    if (!validateForm()) {
+        return;
+    }
+    
+    try {
+        // Get application data
+        const appSnapshot = await db
+            .collection("applications")
+            .where("email", "==", currentUser.email)
+            .limit(1)
+            .get();
+
+        if (appSnapshot.empty) {
+            showStatus("Không tìm thấy thông tin ứng viên", "error");
+            return;
+        }
+
+        const appDoc = appSnapshot.docs[0];
+        const appData = appDoc.data();
+
+        // Collect form data
+        const formData = {
+            applicantId: appDoc.id,
+            applicantName: appData.fullname,
+            applicantEmail: currentUser.email,
+            team: appData.round3?.team || '',
+            timestamp: new Date(),
+            
+            // Collect answers from all questions
+            q1: document.querySelector('input[name="q1"]:checked')?.value || '',
+            q2: document.getElementById('q2')?.value || '',
+            q3: document.getElementById('q3')?.value || '',
+            q4: document.getElementById('q4')?.value || '',
+            q5: document.querySelector('input[name="q5"]:checked')?.value || '',
+            q6: document.getElementById('q6')?.value ? JSON.parse(document.getElementById('q6').value) : [],
+            q7: document.querySelector('input[name="q7"]:checked')?.value || '',
+            q8: document.getElementById('q8')?.value || '',
+            q9: Array.from(document.querySelectorAll('input[name="q9"]:checked')).map(cb => cb.value) || [],
+            q9Details: document.getElementById('q9-details')?.value || ''
+        };
+
+        // Submit to Firebase
+        await db.collection('feedback').add(formData);
+        
+        // Update UI
+        feedbackSubmitted = true;
+        document.getElementById("submit-btn").disabled = true;
+        document.getElementById("submit-btn").textContent = "Đã gửi Feedback";
+        
+        showStatus("✅ Cảm ơn bạn đã gửi feedback! Đóng góp của bạn rất có giá trị với chúng tôi.", "success");
+        
+    } catch (error) {
+        console.error("Lỗi khi gửi feedback:", error);
+        showStatus("❌ Có lỗi xảy ra khi gửi feedback. Vui lòng thử lại.", "error");
+    }
+}
+
+// Add form submit event listener
+document.addEventListener('DOMContentLoaded', function() {
+    // Logout button
+    document.getElementById('logout-btn').addEventListener('click', function() {
+        auth.signOut().then(() => {
+            sessionStorage.clear();
+            window.location.href = "../login.html";
+        });
+    });
+    
+    // Form submission
+    const form = document.getElementById('feedback-form');
+    if (form) {
+        form.addEventListener('submit', handleFormSubmit);
+    }
+});
+
+// Setup event listeners for dynamic questions
+function setupDynamicEventListeners() {
+    // Rating options
+    document.querySelectorAll('.rating-option').forEach(option => {
+        option.addEventListener('click', function() {
+            const value = this.getAttribute('data-value');
+            const questionId = this.closest('.question').querySelector('input[type="hidden"]').id;
+            document.getElementById(questionId).value = value;
+            
+            // Update UI
+            this.closest('.rating-container').querySelectorAll('.rating-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            this.classList.add('selected');
+        });
+    });
+
+    // Option selection styling
+    document.querySelectorAll('.option input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            // Remove selected class from all options in this question
+            const questionOptions = this.closest('.options-container').querySelectorAll('.option');
+            questionOptions.forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Add selected class to current option
+            this.closest('.option').classList.add('selected');
+        });
+    });
+
+    // Character counters for textareas
+    document.querySelectorAll('textarea.text-input').forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            const counterId = this.id + '-counter';
+            const counter = document.getElementById(counterId);
+            if (counter) {
+                counter.textContent = this.value.length;
+            }
+        });
+    });
+
+    // Setup tag input for question 6
+    setupTagInput();
+}
+
+// Setup tag input functionality
+function setupTagInput() {
+    const tagInput = document.getElementById('q6-input');
+    if (!tagInput) return;
+
+    const tagSuggestions = document.getElementById('q6-suggestions');
+    const tagsContainer = document.getElementById('q6-tags');
+    const hiddenInput = document.getElementById('q6');
+    let selectedTags = [];
+
+    tagInput.addEventListener('input', function() {
+        const value = this.value;
+        
+        if (value.includes('@')) {
+            const searchTerm = value.split('@').pop().toLowerCase();
+            
+            if (searchTerm.length > 0) {
+                const filteredMembers = teamMembers.filter(member => 
+                    member.name.toLowerCase().includes(searchTerm)
+                );
+                
+                showTagSuggestions(filteredMembers, 'q6');
+            } else {
+                showTagSuggestions(teamMembers, 'q6');
+            }
+        } else {
+            hideTagSuggestions('q6');
+        }
+    });
+
+    function showTagSuggestions(members, questionId) {
+        const suggestions = document.getElementById(`${questionId}-suggestions`);
+        suggestions.innerHTML = '';
+        
+        if (members.length === 0) {
+            suggestions.innerHTML = '<div class="tag-suggestion">Không tìm thấy thành viên</div>';
+        } else {
+            members.forEach(member => {
+                // Skip if already tagged
+                if (selectedTags.some(tag => tag.id === member.id)) return;
+                
+                const div = document.createElement('div');
+                div.className = 'tag-suggestion';
+                div.textContent = member.name;
+                div.addEventListener('click', () => {
+                    addTag(member, 'q6');
+                    tagInput.value = '';
+                    hideTagSuggestions('q6');
+                });
+                suggestions.appendChild(div);
+            });
+        }
+        
+        suggestions.style.display = 'block';
+    }
+
+    function hideTagSuggestions(questionId) {
+        const suggestions = document.getElementById(`${questionId}-suggestions`);
+        suggestions.style.display = 'none';
+    }
+
+    function addTag(member, questionId) {
+        // Check if already tagged
+        if (selectedTags.some(tag => tag.id === member.id)) return;
+        
+        selectedTags.push(member);
+        updateTagsDisplay(questionId);
+    }
+
+    function updateTagsDisplay(questionId) {
+        const container = document.getElementById(`${questionId}-tags`);
+        const hidden = document.getElementById(questionId);
+        
+        container.innerHTML = '';
+        selectedTags.forEach(tag => {
+            const tagEl = document.createElement('span');
+            tagEl.className = 'tag';
+            tagEl.innerHTML = `${tag.name} <i class="fas fa-times"></i>`;
+            tagEl.querySelector('i').addEventListener('click', () => removeTag(tag.id, questionId));
+            container.appendChild(tagEl);
+        });
+        
+        // Update hidden input
+        hidden.value = JSON.stringify(selectedTags);
+    }
+
+    function removeTag(memberId, questionId) {
+        selectedTags = selectedTags.filter(tag => tag.id !== memberId);
+        updateTagsDisplay(questionId);
+    }
+}
+
+// Render checkbox question
+function renderCheckboxQuestion(question) {
+    const container = document.createElement('div');
+    container.className = 'options-container';
+    
+    question.options.forEach((option, index) => {
+        const optionId = `${question.id}-option${index + 1}`;
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'option';
+        
+        optionDiv.innerHTML = `
+            <input type="checkbox" id="${optionId}" name="${question.id}" value="${option.replace(/^[^a-zA-Z0-9]+/, '')}">
+            <label for="${optionId}">${option}</label>
+        `;
+        
+        container.appendChild(optionDiv);
+    });
+    
+    return container;
+}
 
         // Load team members for tagging
         async function loadTeamMembers(teamName) {
@@ -828,18 +1094,32 @@
             }
         }
 
-        // Show access denied message
-        function showAccessDenied() {
-            document.getElementById("access-denied").style.display = "block";
-            document.getElementById("feedback-form-container").style.display = "none";
-        }
+// Show access denied message
+function showAccessDenied(message = 'Bạn chưa được cấp quyền để gửi feedback hoặc không nằm trong danh sách ứng viên vòng 3.') {
+    document.getElementById("access-denied").style.display = "block";
+    document.getElementById("feedback-form-container").style.display = "none";
+    
+    // Cập nhật message
+    const messageElement = document.querySelector('#access-denied p');
+    if (messageElement) {
+        messageElement.textContent = message;
+    }
+}
 
-        // Show feedback form
-        function showFeedbackForm() {
-            document.getElementById("access-denied").style.display = "none";
-            document.getElementById("feedback-form-container").style.display = "block";
-            document.getElementById("submit-btn").disabled = false;
+// Show feedback form
+function showFeedbackForm() {
+    document.getElementById("access-denied").style.display = "none";
+    document.getElementById("feedback-form-container").style.display = "block";
+    
+    // CHỈ disable nút submit nếu đã gửi feedback
+    const submitBtn = document.getElementById("submit-btn");
+    if (submitBtn) {
+        submitBtn.disabled = feedbackSubmitted;
+        if (feedbackSubmitted) {
+            submitBtn.textContent = "Đã gửi Feedback";
         }
+    }
+}
 
         // Show status message
         function showStatus(message, type) {
@@ -865,254 +1145,55 @@
                     window.location.href = "../login.html";
                 });
             });
-
-            // Rating options
-            document.querySelectorAll('.rating-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    const value = this.getAttribute('data-value');
-                    document.getElementById('q3').value = value;
-                    
-                    // Update UI
-                    document.querySelectorAll('.rating-option').forEach(opt => {
-                        opt.classList.remove('selected');
-                    });
-                    this.classList.add('selected');
-                });
-            });
-
-            // Option selection styling
-            document.querySelectorAll('.option input[type="radio"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    // Remove selected class from all options in this question
-                    const questionOptions = this.closest('.options-container').querySelectorAll('.option');
-                    questionOptions.forEach(opt => {
-                        opt.classList.remove('selected');
-                    });
-                    
-                    // Add selected class to current option
-                    this.closest('.option').classList.add('selected');
-                    
-                    // Show/hide other input for question 7
-                    if (this.name === 'q7' && this.value === 'Khác') {
-                        document.getElementById('q7-other').style.display = 'block';
-                    } else if (this.name === 'q7') {
-                        document.getElementById('q7-other').style.display = 'none';
-                    }
-                });
-            });
-
-            // Character counters
-            document.getElementById('q8').addEventListener('input', function() {
-                document.getElementById('q8-counter').textContent = this.value.length;
-            });
-
-            document.getElementById('q9-details').addEventListener('input', function() {
-                document.getElementById('q9-counter').textContent = this.value.length;
-            });
-
-            // Question 9 checkboxes
-            document.querySelectorAll('#q9-option1, #q9-option2, #q9-option3').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const detailsEl = document.getElementById('q9-details');
-                    const anyChecked = document.querySelectorAll('input[name="q9"]:checked').length > 0;
-                    
-                    if (anyChecked) {
-                        detailsEl.style.display = 'block';
-                    } else {
-                        detailsEl.style.display = 'none';
-                    }
-                });
-            });
-
-            // Tag input for question 6
-            const tagInput = document.getElementById('q6-input');
-            const tagSuggestions = document.getElementById('tag-suggestions');
-            const tagsContainer = document.getElementById('q6-tags');
-            const hiddenInput = document.getElementById('q6');
-            let selectedTags = [];
-
-            tagInput.addEventListener('input', function() {
-                const value = this.value;
-                
-                if (value.includes('@')) {
-                    const searchTerm = value.split('@').pop().toLowerCase();
-                    
-                    if (searchTerm.length > 0) {
-                        const filteredMembers = teamMembers.filter(member => 
-                            member.name.toLowerCase().includes(searchTerm)
-                        );
-                        
-                        showTagSuggestions(filteredMembers);
-                    } else {
-                        showTagSuggestions(teamMembers);
-                    }
-                } else {
-                    hideTagSuggestions();
-                }
-            });
-
-            tagInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Backspace' && this.value === '' && selectedTags.length > 0) {
-                    // Remove last tag when backspace is pressed on empty input
-                    removeTag(selectedTags[selectedTags.length - 1].id);
-                }
-            });
-
-            function showTagSuggestions(members) {
-                tagSuggestions.innerHTML = '';
-                
-                if (members.length === 0) {
-                    tagSuggestions.innerHTML = '<div class="tag-suggestion">Không tìm thấy thành viên</div>';
-                } else {
-                    members.forEach(member => {
-                        // Skip if already tagged
-                        if (selectedTags.some(tag => tag.id === member.id)) return;
-                        
-                        const div = document.createElement('div');
-                        div.className = 'tag-suggestion';
-                        div.textContent = member.name;
-                        div.addEventListener('click', () => {
-                            addTag(member);
-                            tagInput.value = '';
-                            hideTagSuggestions();
-                        });
-                        tagSuggestions.appendChild(div);
-                    });
-                }
-                
-                tagSuggestions.style.display = 'block';
-            }
-
-            function hideTagSuggestions() {
-                tagSuggestions.style.display = 'none';
-            }
-
-            function addTag(member) {
-                // Check if already tagged
-                if (selectedTags.some(tag => tag.id === member.id)) return;
-                
-                selectedTags.push(member);
-                updateTagsDisplay();
-            }
-
-            function removeTag(memberId) {
-                selectedTags = selectedTags.filter(tag => tag.id !== memberId);
-                updateTagsDisplay();
-            }
-
-            function updateTagsDisplay() {
-                tagsContainer.innerHTML = '';
-                selectedTags.forEach(tag => {
-                    const tagEl = document.createElement('span');
-                    tagEl.className = 'tag';
-                    tagEl.innerHTML = `${tag.name} <i class="fas fa-times"></i>`;
-                    tagEl.querySelector('i').addEventListener('click', () => removeTag(tag.id));
-                    tagsContainer.appendChild(tagEl);
-                });
-                
-                // Update hidden input
-                hiddenInput.value = JSON.stringify(selectedTags);
-            }
-
-            // Form submission
-            document.getElementById('feedback-form').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                if (feedbackSubmitted) {
-                    showStatus("Bạn đã gửi feedback trước đó", "error");
-                    return;
-                }
-
-                // Validate form
-                if (!validateForm()) {
-                    return;
-                }
-
-                // Get application ID
-                const appSnapshot = await db
-                    .collection("applications")
-                    .where("email", "==", currentUser.email)
-                    .limit(1)
-                    .get();
-
-                if (appSnapshot.empty) {
-                    showStatus("Không tìm thấy thông tin ứng viên", "error");
-                    return;
-                }
-
-                const appDoc = appSnapshot.docs[0];
-                const appData = appDoc.data();
-
-                // Prepare feedback data
-                const feedbackData = {
-                    applicantId: appDoc.id,
-                    applicantName: appData.fullname,
-                    applicantEmail: appData.email,
-                    team: appData.round3?.team || "Không xác định",
-                    timestamp: new Date(),
-                    q1: document.querySelector('input[name="q1"]:checked')?.value || "",
-                    q2: document.getElementById('q2').value,
-                    q3: document.getElementById('q3').value,
-                    q4: document.getElementById('q4').value,
-                    q5: document.querySelector('input[name="q5"]:checked')?.value || "",
-                    q6: selectedTags,
-                    q7: document.querySelector('input[name="q7"]:checked')?.value === 'Khác' 
-                         ? document.getElementById('q7-other').value 
-                         : document.querySelector('input[name="q7"]:checked')?.value || "",
-                    q8: document.getElementById('q8').value,
-                    q9: Array.from(document.querySelectorAll('input[name="q9"]:checked')).map(cb => cb.value),
-                    q9Details: document.getElementById('q9-details').value
-                };
-
-                // Submit to Firebase
-                try {
-                    await db.collection("feedback").add(feedbackData);
-                    feedbackSubmitted = true;
-                    showStatus("Cảm ơn bạn đã gửi feedback! Ý kiến của bạn rất quan trọng với chúng mình ❤️", "success");
-                    document.getElementById("submit-btn").disabled = true;
-                    document.getElementById("submit-btn").textContent = "Đã gửi Feedback";
-                } catch (error) {
-                    console.error("Lỗi khi gửi feedback:", error);
-                    showStatus("Có lỗi xảy ra khi gửi feedback. Vui lòng thử lại!", "error");
-                }
-            });
         });
 
-        // Form validation
-        function validateForm() {
-            // Check required fields
-            if (!document.querySelector('input[name="q1"]:checked')) {
-                showStatus("Vui lòng trả lời Câu 1", "error");
-                return false;
+       // Form validation
+function validateForm() {
+    // Check required fields từ feedbackQuestions
+    const requiredQuestions = [];
+    
+    // Tìm tất cả câu hỏi required
+    Object.keys(feedbackQuestions).forEach(partKey => {
+        feedbackQuestions[partKey].questions.forEach(question => {
+            if (question.required) {
+                requiredQuestions.push(question);
             }
-
-            if (!document.getElementById('q2').value.trim()) {
-                showStatus("Vui lòng trả lời Câu 2", "error");
-                return false;
-            }
-
-            if (!document.getElementById('q3').value) {
-                showStatus("Vui lòng chấm điểm Team Lead (Câu 3)", "error");
-                return false;
-            }
-
-            if (!document.querySelector('input[name="q5"]:checked')) {
-                showStatus("Vui lòng trả lời Câu 5", "error");
-                return false;
-            }
-
-            if (!document.querySelector('input[name="q7"]:checked')) {
-                showStatus("Vui lòng trả lời Câu 7", "error");
-                return false;
-            }
-
-            if (!document.getElementById('q8').value.trim()) {
-                showStatus("Vui lòng trả lời Câu 8", "error");
-                return false;
-            }
-
-            return true;
+        });
+    });
+    
+    // Validate từng câu hỏi required
+    for (const question of requiredQuestions) {
+        let isValid = false;
+        
+        switch(question.type) {
+            case 'radio':
+                isValid = document.querySelector(`input[name="${question.id}"]:checked`) !== null;
+                break;
+            case 'text':
+            case 'textarea':
+                isValid = document.getElementById(question.id)?.value.trim() !== '';
+                break;
+            case 'rating':
+                isValid = document.getElementById(question.id)?.value !== '';
+                break;
+            case 'checkbox':
+                // Checkbox không bắt buộc trong cấu hình hiện tại
+                isValid = true;
+                break;
+            case 'tag':
+                // Tag không bắt buộc
+                isValid = true;
+                break;
         }
+        
+        if (!isValid) {
+            showStatus(`Vui lòng trả lời: ${question.question}`, "error");
+            return false;
+        }
+    }
+    
+    return true;
+}
     </script>
 </body>
 </html>
