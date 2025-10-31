@@ -37,14 +37,14 @@ const feedbackQuestions = {
             {
                 id: "q3",
                 type: "rating",
-                question: "Nếu chấm điểm Team Lead của bạn trên thang 🌟1–5, bạn sẽ cho bao nhiêu?",
+                question: "Nếu chấm điểm Team lead của bạn trên thang 🌟1–5, bạn sẽ cho bao nhiêu?",
                 maxRating: 5,
                 required: true
             },
             {
                 id: "q4", 
                 type: "text",
-                question: "Một điều bạn thích nhất ở Lead là gì?",
+                question: "Bạn có thể chia sẻ một chút về Team lead của bạn không?",
                 placeholder: "Câu ngắn (optional)",
                 maxLength: 100,
                 required: false
@@ -84,6 +84,13 @@ const feedbackQuestions = {
         questions: [
             {
                 id: "q7",
+                type: "rating",
+                question: "Nếu chấm điểm supporters của bạn trên thang 🌟1–5, bạn sẽ cho bao nhiêu?",
+                maxRating: 5,
+                required: true
+            },
+            {
+                id: "q8",
                 type: "radio",
                 question: "Supporters đã giúp team bạn thế nào?",
                 options: [
@@ -102,7 +109,7 @@ const feedbackQuestions = {
         title: "💌 Phần 5. Trải lòng & góp ý",
         questions: [
             {
-                id: "q8",
+                id: "q9",
                 type: "textarea", 
                 question: "Một câu 'trải lòng' ngắn về vòng 3 này nè 💬",
                 placeholder: "Giới hạn 200 ký tự",
@@ -110,7 +117,7 @@ const feedbackQuestions = {
                 required: true
             },
             {
-                id: "q9",
+                id: "q10",
                 type: "checkbox",
                 question: "Nếu BTC vòng 3 là một người bạn, bạn muốn gửi gì cho họ?",
                 options: [
