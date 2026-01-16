@@ -1,14 +1,15 @@
 // Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyAOP2j0qV0Ge-q2-Y9zo9Qc3eLmgtVOK3k",
-    authDomain: "recruitment-enactusftuhanoi.firebaseapp.com",
-    projectId: "recruitment-enactusftuhanoi",
-    storageBucket: "recruitment-enactusftuhanoi.firebasestorage.app",
-    messagingSenderId: "658928769643",
-    appId: "1:658928769643:web:ef4e26633b7c41c922ef2e",
-    measurementId: "G-BJT7ZPKYE3"
+  apiKey: "AIzaSyBrHfc2ERn3oxu6va8RkAckxiBoo6GocgM",
+  authDomain: "enactusftuhanoi.firebaseapp.com",
+  projectId: "enactusftuhanoi",
+  storageBucket: "enactusftuhanoi.firebasestorage.app",
+  messagingSenderId: "281439714678",
+  appId: "1:281439714678:web:c310c2836e4ca7ad38ce57",
+  measurementId: "G-4V8B3GJ38D"
 };
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
+
+// Export các biến để sử dụng trong các file HTML
+window.firebaseApp = firebase.app();
+window.firebaseDb = firebase.firestore();
+window.firebaseAuth = firebase.auth();
