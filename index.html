@@ -1,455 +1,88 @@
 <!DOCTYPE html>
 <html lang="vi">
-  <head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1" name="viewport" />
-    <title>Recruitment | Enactus FTU Hanoi</title>
-    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-    
-    <!-- Preconnect để tăng tốc độ load external resources -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    
-    <link rel="canonical" href="https://recruitment.enactusftuhanoi.id.vn" />
-    <link rel="stylesheet" href="../css/index.css">
-    
-    <!-- SEO Meta -->
-    <meta name="description" content="Enactus FTU Hanoi chính thức mở đơn tuyển thành viên Gen 18.0! Hãy gia nhập CLB duy nhất tại FTU thực hiện các dự án xã hội, khởi nghiệp bền vững và tạo tác động tích cực."/>
-    <meta name="keywords" content="tuyển thành viên Enactus FTU Hanoi, tuyển dụng CLB FTU, recruitment FTU, câu lạc bộ xã hội FTU, Enactus, tuyển thành viên ngoại thương, CLB FTU Hanoi"/>
-    <meta name="author" content="Enactus FTU Hanoi" />
-    
-    <!-- Open Graph -->
-    <meta property="og:title" content="ENACTUS FTU HANOI 18TH RECRUITMENT"/>
-    <meta property="og:description" content="Đừng bỏ lỡ cơ hội trở thành một phần của Enactus FTU Hanoi - CLB duy nhất tại FTU triển khai các dự án xã hội và khởi nghiệp bền vững. Ứng tuyển ngay hôm nay!"/>
-    <meta property="og:type" content="website"/>
-    <meta property="og:url" content="https://recruitment.enactusftuhanoi.id.vn"/>
-    <meta property="og:image" content="https://recruitment.enactusftuhanoi.id.vn/assets/recruitment.jpg"/>
-    
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image"/>
-    <meta name="twitter:title" content="18th Gen Membership Recruitment | Enactus FTU Hanoi"/>
-    <meta name="twitter:description" content="Enactus FTU Hanoi mở đơn tuyển thành viên mới! Cùng tạo tác động xã hội tích cực qua các dự án bền vững."/>
-    <meta name="twitter:image" content="https://recruitment.enactusftuhanoi.id.vn/assets/recruitment.jpg"/>
-    
-    <!-- Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700&family=Montserrat:wght@300;400;500;700&display=swap" rel="stylesheet"/>
-    
-    <!-- Thêm preload cho ảnh hero -->
-    <link rel="preload" href="assets/hero.webp" as="image">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RECRUITMENT | ENACTUS FTU HANOI</title>
+  <link rel="icon" href="/assets/icon.png" type="image/png">
 
-    <!-- Font Awesome - chỉ load khi cần -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'"/>
-  </head>
-  <body>
-    <!-- Thêm vào HTML -->
-    <div id="cassettePlayer" class="cassette-player">
-        <div class="cassette">
-            <div class="cassette-body">
-                <div class="cassette-wheel left-wheel"></div>
-                <div class="cassette-center">
-                    <img src="/assets/icon.png" alt="Music" class="cassette-icon">
-                </div>
-                <div class="cassette-wheel right-wheel"></div>
-            </div>
-            <div class="cassette-label">NOW PLAYING</div>
-        </div>
-    </div>
-    <div class="hero-container">
-      <img src="assets/hero.webp" alt="Hero" class="hero-img" />
-      <!-- Button Apply -->
-      <a href="notice.html" class="apply-btn">
-        ĐĂNG KÝ NGAY
-      </a>
-      <!-- Scroll Down Indicator -->
-      <div class="scroll-down-indicator" id="scrollIndicator">
-        <img src="assets/scroll-down.gif" alt="Scroll down" class="scroll-gif">
-        <span>Cuộn xuống để khám phá</span>
-      </div>
-    </div>
-    <!-- Countdown Section -->
-    <section id="countdown" class="countdown">
-      <div class="time-box">
-        <span id="days">00</span>
-        <p>Ngày</p>
-      </div>
-      <div class="time-box">
-        <span id="hours">00</span>
-        <p>Giờ</p>
-      </div>
-      <div class="time-box">
-        <span id="minutes">00</span>
-        <p>Phút</p>
-      </div>
-      <div class="time-box">
-        <span id="seconds">00</span>
-        <p>Giây</p>
-      </div>
-    </section>
-    <!-- Intro Section -->
-    <section id="intro" class="intro-section">
-      <!-- Tiêu đề bằng ảnh -->
-      <div class="intro-title">
-        <img src="assets/intro.webp" alt="Giới thiệu Enactus FTU Hanoi" />
-      </div>
-      
-      <!-- Nội dung chính -->
-      <!-- Phần Hành trình 16 năm -->
-      <div class="journey-container">
-        <div class="journey-content">
-          <div class="journey-text">
-            <h2>Hành trình 17 năm</h2>
-            <p>
-              Thành lập vào ngày 07/03/2008 dưới sự bảo trợ của Khoa Quản trị Kinh doanh, 
-              trong suốt 17 năm, các thành viên của đội tuyển Enactus FTU Hanoi thực hiện các 
-              dự án xã hội để trao quyền cho những người cần sự giúp đỡ, nâng cao chất 
-              lượng cuộc sống tại Việt Nam.
-            </p>
-            <p>
-              Chúng tôi ghi dấu ấn với nhiều dự án và cuộc thi hướng tới các mục tiêu 
-              phát triển bền vững (SDGs) của Liên Hợp Quốc, cùng với các chi nhánh Enactus 
-              khác nhằm lan tỏa tinh thần, giá trị kinh doanh – xã hội của tổ chức.
-            </p>
-            <a href="https://heyzine.com/flip-book/ba242d91e1.html" class="view-more-btn">Xem thêm</a>
-          </div>
-          <div class="journey-image">
-            <img src="assets/vsic2024.webp" alt="VSIC 2024 - Enactus FTU Hanoi"/>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- Timeline Section -->
-    <section id="timeline" class="timeline-section">
-      <!-- Tiêu đề -->
-      <div class="timeline-title">
-        <img src="assets/timeline.webp" alt="Timeline tuyển thành viên" />
-      </div>
+  <!-- Montserrat Light (300) - reliable + font-display swap -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
 
-      <div class="timeline-container">
-        <div class="timeline-box">
-          <!-- Line phát sáng -->
-          <div class="timeline-line-glow"></div>
-          <div class="timeline-line"></div>
-          
-          <div class="timeline-steps">
-            <!-- Step 1 -->
-            <div class="timeline-step">
-              <div class="step-icon">
-                <img src="assets/icon.webp" alt="Vòng Đơn" />
-              </div>
-              <div class="step-text">
-                <h3>Vòng Đơn</h3>
-                <p>01.10.2025 - 21.10.2025</p>
-              </div>
-            </div>
+  <style>
+    /* Basic reset + font smoothing */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-            <!-- Step 2 -->
-            <div class="timeline-step">
-              <div class="step-icon">
-                <img src="assets/icon.webp" alt="Vòng Phỏng vấn nhóm" />
-              </div>
-              <div class="step-text">
-                <h3>Vòng Phỏng vấn nhóm</h3>
-                <p>24.10.2025 - 26.10.2025</p>
-              </div>
-            </div>
+    :root {
+      --yellow: #F8F3CE;
+      --yellow-light: #FFD54F;
+      --gray-50: #FAFAFA;
+      --gray-700: #6B7280;
+      --gray-900: #374151;
+      --white: #FFFFFF;
+    }
 
-            <!-- Step 3 -->
-            <div class="timeline-step">
-              <div class="step-icon">
-                <img src="assets/icon.webp" alt="Vòng Teamwork" />
-              </div>
-              <div class="step-text">
-                <h3>Vòng Teamwork</h3>
-                <p>28.10.2025 - 07.11.2025</p>
-              </div>
-            </div>
+    /* Use Montserrat with system fallbacks */
+    body {
+      font-family: "Montserrat", -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: var(--gray-50);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center; /* căn giữa dọc */
+      align-items: center;     /* căn giữa ngang */
+      flex-direction: column;
+      padding: 20px;
+      text-align: center;
+    }
 
-            <!-- Step 4 -->
-            <div class="timeline-step">
-              <div class="step-icon">
-                <img src="assets/icon.webp" alt="Vòng Phỏng vấn cá nhân" />
-              </div>
-              <div class="step-text">
-                <h3>Vòng Phỏng vấn cá nhân</h3>
-                <p>09.11.2025 - 12.11.2025</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- Departments Section -->
-    <section id="departments" class="departments-section">
-      <!-- Tiêu đề bằng ảnh -->
-      <div class="departments-title">
-        <img src="assets/departments.webp" alt="Các ban tại Enactus FTU Hanoi" />
-      </div>
-      
-      <!-- Container chứa các ban - Layout chính -->
-      <div class="departments-container">
-        <!-- Ban Project Department -->
-        <div class="department-card">
-          <div class="department-image">
-            <img src="assets/pd.webp" alt="Ban Project Department" />
-          </div>
-          <div class="department-content">
-            <h3>Ban Dự án</h3>
-            <p>"Những bộ não siêu việt, đam mê giải quyết vấn đề và biến không thể thành có thể!"</p>
-            <a href="/departments/PD.html" target="_blank" class="view-detail-btn">Xem chi tiết</a>
-          </div>
-        </div>
-        
-        <!-- Ban Human Resources -->
-        <div class="department-card">
-          <div class="department-image">
-            <img src="assets/hr.webp" alt="Ban Human Resources" />
-          </div>
-          <div class="department-content">
-            <h3>Ban Nhân sự - Sự kiện</h3>
-            <p>"Chúng mình chính là sợi dây kết nối yêu thương, là cục sạc năng lượng cho cả nhà Enactus!"</p>
-            <a href="/departments/HR.html" target="_blank" class="view-detail-btn">Xem chi tiết</a>
-          </div>
-        </div>
-        
-        <!-- Ban External Relations -->
-        <div class="department-card">
-          <div class="department-image">
-            <img src="assets/er.webp" alt="Ban External Relations" />
-          </div>
-          <div class="department-content">
-            <h3>Ban Đối ngoại</h3>
-            <p>"Lời nói có sức mạnh, ảnh hưởng có giá trị - chúng mình kết nối Enactus với thế giới!"</p>
-            <a href="/departments/ER.html" target="_blank" class="view-detail-btn">Xem chi tiết</a>
-          </div>
-        </div>
-        
-        <!-- Ban Media & Communication -->
-        <div class="department-card">
-          <div class="department-image">
-            <img src="assets/md.webp" alt="Ban Media & Communication" />
-          </div>
-          <div class="department-content">
-            <h3>Ban Truyền thông</h3>
-            <p>"Tay cầm content, mắt nhìn design - chúng mình là gương mặt của Enactus FTU Hanoi!"</p>
-            <a href="/departments/MD.html" target="_blank" class="view-detail-btn">Xem chi tiết</a>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- FAQ Section -->
-    <section id="faq" class="faq-section">
-      <!-- Tiêu đề bằng ảnh -->
-      <div class="faq-title">
-        <img src="assets/q&a.webp" alt="Câu hỏi thường gặp" />
-      </div>
-      <!-- Danh sách câu hỏi -->
-      <div class="faq-container">
-        <div class="faq-item">
-          <button class="faq-question">
-            Sinh viên trường Đại học khác có tham gia tuyển thành viên được
-            không ? <span class="arrow">▼</span>
-          </button>
-          <div class="faq-answer">
-            <p>
-              🌟 Không chỉ dành riêng cho sinh viên Ngoại thương, Enactus FTU
-              Hanoi luôn chào đón tất cả các bạn sinh viên từ mọi trường đại học
-              trong khu vực Hà Nội. Chúng mình hoàn toàn hỗ trợ hình thức làm
-              việc online, ngoài ra còn tổ chức các hoạt động bonding như đi
-              chơi, trải nghiệm, workdate,... để xóa tan khoảng cách địa lý và
-              đồng hành cùng nhau trên hành trình tạo nên những giá trị bền
-              vững.
-            </p>
-            <p>
-              🌟 Dù xuất phát điểm khác nhau, các thành viên Enactus đều có
-              chung một ngọn lửa đam mê với khởi nghiệp xã hội và khát khao tạo
-              nên tác động tích cực cho cộng đồng. Nếu bạn cũng mang trong mình
-              khát khao đó, đừng ngần ngại điền đơn – hành trình của bạn có thể
-              bắt đầu từ chính nơi đây, cùng Enactus FTU Hanoi.
-            </p>
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-question">
-            Mình có thể đăng ký nhiều ban cùng một lúc không?
-            <span class="arrow">▼</span>
-          </button>
-          <div class="faq-answer">
-            <p>
-              🌟 Câu trả lời chắc chắn là có. Tuy nhiên chúng mình gợi ý bạn có
-              thể chọn một ban chính để phát triển chuyên sâu và vẫn có cơ hội
-              hỗ trợ các ban khác nếu muốn học hỏi thêm nhiều kỹ năng. Tại
-              Enactus, chúng mình luôn khuyến khích các bạn khám phá bản thân và
-              thử sức ở những lĩnh vực mình yêu thích.
-            </p>
-            <p>
-              🌟 Chẳng hạn như, một thành viên từ ban khác hoàn toàn có thể sang
-              ban Truyền thông để học hỏi kiến thức và thực hành các công việc
-              liên quan đến marketing, truyền thông. Vậy nên, hãy tìm hiểu thật
-              kỹ, lắng nghe trái tim và lựa chọn một nơi phù hợp nhất với mình
-              bởi vì Enactus FTU Hanoi luôn chào đón bạn.
-            </p>
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-question">
-            Không có kinh nghiệm làm design, edit ảnh và video hay tạo content,
-            có thể apply vào ban Truyền thông không ?
-            <span class="arrow">▼</span>
-          </button>
-          <div class="faq-answer">
-            <p>
-              🌟 Những kỹ năng như design hay viết content đều được đánh giá là
-              những kỹ năng quan trọng và cần thiết của các thành viên trong ban
-              Truyền thông. Tuy nhiên, chỉ cần các bạn kiên trì và nỗ lực theo
-              đuổi thì hoàn toàn có thể rèn luyện được những kỹ năng này.
-            </p>
-            <p>
-              🌟 Bên cạnh đó, khi vào ban Truyền thông các bạn sẽ được các anh
-              chị training nhiệt tình về các mảng design và content đúng với
-              từng tiểu ban. Chỉ sau hơn một năm ở CLB, thành viên của ban
-              Truyền thông đều có thể nhận ra sự thay đổi rõ rệt của mình về
-              mảng truyền thông nói chung cũng như các mảng design, content nói
-              riêng.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="footer-container">
-        <!-- Cột trái: logo + địa chỉ + email -->
-        <div class="footer-col">
-          <img
-            src="assets/logo_trang.webp"
-            alt="Enactus FTU Hanoi"
-            class="footer-logo"
-          />
-          <!-- Địa chỉ -->
-          <div class="person">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="white"
-              class="size-5"
-            >
-              <path
-                fill-rule="evenodd"
-                d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            <p>Đại học Ngoại thương<br />91 Chùa Láng, Phường Láng, Hà Nội</p>
-          </div>
-          <!-- Email -->
-          <div class="person">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="white"
-              class="size-5"
-            >
-              <path
-                d="M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3 3 0 0 1-3.144 0L1.5 8.67Z"
-              />
-              <path
-                d="M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908Z"
-              />
-            </svg>
-            <a href="mailto:enactusftuhn.bcn@gmail.com"
-              >enactusftuhn.bcn@gmail.com</a
-            >
-          </div>
-        </div>
-        <!-- Cột phải: Ban Chủ Tịch + Kết nối -->
-        <div class="footer-col">
-          <h3>Thông tin liên hệ</h3>
-          <div class="bct-row">
-            <div class="person-with-phone">
-              <div class="person">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="white"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                <div class="text-block">
-                  <span class="label">Chủ tịch</span>
-                  <span class="name">Nguyễn Trung Hải</span>
-                </div>
-              </div>
-              <div class="phone-info-separate">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="white"
-                  class="phone-icon"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M1.5 4.5a3 3 0 0 1 3-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 0 1-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 0 0 6.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 0 1 1.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 0 1-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5Z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                <span class="phone">098 984 9962</span>
-              </div>
-            </div>
+    .btn-text {
+      font-size: 16px;
+      font-weight: 400; /* light */
+      color: var(--gray-900);
+      padding: 12px 24px;
+      line-height: 1.6;
+      max-width: 820px;
+      word-wrap: break-word;
+    }
 
-            <div class="person-with-phone">
-              <div class="person">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="white"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                <div class="text-block">
-                  <span class="label">Trưởng ban tổ chức</span>
-                  <span class="name">Trương Tuyết Anh</span>
-                </div>
-              </div>
-              <div class="phone-info-separate">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="white"
-                  class="phone-icon"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M1.5 4.5a3 3 0 0 1 3-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 0 1-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 0 0 6.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 0 1 1.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 0 1-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5Z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                <span class="phone">097 462 3905</span>
-              </div>
-            </div>
-          </div>
-          <h3 style="margin-top: 40px">Kết nối</h3>
-            <div class="social-links">
-              <a href="https://www.facebook.com/Enactus.FTU.Hanoi"><i class="fab fa-facebook"></i></a>
-              <a href="https://www.instagram.com/enactus_ftu.hanoi"><i class="fab fa-instagram"></i></a>
-              <a href="https://www.linkedin.com/company/enactusftuhn/"><i class="fab fa-linkedin"></i></a>
-              <a href="https://www.tiktok.com/@enactusftuhanoi_official"><i class="fab fa-tiktok"></i></a>
-              <a href="https://www.threads.com/@enactus_ftu.hanoi"><i class="fa-brands fa-threads"></i></a>
-            </div>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>© 2025 Enactus FTU Hanoi. All rights reserved.</p>
-      </div>
-    </footer>
-    <script src="script/index.js" async></script>
-  </body>
+    .footer-text {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: var(--gray-700);
+      text-align: center;
+    }
+
+    /* optional: subtle fade-in so font load looks smoother */
+    .fade-in {
+      opacity: 0;
+      transform: scale(0.995);
+      animation: fadeIn 360ms ease-out 1 forwards;
+      will-change: opacity, transform;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="btn-text fade-in">
+    Thời gian mở đơn tuyển thành viên Gen 18 đã kết thúc<br>
+    Cảm ơn bạn đã quan tâm và hẹn gặp lại trong đợt tuyển thành viên sắp tới.
+  </div>
+
+  <p class="footer-text">© 2026 Enactus FTU Hanoi. All Rights Reserved.</p>
+</body>
 </html>
