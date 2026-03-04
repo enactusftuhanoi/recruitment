@@ -733,11 +733,6 @@
     </div>
     <script src="/script/config.js"></script>
     <script>
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-
         // Global State
         let currentUser = null;
         let interviewSchedule = [];
@@ -901,6 +896,7 @@
                         priority: app ? app.priority_position || '' : '',
                         backup: app ? app.secondary_position || '' : '',
                         phone: app ? app.phone || '' : '',
+                        // interview_schedule từ applications đã là format chuẩn: ["DD/MM/YYYY_HH:MM - HH:MM", ...]
                         interview_schedule: app ? app.interview_schedule || [] : [],
                         addedAt: vc.addedAt
                     };
@@ -1000,6 +996,34 @@
             document.getElementById('not-voted-candidates').textContent = notVotedCount;
         }
 
+        // Format date để hiển thị đẹp
+        function formatDisplayDate(dateStr) {
+            try {
+                if (!dateStr || typeof dateStr !== 'string') return dateStr;
+                
+                // Format dateStr là "DD/MM/YYYY"
+                if (dateStr.includes('/')) {
+                    const parts = dateStr.split('/');
+                    if (parts.length === 3) {
+                        const day = parseInt(parts[0]);
+                        const month = parseInt(parts[1]) - 1;
+                        const year = parseInt(parts[2]);
+                        
+                        const date = new Date(year, month, day);
+                        if (!isNaN(date.getTime())) {
+                            const weekdays = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+                            const dayOfWeek = weekdays[date.getDay()];
+                            return `${dayOfWeek}, ngày ${dateStr}`;
+                        }
+                    }
+                }
+                return dateStr;
+            } catch (e) {
+                console.error('Error formatting date:', e);
+                return dateStr;
+            }
+        }
+
         // Render interview schedule
         function renderInterviewSchedule() {
             const container = document.getElementById('interview-schedule');
@@ -1010,12 +1034,13 @@
                 return;
             }
             
-            // Calculate counts for each slot
+            // Calculate counts for each slot - dùng format chuẩn "DD/MM/YYYY_HH:MM - HH:MM"
             const slotCounts = {};
             
             candidates.forEach(candidate => {
                 if (candidate.interview_schedule) {
                     candidate.interview_schedule.forEach(slot => {
+                        // slot đã là format chuẩn từ Firestore
                         slotCounts[slot] = (slotCounts[slot] || 0) + 1;
                     });
                 }
@@ -1025,16 +1050,20 @@
                 const dayElement = document.createElement('div');
                 dayElement.className = 'interview-day';
                 
+                // Format date để hiển thị
+                const displayDate = formatDisplayDate(day.date);
+                
                 let dayHTML = `
                     <div class="day-header">
-                        <span>${day.date}</span>
+                        <span>${displayDate}</span>
                         <span class="day-count">${day.slots.length} khung giờ</span>
                     </div>
                     <div class="time-slots">
                 `;
                 
                 day.slots.forEach(slot => {
-                    const slotId = `${day.id}_${slot.replace(/\s+/g, '_')}`;
+                    // Tạo slotId theo format chuẩn để khớp với slotCounts
+                    const slotId = `${day.date}_${slot}`;
                     const count = slotCounts[slotId] || 0;
                     
                     dayHTML += `
@@ -1068,10 +1097,13 @@
                 const dayElement = document.createElement('div');
                 dayElement.className = 'interview-day';
                 
+                // Format date để hiển thị
+                const displayDate = formatDisplayDate(day.date);
+                
                 let dayHTML = `
                     <div class="day-header">
-                        <span>${day.date}</span>
-                        <button class="btn btn-danger remove-day-btn" data-day-id="${day.id}">
+                        <span>${displayDate}</span>
+                        <button class="btn btn-danger remove-day-btn" data-day-date="${day.date}">
                             <i class="fas fa-trash"></i>
                             Xóa ngày
                         </button>
@@ -1083,7 +1115,7 @@
                     dayHTML += `
                         <div class="time-slot">
                             <div class="slot-time">${slot}</div>
-                            <button class="remove-slot-btn" data-day-id="${day.id}" data-slot="${slot}">
+                            <button class="remove-slot-btn" data-day-date="${day.date}" data-slot="${slot}">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
@@ -1098,32 +1130,32 @@
             // Add event listeners for remove buttons
             document.querySelectorAll('.remove-day-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const dayId = this.getAttribute('data-day-id');
-                    removeDay(dayId);
+                    const dayDate = this.getAttribute('data-day-date');
+                    removeDay(dayDate);
                 });
             });
             
             document.querySelectorAll('.remove-slot-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const dayId = this.getAttribute('data-day-id');
+                    const dayDate = this.getAttribute('data-day-date');
                     const slot = this.getAttribute('data-slot');
-                    removeSlot(dayId, slot);
+                    removeSlot(dayDate, slot);
                 });
             });
         }
 
         // Remove a day from schedule
-        function removeDay(dayId) {
+        function removeDay(dayDate) {
             if (confirm('Bạn có chắc chắn muốn xóa ngày này?')) {
-                interviewSchedule = interviewSchedule.filter(day => day.id !== dayId);
+                interviewSchedule = interviewSchedule.filter(day => day.date !== dayDate);
                 renderCurrentSchedule();
             }
         }
 
         // Remove a slot from schedule
-        function removeSlot(dayId, slot) {
+        function removeSlot(dayDate, slot) {
             if (confirm('Bạn có chắc chắn muốn xóa khung giờ này?')) {
-                const dayIndex = interviewSchedule.findIndex(day => day.id === dayId);
+                const dayIndex = interviewSchedule.findIndex(day => day.date === dayDate);
                 if (dayIndex !== -1) {
                     interviewSchedule[dayIndex].slots = interviewSchedule[dayIndex].slots.filter(s => s !== slot);
                     renderCurrentSchedule();
@@ -1171,23 +1203,6 @@
             });
             
             // Add event listeners
-            document.getElementById('unlock-schedule-btn').addEventListener('click', async function() {
-                if (confirm('Bạn có chắc chắn muốn MỞ KHÓA lịch phỏng vấn? Ứng viên sẽ có thể chọn/thay đổi lịch lại.')) {
-                    try {
-                        await db.collection('system').doc('interview_schedule').set({
-                            locked: false,
-                            unlocked_at: new Date(),
-                            unlocked_by: currentUser.email
-                        }, { merge: true });
-                        
-                        alert('✅ Đã mở khóa lịch phỏng vấn thành công!');
-                    } catch (error) {
-                        console.error('Error unlocking schedule:', error);
-                        alert('❌ Có lỗi xảy ra khi mở khóa lịch phỏng vấn');
-                    }
-                }
-            });
-
             document.querySelectorAll('.candidate-delete-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const candidateId = this.getAttribute('data-candidate-id');
@@ -1312,7 +1327,7 @@
                 
                 const slots = slotsText.split('\n').map(s => s.trim()).filter(s => s);
                 
-                // Format date to dd/mm/yyyy
+                // Format date to DD/MM/YYYY
                 const dateObj = new Date(date);
                 const formattedDate = `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
                 
@@ -1323,9 +1338,8 @@
                     // Add slots to existing day
                     interviewSchedule[existingDayIndex].slots = [...new Set([...interviewSchedule[existingDayIndex].slots, ...slots])];
                 } else {
-                    // Create new day
+                    // Create new day - KHÔNG cần id, chỉ cần date và slots
                     const newDay = {
-                        id: 'day_' + Date.now(),
                         date: formattedDate,
                         slots: slots
                     };
@@ -1369,7 +1383,8 @@
                         await db.collection('system').doc('interview_schedule').set({
                             schedule: interviewSchedule,
                             published: true,
-                            locked: false
+                            locked: false,
+                            published_at: new Date()
                         }, { merge: true });
                         
                         alert('Lịch phỏng vấn đã được công bố thành công!');
@@ -1540,30 +1555,6 @@
             // Tạo data array
             const data = [];
             
-            // Tạo headers
-            const headers = ['STT', 'Họ và tên', 'Email', 'SĐT', 'Nguyện vọng 1', 'Nguyện vọng 2'];
-            
-            // Thêm tất cả các khung giờ làm headers
-            interviewSchedule.forEach(day => {
-                day.slots.forEach(slot => {
-                    headers.push(`${day.date} - ${slot}`);
-                });
-            });
-            
-            data.push(headers);
-            
-            // Tạo mapping cho các slot
-            const slotMap = {};
-            let slotIndex = 6; // Bắt đầu từ cột thứ 6 (sau các thông tin cơ bản)
-            
-            interviewSchedule.forEach(day => {
-                day.slots.forEach(slot => {
-                    const slotId = `${day.id}_${slot.replace(/\s+/g, '_')}`;
-                    slotMap[slotId] = slotIndex;
-                    slotIndex++;
-                });
-            });
-            
             // Map tên ban đầy đủ
             const banMapping = {
                 'PD': 'Dự án',
@@ -1572,18 +1563,41 @@
                 'MD': 'Truyền thông',
             };
             
+            // Tạo headers: STT, Họ tên, Email, SĐT, Nguyện vọng 1, Nguyện vọng 2, và các cột slot
+            const headers = ['STT', 'Họ và tên', 'Email', 'SĐT', 'Nguyện vọng 1', 'Nguyện vọng 2'];
+            
+            // Thêm các khung giờ làm headers - dùng format "DD/MM/YYYY - HH:MM - HH:MM" để hiển thị
+            interviewSchedule.forEach(day => {
+                day.slots.forEach(slot => {
+                    headers.push(`${day.date} - ${slot}`);
+                });
+            });
+            
+            data.push(headers);
+            
+            // Tạo mapping cho các slot - key là format chuẩn "DD/MM/YYYY_HH:MM - HH:MM"
+            const slotMap = {};
+            let slotIndex = 6; // Bắt đầu từ cột thứ 7 (index 6)
+            
+            interviewSchedule.forEach(day => {
+                day.slots.forEach(slot => {
+                    // Tạo key theo format chuẩn để khớp với dữ liệu từ Firestore
+                    const slotKey = `${day.date}_${slot}`;
+                    slotMap[slotKey] = slotIndex;
+                    slotIndex++;
+                });
+            });
+            
             // Thêm dữ liệu ứng viên
             candidates.forEach((candidate, index) => {
-                // Tìm application đầy đủ để lấy ban dự bị
                 const fullApplication = applications.find(app => app.email === candidate.email);
                 
-                // Xử lý tên ban ưu tiên
+                // Xử lý tên ban
                 let banUuTien = candidate.priority || '';
                 if (banUuTien && banMapping[banUuTien]) {
                     banUuTien = banMapping[banUuTien];
                 }
                 
-                // Xử lý ban dự bị
                 let banDuBi = '';
                 if (fullApplication) {
                     banDuBi = fullApplication.secondary_position || '';
@@ -1592,24 +1606,22 @@
                     }
                 }
                 
-                const row = [
-                    index + 1, // STT
-                    candidate.name || '', // Họ và tên
-                    candidate.email, // Email
-                    candidate.phone || '', // SĐT
-                    banUuTien, // Ban ưu tiên (đầy đủ tên)
-                    banDuBi // Ban dự bị (đầy đủ tên)
-                ];
+                // Tạo row với độ dài bằng số headers
+                const row = new Array(headers.length).fill('');
                 
-                // Khởi tạo tất cả các khung giờ là rỗng
-                for (let i = 6; i < headers.length; i++) {
-                    row.push('');
-                }
+                // Điền thông tin cơ bản
+                row[0] = index + 1; // STT
+                row[1] = candidate.name || ''; // Họ tên
+                row[2] = candidate.email; // Email
+                row[3] = candidate.phone || ''; // SĐT
+                row[4] = banUuTien; // Nguyện vọng 1
+                row[5] = banDuBi; // Nguyện vọng 2
                 
                 // Đánh dấu X vào các khung giờ ứng viên đã chọn
-                if (candidate.interview_schedule) {
-                    candidate.interview_schedule.forEach(slotId => {
-                        const colIndex = slotMap[slotId];
+                if (candidate.interview_schedule && Array.isArray(candidate.interview_schedule)) {
+                    candidate.interview_schedule.forEach(slotKey => {
+                        // slotKey từ Firestore đã là format chuẩn
+                        const colIndex = slotMap[slotKey];
                         if (colIndex !== undefined) {
                             row[colIndex] = 'X';
                         }
@@ -1628,49 +1640,23 @@
                 { wch: 25 }, // Họ và tên
                 { wch: 30 }, // Email
                 { wch: 15 }, // SĐT
-                { wch: 10 }, // Ban ưu tiên
-                { wch: 10 }  // Ban dự bị
+                { wch: 15 }, // Nguyện vọng 1
+                { wch: 15 }  // Nguyện vọng 2
             ];
             
-            // Thêm độ rộng cho các cột khung giờ
+            // Độ rộng cho các cột slot
             for (let i = 6; i < headers.length; i++) {
-                colWidths.push({ wch: 25 });
+                colWidths.push({ wch: 35 });
             }
             
             ws['!cols'] = colWidths;
             
-            // Tạo workbook
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Lịch phỏng vấn');
             
-            // Tạo file và download
             const fileName = `lich_phong_van_enactus_${new Date().toISOString().split('T')[0]}.xlsx`;
             XLSX.writeFile(wb, fileName);
         }
-        
-        // Publish schedule button - CẬP NHẬT
-        document.getElementById('publish-schedule-btn').addEventListener('click', async function() {
-            if (interviewSchedule.length === 0) {
-                alert('Vui lòng tạo lịch phỏng vấn trước khi công bố');
-                return;
-            }
-            
-            if (confirm('Bạn có chắc chắn muốn công bố lịch phỏng vấn này?')) {
-                try {
-                    await db.collection('system').doc('interview_schedule').set({
-                        schedule: interviewSchedule,
-                        published: true,
-                        locked: false,
-                        published_at: new Date() // Thêm thời gian công bố
-                    }, { merge: true });
-                    
-                    alert('Lịch phỏng vấn đã được công bố thành công!');
-                } catch (error) {
-                    console.error('Error publishing schedule:', error);
-                    alert('Có lỗi xảy ra khi công bố lịch phỏng vấn');
-                }
-            }
-        });
     </script>
 </body>
 </html>

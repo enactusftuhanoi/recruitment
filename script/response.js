@@ -1,8 +1,3 @@
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth(); // <-- Auth instance
-
 // ==== Global State ====
 const userEmail = sessionStorage.getItem("email");
 let userRole = sessionStorage.getItem("role") || null;

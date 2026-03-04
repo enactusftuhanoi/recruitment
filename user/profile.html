@@ -5,62 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile | Enactus FTU Hanoi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Clash+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        :root {
-            --primary: #F8F3CE;
-            --primary-light: #FFD54F;
-            --gray-50: #FAFAFA;
-            --gray-100: #F5F5F5;
-            --gray-200: #E5E7EB;
-            --gray-300: #D1D5DB;
-            --gray-400: #9CA3AF;
-            --gray-500: #6B7280;
-            --gray-600: #4B5563;
-            --gray-700: #374151;
-            --gray-800: #1F2937;
-            --gray-900: #111827;
-            --white: #FFFFFF;
-            --error: #EF4444;
-            --error-light: #FEE2E2;
-            --success: #10B981;
-            --success-light: #D1FAE5;
-            --warning: #F59E0B;
-            --warning-light: #FEF3C7;
-            --info: #3B82F6;
-            --info-light: #DBEAFE;
-            --border-radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --transition: all 0.3s ease;
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        :root {
+            --primary-50: #fef9e7;
+            --primary-100: #fdefd0;
+            --primary-200: #fbe3b0;
+            --primary-300: #f9d491;
+            --primary-400: #f7c572;
+            --primary-500: #FCD34D;
+            --primary-600: #f5b232;
+            --primary-700: #d4941f;
+            --primary-800: #a87312;
+            --primary-900: #7c5408;
+            
+            --neutral-50: #f8fafc;
+            --neutral-100: #f1f5f9;
+            --neutral-200: #e2e8f0;
+            --neutral-300: #cbd5e1;
+            --neutral-400: #94a3b8;
+            --neutral-500: #64748b;
+            --neutral-600: #475569;
+            --neutral-700: #334155;
+            --neutral-800: #1e293b;
+            --neutral-900: #0f172a;
+            
+            --success-50: #f0fdf4;
+            --success-100: #dcfce7;
+            --success-500: #22c55e;
+            --success-600: #16a34a;
+            
+            --warning-50: #fffbeb;
+            --warning-100: #fef3c7;
+            --warning-500: #f59e0b;
+            --warning-600: #d97706;
+            
+            --error-50: #fef2f2;
+            --error-100: #fee2e2;
+            --error-500: #ef4444;
+            --error-600: #dc2626;
+            
+            --info-50: #eff6ff;
+            --info-100: #dbeafe;
+            --info-500: #3b82f6;
+            --info-600: #2563eb;
+            
+            --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            
+            --radius-sm: 6px;
+            --radius: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 18px;
+            --radius-2xl: 24px;
+            
+            --transition: all 0.2s ease;
         }
 
         body {
-            background-color: var(--gray-50);
-            color: var(--gray-800);
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f6f9fc 0%, #edf2f7 100%);
+            color: var(--neutral-900);
             min-height: 100vh;
+            line-height: 1.5;
         }
 
         /* Header */
         .header {
-            background-color: var(--white);
-            padding: 16px 24px;
-            box-shadow: var(--shadow);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--neutral-200);
+            padding: 12px 32px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            box-shadow: var(--shadow-xs);
         }
 
         .logo {
@@ -69,375 +104,710 @@
         }
 
         .logo img {
-            height: 50px;
+            height: 40px;
             width: auto;
+            transition: var(--transition);
         }
 
-        .user-info {
+        .logo img:hover {
+            opacity: 0.8;
+        }
+
+        .user-menu {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 12px 6px 6px;
+            background: var(--neutral-50);
+            border: 1px solid var(--neutral-200);
+            border-radius: 100px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .user-profile:hover {
+            background: var(--neutral-100);
+            border-color: var(--neutral-300);
+            box-shadow: var(--shadow-sm);
+        }
+
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            background-color: var(--primary);
+            background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
-            color: var(--gray-800);
+            font-size: 16px;
+            color: var(--neutral-800);
+            box-shadow: var(--shadow-sm);
+            object-fit: cover;
+        }
+
+        .user-avatar-img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .user-name {
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--neutral-800);
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .logout-btn {
             padding: 8px 16px;
-            background-color: var(--gray-100);
-            border: none;
-            border-radius: var(--border-radius);
-            color: var(--gray-700);
+            background: white;
+            border: 1px solid var(--neutral-200);
+            border-radius: var(--radius);
+            color: var(--neutral-600);
             font-weight: 500;
+            font-size: 13px;
             cursor: pointer;
             transition: var(--transition);
             display: flex;
             align-items: center;
+            gap: 8px;
         }
 
         .logout-btn:hover {
-            background-color: var(--error-light);
-            color: var(--error);
+            background: var(--error-50);
+            border-color: var(--error-500);
+            color: var(--error-600);
         }
 
         .logout-btn i {
-            margin-right: 8px;
+            font-size: 14px;
         }
 
         /* Main Content */
         .main-content {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 24px;
+            max-width: 1200px;
+            margin: 32px auto;
+            padding: 0 24px;
         }
 
-        /* Profile Card */
-        .profile-card {
-            background-color: var(--white);
-            border-radius: var(--border-radius);
+        /* Notification Card */
+        .notification-card {
+            background: white;
+            border-radius: var(--radius-xl);
             padding: 24px;
-            box-shadow: var(--shadow);
             margin-bottom: 24px;
-        }
-
-        .profile-header {
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--neutral-200);
+            position: relative;
+            overflow: hidden;
             display: flex;
-            align-items: center;
-            margin-bottom: 24px;
+            align-items: flex-start;
+            gap: 20px;
+            animation: slideDown 0.3s ease;
         }
 
-        .profile-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background-color: var(--primary);
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .notification-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-100);
+            border-radius: var(--radius-lg);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
-            font-weight: 600;
-            color: var(--gray-800);
-            margin-right: 20px;
-        }
-
-        .profile-details h2 {
-            font-family: 'Clash Display', sans-serif;
+            color: var(--primary-700);
             font-size: 24px;
-            font-weight: 700;
-            color: var(--gray-900);
-            margin-bottom: 4px;
+            flex-shrink: 0;
         }
 
-        .profile-details p {
-            color: var(--gray-600);
-            margin-bottom: 4px;
+        .notification-content {
+            flex: 1;
         }
 
-        .profile-status {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-            margin-top: 8px;
-        }
-
-        .status-new {
-            background-color: var(--info-light);
-            color: var(--info);
-        }
-
-        .status-pending {
-            background-color: var(--warning-light);
-            color: var(--warning);
-        }
-
-        .status-pass {
-            background-color: var(--success-light);
-            color: var(--success);
-        }
-
-        .status-not-pass {
-            background-color: var(--error-light);
-            color: var(--error);
-        }
-
-        .status-interviewed {
-            background-color: var(--info-light);
-            color: var(--info);
-        }
-
-        .status-voted {
-            background-color: var(--primary);
-            color: var(--gray-800);
-        }
-
-        .status-success {
-            background-color: var(--primary);
-            color: var(--gray-800);
-            font-weight: bold;
-        }
-
-        /* Application Info */
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .info-item {
-            padding: 16px;
-            background-color: var(--gray-50);
-            border-radius: var(--border-radius);
-        }
-
-        .info-label {
-            font-size: 14px;
-            color: var(--gray-600);
-            margin-bottom: 8px;
-        }
-
-        .info-value {
-            font-size: 16px;
-            font-weight: 500;
-            color: var(--gray-800);
-        }
-
-        /* Round Progress */
-        .rounds-container {
-            margin-top: 32px;
-        }
-
-        .rounds-title {
-            font-family: 'Clash Display', sans-serif;
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--gray-900);
-            margin-bottom: 16px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid var(--gray-200);
-        }
-
-        .round-card {
-            background-color: var(--white);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            margin-bottom: 16px;
-            transition: var(--transition);
-        }
-
-        .round-card:last-child {
-            margin-bottom: 0;
-        }
-
-        .round-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-            cursor: pointer;
-        }
-
-        .round-title {
+        .notification-content h3 {
             font-size: 18px;
             font-weight: 600;
-            color: var(--gray-800);
-        }
-
-        .round-status {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .round-details {
-            display: none;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid var(--gray-200);
-        }
-
-        .round-details.active {
-            display: block;
-        }
-
-        .detail-item {
-            margin-bottom: 12px;
-        }
-
-        .detail-label {
-            font-size: 14px;
-            color: var(--gray-600);
-            margin-bottom: 4px;
-        }
-
-        .detail-value {
-            font-size: 16px;
-            color: var(--gray-800);
-        }
-
-        /* No Application Message */
-        .no-application {
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        .no-application i {
-            font-size: 64px;
-            color: var(--gray-300);
-            margin-bottom: 16px;
-        }
-
-        .no-application h3 {
-            font-size: 20px;
-            color: var(--gray-600);
-            margin-bottom: 16px;
-        }
-
-        .no-application p {
-            color: var(--gray-500);
-            margin-bottom: 24px;
-        }
-
-        .action-btn {
-            padding: 12px 24px;
-            background-color: var(--primary);
-            border: none;
-            border-radius: var(--border-radius);
-            color: var(--gray-800);
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .action-btn:hover {
-            background-color: var(--primary-light);
-        }
-
-        .notification-card {
-            background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
-            border: 2px solid #FFD54F;
-            border-radius: var(--border-radius);
-            padding: 20px;
-            margin-bottom: 24px;
-            box-shadow: var(--shadow);
-        }
-
-        .notification-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .notification-header h3 {
-            font-family: 'Clash Display', sans-serif;
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--gray-900);
-            margin-left: 12px;
+            color: var(--neutral-900);
+            margin-bottom: 8px;
         }
 
         .notification-content p {
-            margin-bottom: 8px;
-            color: var(--gray-700);
+            color: var(--neutral-600);
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .notification-deadline {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: var(--warning-50);
+            border: 1px solid var(--warning-100);
+            border-radius: 100px;
+            color: var(--warning-600);
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 12px;
         }
 
         .notification-actions {
             margin-top: 16px;
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Status Card */
+        .status-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--neutral-200);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .status-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--success-100);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--success-600);
+            font-size: 24px;
+        }
+
+        .status-content {
+            flex: 1;
+        }
+
+        .status-content h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--neutral-900);
+            margin-bottom: 4px;
+        }
+
+        .status-content p {
+            color: var(--neutral-600);
+            font-size: 14px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            background: var(--success-100);
+            border-radius: 100px;
+            color: var(--success-600);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Profile Card */
+        .profile-card {
+            background: white;
+            border-radius: var(--radius-2xl);
+            padding: 32px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--neutral-200);
+            margin-bottom: 32px;
+        }
+
+        .profile-header {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 32px;
+            padding-bottom: 32px;
+            border-bottom: 2px solid var(--neutral-100);
+        }
+
+        .profile-avatar-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: 600;
+            color: var(--neutral-800);
+            box-shadow: var(--shadow-lg);
+            flex-shrink: 0;
+            object-fit: cover;
+            border: 4px solid white;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-info h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--neutral-900);
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .profile-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 16px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--neutral-600);
+            font-size: 15px;
+        }
+
+        .meta-item i {
+            width: 20px;
+            color: var(--primary-600);
+            font-size: 16px;
+        }
+
+        .status-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 14px;
+            font-weight: 500;
+            gap: 8px;
+        }
+
+        .status-tag i {
+            font-size: 14px;
+        }
+
+        .status-tag.new {
+            background: var(--primary-100);
+            color: var(--primary-800);
+        }
+
+        .status-tag.pending {
+            background: var(--warning-100);
+            color: var(--warning-700);
+        }
+
+        .status-tag.pass {
+            background: var(--success-100);
+            color: var(--success-700);
+        }
+
+        .status-tag.not-pass {
+            background: var(--error-100);
+            color: var(--error-700);
+        }
+
+        .status-tag.success {
+            background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+            color: var(--neutral-800);
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .info-box {
+            background: var(--neutral-50);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            transition: var(--transition);
+            border: 1px solid var(--neutral-200);
+        }
+
+        .info-box:hover {
+            background: white;
+            border-color: var(--primary-500);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .info-box-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--neutral-500);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .info-box-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--neutral-900);
+            line-height: 1.4;
+        }
+
+        .info-box-sub {
+            font-size: 13px;
+            color: var(--neutral-500);
+            margin-top: 4px;
+        }
+
+        /* Timeline */
+        .timeline {
+            margin-top: 32px;
+        }
+
+        .timeline-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .timeline-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--neutral-900);
+        }
+
+        .timeline-header i {
+            font-size: 24px;
+            color: var(--primary-600);
+        }
+
+        .timeline-item {
+            background: white;
+            border-radius: var(--radius-lg);
+            margin-bottom: 12px;
+            border: 1px solid var(--neutral-200);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .timeline-item:hover {
+            border-color: var(--primary-500);
+            box-shadow: var(--shadow-md);
+        }
+
+        .timeline-header-item {
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            background: white;
+            transition: var(--transition);
+        }
+
+        .timeline-header-item:hover {
+            background: var(--neutral-50);
+        }
+
+        .timeline-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .timeline-dot {
+            width: 32px;
+            height: 32px;
+            background: var(--primary-100);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-700);
+            font-size: 14px;
+        }
+
+        .timeline-title-text {
+            font-weight: 600;
+            color: var(--neutral-900);
+        }
+
+        .timeline-badge {
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .timeline-badge.pending {
+            background: var(--warning-100);
+            color: var(--warning-700);
+        }
+
+        .timeline-badge.pass {
+            background: var(--success-100);
+            color: var(--success-700);
+        }
+
+        .timeline-badge.not-pass {
+            background: var(--error-100);
+            color: var(--error-700);
+        }
+
+        .timeline-details {
+            display: none;
+            padding: 24px;
+            background: var(--neutral-50);
+            border-top: 1px solid var(--neutral-200);
+        }
+
+        .timeline-details.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .detail-row {
+            display: flex;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: white;
+            border-radius: var(--radius);
+            border: 1px solid var(--neutral-200);
+        }
+
+        .detail-label {
+            width: 120px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--neutral-500);
+        }
+
+        .detail-value {
+            flex: 1;
+            font-size: 14px;
+            color: var(--neutral-800);
+            font-weight: 500;
+        }
+
+        /* Team Members */
+        .team-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .team-member {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: white;
+            border-radius: var(--radius);
+            border: 1px solid var(--neutral-200);
+        }
+
+        .member-number {
+            width: 24px;
+            height: 24px;
+            background: var(--primary-100);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary-800);
+        }
+
+        .member-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--neutral-800);
+        }
+
+        /* No Application */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .empty-state-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+            background: var(--neutral-100);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: var(--neutral-400);
+        }
+
+        .empty-state h3 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--neutral-900);
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            color: var(--neutral-600);
+            margin-bottom: 32px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .btn {
-            padding: 12px 24px;
+            padding: 12px 28px;
             border: none;
-            border-radius: var(--border-radius);
-            font-weight: 600;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 14px;
             cursor: pointer;
             transition: var(--transition);
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            gap: 8px;
             text-decoration: none;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn-primary {
-            background-color: var(--primary);
-            color: var(--gray-800);
+            background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+            color: var(--neutral-800);
+            box-shadow: var(--shadow-sm);
         }
 
         .btn-primary:hover {
-            background-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--neutral-600);
+            border: 1px solid var(--neutral-200);
+        }
+
+        .btn-secondary:hover {
+            background: var(--neutral-50);
+            border-color: var(--neutral-300);
         }
 
         /* Loading */
-        .loading {
+        .loading-state {
             text-align: center;
-            padding: 40px 20px;
+            padding: 80px 20px;
         }
 
-        .loading i {
-            font-size: 32px;
-            color: var(--gray-400);
-            margin-bottom: 16px;
-            animation: spin 1s linear infinite;
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--neutral-200);
+            border-top-color: var(--primary-600);
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-state p {
+            color: var(--neutral-500);
+            font-size: 16px;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
+            .header {
+                padding: 12px 16px;
+            }
+
+            .user-name {
+                display: none;
+            }
+
             .profile-header {
                 flex-direction: column;
+                align-items: center;
                 text-align: center;
+                gap: 20px;
             }
-            
-            .profile-avatar {
-                margin-right: 0;
-                margin-bottom: 16px;
+
+            .profile-meta {
+                justify-content: center;
             }
-            
+
+            .info-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .notification-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .notification-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
             .info-grid {
                 grid-template-columns: 1fr;
             }
-            
-            .header {
+
+            .profile-meta {
                 flex-direction: column;
-                gap: 16px;
+                align-items: center;
+                gap: 8px;
             }
         }
     </style>
@@ -446,156 +816,210 @@
     <!-- Header -->
     <div class="header">
         <div class="logo">
-            <img src="/assets/logo_den.png" alt="Enactus FTU Hanoi Logo">
+            <img src="/assets/logo_den.png" alt="Enactus FTU Hanoi">
         </div>
         
-        <div class="user-info">
-            <div class="user-avatar" id="user-avatar">U</div>
+        <div class="user-menu">
+            <div class="user-profile" id="user-profile">
+                <img id="user-avatar-img" class="user-avatar-img" src="" alt="Avatar" style="display: none;">
+                <div id="user-avatar-initial" class="user-avatar">U</div>
+                <span class="user-name" id="user-display-name"></span>
+            </div>
             <button class="logout-btn" id="logout-btn">
                 <i class="fas fa-sign-out-alt"></i>
-                Đăng xuất
+                <span>Đăng xuất</span>
             </button>
         </div>
     </div>
 
     <!-- Main Content -->
     <div class="main-content">
-        <div id="loading" class="loading">
-            <i class="fas fa-spinner"></i>
+        <div id="loading" class="loading-state">
+            <div class="spinner"></div>
             <p>Đang tải thông tin...</p>
         </div>
 
         <div id="profile-content" style="display: none;">
-            <!-- Interview Schedule Notification - ĐƯA LÊN TRÊN CÙNG -->
+            <!-- Interview Schedule Notification -->
             <div id="interview-notification" class="notification-card" style="display: none;">
-                <div class="notification-header">
-                    <i class="fas fa-calendar-alt" style="color: #FFD54F; font-size: 24px;"></i>
+                <div class="notification-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="notification-content">
                     <h3>Chọn lịch phỏng vấn</h3>
-                </div>
-                <div class="notification-content">
                     <p>Ban tổ chức đã công bố lịch phỏng vấn. Vui lòng chọn ít nhất 3 khung giờ phỏng vấn mà bạn có thể tham gia.</p>
-                    <p><strong>Thời hạn:</strong> <span id="notification-deadline">Đang cập nhật</span></p>
-                </div>
-                <div class="notification-actions">
-                    <button class="btn btn-primary" id="go-to-calendar-btn">
-                        <i class="fas fa-arrow-right"></i>
-                         Chọn lịch phỏng vấn
-                    </button>
-                </div>
-            </div>
-
-            <!-- Feedback Notification -->
-            <div id="feedback-notification" class="notification-card" style="display: none; background: linear-gradient(135deg, #DBEAFE 0%, #E0F2FE 100%); border: 2px solid #3B82F6;">
-                <div class="notification-header">
-                    <i class="fas fa-comment-dots" style="color: #3B82F6; font-size: 24px;"></i>
-                    <h3>Feedback Vòng 3</h3>
-                </div>
-                <div class="notification-content">
-                    <p>Hệ thống feedback đã được mở. Hãy chia sẻ trải nghiệm của bạn sau quá trình tham gia vòng 3.</p>
-                    <p><strong>Thời hạn:</strong> <span id="feedback-deadline">Đang cập nhật</span></p>
-                </div>
-                <div class="notification-actions">
-                    <button class="btn btn-primary" id="go-to-feedback-btn">
-                        <i class="fas fa-arrow-right"></i>
-                        Gửi Feedback ngay
-                    </button>
-                </div>
-            </div>
-
-            <!-- Feedback Status -->
-            <div id="feedback-status" class="notification-card" style="display: none; background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%); border: 2px solid #10B981;">
-                <div class="notification-header">
-                    <i class="fas fa-check-circle" style="color: #10B981; font-size: 24px;"></i>
-                    <h3>Đã gửi Feedback</h3>
-                </div>
-                <div class="notification-content">
-                    <p>Cảm ơn bạn đã gửi feedback! Ý kiến của bạn rất quan trọng với chúng mình ❤️</p>
-                    <p><strong>Thời gian gửi:</strong> <span id="feedback-time">Đang cập nhật</span></p>
+                    <div class="notification-deadline">
+                        <i class="far fa-clock"></i>
+                        <span>Thời hạn: <span id="notification-deadline">Đang cập nhật</span></span>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="btn btn-primary" id="go-to-calendar-btn">
+                            <span>Chọn lịch phỏng vấn</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- Vote Status Card -->
-            <div id="vote-status" class="notification-card" style="display: none; background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%); border: 2px solid #10B981;">
-                <div class="notification-header">
-                    <i class="fas fa-check-circle" style="color: #10B981; font-size: 24px;"></i>
+            <div id="vote-status" class="status-card" style="display: none;">
+                <div class="status-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="status-content">
                     <h3>Đã chọn lịch phỏng vấn</h3>
+                    <p>Bạn đã chọn <span id="selected-slots-count">0</span>/3 ca phỏng vấn. BTC sẽ liên hệ xác nhận lịch chính thức.</p>
+                </div>
+                <button class="btn btn-secondary" id="view-calendar-btn">
+                    <i class="fas fa-eye"></i>
+                    <span>Xem lại</span>
+                </button>
+            </div>
+
+            <!-- Feedback Notification -->
+            <div id="feedback-notification" class="notification-card" style="display: none;">
+                <div class="notification-icon">
+                    <i class="fas fa-comment-dots"></i>
                 </div>
                 <div class="notification-content">
-                    <p>Bạn đã hoàn thành việc chọn lịch phỏng vấn. BTC sẽ liên hệ với bạn để xác nhận lịch phỏng vấn chính thức.</p>
-                    <p><strong>Số ca đã chọn:</strong> <span id="selected-slots-count">0</span>/3 ca</p>
+                    <h3>Feedback Vòng 3</h3>
+                    <p>Hãy chia sẻ trải nghiệm của bạn sau quá trình tham gia vòng 3 Teamwork.</p>
+                    <div class="notification-deadline">
+                        <i class="far fa-clock"></i>
+                        <span>Thời hạn: <span id="feedback-deadline">Đang cập nhật</span></span>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="btn btn-primary" id="go-to-feedback-btn">
+                            <span>Gửi Feedback ngay</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="notification-actions">
-                    <button class="btn btn-secondary" id="view-calendar-btn">
-                        <i class="fas fa-eye"></i>
-                        Xem lại lịch đã chọn
-                    </button>
+            </div>
+
+            <!-- Feedback Status -->
+            <div id="feedback-status" class="status-card" style="display: none;">
+                <div class="status-icon">
+                    <i class="fas fa-check-circle"></i>
                 </div>
+                <div class="status-content">
+                    <h3>Đã gửi Feedback</h3>
+                    <p>Cảm ơn bạn đã chia sẻ ý kiến! <span id="feedback-time">Đang cập nhật</span></p>
+                </div>
+                <span class="status-badge">Đã gửi</span>
             </div>
 
             <!-- Profile Card -->
             <div class="profile-card">
                 <div class="profile-header">
-                    <div class="profile-avatar" id="profile-avatar">U</div>
-                    <div class="profile-details">
-                        <h2 id="profile-name">Họ tên ứng viên</h2>
-                        <p id="profile-email">email@example.com</p>
-                        <p id="profile-phone">0123456789</p>
-                        <span class="profile-status" id="profile-status">Đang xử lý</span>
+                    <img id="profile-avatar-img" class="profile-avatar-large" src="" alt="Avatar" style="display: none;">
+                    <div id="profile-avatar-initial" class="profile-avatar-large">U</div>
+                    <div class="profile-info">
+                        <h1 id="profile-name">Họ tên ứng viên</h1>
+                        <div class="profile-meta">
+                            <div class="meta-item">
+                                <i class="fas fa-envelope"></i>
+                                <span id="profile-email">email@example.com</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-phone"></i>
+                                <span id="profile-phone">0123456789</span>
+                            </div>
+                        </div>
+                        <span class="status-tag" id="profile-status">Đang xử lý</span>
                     </div>
                 </div>
 
                 <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Nguyện vọng 1</div>
-                        <div class="info-value" id="priority-department">Chưa có thông tin</div>
+                    <div class="info-box">
+                        <div class="info-box-label">Nguyện vọng 1</div>
+                        <div class="info-box-value" id="priority-department">Chưa có</div>
+                        <div class="info-box-sub" id="priority-status"></div>
                     </div>
-                    <div class="info-item">
-                        <div class="info-label">Nguyện vọng 2</div>
-                        <div class="info-value" id="secondary-department">Chưa có thông tin</div>
+                    <div class="info-box">
+                        <div class="info-box-label">Nguyện vọng 2</div>
+                        <div class="info-box-value" id="secondary-department">Chưa có</div>
+                        <div class="info-box-sub" id="secondary-status"></div>
                     </div>
-                    <div class="info-item">
-                        <div class="info-label">Vòng hiện tại</div>
-                        <div class="info-value" id="current-round">Chưa có thông tin</div>
+                    <div class="info-box">
+                        <div class="info-box-label">Vòng hiện tại</div>
+                        <div class="info-box-value" id="current-round">Chưa có</div>
                     </div>
-                    <div class="info-item">
-                        <div class="info-label">Thời gian ứng tuyển</div>
-                        <div class="info-value" id="application-time">Chưa có thông tin</div>
+                    <div class="info-box">
+                        <div class="info-box-label">Ngày ứng tuyển</div>
+                        <div class="info-box-value" id="application-time">Chưa có</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Rounds Progress -->
-            <div class="rounds-container">
-                <h3 class="rounds-title">Quá trình ứng tuyển</h3>
+            <!-- Timeline -->
+            <div class="timeline">
+                <div class="timeline-header">
+                    <i class="fas fa-timeline"></i>
+                    <h2>Quá trình ứng tuyển</h2>
+                </div>
                 <div id="rounds-list">
                     <!-- Rounds will be populated by JavaScript -->
                 </div>
             </div>
         </div>
 
-        <div id="no-application" class="no-application" style="display: none;">
-            <i class="fas fa-file-alt"></i>
-            <h3>Bạn chưa điền đơn ứng tuyển</h3>
+        <div id="no-application" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <h3>Chưa có đơn ứng tuyển</h3>
             <p>Hãy điền đơn ứng tuyển để tham gia vào quá trình tuyển thành viên của Enactus FTU Hanoi</p>
-            <a href="/user/form.html" class="action-btn">Điền đơn ngay</a>
+            <a href="/user/form.html" class="btn btn-primary">
+                <i class="fas fa-pen"></i>
+                <span>Điền đơn ngay</span>
+            </a>
         </div>
     </div>
-<script src="/script/config.js"></script>
-    <script>
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
 
+    <script src="/script/config.js"></script>
+    <script>
         // Global State
         let userData = null;
         let applicationData = null;
 
+        // Update avatar display
+        function updateAvatarDisplay(user) {
+            const avatarImg = document.getElementById('user-avatar-img');
+            const avatarInitial = document.getElementById('user-avatar-initial');
+            const profileAvatarImg = document.getElementById('profile-avatar-img');
+            const profileAvatarInitial = document.getElementById('profile-avatar-initial');
+            const userName = document.getElementById('user-display-name');
+            
+            if (user.photoURL) {
+                // Show image avatar
+                avatarImg.src = user.photoURL;
+                avatarImg.style.display = 'block';
+                avatarInitial.style.display = 'none';
+                
+                profileAvatarImg.src = user.photoURL;
+                profileAvatarImg.style.display = 'block';
+                profileAvatarInitial.style.display = 'none';
+            } else {
+                // Show initial avatar
+                avatarImg.style.display = 'none';
+                avatarInitial.style.display = 'flex';
+                profileAvatarImg.style.display = 'none';
+                profileAvatarInitial.style.display = 'flex';
+                
+                const initial = user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U';
+                avatarInitial.textContent = initial;
+                profileAvatarInitial.textContent = initial;
+            }
+            
+            userName.textContent = user.displayName || 'User';
+        }
+
         // Check authentication
         auth.onAuthStateChanged(async (user) => {
             if (user) {
-                // User is signed in
-                document.getElementById('user-avatar').textContent = user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U';
+                // Update avatar
+                updateAvatarDisplay(user);
                 
                 try {
                     // Check if user has an application
@@ -618,10 +1042,9 @@
                         
                         // Render application data
                         renderApplicationData();
-
-                        // Gọi hàm kiểm tra thông báo feedback
+                        
+                        // Check notifications
                         checkFeedbackNotification();
-
                         checkInterviewNotification();
                         
                         document.getElementById('loading').style.display = 'none';
@@ -644,691 +1067,85 @@
                 email: user.email,
                 photoURL: user.photoURL
             };
-            
-            // Update avatar
-            const avatarElement = document.getElementById('profile-avatar');
-            if (user.photoURL) {
-                avatarElement.style.backgroundImage = `url(${user.photoURL})`;
-                avatarElement.style.backgroundSize = 'cover';
-                avatarElement.textContent = '';
-            } else {
-                avatarElement.textContent = user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U';
-            }
         }
 
         // Render application data
-function renderApplicationData() {
-    if (!applicationData) return;
-    
-    // Basic info
-    document.getElementById('profile-name').textContent = applicationData.fullname || 'Không có dữ liệu';
-    document.getElementById('profile-email').textContent = applicationData.email || 'Không có dữ liệu';
-    document.getElementById('profile-phone').textContent = applicationData.phone || 'Không có dữ liệu';
-    
-    // Departments
-    document.getElementById('priority-department').textContent = getDepartmentName(applicationData.priority_position) || 'Không có dữ liệu';
-    document.getElementById('secondary-department').textContent = getDepartmentName(applicationData.secondary_position) || 'Không có dữ liệu';
-    
-    // Current round and status
-    const currentRound = applicationData.current_round || 'round1';
-    document.getElementById('current-round').textContent = getRoundText(currentRound);
-    
-    const status = computeOverallStatus(applicationData);
-    const statusElement = document.getElementById('profile-status');
-    statusElement.textContent = getStatusText(status);
-    statusElement.className = `profile-status ${getStatusClass(status)}`;
-    
-    // Application time - FIXED
-    if (applicationData.timestamp) {
-        let date;
-        try {
-            // Kiểm tra nếu là Firebase Timestamp
-            if (applicationData.timestamp.toDate && typeof applicationData.timestamp.toDate === 'function') {
-                date = applicationData.timestamp.toDate();
-            } else if (applicationData.timestamp.seconds) {
-                // Nếu là object có seconds (Firestore timestamp)
-                date = new Date(applicationData.timestamp.seconds * 1000);
-            } else if (typeof applicationData.timestamp === 'string') {
-                // Nếu là string
-                date = new Date(applicationData.timestamp);
-            } else if (typeof applicationData.timestamp === 'number') {
-                // Nếu là timestamp number
-                date = new Date(applicationData.timestamp);
-            } else {
-                date = new Date();
+        function renderApplicationData() {
+            if (!applicationData) return;
+            
+            // Basic info
+            document.getElementById('profile-name').textContent = applicationData.fullname || 'Không có dữ liệu';
+            document.getElementById('profile-email').textContent = applicationData.email || 'Không có dữ liệu';
+            document.getElementById('profile-phone').textContent = applicationData.phone || 'Không có dữ liệu';
+            
+            // Departments
+            const priorityDept = getDepartmentName(applicationData.priority_position);
+            const secondaryDept = getDepartmentName(applicationData.secondary_position);
+            document.getElementById('priority-department').textContent = priorityDept || 'Không có';
+            document.getElementById('secondary-department').textContent = secondaryDept || 'Không có';
+            
+            // Department statuses
+            const priorityStatus = getDeptStatusForRound(applicationData, 'priority');
+            const secondaryStatus = getDeptStatusForRound(applicationData, 'secondary');
+            document.getElementById('priority-status').textContent = priorityStatus ? getStatusText(priorityStatus) : '';
+            document.getElementById('secondary-status').textContent = secondaryStatus ? getStatusText(secondaryStatus) : '';
+            
+            // Current round
+            const currentRound = applicationData.current_round || 'round1';
+            document.getElementById('current-round').textContent = getRoundText(currentRound);
+            
+            // Overall status
+            const status = computeOverallStatus(applicationData);
+            const statusElement = document.getElementById('profile-status');
+            statusElement.textContent = getStatusText(status);
+            statusElement.className = `status-tag ${getStatusClass(status)}`;
+            
+            // Application time
+            if (applicationData.timestamp) {
+                let date;
+                try {
+                    if (applicationData.timestamp.toDate && typeof applicationData.timestamp.toDate === 'function') {
+                        date = applicationData.timestamp.toDate();
+                    } else if (applicationData.timestamp.seconds) {
+                        date = new Date(applicationData.timestamp.seconds * 1000);
+                    } else if (typeof applicationData.timestamp === 'string') {
+                        date = new Date(applicationData.timestamp);
+                    } else if (typeof applicationData.timestamp === 'number') {
+                        date = new Date(applicationData.timestamp);
+                    }
+                    if (date) {
+                        document.getElementById('application-time').textContent = date.toLocaleDateString('vi-VN', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error parsing timestamp:', error);
+                    document.getElementById('application-time').textContent = 'Không xác định';
+                }
             }
-            document.getElementById('application-time').textContent = date.toLocaleDateString('vi-VN');
-        } catch (error) {
-            console.error('Error parsing timestamp:', error);
-            document.getElementById('application-time').textContent = 'Chưa có thông tin';
+            
+            // Render rounds
+            renderRounds();
         }
-    } else {
-        document.getElementById('application-time').textContent = 'Chưa có thông tin';
-    }
-    
-    // Render rounds
-    renderRounds();
-}
 
+        // Check if eliminated before
         function isEliminatedBefore(type, roundNumber) {
             if (!applicationData) return false;
             for (let i = 1; i < roundNumber; i++) {
-                const st = applicationData['round' + i + '_' + type + '_status'];
-                if (st === 'not-pass') return true;
-            }
-            return false;
-        }
-
-
-        /* ---------- DOM helpers ---------- */
-        function createDetailItem(label, value) {
-            var wrap = document.createElement('div');
-            wrap.className = 'detail-item';
-            var lab = document.createElement('div');
-            lab.className = 'detail-label';
-            lab.textContent = label;
-            var val = document.createElement('div');
-            val.className = 'detail-value';
-            val.textContent = value;
-            wrap.appendChild(lab);
-            wrap.appendChild(val);
-            return wrap;
-        }
-
-        /* ---------- build fragment chi tiết cho 1 vòng (không dùng innerHTML) ---------- */
-       function buildRoundDetailsFragment(roundId) {
-    var frag = document.createDocumentFragment();
-    if (!applicationData) {
-        frag.appendChild(createDetailItem('', 'Chưa có thông tin chi tiết'));
-        return frag;
-    }
-
-    if (roundId === 'round1') {
-        ['priority', 'secondary'].forEach(function(type) {
-            var dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
-            if (!dept) return;
-            var status = getRound1Status(type);
-            frag.appendChild(createDetailItem('Ban ' + getDepartmentName(dept) + ' (' + type + ')', 'Trạng thái: ' + getStatusText(status)));
-        });
-        frag.appendChild(createDetailItem('Hình thức ứng tuyển', applicationData.application_type || 'Form trực tuyến'));
-        
-        var ts = 'Đang cập nhật';
-        if (applicationData.timestamp) {
-            try {
-                let date;
-                if (applicationData.timestamp.toDate && typeof applicationData.timestamp.toDate === 'function') {
-                    date = applicationData.timestamp.toDate();
-                } else if (applicationData.timestamp.seconds) {
-                    date = new Date(applicationData.timestamp.seconds * 1000);
-                } else if (typeof applicationData.timestamp === 'string') {
-                    date = new Date(applicationData.timestamp);
-                } else if (typeof applicationData.timestamp === 'number') {
-                    date = new Date(applicationData.timestamp);
-                }
-                if (date) {
-                    ts = date.toLocaleString('vi-VN');
-                }
-            } catch (error) {
-                console.error('Error parsing timestamp:', error);
-            }
-        }
-        frag.appendChild(createDetailItem('Thời gian nộp đơn', ts));
-        return frag;
-    }
-
-    // VÒNG 2 - CẬP NHẬT THEO DỮ LIỆU MỚI
-    if (roundId === 'round2') {
-        var roundObj = applicationData.round2 || {};
-        
-        // Lấy thông tin chung từ round2
-        var commonData = roundObj.priority || roundObj.secondary || {};
-        
-        // Thông tin chung
-        if (commonData.time) frag.appendChild(createDetailItem('Thời gian', commonData.time));
-        if (commonData.location) frag.appendChild(createDetailItem('Địa điểm/Link', commonData.location));
-        if (commonData.method) frag.appendChild(createDetailItem('Hình thức', commonData.method === 'online' ? 'Online' : 'Offline'));
-        if (commonData.note) frag.appendChild(createDetailItem('Ghi chú', commonData.note));
-        
-        // Thông tin theo ban
-        ['priority', 'secondary'].forEach(function(type) {
-            if (isEliminatedBefore(type, 2)) return;
-            var dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
-            if (!dept) return;
-            var status = applicationData['round2_' + type + '_status'] || 'pending';
-            frag.appendChild(createDetailItem('Ban ' + getDepartmentName(dept), 'Trạng thái: ' + getStatusText(status)));
-        });
-        return frag;
-    }
-
-    // VÒNG 3 - CẬP NHẬT THEO DỮ LIỆU MỚI
-    if (roundId === 'round3') {
-        var roundObj = applicationData.round3 || {};
-        
-        // Thông tin team
-        if (roundObj.team) {
-            frag.appendChild(createDetailItem('Team', roundObj.team));
-        }
-        
-        // Thông tin advisor/supporter
-        if (roundObj.advisor1 || roundObj.advisor2 || roundObj.supporter) {
-            var advisors = [];
-            var supporters = [];
-            
-            if (roundObj.advisor1) advisors.push(roundObj.advisor1);
-            if (roundObj.advisor2) advisors.push(roundObj.advisor2);
-            if (roundObj.supporter) supporters.push(roundObj.supporter);
-            
-            if (advisors.length > 0) {
-                frag.appendChild(createDetailItem('Advisor', advisors.join(', ')));
-            }
-            
-            if (supporters.length > 0) {
-                frag.appendChild(createDetailItem('Supporter', supporters.join(', ')));
-            }
-        }
-        
-        // Thông tin theo ban
-        ['priority', 'secondary'].forEach(function(type) {
-            if (isEliminatedBefore(type, 3)) return;
-            var dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
-            if (!dept) return;
-            
-            var data = roundObj[type] || {};
-            var status = applicationData['round3_' + type + '_status'] || 'pending';
-            
-            frag.appendChild(createDetailItem('Ban ' + getDepartmentName(dept), 'Trạng thái: ' + getStatusText(status)));
-            if (data.note) frag.appendChild(createDetailItem('Ghi chú ' + getDepartmentName(dept), data.note));
-        });
-
-        // 🔥 Hiển thị thành viên team nếu có team
-        if (roundObj.team && roundObj.team !== 'Chưa có team') {
-            const membersContainer = createDetailItem('Thành viên Team', 'Đang tải...');
-            frag.appendChild(membersContainer);
-
-            db.collection('applications')
-                .where('round3.team', '==', roundObj.team)
-                .get()
-                .then(snapshot => {
-                    if (snapshot.empty) {
-                        membersContainer.querySelector('.detail-value').textContent = 'Chưa có thành viên nào';
-                        return;
-                    }
-
-                    const memberNames = [];
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        memberNames.push(data.fullname || 'Ứng viên không tên');
-                    });
-
-                    // Hiển thị theo số thứ tự hàng dọc
-                    const membersHTML = memberNames.map((name, index) => 
-                        `<div>${index + 1}. ${name}</div>`
-                    ).join('');
-                    
-                    membersContainer.querySelector('.detail-value').innerHTML = membersHTML;
-                })
-                .catch(err => {
-                    console.error('Lỗi khi lấy danh sách team:', err);
-                    membersContainer.querySelector('.detail-value').textContent = 'Không thể tải danh sách';
-                });
-        }
-        return frag;
-    }
-
-    if (roundId === 'round4') {
-        var roundObj = applicationData.round4 || {};
-        ['priority', 'secondary'].forEach(function(type) {
-            if (isEliminatedBefore(type, 4)) return;
-            var dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
-            if (!dept) return;
-            var data = roundObj[type] || {};
-            var status = applicationData['round4_' + type + '_status'] || 'pending';
-            frag.appendChild(createDetailItem('Ban ' + getDepartmentName(dept) + ' (' + type + ')', 'Trạng thái: ' + getStatusText(status)));
-
-            if (data.time) frag.appendChild(createDetailItem('Thời gian', data.time));
-            if (data.location) frag.appendChild(createDetailItem('Địa điểm', data.location));
-            if (data.interviewer) frag.appendChild(createDetailItem('Người phỏng vấn', data.interviewer));
-            if (data.method) frag.appendChild(createDetailItem('Hình thức', data.method));
-            if (data.note) frag.appendChild(createDetailItem('Ghi chú', data.note));
-        });
-        return frag;
-    }
-
-    if (roundId === 'success') {
-        frag.appendChild(createDetailItem('Kết quả cuối cùng', getStatusText(applicationData.final_status || 'pending')));
-        return frag;
-    }
-
-    frag.appendChild(createDetailItem('', 'Chưa có thông tin chi tiết'));
-    return frag;
-}
-
-
-// 🔒 KIỂM TRA QUYỀN TRƯỚC KHI CHUYỂN ĐẾN FEEDBACK
-async function checkFeedbackAccessBeforeRedirect() {
-    try {
-        const user = auth.currentUser;
-        if (!user) {
-            window.location.href = 'login.html';
-            return;
-        }
-
-        // Kiểm tra hệ thống feedback có được kích hoạt không
-        const settingsDoc = await db.collection('system').doc('feedback_settings').get();
-        
-        if (!settingsDoc.exists || settingsDoc.data().enabled !== true) {
-            alert('Hệ thống feedback hiện chưa được kích hoạt. Vui lòng quay lại sau.');
-            return;
-        }
-
-        // Kiểm tra thời hạn
-        if (settingsDoc.data().deadline) {
-            const deadline = settingsDoc.data().deadline.toDate();
-            if (new Date() > deadline) {
-                alert('Thời hạn gửi feedback đã kết thúc.');
-                return;
-            }
-        }
-
-        // Kiểm tra ứng viên có trong vòng 3 không
-        const appSnapshot = await db.collection('applications')
-            .where('email', '==', user.email)
-            .limit(1)
-            .get();
-
-        if (appSnapshot.empty) {
-            alert('Không tìm thấy thông tin ứng viên.');
-            return;
-        }
-
-        const appData = appSnapshot.docs[0].data();
-        
-        if (appData.current_round !== 'round3') {
-            alert('Bạn không nằm trong danh sách ứng viên vòng 3.');
-            return;
-        }
-
-        if (!appData.feedback_permission) {
-            alert('Bạn chưa được cấp quyền gửi feedback. Vui lòng liên hệ BTC.');
-            return;
-        }
-
-        // Tất cả điều kiện đều hợp lệ, chuyển đến feedback
-        window.location.href = 'feedback.html';
-    } catch (error) {
-        console.error('Error checking access before redirect:', error);
-        alert('Có lỗi xảy ra khi kiểm tra quyền truy cập.');
-    }
-}
-
-// Check and show feedback notification
-async function checkFeedbackNotification() {
-    try {
-        const feedbackSettings = await db.collection('system').doc('feedback_settings').get();
-        const notificationElement = document.getElementById('feedback-notification');
-        const statusElement = document.getElementById('feedback-status');
-        
-        if (feedbackSettings.exists && feedbackSettings.data().enabled === true) {
-            // Kiểm tra ứng viên đã có feedback chưa
-            const hasFeedback = await checkExistingFeedback();
-            
-            if (!hasFeedback) {
-                // Hiển thị thông báo mời gửi feedback
-                notificationElement.style.display = 'block';
-                statusElement.style.display = 'none';
-                
-                // Hiển thị thời hạn nếu có
-                if (feedbackSettings.data().deadline) {
-                    const deadline = feedbackSettings.data().deadline.toDate();
-                    document.getElementById('feedback-deadline').textContent = 
-                        deadline.toLocaleDateString('vi-VN') + ' ' + deadline.toLocaleTimeString('vi-VN');
-                }
-            } else {
-                // Hiển thị trạng thái đã gửi
-                notificationElement.style.display = 'none';
-                statusElement.style.display = 'block';
-                
-                // Hiển thị thời gian gửi
-                const feedbackTime = await getFeedbackTime();
-                if (feedbackTime) {
-                    document.getElementById('feedback-time').textContent = feedbackTime;
-                }
-            }
-        } else {
-            // Ẩn cả hai thông báo nếu hệ thống chưa kích hoạt
-            notificationElement.style.display = 'none';
-            statusElement.style.display = 'none';
-        }
-    } catch (error) {
-        console.error('Error checking feedback notification:', error);
-        document.getElementById('feedback-notification').style.display = 'none';
-        document.getElementById('feedback-status').style.display = 'none';
-    }
-}
-
-// Kiểm tra ứng viên đã gửi feedback chưa
-async function checkExistingFeedback() {
-    try {
-        const user = auth.currentUser;
-        if (!user) return false;
-        
-        const feedbackSnapshot = await db.collection('feedback')
-            .where('applicantEmail', '==', user.email)
-            .limit(1)
-            .get();
-            
-        return !feedbackSnapshot.empty;
-    } catch (error) {
-        console.error('Error checking existing feedback:', error);
-        return false;
-    }
-}
-
-// Lấy thời gian gửi feedback
-async function getFeedbackTime() {
-    try {
-        const user = auth.currentUser;
-        if (!user) return null;
-        
-        const feedbackSnapshot = await db.collection('feedback')
-            .where('applicantEmail', '==', user.email)
-            .limit(1)
-            .get();
-            
-        if (!feedbackSnapshot.empty) {
-            const feedbackData = feedbackSnapshot.docs[0].data();
-            const timestamp = feedbackData.timestamp;
-            
-            let date;
-            if (timestamp.toDate && typeof timestamp.toDate === 'function') {
-                date = timestamp.toDate();
-            } else if (timestamp.seconds) {
-                date = new Date(timestamp.seconds * 1000);
-            } else {
-                date = new Date(timestamp);
-            }
-            
-            return date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN');
-        }
-        
-        return null;
-    } catch (error) {
-        console.error('Error getting feedback time:', error);
-        return null;
-    }
-}
-
-// Helper function để tạo detail item
-function createDetailItem(label, value) {
-    var wrap = document.createElement('div');
-    wrap.className = 'detail-item';
-    var lab = document.createElement('div');
-    lab.className = 'detail-label';
-    lab.textContent = label;
-    var val = document.createElement('div');
-    val.className = 'detail-value';
-    val.textContent = value;
-    wrap.appendChild(lab);
-    wrap.appendChild(val);
-    return wrap;
-}
-
-// Helper function để toggle hiển thị chi tiết
-function toggleRoundDetails(roundId) {
-    var detailsElement = document.getElementById('details-' + roundId);
-    if (!detailsElement) return;
-    if (detailsElement.classList.contains('active')) detailsElement.classList.remove('active');
-    else detailsElement.classList.add('active');
-}
-
-        /* ---------- renderRounds (DOM-based, không dùng template literals) ---------- */
-        function renderRounds() {
-            var roundsList = document.getElementById('rounds-list');
-            if (!roundsList) return;
-            roundsList.innerHTML = '';
-
-            var roundDefs = [
-                { id: 'round1', title: 'Vòng 1: Đơn ứng tuyển', status: computeRoundStatus('round1') },
-                { id: 'round2', title: 'Vòng 2: Phỏng vấn nhóm', status: computeRoundStatus('round2') },
-                { id: 'round3', title: 'Vòng 3: Teamwork', status: computeRoundStatus('round3') },
-                { id: 'round4', title: 'Vòng 4: Phỏng vấn cá nhân', status: computeRoundStatus('round4') },
-            ];
-
-            var currentRound = applicationData.current_round || 'round1';
-
-            // Map round -> số thứ tự
-            var roundIndex = { round1: 1, round2: 2, round3: 3, round4: 4 };
-            var maxIndex = roundIndex[currentRound];
-
-            for (var i = 0; i < roundDefs.length; i++) {
-                var round = roundDefs[i];
-
-                // ⛔ Dừng nếu vượt quá vòng hiện tại
-                if (roundIndex[round.id] > maxIndex) break;
-
-                var pri = applicationData[round.id + '_priority_status'];
-                var sec = applicationData[round.id + '_secondary_status'];
-
-                // Nếu cả 2 ban cùng not-pass ở vòng này -> dừng
-                if (pri === 'not-pass' && sec === 'not-pass') {
-                    break;
-                }
-
-                // Nếu cả 2 ban đã bị loại trước đó -> dừng
-                var bothOutBefore = isEliminatedBefore('priority', i + 1) && isEliminatedBefore('secondary', i + 1);
-                if (bothOutBefore) {
-                    break;
-                }
-
-                // build card bằng DOM
-                var roundCard = document.createElement('div');
-                roundCard.className = 'round-card';
-
-                var header = document.createElement('div');
-                header.className = 'round-header';
-                (function(rid){ header.addEventListener('click', function(){ toggleRoundDetails(rid); }); })(round.id);
-
-                var titleDiv = document.createElement('div');
-                titleDiv.className = 'round-title';
-                titleDiv.textContent = round.title;
-
-                var statusDiv = document.createElement('div');
-                statusDiv.className = 'round-status ' + getStatusClass(round.status);
-                statusDiv.textContent = getStatusText(round.status);
-
-                header.appendChild(titleDiv);
-                header.appendChild(statusDiv);
-
-                var detailsDiv = document.createElement('div');
-                detailsDiv.className = 'round-details';
-                detailsDiv.id = 'details-' + round.id;
-                detailsDiv.appendChild(buildRoundDetailsFragment(round.id));
-
-                roundCard.appendChild(header);
-                roundCard.appendChild(detailsDiv);
-                roundsList.appendChild(roundCard);
-
-                if (round.id === currentRound) {
-                    (function(rid){ setTimeout(function(){ 
-                        var el = document.getElementById('details-' + rid); 
-                        if (el) el.classList.add('active'); 
-                    }, 300); })(round.id);
-                }
-            }
-        }
-
-        // Check and show interview notification
-        async function checkInterviewNotification() {
-            try {
-                const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
-                const notificationElement = document.getElementById('interview-notification');
-                const voteStatusElement = document.getElementById('vote-status');
-                
-                if (scheduleDoc.exists) {
-                    const scheduleData = scheduleDoc.data();
-                    
-                    // Kiểm tra nếu lịch đã được công bố VÀ user có quyền chọn lịch
-                    if (scheduleData.published === true) {
-                        const hasVotingRights = await checkVotingRights();
-                        
-                        if (hasVotingRights) {
-                            // KIỂM TRA ỨNG VIÊN ĐÃ VOTE CHƯA
-                            const hasVoted = applicationData.interview_schedule && applicationData.interview_schedule.length >= 3;
-                            
-                            if (!hasVoted) {
-                                // CHƯA vote đủ - hiển thị thông báo chọn lịch
-                                notificationElement.style.display = 'block';
-                                voteStatusElement.style.display = 'none';
-                                
-                                // Hiển thị thời gian công bố
-                                if (scheduleData.published_at) {
-                                    const publishDate = scheduleData.published_at.toDate();
-                                    const deadlineDate = new Date(publishDate);
-                                    deadlineDate.setDate(deadlineDate.getDate() + 3);
-                                    
-                                    document.getElementById('notification-deadline').textContent = 
-                                        ` Đến hết ngày ${deadlineDate.getDate()}/${deadlineDate.getMonth() + 1}`;
-                                }
-                            } else {
-                                // ĐÃ vote đủ - hiển thị trạng thái hoàn thành
-                                notificationElement.style.display = 'none';
-                                voteStatusElement.style.display = 'block';
-                                
-                                // Hiển thị số ca đã chọn
-                                document.getElementById('selected-slots-count').textContent = 
-                                    applicationData.interview_schedule.length;
-                            }
-                        } else {
-                            // Không có quyền vote
-                            notificationElement.style.display = 'none';
-                            voteStatusElement.style.display = 'none';
-                        }
-                    } else {
-                        // Lịch chưa công bố
-                        notificationElement.style.display = 'none';
-                        voteStatusElement.style.display = 'none';
-                    }
-                } else {
-                    // Không có lịch
-                    notificationElement.style.display = 'none';
-                    voteStatusElement.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error checking interview notification:', error);
-                // Ẩn cả hai thông báo nếu có lỗi
-                document.getElementById('interview-notification').style.display = 'none';
-                document.getElementById('vote-status').style.display = 'none';
-            }
-        }
-
-        // Thêm event listener cho nút xem lại lịch
-        document.getElementById('view-calendar-btn').addEventListener('click', function() {
-            checkCalendarAccessBeforeRedirect();
-        });
-
-        // Kiểm tra user có trong danh sách được vote không
-        async function checkVotingRights() {
-            try {
-                const user = auth.currentUser;
-                if (!user) return false;
-                
-                const votingCandidate = await db.collection('voting_candidates')
-                    .where('email', '==', user.email)
-                    .limit(1)
-                    .get();
-                    
-                return !votingCandidate.empty;
-            } catch (error) {
-                console.error('Error checking voting rights:', error);
-                return false;
-            }
-        }
-
-        // Thêm event listener cho nút chuyển đến calendar - CẬP NHẬT
-        document.getElementById('go-to-calendar-btn').addEventListener('click', function() {
-            // Kiểm tra lại quyền trước khi chuyển trang
-            checkCalendarAccessBeforeRedirect();
-        });
-
-        // 🔒 KIỂM TRA QUYỀN TRƯỚC KHI CHUYỂN ĐẾN CALENDAR
-        async function checkCalendarAccessBeforeRedirect() {
-            try {
-                const user = auth.currentUser;
-                if (!user) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                const hasAccess = await checkVotingRights();
-                if (!hasAccess) {
-                    alert('Bạn không có quyền truy cập lịch phỏng vấn. Vui lòng liên hệ BTC.');
-                    return;
-                }
-
-                const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
-                if (!scheduleDoc.exists || scheduleDoc.data().published !== true) {
-                    alert('Lịch phỏng vấn chưa được công bố. Vui lòng quay lại sau.');
-                    return;
-                }
-
-                // Tất cả điều kiện đều hợp lệ, chuyển đến calendar
-                window.location.href = 'calendar.html';
-            } catch (error) {
-                console.error('Error checking access before redirect:', error);
-                alert('Có lỗi xảy ra khi kiểm tra quyền truy cập.');
-            }
-        }
-
-        /* ---------- toggleRoundDetails (giữ nguyên) ---------- */
-        function toggleRoundDetails(roundId) {
-            var detailsElement = document.getElementById('details-' + roundId);
-            if (!detailsElement) return;
-            if (detailsElement.classList.contains('active')) detailsElement.classList.remove('active');
-            else detailsElement.classList.add('active');
-        }
-
-        // Check if round is completed
-        function isRoundCompleted(roundId) {
-            if (!applicationData) return false;
-            
-            const currentRound = applicationData.current_round || 'round1';
-            const roundIndex = {
-                'round1': 1,
-                'round2': 2,
-                'round3': 3,
-                'round4': 4,
-                'success': 5
-            };
-            
-            return roundIndex[roundId] < roundIndex[currentRound];
-        }
-
-        /* ---------- merge status của 2 ban (dùng chung) ---------- */
-        function mergeStatus(priority, secondary) {
-            if (priority === 'pass' || secondary === 'pass') return 'pass';
-            if (priority === 'not-pass' && secondary === 'not-pass') return 'not-pass';
-            if (priority === 'pending' || secondary === 'pending') return 'pending';
-            return priority || secondary || 'pending';
-        }
-
-        /* ---------- kiểm tra ban đã bị loại ở vòng trước chưa ---------- */
-        function isEliminatedBefore(type, roundNumber) {
-            if (!applicationData) return false;
-            // check round1 special boolean schema too
-            for (var i = 1; i < roundNumber; i++) {
                 if (i === 1) {
                     if (type === 'priority' && applicationData.priorityRejected) return true;
                     if (type === 'secondary' && applicationData.secondaryRejected) return true;
                 } else {
-                    var st = applicationData['round' + i + '_' + type + '_status'];
+                    const st = applicationData['round' + i + '_' + type + '_status'];
                     if (st === 'not-pass') return true;
                 }
             }
             return false;
         }
 
-
-        /* ---------- helper: convert round1 boolean flags -> status ---------- */
+        // Get round 1 status
         function getRound1Status(type) {
             if (!applicationData) return 'pending';
             if (type === 'priority') {
@@ -1341,262 +1158,553 @@ function toggleRoundDetails(roundId) {
             return 'pending';
         }
 
-        // Helper function to format timestamp safely
-function formatTimestamp(timestamp) {
-    if (!timestamp) return null;
-    
-    try {
-        let date;
-        if (timestamp.toDate && typeof timestamp.toDate === 'function') {
-            date = timestamp.toDate();
-        } else if (timestamp.seconds) {
-            date = new Date(timestamp.seconds * 1000);
-        } else if (typeof timestamp === 'string') {
-            date = new Date(timestamp);
-        } else if (typeof timestamp === 'number') {
-            date = new Date(timestamp);
-        } else {
-            return null;
-        }
-        return date.toLocaleString('vi-VN');
-    } catch (error) {
-        console.error('Error formatting timestamp:', error);
-        return null;
-    }
-}
-
-        // Get round details
-        function getRoundDetails(roundId) {
-            if (!applicationData) return '<p>Chưa có thông tin chi tiết</p>';
-
-            let details = '';
-
-            switch(roundId) {
-                case 'round1':
-                    ['priority','secondary'].forEach(type => {
-                        const dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
-                        if (!dept) return;
-                        const status = getRound1Status(type); // dùng convert mới
-                        details += `
-                            <div class="detail-item">
-                                <div class="detail-label">Ban ${dept} (${type})</div>
-                                <div class="detail-value">Trạng thái: ${getStatusText(status)}</div>
-                            </div>
-                        `;
-                    });
-
-                    details += `
-                        <div class="detail-item">
-                            <div class="detail-label">Hình thức ứng tuyển</div>
-                            <div class="detail-value">${applicationData.application_type || 'Form trực tuyến'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Thời gian nộp đơn</div>
-                            <div class="detail-value">${formatTimestamp(applicationData.timestamp) || 'Đang cập nhật'}</div>
-                        </div>
-                    `;
-                    break;
-
-                case 'round2':
-                    const round2 = applicationData.round2 || {};
-                    ['priority','secondary'].forEach(type => {
-                        if (isEliminatedBefore(type, 2)) return;
-                        const dept = type === 'priority' ? applicationData.priority_position : applicationData.secondary_position;
-                        if (!dept) return;
-                        const data = round2[type] || {};
-                        const status = applicationData[`round2_${type}_status`] || 'pending';
-                        details += `
-                            <div class="detail-item">
-                                <div class="detail-label">Ban ${dept} (${type})</div>
-                                <div class="detail-value">Trạng thái: ${getStatusText(status)}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Thời gian</div>
-                                <div class="detail-value">${data.time || 'Đang cập nhật'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Địa điểm</div>
-                                <div class="detail-value">${data.location || 'Đang cập nhật'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Ghi chú</div>
-                                <div class="detail-value">${data.note || 'Không có'}</div>
-                            </div>
-                        `;
-                    });
-                    break;
-
-                case 'round3':
-                    const round3 = applicationData.round3 || {};
-                    ['priority','secondary'].forEach(type => {
-                        if (isEliminatedBefore(type, 3)) return;
-                        const dept = type === 'priority' ? applicationData.priority_position : applicationData.secondary_position;
-                        if (!dept) return;
-                        const data = round3[type] || {};
-                        const status = applicationData[`round3_${type}_status`] || 'pending';
-                        details += `
-                            <div class="detail-item">
-                                <div class="detail-label">Ban ${dept} (${type})</div>
-                                <div class="detail-value">Trạng thái: ${getStatusText(status)}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Thử thách</div>
-                                <div class="detail-value">${data.challenge || 'Đang cập nhật'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Thời hạn</div>
-                                <div class="detail-value">${data.deadline || 'Đang cập nhật'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Hướng dẫn</div>
-                                <div class="detail-value">${data.instructions || 'Đang cập nhật'}</div>
-                            </div>
-                        `;
-                    });
-                    break;
-
-                case 'round4':
-                    const round4 = applicationData.round4 || {};
-                    ['priority','secondary'].forEach(type => {
-                        if (isEliminatedBefore(type, 4)) return;
-                        const dept = type === 'priority' ? applicationData.priority_position : applicationData.secondary_position;
-                        if (!dept) return;
-                        const data = round4[type] || {};
-                        const status = applicationData[`round4_${type}_status`] || 'pending';
-                        details += `
-                            <div class="detail-item">
-                                <div class="detail-label">Ban ${dept} (${type})</div>
-                                <div class="detail-value">Trạng thái: ${getStatusText(status)}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Thời gian</div>
-                                <div class="detail-value">${data.time || 'Đang cập nhật'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Địa điểm</div>
-                                <div class="detail-value">${data.location || 'Đang cập nhật'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Người phỏng vấn</div>
-                                <div class="detail-value">${data.interviewer || 'Đang cập nhật'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Hình thức</div>
-                                <div class="detail-value">${data.method || 'Đang cập nhật'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Ghi chú</div>
-                                <div class="detail-value">${data.note || 'Không có'}</div>
-                            </div>
-                        `;
-                    });
-                    break;
-
-                case 'success':
-                    details = `
-                        <div class="detail-item">
-                            <div class="detail-label">Kết quả cuối cùng</div>
-                            <div class="detail-value">${getStatusText(applicationData.final_status || 'pending')}</div>
-                        </div>
-                    `;
-                    break;
-
-                default:
-                    details = '<p>Chưa có thông tin chi tiết</p>';
+        // Build round details
+        function buildRoundDetailsFragment(roundId) {
+            const frag = document.createDocumentFragment();
+            
+            if (!applicationData) {
+                const row = createDetailRow('', 'Chưa có thông tin');
+                frag.appendChild(row);
+                return frag;
             }
 
-            return details || '<p>Chưa có thông tin chi tiết</p>';
+            if (roundId === 'round1') {
+                ['priority', 'secondary'].forEach(type => {
+                    const dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
+                    if (!dept) return;
+                    const status = getRound1Status(type);
+                    const row = createDetailRow(
+                        `Ban ${getDepartmentName(dept)}`,
+                        `Trạng thái: ${getStatusText(status)}`
+                    );
+                    frag.appendChild(row);
+                });
+                
+                const typeRow = createDetailRow('Hình thức', applicationData.application_type || 'Form trực tuyến');
+                frag.appendChild(typeRow);
+                
+                let ts = 'Không xác định';
+                if (applicationData.timestamp) {
+                    try {
+                        let date;
+                        if (applicationData.timestamp.toDate && typeof applicationData.timestamp.toDate === 'function') {
+                            date = applicationData.timestamp.toDate();
+                        } else if (applicationData.timestamp.seconds) {
+                            date = new Date(applicationData.timestamp.seconds * 1000);
+                        } else if (typeof applicationData.timestamp === 'string') {
+                            date = new Date(applicationData.timestamp);
+                        } else if (typeof applicationData.timestamp === 'number') {
+                            date = new Date(applicationData.timestamp);
+                        }
+                        if (date) {
+                            ts = date.toLocaleString('vi-VN');
+                        }
+                    } catch (error) {
+                        console.error('Error parsing timestamp:', error);
+                    }
+                }
+                const timeRow = createDetailRow('Thời gian nộp', ts);
+                frag.appendChild(timeRow);
+                
+                return frag;
+            }
+
+            if (roundId === 'round2') {
+                const roundObj = applicationData.round2 || {};
+                
+                ['priority', 'secondary'].forEach(type => {
+                    if (isEliminatedBefore(type, 2)) return;
+                    const dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
+                    if (!dept) return;
+                    
+                    const data = roundObj[type] || {};
+                    const status = applicationData['round2_' + type + '_status'] || 'pending';
+                    
+                    const statusRow = createDetailRow(
+                        `Ban ${getDepartmentName(dept)}`,
+                        `Trạng thái: ${getStatusText(status)}`
+                    );
+                    frag.appendChild(statusRow);
+                    
+                    if (data.time) {
+                        const timeRow = createDetailRow('Thời gian', data.time);
+                        frag.appendChild(timeRow);
+                    }
+                    if (data.location) {
+                        const locationRow = createDetailRow('Địa điểm', data.location);
+                        frag.appendChild(locationRow);
+                    }
+                    if (data.note) {
+                        const noteRow = createDetailRow('Ghi chú', data.note);
+                        frag.appendChild(noteRow);
+                    }
+                });
+                
+                return frag;
+            }
+
+            if (roundId === 'round3') {
+                const roundObj = applicationData.round3 || {};
+                
+                // Team info
+                if (roundObj.team) {
+                    const teamRow = createDetailRow('Team', roundObj.team);
+                    frag.appendChild(teamRow);
+                }
+                
+                // Advisor/Supporter info
+                if (roundObj.advisor1 || roundObj.advisor2 || roundObj.supporter) {
+                    const advisors = [];
+                    if (roundObj.advisor1) advisors.push(roundObj.advisor1);
+                    if (roundObj.advisor2) advisors.push(roundObj.advisor2);
+                    if (advisors.length > 0) {
+                        const advisorRow = createDetailRow('Advisor', advisors.join(', '));
+                        frag.appendChild(advisorRow);
+                    }
+                    if (roundObj.supporter) {
+                        const supporterRow = createDetailRow('Supporter', roundObj.supporter);
+                        frag.appendChild(supporterRow);
+                    }
+                }
+                
+                // Department status
+                ['priority', 'secondary'].forEach(type => {
+                    if (isEliminatedBefore(type, 3)) return;
+                    const dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
+                    if (!dept) return;
+                    
+                    const data = roundObj[type] || {};
+                    const status = applicationData['round3_' + type + '_status'] || 'pending';
+                    
+                    const statusRow = createDetailRow(
+                        `Ban ${getDepartmentName(dept)}`,
+                        `Trạng thái: ${getStatusText(status)}`
+                    );
+                    frag.appendChild(statusRow);
+                    
+                    if (data.note) {
+                        const noteRow = createDetailRow('Ghi chú', data.note);
+                        frag.appendChild(noteRow);
+                    }
+                });
+
+                // Team members
+                if (roundObj.team && roundObj.team !== 'Chưa có team') {
+                    const teamContainer = document.createElement('div');
+                    teamContainer.className = 'detail-row';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'detail-label';
+                    label.textContent = 'Thành viên';
+                    
+                    const value = document.createElement('div');
+                    value.className = 'detail-value';
+                    value.innerHTML = '<div class="team-list"><div class="team-member"><span class="member-number">1</span><span class="member-name">Đang tải...</span></div></div>';
+                    
+                    teamContainer.appendChild(label);
+                    teamContainer.appendChild(value);
+                    frag.appendChild(teamContainer);
+
+                    // Fetch team members
+                    db.collection('applications')
+                        .where('round3.team', '==', roundObj.team)
+                        .get()
+                        .then(snapshot => {
+                            if (snapshot.empty) {
+                                value.innerHTML = '<div class="team-list">Chưa có thành viên</div>';
+                                return;
+                            }
+
+                            const memberNames = [];
+                            snapshot.forEach(doc => {
+                                const data = doc.data();
+                                memberNames.push(data.fullname || 'Không tên');
+                            });
+
+                            const membersHTML = memberNames.map((name, index) => `
+                                <div class="team-member">
+                                    <span class="member-number">${index + 1}</span>
+                                    <span class="member-name">${name}</span>
+                                </div>
+                            `).join('');
+                            
+                            value.innerHTML = `<div class="team-list">${membersHTML}</div>`;
+                        })
+                        .catch(err => {
+                            console.error('Error fetching team members:', err);
+                            value.innerHTML = '<div class="team-list">Không thể tải danh sách</div>';
+                        });
+                }
+                
+                return frag;
+            }
+
+            if (roundId === 'round4') {
+                const roundObj = applicationData.round4 || {};
+                
+                ['priority', 'secondary'].forEach(type => {
+                    if (isEliminatedBefore(type, 4)) return;
+                    const dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
+                    if (!dept) return;
+                    
+                    const data = roundObj[type] || {};
+                    const status = applicationData['round4_' + type + '_status'] || 'pending';
+                    
+                    const statusRow = createDetailRow(
+                        `Ban ${getDepartmentName(dept)}`,
+                        `Trạng thái: ${getStatusText(status)}`
+                    );
+                    frag.appendChild(statusRow);
+                    
+                    if (data.time) {
+                        const timeRow = createDetailRow('Thời gian', data.time);
+                        frag.appendChild(timeRow);
+                    }
+                    if (data.location) {
+                        const locationRow = createDetailRow('Địa điểm', data.location);
+                        frag.appendChild(locationRow);
+                    }
+                    if (data.interviewer) {
+                        const interviewerRow = createDetailRow('Người phỏng vấn', data.interviewer);
+                        frag.appendChild(interviewerRow);
+                    }
+                    if (data.method) {
+                        const methodRow = createDetailRow('Hình thức', data.method === 'online' ? 'Online' : 'Offline');
+                        frag.appendChild(methodRow);
+                    }
+                    if (data.note) {
+                        const noteRow = createDetailRow('Ghi chú', data.note);
+                        frag.appendChild(noteRow);
+                    }
+                });
+                
+                return frag;
+            }
+
+            if (roundId === 'success') {
+                const finalRow = createDetailRow('Kết quả', getStatusText(applicationData.final_status || 'pending'));
+                frag.appendChild(finalRow);
+                return frag;
+            }
+
+            return frag;
         }
 
-        // Helper functions from dashboard
-        function getDepartmentName(code) {
-            switch(code) {
-                case 'MD': return 'Truyền thông';
-                case 'HR': return 'Nhân sự';
-                case 'PD': return 'Dự án';
-                case 'ER': return 'Đối ngoại';
-                default: return code;
+        // Create detail row
+        function createDetailRow(label, value) {
+            const row = document.createElement('div');
+            row.className = 'detail-row';
+            
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'detail-label';
+            labelDiv.textContent = label;
+            
+            const valueDiv = document.createElement('div');
+            valueDiv.className = 'detail-value';
+            valueDiv.textContent = value;
+            
+            row.appendChild(labelDiv);
+            row.appendChild(valueDiv);
+            
+            return row;
+        }
+
+        // Toggle round details
+        function toggleRoundDetails(roundId) {
+            const details = document.getElementById('details-' + roundId);
+            if (details) {
+                details.classList.toggle('active');
             }
         }
 
-        function getRoundText(round) {
-            switch(round) {
-                case "round1": return "Vòng 1: Đơn";
-                case "round2": return "Vòng 2: Phỏng vấn nhóm";
-                case "round3": return "Vòng 3: Teamwork";
-                case "round4": return "Vòng 4: Phỏng vấn cá nhân";
-                case "success": return "Thành viên chính thức";
-                default: return "Chưa xác định";
+        // Render rounds
+        function renderRounds() {
+            const roundsList = document.getElementById('rounds-list');
+            if (!roundsList) return;
+            
+            roundsList.innerHTML = '';
+
+            const roundDefs = [
+                { id: 'round1', title: 'Vòng 1: Đơn ứng tuyển' },
+                { id: 'round2', title: 'Vòng 2: Phỏng vấn nhóm' },
+                { id: 'round3', title: 'Vòng 3: Teamwork' },
+                { id: 'round4', title: 'Vòng 4: Phỏng vấn cá nhân' }
+            ];
+
+            const currentRound = applicationData.current_round || 'round1';
+            const roundIndex = { round1: 1, round2: 2, round3: 3, round4: 4 };
+            const maxIndex = roundIndex[currentRound];
+
+            for (let i = 0; i < roundDefs.length; i++) {
+                const round = roundDefs[i];
+                
+                // Stop if beyond current round
+                if (roundIndex[round.id] > maxIndex) break;
+
+                // Check if both departments are eliminated
+                const pri = applicationData[round.id + '_priority_status'];
+                const sec = applicationData[round.id + '_secondary_status'];
+                if (pri === 'not-pass' && sec === 'not-pass') break;
+
+                const bothOutBefore = isEliminatedBefore('priority', i + 1) && isEliminatedBefore('secondary', i + 1);
+                if (bothOutBefore) break;
+
+                // Calculate round status
+                let roundStatus = 'pending';
+                if (round.id === 'round1') {
+                    const p = getRound1Status('priority');
+                    const s = getRound1Status('secondary');
+                    roundStatus = mergeStatus(p, s);
+                } else {
+                    const p = applicationData[round.id + '_priority_status'];
+                    const s = applicationData[round.id + '_secondary_status'];
+                    roundStatus = mergeStatus(p, s);
+                }
+
+                // Create timeline item
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+
+                const header = document.createElement('div');
+                header.className = 'timeline-header-item';
+                header.onclick = () => toggleRoundDetails(round.id);
+
+                const title = document.createElement('div');
+                title.className = 'timeline-title';
+                title.innerHTML = `
+                    <div class="timeline-dot">
+                        <i class="fas fa-circle"></i>
+                    </div>
+                    <span class="timeline-title-text">${round.title}</span>
+                `;
+
+                const badge = document.createElement('span');
+                badge.className = `timeline-badge ${getStatusClass(roundStatus)}`;
+                badge.textContent = getStatusText(roundStatus);
+
+                header.appendChild(title);
+                header.appendChild(badge);
+
+                const details = document.createElement('div');
+                details.className = 'timeline-details';
+                details.id = 'details-' + round.id;
+                details.appendChild(buildRoundDetailsFragment(round.id));
+
+                item.appendChild(header);
+                item.appendChild(details);
+                roundsList.appendChild(item);
+
+                // Auto expand current round
+                if (round.id === currentRound) {
+                    setTimeout(() => {
+                        details.classList.add('active');
+                    }, 100);
+                }
             }
         }
 
+        // Merge status of two departments
+        function mergeStatus(priority, secondary) {
+            if (priority === 'pass' || secondary === 'pass') return 'pass';
+            if (priority === 'not-pass' && secondary === 'not-pass') return 'not-pass';
+            if (priority === 'pending' || secondary === 'pending') return 'pending';
+            return priority || secondary || 'pending';
+        }
+
+        // Check interview notification
+        async function checkInterviewNotification() {
+            try {
+                const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
+                const notification = document.getElementById('interview-notification');
+                const voteStatus = document.getElementById('vote-status');
+                
+                if (scheduleDoc.exists && scheduleDoc.data().published === true) {
+                    const hasVotingRights = await checkVotingRights();
+                    
+                    if (hasVotingRights) {
+                        const hasVoted = applicationData.interview_schedule && applicationData.interview_schedule.length >= 3;
+                        
+                        if (!hasVoted) {
+                            notification.style.display = 'flex';
+                            voteStatus.style.display = 'none';
+                            
+                            if (scheduleDoc.data().published_at) {
+                                const publishDate = scheduleDoc.data().published_at.toDate();
+                                const deadline = new Date(publishDate);
+                                deadline.setDate(deadline.getDate() + 3);
+                                document.getElementById('notification-deadline').textContent = 
+                                    `${deadline.getDate()}/${deadline.getMonth() + 1}/${deadline.getFullYear()}`;
+                            }
+                        } else {
+                            notification.style.display = 'none';
+                            voteStatus.style.display = 'flex';
+                            document.getElementById('selected-slots-count').textContent = 
+                                applicationData.interview_schedule.length;
+                        }
+                    } else {
+                        notification.style.display = 'none';
+                        voteStatus.style.display = 'none';
+                    }
+                } else {
+                    notification.style.display = 'none';
+                    voteStatus.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error checking interview notification:', error);
+                document.getElementById('interview-notification').style.display = 'none';
+                document.getElementById('vote-status').style.display = 'none';
+            }
+        }
+
+        // Check voting rights
+        async function checkVotingRights() {
+            try {
+                const user = auth.currentUser;
+                if (!user) return false;
+                
+                const candidate = await db.collection('voting_candidates')
+                    .where('email', '==', user.email)
+                    .limit(1)
+                    .get();
+                    
+                return !candidate.empty;
+            } catch (error) {
+                console.error('Error checking voting rights:', error);
+                return false;
+            }
+        }
+
+        // Check feedback notification
+        async function checkFeedbackNotification() {
+            try {
+                const settings = await db.collection('system').doc('feedback_settings').get();
+                const notification = document.getElementById('feedback-notification');
+                const status = document.getElementById('feedback-status');
+                
+                if (settings.exists && settings.data().enabled === true) {
+                    const hasFeedback = await checkExistingFeedback();
+                    
+                    if (!hasFeedback && applicationData.current_round === 'round3') {
+                        notification.style.display = 'flex';
+                        status.style.display = 'none';
+                        
+                        if (settings.data().deadline) {
+                            const deadline = settings.data().deadline.toDate();
+                            document.getElementById('feedback-deadline').textContent = 
+                                `${deadline.getDate()}/${deadline.getMonth() + 1}/${deadline.getFullYear()}`;
+                        }
+                    } else if (hasFeedback) {
+                        notification.style.display = 'none';
+                        status.style.display = 'flex';
+                        
+                        const feedbackTime = await getFeedbackTime();
+                        if (feedbackTime) {
+                            document.getElementById('feedback-time').textContent = `• ${feedbackTime}`;
+                        }
+                    } else {
+                        notification.style.display = 'none';
+                        status.style.display = 'none';
+                    }
+                } else {
+                    notification.style.display = 'none';
+                    status.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error checking feedback notification:', error);
+                document.getElementById('feedback-notification').style.display = 'none';
+                document.getElementById('feedback-status').style.display = 'none';
+            }
+        }
+
+        // Check existing feedback
+        async function checkExistingFeedback() {
+            try {
+                const user = auth.currentUser;
+                if (!user) return false;
+                
+                const feedback = await db.collection('feedback')
+                    .where('applicantEmail', '==', user.email)
+                    .limit(1)
+                    .get();
+                    
+                return !feedback.empty;
+            } catch (error) {
+                console.error('Error checking existing feedback:', error);
+                return false;
+            }
+        }
+
+        // Get feedback time
+        async function getFeedbackTime() {
+            try {
+                const user = auth.currentUser;
+                if (!user) return null;
+                
+                const feedback = await db.collection('feedback')
+                    .where('applicantEmail', '==', user.email)
+                    .limit(1)
+                    .get();
+                    
+                if (!feedback.empty) {
+                    const data = feedback.docs[0].data();
+                    const timestamp = data.timestamp;
+                    
+                    let date;
+                    if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+                        date = timestamp.toDate();
+                    } else if (timestamp.seconds) {
+                        date = new Date(timestamp.seconds * 1000);
+                    } else {
+                        date = new Date(timestamp);
+                    }
+                    
+                    return date.toLocaleString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    });
+                }
+                
+                return null;
+            } catch (error) {
+                console.error('Error getting feedback time:', error);
+                return null;
+            }
+        }
+
+        // Get department status for round
         function getDeptStatusForRound(app, type) {
             const round = app.current_round || 'round1';
-            let keys = [];
+            const statusMap = {
+                round1: type + (app.priorityAccepted ? '_pass' : app.priorityRejected ? '_not-pass' : '_pending'),
+                round2: app['round2_' + type + '_status'],
+                round3: app['round3_' + type + '_status'],
+                round4: app['round4_' + type + '_status']
+            };
             
-            if (round === 'round4') {
-                keys = [`round4_${type}_status`, `round3_${type}_status`, `round2_${type}_status`, `${type}_status`];
-            } else if (round === 'round3') {
-                keys = [`round3_${type}_status`, `round2_${type}_status`, `${type}_status`];
-            } else if (round === 'round2') {
-                keys = [`round2_${type}_status`, `${type}_status`];
+            if (round === 'round2' && statusMap.round2) return statusMap.round2;
+            if (round === 'round3' && statusMap.round3) return statusMap.round3;
+            if (round === 'round4' && statusMap.round4) return statusMap.round4;
+            
+            if (type === 'priority') {
+                if (app.priorityAccepted) return 'pass';
+                if (app.priorityRejected) return 'not-pass';
             } else {
-                keys = [`${type}_status`];
+                if (app.secondaryAccepted) return 'pass';
+                if (app.secondaryRejected) return 'not-pass';
             }
-
-            for (const k of keys) {
-                if (app[k]) return app[k];
-            }
-
-            return null;
+            
+            return 'pending';
         }
 
-        function getStatusClass(status) {
-            switch(status) {
-                case 'new': return 'status-new';
-                case 'pending': return 'status-pending';
-                case 'pass': return 'status-pass';
-                case 'not-pass': return 'status-not-pass';
-                case 'interviewed': return 'status-interviewed';
-                case 'voted': return 'status-voted';
-                case "success": return "status-success";
-                default: return 'status-pending';
-            }
-        }
-
-        function getStatusText(status) {
-            switch(status) {
-                case 'new': return 'Mới';
-                case 'pending': return 'Pending';
-                case 'pass': return 'Pass';
-                case 'not-pass': return 'Not pass';
-                case 'interviewed': return 'Interviewed';
-                case 'voted': return 'Voted';
-                case "success": return "Success";
-                default: return status;
-            }
-        }
-
-        /* ---------- compute status cho 1 vòng (round1 xử lý khác) ---------- */
-        function computeRoundStatus(roundId) {
-            if (!applicationData) return 'pending';
-            if (roundId === 'round1') {
-                var p = getRound1Status('priority');
-                var s = getRound1Status('secondary');
-                return mergeStatus(p, s);
-            } else {
-                var p = applicationData[roundId + '_priority_status'];
-                var s = applicationData[roundId + '_secondary_status'];
-                return mergeStatus(p, s);
-            }
-        }
-
+        // Compute overall status
         function computeOverallStatus(app) {
             if (!app) return 'pending';
 
             const current = app.current_round || 'round1';
 
-            // Nếu vòng 4 pass => Success
             if (mergeStatus(app.round4_priority_status, app.round4_secondary_status) === 'pass') {
                 return 'success';
             }
@@ -1616,16 +1724,120 @@ function formatTimestamp(timestamp) {
             return 'pending';
         }
 
-        // Thêm event listener cho nút chuyển đến feedback
-document.getElementById('go-to-feedback-btn').addEventListener('click', function() {
-    checkFeedbackAccessBeforeRedirect();
-});
+        // Helper functions
+        function getDepartmentName(code) {
+            const map = {
+                'MD': 'Truyền thông',
+                'HR': 'Nhân sự',
+                'PD': 'Dự án',
+                'ER': 'Đối ngoại'
+            };
+            return map[code] || code;
+        }
 
-        // Logout
+        function getRoundText(round) {
+            const map = {
+                'round1': 'Vòng 1 - Đơn ứng tuyển',
+                'round2': 'Vòng 2 - Phỏng vấn nhóm',
+                'round3': 'Vòng 3 - Teamwork',
+                'round4': 'Vòng 4 - Phỏng vấn cá nhân',
+                'success': 'Thành viên chính thức'
+            };
+            return map[round] || round;
+        }
+
+        function getStatusClass(status) {
+            const map = {
+                'new': 'new',
+                'pending': 'pending',
+                'pass': 'pass',
+                'not-pass': 'not-pass',
+                'success': 'success'
+            };
+            return map[status] || 'pending';
+        }
+
+        function getStatusText(status) {
+            const map = {
+                'new': 'Mới',
+                'pending': 'Đang chờ',
+                'pass': 'Đạt',
+                'not-pass': 'Không đạt',
+                'success': 'Chính thức'
+            };
+            return map[status] || status;
+        }
+
+        // Event listeners
+        document.getElementById('go-to-calendar-btn').addEventListener('click', async () => {
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const hasAccess = await checkVotingRights();
+                if (!hasAccess) {
+                    alert('Bạn không có quyền truy cập lịch phỏng vấn.');
+                    return;
+                }
+
+                const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
+                if (!scheduleDoc.exists || scheduleDoc.data().published !== true) {
+                    alert('Lịch phỏng vấn chưa được công bố.');
+                    return;
+                }
+
+                window.location.href = 'calendar.html';
+            } catch (error) {
+                console.error('Error checking access:', error);
+                alert('Có lỗi xảy ra.');
+            }
+        });
+
+        document.getElementById('view-calendar-btn').addEventListener('click', () => {
+            window.location.href = 'calendar.html';
+        });
+
+        document.getElementById('go-to-feedback-btn').addEventListener('click', async () => {
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const settingsDoc = await db.collection('system').doc('feedback_settings').get();
+                
+                if (!settingsDoc.exists || settingsDoc.data().enabled !== true) {
+                    alert('Hệ thống feedback chưa được kích hoạt.');
+                    return;
+                }
+
+                if (settingsDoc.data().deadline) {
+                    const deadline = settingsDoc.data().deadline.toDate();
+                    if (new Date() > deadline) {
+                        alert('Thời hạn gửi feedback đã kết thúc.');
+                        return;
+                    }
+                }
+
+                window.location.href = 'feedback.html';
+            } catch (error) {
+                console.error('Error checking access:', error);
+                alert('Có lỗi xảy ra.');
+            }
+        });
+
         document.getElementById('logout-btn').addEventListener('click', () => {
             auth.signOut().then(() => {
                 window.location.href = 'login.html';
             });
+        });
+
+        document.getElementById('user-profile').addEventListener('click', () => {
+            // Optional: show profile dropdown or settings
         });
     </script>
 </body>

@@ -9,7 +9,13 @@ const firebaseConfig = {
   measurementId: "G-4V8B3GJ38D"
 };
 
-// Export các biến để sử dụng trong các file HTML
-window.firebaseApp = firebase.app();
-window.firebaseDb = firebase.firestore();
-window.firebaseAuth = firebase.auth();
+// Initialize Firebase
+const app = firebase.initializeApp(firebaseConfig);
+
+// Initialize services
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// Make them globally available
+window.auth = auth;
+window.db = db;
