@@ -1,6 +1,4 @@
-       // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+
       
         // Biến toàn cục để lưu hình thức ứng tuyển
         let applicationType = '';
