@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Form | Enactus FTU Hanoi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Clash+Display:wght@600;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <style>
+        :root {
+            --primary: #f8f3ce;
+            --primary-light: #ffd54f;
+            --gray-50: #fafafa;
+            --gray-100: #f5f5f5;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --white: #ffffff;
+            --error: #ef4444;
+            --error-light: #fee2e2;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --info: #3b82f6;
+            --info-light: #dbeafe;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --transition: all 0.3s ease;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Plus Jakarta Sans", sans-serif; }
+        body { background-color: var(--gray-50); color: var(--gray-800); min-height: 100vh; }
+
+        .header {
+            background: var(--white);
+            padding: 16px 24px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo { display: flex; align-items: center; gap: 12px; }
+        .logo img { height: 40px; }
+        .logo-text { font-size: 20px; font-weight: 700; color: var(--gray-900); }
+        .action-btn {
+            padding: 8px 16px;
+            background: var(--gray-100);
+            border: none;
+            border-radius: var(--border-radius);
+            color: var(--gray-700);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .action-btn:hover { background: var(--gray-200); }
+        .action-btn.primary { background: var(--primary); color: var(--gray-800); }
+        .action-btn.primary:hover { background: var(--primary-light); }
+        .action-btn.success { background: var(--success-light); color: var(--success); }
+        .action-btn.success:hover { background: var(--success); color: white; }
+        .action-btn.danger { background: var(--error-light); color: var(--error); }
+        .action-btn.danger:hover { background: var(--error); color: white; }
+
+        .main-content { max-width: 1400px; margin: 24px auto; padding: 0 24px; }
+        
+        .tabs {
+            display: flex;
+            background: var(--white);
+            border-bottom: 1px solid var(--gray-200);
+            padding: 0 24px;
+        }
+        .tab {
+            padding: 16px 24px;
+            font-weight: 500;
+            color: var(--gray-600);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+        }
+        .tab:hover { color: var(--gray-800); }
+        .tab.active { color: var(--info); border-bottom-color: var(--info); }
+
+        .tab-content { display: none; padding: 24px 0; }
+        .tab-content.active { display: block; }
+
+        .card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+        .card-title {
+            font-family: "Clash Display", sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+        .stat-value { font-size: 28px; font-weight: 700; color: var(--gray-800); margin-bottom: 4px; }
+        .stat-label { font-size: 13px; color: var(--gray-500); }
+
+        .question-list { display: flex; flex-direction: column; gap: 12px; }
+        .question-card {
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            background: var(--gray-50);
+            transition: var(--transition);
+        }
+        .question-card:hover { border-color: var(--info); background: var(--white); }
+        .question-header { display: flex; align-items: flex-start; gap: 12px; }
+        .question-content { flex: 1; }
+        .question-label { font-weight: 600; color: var(--gray-800); margin-bottom: 4px; }
+        .question-meta { font-size: 12px; color: var(--gray-500); display: flex; gap: 8px; flex-wrap: wrap; }
+        .question-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+        .icon-btn {
+            background: none;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--gray-500);
+            transition: var(--transition);
+        }
+        .icon-btn:hover { border-color: var(--info); color: var(--info); background: var(--info-light); }
+        .icon-btn.danger:hover { border-color: var(--error); color: var(--error); background: var(--error-light); }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-title { font-size: 18px; font-weight: 700; }
+        .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--gray-500); }
+        .modal-body { padding: 24px; }
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--gray-700);
+            margin-bottom: 6px;
+        }
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--info);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        .option-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .option-row input { flex: 1; }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 22px;
+            cursor: pointer;
+        }
+        .toggle-switch input { display: none; }
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: var(--gray-300);
+            border-radius: 20px;
+            transition: var(--transition);
+        }
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            top: 3px;
+            left: 3px;
+            transition: var(--transition);
+        }
+        .toggle-switch input:checked + .toggle-slider { background: var(--info); }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+        .badge {
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .badge-info { background: var(--info-light); color: var(--info); }
+        .badge-success { background: var(--success-light); color: var(--success); }
+        .badge-warning { background: var(--warning-light); color: var(--warning); }
+        .badge-danger { background: var(--error-light); color: var(--error); }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        .setting-row:last-child { border-bottom: none; }
+        .setting-info .setting-title { font-weight: 600; color: var(--gray-800); margin-bottom: 2px; }
+        .setting-info .setting-desc { font-size: 13px; color: var(--gray-500); }
+
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--gray-500); }
+        .loading { text-align: center; padding: 40px; color: var(--gray-400); }
+        .loading i { font-size: 24px; display: block; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .category-filter {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .category-btn {
+            padding: 6px 14px;
+            border: 1px solid var(--gray-300);
+            border-radius: 20px;
+            background: var(--white);
+            cursor: pointer;
+            font-size: 13px;
+            transition: var(--transition);
+        }
+        .category-btn:hover { background: var(--gray-100); }
+        .category-btn.active { background: var(--primary); border-color: var(--primary-light); }
+
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 12px; }
+            .tabs { overflow-x: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <div class="logo">
+        <img src="../assets/logo_den.png" alt="Enactus FTU Hanoi Logo">
+        <div class="logo-text">📝 Quản lý Form</div>
+    </div>
+    <div>
+        <button class="action-btn" onclick="window.location.href='dashboard.html'">
+            <i class="fas fa-arrow-left"></i> Dashboard
+        </button>
+    </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+    <div class="tab active" data-tab="overview">Tổng quan</div>
+    <div class="tab" data-tab="questions">Câu hỏi</div>
+    <div class="tab" data-tab="settings">Cài đặt</div>
+</div>
+
+<!-- MAIN -->
+<div class="main-content">
+
+    <!-- ===== OVERVIEW TAB ===== -->
+    <div id="tab-overview" class="tab-content active">
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-value" id="stat-total">0</div><div class="stat-label">Tổng câu hỏi</div></div>
+            <div class="stat-card"><div class="stat-value" id="stat-general">0</div><div class="stat-label">Câu hỏi chung</div></div>
+            <div class="stat-card"><div class="stat-value" id="stat-ban">0</div><div class="stat-label">Câu hỏi theo ban</div></div>
+            <div class="stat-card"><div class="stat-value" id="stat-status">🔴</div><div class="stat-label">Trạng thái form</div></div>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-info-circle"></i> Hướng dẫn</div>
+            <p style="color: var(--gray-600); line-height: 1.8;">
+                📌 Quản lý câu hỏi trong form tuyển dụng của Enactus FTU Hanoi.<br>
+                📌 Bạn có thể <strong>thêm, sửa, xóa</strong> câu hỏi cho từng phần.<br>
+                📌 Câu hỏi được chia thành: <strong>Câu hỏi chung</strong> và <strong>Câu hỏi theo ban</strong>.<br>
+                📌 Khi ứng viên chọn ban, hệ thống sẽ tự động hiển thị câu hỏi tương ứng.
+            </p>
+        </div>
+    </div>
+
+    <!-- ===== QUESTIONS TAB ===== -->
+    <div id="tab-questions" class="tab-content">
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <div class="card-title"><i class="fas fa-list-ul"></i> Danh sách câu hỏi</div>
+                <button class="action-btn primary" onclick="openAddQuestion()">
+                    <i class="fas fa-plus"></i> Thêm câu hỏi
+                </button>
+            </div>
+
+            <!-- Category filter -->
+            <div class="category-filter" id="category-filter">
+                <button class="category-btn active" data-category="all">Tất cả</button>
+                <button class="category-btn" data-category="general">📌 Chung</button>
+                <button class="category-btn" data-category="md-design">🎨 MD Design</button>
+                <button class="category-btn" data-category="md-content">✍️ MD Content</button>
+                <button class="category-btn" data-category="hr">👥 HR</button>
+                <button class="category-btn" data-category="er">🤝 ER</button>
+                <button class="category-btn" data-category="pd">📊 PD</button>
+            </div>
+
+            <div id="question-list">
+                <div class="loading"><i class="fas fa-spinner"></i> Đang tải...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SETTINGS TAB ===== -->
+    <div id="tab-settings" class="tab-content">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-cog"></i> Cài đặt Form</div>
+            
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">Mở form tuyển dụng</div>
+                    <div class="setting-desc">Cho phép ứng viên truy cập và điền form</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-enabled" onchange="saveSettings()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">Thời gian mở form</div>
+                    <div class="setting-desc">Ứng viên chỉ có thể điền form trong khoảng thời gian này</div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <input type="datetime-local" class="form-input" id="start-time" style="width:200px;">
+                    <span style="color:var(--gray-500);">→</span>
+                    <input type="datetime-local" class="form-input" id="end-time" style="width:200px;">
+                    <button class="action-btn primary" onclick="saveDeadline()">Lưu</button>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">Giới hạn số lượng ứng viên</div>
+                    <div class="setting-desc">Số lượng ứng viên tối đa có thể nộp đơn</div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <input type="number" class="form-input" id="max-applicants" style="width:120px;" min="0">
+                    <button class="action-btn primary" onclick="saveMaxApplicants()">Lưu</button>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">Cho phép ứng viên chọn nhiều ban</div>
+                    <div class="setting-desc">Ứng viên có thể chọn cả nguyện vọng 1 và 2</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-multiple-ban" onchange="saveSettings()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">Hiển thị câu hỏi theo ban</div>
+                    <div class="setting-desc">Chỉ hiển thị câu hỏi của ban mà ứng viên đã chọn</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-show-ban-questions" onchange="saveSettings()" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--gray-200);">
+                <div class="card-title" style="font-size:15px;margin-bottom:12px;">⚠️ Nguy hiểm</div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button class="action-btn danger" onclick="resetForm()">
+                        <i class="fas fa-undo"></i> Reset về mặc định
+                    </button>
+                    <button class="action-btn danger" onclick="deleteAllResponses()">
+                        <i class="fas fa-trash"></i> Xóa toàn bộ phản hồi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ADD/EDIT QUESTION -->
+<div class="modal-overlay" id="question-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="modal-title">Thêm câu hỏi mới</div>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="q-id">
+            <input type="hidden" id="q-category">
+
+            <div class="form-group">
+                <label class="form-label">Phân loại</label>
+                <select class="form-select" id="q-category-select">
+                    <option value="general">Câu hỏi chung</option>
+                    <option value="md-design">MD - Design</option>
+                    <option value="md-content">MD - Content</option>
+                    <option value="hr">Nhân sự (HR)</option>
+                    <option value="er">Đối ngoại (ER)</option>
+                    <option value="pd">Dự án (PD)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Nội dung câu hỏi <span style="color:var(--error)">*</span></label>
+                <textarea class="form-textarea" id="q-text" rows="3" placeholder="Nhập nội dung câu hỏi..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Loại trả lời</label>
+                <select class="form-select" id="q-type" onchange="toggleOptions()">
+                    <option value="textarea">Text dài (textarea)</option>
+                    <option value="text">Text ngắn (input)</option>
+                    <option value="radio">Chọn 1 (Radio)</option>
+                    <option value="checkbox">Chọn nhiều (Checkbox)</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="options-group" style="display:none;">
+                <label class="form-label">Các lựa chọn</label>
+                <div id="options-list"></div>
+                <button class="action-btn" onclick="addOption()" style="margin-top:8px;">
+                    <i class="fas fa-plus"></i> Thêm lựa chọn
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Placeholder / Hướng dẫn</label>
+                <input type="text" class="form-input" id="q-placeholder" placeholder="VD: Nhập câu trả lời...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Bắt buộc</label>
+                <select class="form-select" id="q-required">
+                    <option value="true">Có</option>
+                    <option value="false">Không</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="action-btn" onclick="closeModal()">Hủy</button>
+            <button class="action-btn primary" onclick="saveQuestion()">
+                <i class="fas fa-save"></i> Lưu câu hỏi
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="/script/config.js"></script>
+<script>
+// ============================================================
+// AUTH
+// ============================================================
+const userEmail = sessionStorage.getItem("email");
+const userRole = sessionStorage.getItem("role");
+if (!userEmail || !["superadmin","admin"].includes(userRole)) {
+    window.location.href = "/admin/login.html";
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let questions = {
+    general: [],
+    'md-design': [],
+    'md-content': [],
+    hr: [],
+    er: [],
+    pd: []
+};
+let settings = {};
+let editingId = null;
+let editingCategory = null;
+let currentFilter = 'all';
+
+// ============================================================
+// TABS
+// ============================================================
+document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+        tab.classList.add("active");
+        const id = "tab-" + tab.getAttribute("data-tab");
+        document.getElementById(id).classList.add("active");
+        if (tab.getAttribute("data-tab") === "overview") renderOverview();
+        if (tab.getAttribute("data-tab") === "questions") renderQuestions();
+        if (tab.getAttribute("data-tab") === "settings") renderSettingsUI();
+    });
+});
+
+// ============================================================
+// CATEGORY FILTER
+// ============================================================
+document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentFilter = this.dataset.category;
+        renderQuestions();
+    });
+});
+
+// ============================================================
+// INIT
+// ============================================================
+auth.onAuthStateChanged(async user => {
+    if (!user) { window.location.href = "/admin/login.html"; return; }
+    await Promise.all([loadQuestions(), loadSettings()]);
+    renderOverview();
+    renderQuestions();
+    renderSettingsUI();
+});
+
+// ============================================================
+// LOAD DATA - CHỈ DÙNG FIRESTORE
+// ============================================================
+async function loadQuestions() {
+    try {
+        const doc = await db.collection("system").doc("form_questions").get();
+        if (doc.exists && doc.data().questions) {
+            questions = doc.data().questions;
+            console.log("✅ Đã tải câu hỏi từ Firestore");
+        } else {
+            // Tạo câu hỏi mặc định nếu chưa có
+            questions = getDefaultQuestions();
+            await saveQuestionsToFirestore();
+            console.log("✅ Đã tạo câu hỏi mặc định");
+        }
+    } catch(e) {
+        console.error("Lỗi load câu hỏi:", e);
+        questions = getDefaultQuestions();
+        await saveQuestionsToFirestore();
+    }
+}
+
+// ============================================================
+// CÂU HỎI MẶC ĐỊNH
+// ============================================================
+function getDefaultQuestions() {
+    return {
+        general: [
+            { id: genId(), text: "Đâu là lý do khiến bạn mong muốn trở thành một mảnh ghép của đại gia nhà E?", type: "textarea", required: true, placeholder: "Chia sẻ những thông tin bạn biết về CLB" },
+            { id: genId(), text: "Hãy chia sẻ về một trải nghiệm ngoại khóa mà bạn cảm thấy tự hào nhất.", type: "textarea", required: true },
+            { id: genId(), text: "“We change while creating the change” - Bạn có nhận ra bản thân cũng đã thay đổi?", type: "textarea", required: true },
+        ],
+        'md-design': [
+            { id: genId(), text: "Nếu có thể quay về quá khứ và thay đổi một quyết định, bạn sẽ chọn khoảnh khắc nào?", type: "textarea", required: true },
+            { id: genId(), text: "Bạn thường sử dụng những phần mềm thiết kế nào?", type: "checkbox", required: true, options: ["Photoshop", "Illustrator", "Canva", "Figma", "Premiere Pro", "Khác"] },
+        ],
+        'md-content': [
+            { id: genId(), text: "Nếu có thể quay về quá khứ và thay đổi một quyết định, bạn sẽ chọn khoảnh khắc nào?", type: "textarea", required: true },
+            { id: genId(), text: "AI đang phát triển mạnh mẽ. Bạn đồng ý với quan điểm nào về AI?", type: "textarea", required: true },
+        ],
+        hr: [
+            { id: genId(), text: "Bạn hiểu như thế nào về vai trò của ban Nhân sự - Sự Kiện?", type: "textarea", required: true },
+            { id: genId(), text: "Hãy chia sẻ quan điểm về sự khác nhau giữa tập thể đồng đều và đa dạng.", type: "textarea", required: true },
+        ],
+        er: [
+            { id: genId(), text: "Theo bạn, ban Đối ngoại đóng vai trò gì trong CLB?", type: "textarea", required: true },
+            { id: genId(), text: "Tại sao bạn chọn ban Đối ngoại của Enactus FTU Hanoi?", type: "textarea", required: true },
+        ],
+        pd: [
+            { id: genId(), text: "Tại sao bạn lựa chọn ứng tuyển vào Ban Dự án?", type: "textarea", required: true },
+            { id: genId(), text: "Sự khác biệt cốt lõi giữa kinh doanh thông thường và kinh doanh xã hội là gì?", type: "textarea", required: true },
+        ]
+    };
+}
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+async function saveQuestionsToFirestore() {
+    await db.collection("system").doc("form_questions").set({ questions, updatedAt: new Date() }, { merge: true });
+}
+
+async function loadSettings() {
+    try {
+        const doc = await db.collection("system").doc("form_settings").get();
+        settings = doc.exists ? doc.data() : {};
+    } catch(e) { settings = {}; }
+}
+
+// ============================================================
+// RENDER OVERVIEW
+// ============================================================
+function renderOverview() {
+    const total = Object.values(questions).reduce((sum, arr) => sum + arr.length, 0);
+    const generalCount = questions.general.length;
+    const banCount = total - generalCount;
+    const isEnabled = settings.enabled || false;
+
+    document.getElementById("stat-total").textContent = total;
+    document.getElementById("stat-general").textContent = generalCount;
+    document.getElementById("stat-ban").textContent = banCount;
+    document.getElementById("stat-status").textContent = isEnabled ? "🟢 Đang mở" : "🔴 Đã đóng";
+    document.getElementById("stat-status").style.color = isEnabled ? "var(--success)" : "var(--error)";
+}
+
+// ============================================================
+// RENDER QUESTIONS
+// ============================================================
+function renderQuestions() {
+    const container = document.getElementById("question-list");
+    const allQuestions = [];
+
+    Object.keys(questions).forEach(category => {
+        if (currentFilter !== 'all' && currentFilter !== category) return;
+        questions[category].forEach(q => {
+            allQuestions.push({ ...q, category });
+        });
+    });
+
+    if (allQuestions.length === 0) {
+        container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>Chưa có câu hỏi nào. Nhấn "Thêm câu hỏi" để bắt đầu.</p></div>`;
+        return;
+    }
+
+    container.innerHTML = allQuestions.map((q, i) => buildQuestionCard(q, i)).join("");
+}
+
+function buildQuestionCard(q, i) {
+    const categoryLabels = {
+        general: "📌 Chung",
+        'md-design': "🎨 MD Design",
+        'md-content': "✍️ MD Content",
+        hr: "👥 HR",
+        er: "🤝 ER",
+        pd: "📊 PD"
+    };
+    const typeLabels = {
+        text: "Text ngắn",
+        textarea: "Text dài",
+        radio: "Chọn 1",
+        checkbox: "Chọn nhiều"
+    };
+
+    const optionsPreview = q.options?.length ? `• ${q.options.slice(0,2).join(" / ")}${q.options.length>2?" ...":""}` : "";
+    const requiredText = q.required ? '<span class="badge badge-danger">Bắt buộc</span>' : '';
+
+    return `
+    <div class="question-card">
+        <div class="question-header">
+            <div class="question-content">
+                <div class="question-label">
+                    <span style="color:var(--gray-400);font-size:13px;font-weight:500;">#${i+1}</span>
+                    <span class="badge badge-info">${categoryLabels[q.category] || q.category}</span>
+                    ${requiredText}
+                    <span>${q.text}</span>
+                </div>
+                <div class="question-meta">
+                    <span class="badge badge-warning">${typeLabels[q.type] || q.type}</span>
+                    ${optionsPreview}
+                    ${q.placeholder ? `<span>• "${q.placeholder}"</span>` : ''}
+                </div>
+            </div>
+            <div class="question-actions">
+                <button class="icon-btn" onclick="openEditQuestion('${q.id}', '${q.category}')" title="Sửa">
+                    <i class="fas fa-pencil"></i>
+                </button>
+                <button class="icon-btn danger" onclick="deleteQuestion('${q.id}', '${q.category}')" title="Xóa">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    </div>`;
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openAddQuestion() {
+    editingId = null;
+    editingCategory = null;
+    document.getElementById("modal-title").textContent = "Thêm câu hỏi mới";
+    document.getElementById("q-id").value = "";
+    document.getElementById("q-text").value = "";
+    document.getElementById("q-type").value = "textarea";
+    document.getElementById("q-placeholder").value = "";
+    document.getElementById("q-required").value = "true";
+    document.getElementById("q-category-select").value = "general";
+    document.getElementById("options-list").innerHTML = "";
+    toggleOptions();
+    document.getElementById("question-modal").classList.add("active");
+}
+
+function openEditQuestion(qId, category) {
+    const q = questions[category]?.find(x => x.id === qId);
+    if (!q) return;
+
+    editingId = qId;
+    editingCategory = category;
+    document.getElementById("modal-title").textContent = "Chỉnh sửa câu hỏi";
+    document.getElementById("q-id").value = qId;
+    document.getElementById("q-text").value = q.text || "";
+    document.getElementById("q-type").value = q.type || "textarea";
+    document.getElementById("q-placeholder").value = q.placeholder || "";
+    document.getElementById("q-required").value = q.required ? "true" : "false";
+    document.getElementById("q-category-select").value = category;
+
+    document.getElementById("options-list").innerHTML = "";
+    (q.options || []).forEach(opt => addOption(opt));
+
+    toggleOptions();
+    document.getElementById("question-modal").classList.add("active");
+}
+
+function closeModal() {
+    document.getElementById("question-modal").classList.remove("active");
+}
+
+function toggleOptions() {
+    const type = document.getElementById("q-type").value;
+    document.getElementById("options-group").style.display = ["radio", "checkbox"].includes(type) ? "block" : "none";
+}
+
+function addOption(val = "") {
+    const row = document.createElement("div");
+    row.className = "option-row";
+    row.innerHTML = `
+        <input type="text" class="form-input" value="${val}" placeholder="Nhập lựa chọn...">
+        <button class="icon-btn danger" onclick="this.parentNode.remove()"><i class="fas fa-times"></i></button>
+    `;
+    document.getElementById("options-list").appendChild(row);
+}
+
+async function saveQuestion() {
+    const text = document.getElementById("q-text").value.trim();
+    if (!text) { alert("Vui lòng nhập nội dung câu hỏi"); return; }
+
+    const category = document.getElementById("q-category-select").value;
+    const type = document.getElementById("q-type").value;
+    const required = document.getElementById("q-required").value === "true";
+    const placeholder = document.getElementById("q-placeholder").value.trim();
+
+    const q = {
+        id: editingId || genId(),
+        text,
+        type,
+        required,
+        placeholder: placeholder || undefined,
+    };
+
+    if (["radio", "checkbox"].includes(type)) {
+        const options = Array.from(document.querySelectorAll("#options-list .option-row input"))
+            .map(i => i.value.trim()).filter(Boolean);
+        if (options.length === 0) { alert("Vui lòng thêm ít nhất 1 lựa chọn"); return; }
+        q.options = options;
+    }
+
+    if (!questions[category]) questions[category] = [];
+
+    if (editingId && editingCategory) {
+        const idx = questions[editingCategory].findIndex(x => x.id === editingId);
+        if (idx >= 0) questions[editingCategory][idx] = q;
+        if (editingCategory !== category) {
+            questions[editingCategory] = questions[editingCategory].filter(x => x.id !== editingId);
+            questions[category].push(q);
+        }
+    } else {
+        questions[category].push(q);
+    }
+
+    await saveQuestionsToFirestore();
+    closeModal();
+    renderQuestions();
+    renderOverview();
+}
+
+async function deleteQuestion(qId, category) {
+    if (!confirm("Xóa câu hỏi này?")) return;
+    questions[category] = questions[category].filter(q => q.id !== qId);
+    await saveQuestionsToFirestore();
+    renderQuestions();
+    renderOverview();
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function renderSettingsUI() {
+    document.getElementById("toggle-enabled").checked = settings.enabled || false;
+    document.getElementById("toggle-multiple-ban").checked = settings.allowMultipleBan !== false;
+    document.getElementById("toggle-show-ban-questions").checked = settings.showBanQuestions !== false;
+    document.getElementById("max-applicants").value = settings.maxApplicants || "";
+
+    if (settings.startTime) {
+        const d = settings.startTime.toDate ? settings.startTime.toDate() : new Date(settings.startTime);
+        document.getElementById("start-time").value = d.toISOString().slice(0,16);
+    }
+    if (settings.endTime) {
+        const d = settings.endTime.toDate ? settings.endTime.toDate() : new Date(settings.endTime);
+        document.getElementById("end-time").value = d.toISOString().slice(0,16);
+    }
+}
+
+async function saveSettings() {
+    const updates = {
+        enabled: document.getElementById("toggle-enabled").checked,
+        allowMultipleBan: document.getElementById("toggle-multiple-ban").checked,
+        showBanQuestions: document.getElementById("toggle-show-ban-questions").checked,
+        updatedAt: new Date(),
+    };
+    await db.collection("system").doc("form_settings").set(updates, { merge: true });
+    Object.assign(settings, updates);
+    renderOverview();
+    alert("✅ Đã lưu cài đặt!");
+}
+
+async function saveDeadline() {
+    const start = document.getElementById("start-time").value;
+    const end = document.getElementById("end-time").value;
+    
+    const updates = {};
+    if (start) updates.startTime = new Date(start);
+    if (end) updates.endTime = new Date(end);
+    updates.updatedAt = new Date();
+
+    if (!start && !end) { alert("Vui lòng chọn ít nhất một mốc thời gian"); return; }
+    if (start && end && new Date(start) > new Date(end)) { alert("Thời gian bắt đầu phải trước thời gian kết thúc"); return; }
+
+    await db.collection("system").doc("form_settings").set(updates, { merge: true });
+    Object.assign(settings, updates);
+    alert("✅ Đã lưu thời gian!");
+}
+
+async function saveMaxApplicants() {
+    const val = document.getElementById("max-applicants").value;
+    if (!val || parseInt(val) < 0) { alert("Vui lòng nhập số hợp lệ"); return; }
+    await db.collection("system").doc("form_settings").set({ maxApplicants: parseInt(val), updatedAt: new Date() }, { merge: true });
+    settings.maxApplicants = parseInt(val);
+    alert("✅ Đã lưu giới hạn!");
+}
+
+async function resetForm() {
+    if (!confirm("⚠️ Reset về câu hỏi mặc định? Tất cả câu hỏi đã chỉnh sửa sẽ bị mất!")) return;
+    questions = getDefaultQuestions();
+    await saveQuestionsToFirestore();
+    renderQuestions();
+    renderOverview();
+    alert("✅ Đã reset về mặc định!");
+}
+
+async function deleteAllResponses() {
+    if (!confirm("⚠️ Xóa toàn bộ phản hồi? Hành động không thể hoàn tác!")) return;
+    if (!confirm("Xác nhận lần 2:")) return;
+    const snap = await db.collection("applications").get();
+    const batch = db.batch();
+    snap.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    alert("✅ Đã xóa toàn bộ phản hồi!");
+}
+</script>
+</body>
+</html>
