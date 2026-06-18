@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feedback Vòng 3 | Enactus FTU Hanoi</title>
+    <title>Feedback | Enactus FTU Hanoi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -26,14 +26,14 @@
             --white: #ffffff;
             --error: #ef4444;
             --error-light: #fee2e2;
-            --success: #fff421;
+            --success: #10b981;
             --success-light: #d1fae5;
             --warning: #f59e0b;
             --warning-light: #fef3c7;
             --info: #3b82f6;
             --info-light: #dbeafe;
             --border-radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
             --transition: all 0.3s ease;
         }
 
@@ -60,6 +60,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         .logo {
@@ -177,7 +179,7 @@
         }
 
         .question {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .question-text {
@@ -185,6 +187,11 @@
             font-weight: 600;
             color: var(--gray-700);
             margin-bottom: 12px;
+        }
+
+        .required-star {
+            color: var(--error);
+            margin-left: 4px;
         }
 
         .options-container {
@@ -197,8 +204,8 @@
             display: flex;
             align-items: flex-start;
             gap: 12px;
-            padding: 12px;
-            border: 1px solid var(--gray-300);
+            padding: 12px 16px;
+            border: 2px solid var(--gray-200);
             border-radius: var(--border-radius);
             cursor: pointer;
             transition: var(--transition);
@@ -206,6 +213,7 @@
 
         .option:hover {
             background-color: var(--gray-50);
+            border-color: var(--gray-300);
         }
 
         .option.selected {
@@ -213,22 +221,29 @@
             border-color: var(--primary-light);
         }
 
-        .option input[type="radio"] {
+        .option input[type="radio"],
+        .option input[type="checkbox"] {
             margin-top: 2px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            flex-shrink: 0;
         }
 
         .option label {
             cursor: pointer;
             flex: 1;
+            font-size: 15px;
         }
 
         .text-input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid var(--gray-300);
+            padding: 12px 16px;
+            border: 2px solid var(--gray-200);
             border-radius: var(--border-radius);
-            font-size: 14px;
+            font-size: 15px;
             transition: var(--transition);
+            background: var(--white);
         }
 
         .text-input:focus {
@@ -237,26 +252,35 @@
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
+        .text-input.error {
+            border-color: var(--error);
+        }
+
         .rating-container {
             display: flex;
             gap: 8px;
             justify-content: center;
-            margin: 16px 0;
+            margin: 8px 0;
+            flex-wrap: wrap;
         }
 
         .rating-option {
-            font-size: 24px;
+            font-size: 28px;
             cursor: pointer;
             transition: var(--transition);
+            padding: 4px 8px;
+            border-radius: 8px;
+            user-select: none;
         }
 
         .rating-option:hover {
-            transform: scale(1.2);
+            transform: scale(1.15);
+            background-color: var(--gray-50);
         }
 
         .rating-option.selected {
-            transform: scale(1.2);
-            color: var(--warning);
+            transform: scale(1.15);
+            background-color: var(--warning-light);
         }
 
         .tag-input-container {
@@ -265,10 +289,17 @@
 
         .tag-input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid var(--gray-300);
+            padding: 12px 16px;
+            border: 2px solid var(--gray-200);
             border-radius: var(--border-radius);
-            font-size: 14px;
+            font-size: 15px;
+            transition: var(--transition);
+        }
+
+        .tag-input:focus {
+            outline: none;
+            border-color: var(--info);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .tag-suggestions {
@@ -277,19 +308,21 @@
             left: 0;
             right: 0;
             background: var(--white);
-            border: 1px solid var(--gray-300);
+            border: 2px solid var(--gray-200);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
-            z-index: 10;
+            z-index: 100;
             max-height: 200px;
             overflow-y: auto;
             display: none;
+            margin-top: 4px;
         }
 
         .tag-suggestion {
-            padding: 10px 12px;
+            padding: 10px 16px;
             cursor: pointer;
-            border-bottom: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--gray-100);
+            transition: var(--transition);
         }
 
         .tag-suggestion:hover {
@@ -301,18 +334,26 @@
         }
 
         .tag {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             background-color: var(--info-light);
             color: var(--info);
-            padding: 4px 8px;
-            border-radius: 16px;
-            margin: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin: 4px 4px 4px 0;
             font-size: 14px;
+            font-weight: 500;
         }
 
         .tag i {
-            margin-left: 6px;
             cursor: pointer;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .tag i:hover {
+            opacity: 1;
         }
 
         .char-counter {
@@ -320,6 +361,14 @@
             color: var(--gray-500);
             text-align: right;
             margin-top: 4px;
+        }
+
+        .char-counter.warning {
+            color: var(--warning);
+        }
+
+        .char-counter.danger {
+            color: var(--error);
         }
 
         .submit-btn {
@@ -336,41 +385,54 @@
             margin-top: 16px;
         }
 
-        .submit-btn:hover {
-            background-color: var(--success-light);
-            color: var(--success);
+        .submit-btn:hover:not(:disabled) {
+            background-color: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
         .submit-btn:disabled {
             background-color: var(--gray-300);
             color: var(--gray-500);
             cursor: not-allowed;
+            transform: none;
         }
 
         /* Status Messages */
         .status-message {
-            padding: 12px 16px;
+            padding: 14px 20px;
             border-radius: var(--border-radius);
             margin-bottom: 16px;
             display: none;
+            font-weight: 500;
         }
 
         .status-success {
             background-color: var(--success-light);
-            color: var(--success);
+            color: #065f46;
             border: 1px solid var(--success);
+            display: block;
         }
 
         .status-error {
             background-color: var(--error-light);
-            color: var(--error);
+            color: #991b1b;
             border: 1px solid var(--error);
+            display: block;
         }
 
         .status-warning {
             background-color: var(--warning-light);
-            color: var(--warning);
+            color: #92400e;
             border: 1px solid var(--warning);
+            display: block;
+        }
+
+        .status-info {
+            background-color: var(--info-light);
+            color: #1e40af;
+            border: 1px solid var(--info);
+            display: block;
         }
 
         /* Access Denied */
@@ -396,6 +458,45 @@
         .access-denied p {
             color: var(--gray-600);
             margin-bottom: 24px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .back-btn {
+            padding: 10px 24px;
+            background-color: var(--gray-100);
+            border: none;
+            border-radius: var(--border-radius);
+            color: var(--gray-700);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            background-color: var(--gray-200);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray-500);
+        }
+
+        .loading i {
+            font-size: 32px;
+            margin-bottom: 12px;
+            display: block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Footer */
@@ -406,16 +507,27 @@
             color: var(--gray-500);
             font-size: 14px;
             border-top: 1px solid var(--gray-200);
+            margin-top: auto;
         }
 
+        /* Responsive */
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
-                gap: 16px;
+                align-items: stretch;
+                text-align: center;
+            }
+
+            .logo {
+                justify-content: center;
+            }
+
+            .user-section {
+                justify-content: center;
             }
 
             .main-content {
-                padding: 16px;
+                padding: 12px;
             }
 
             .feedback-container {
@@ -423,7 +535,30 @@
             }
 
             .rating-container {
-                flex-wrap: wrap;
+                gap: 4px;
+            }
+
+            .rating-option {
+                font-size: 22px;
+                padding: 2px 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .feedback-title {
+                font-size: 20px;
+            }
+
+            .question-text {
+                font-size: 14px;
+            }
+
+            .option {
+                padding: 10px 12px;
+            }
+
+            .option label {
+                font-size: 14px;
             }
         }
     </style>
@@ -449,12 +584,18 @@
         <!-- Status Messages -->
         <div id="status-message" class="status-message"></div>
 
+        <!-- Loading -->
+        <div id="loading-state" class="loading">
+            <i class="fas fa-spinner"></i>
+            <p>Đang tải dữ liệu...</p>
+        </div>
+
         <!-- Access Denied (hidden by default) -->
         <div id="access-denied" class="access-denied" style="display: none;">
             <i class="fas fa-lock"></i>
             <h2>Không có quyền truy cập</h2>
-            <p>Bạn chưa được cấp quyền để gửi feedback hoặc không nằm trong danh sách ứng viên vòng 3.</p>
-            <button class="logout-btn" onclick="window.location.href='../dashboard.html'">
+            <p id="access-message">Bạn chưa được cấp quyền để gửi feedback hoặc không nằm trong danh sách ứng viên vòng 3.</p>
+            <button class="back-btn" onclick="window.location.href='../dashboard.html'">
                 <i class="fas fa-arrow-left"></i>
                 Quay về Dashboard
             </button>
@@ -462,10 +603,10 @@
 
         <!-- Feedback Form (hidden by default) -->
         <div id="feedback-form-container" class="feedback-container" style="display: none;">
-            <h1 class="feedback-title">Feedback Vòng 3 - Teamwork</h1>
-            <p class="feedback-subtitle">Chia sẻ trải nghiệm của bạn sau quá trình tham gia vòng 3</p>
+            <h1 class="feedback-title">Feedback</h1>
+            <p class="feedback-subtitle">Chia sẻ trải nghiệm của bạn sau quá trình tham gia vòng Teamwwork</p>
 
-            <form id="feedback-form">
+            <form id="feedback-form" novalidate>
                 <!-- Form sẽ được render động bằng JavaScript -->
             </form>
         </div>
@@ -473,568 +614,194 @@
 
     <!-- Footer -->
     <div class="footer">
-        © 2023 Enactus FTU Hanoi. All rights reserved.
+        © 2026 Enactus FTU Hanoi. All rights reserved.
     </div>
-    <script src="/script/config.js"></script>
-    <script src="/content/feedback.js"></script>
-    <script>
 
-        // Global State
+    <script src="/script/config.js"></script>
+    <script>
+        // ============================================================
+        // GLOBAL STATE
+        // ============================================================
         const userEmail = sessionStorage.getItem("email");
         let userRole = sessionStorage.getItem("role") || null;
         let currentUser = null;
+        let currentApplication = null;
         let teamMembers = [];
         let feedbackSubmitted = false;
+        let questions = [];
 
-        // Check authentication
+        // ============================================================
+        // AUTH CHECK
+        // ============================================================
         if (!userEmail || !userRole) {
             window.location.href = "../login.html";
         }
 
-        // Auth state listener
+        // ============================================================
+        // FIREBASE AUTH LISTENER
+        // ============================================================
         auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                try {
-                    const snap = await db
-                        .collection("account")
-                        .where("email", "==", user.email)
-                        .limit(1)
-                        .get();
-
-                    if (!snap.empty) {
-                        const doc = snap.docs[0];
-                        const data = doc.data();
-
-                        userRole = data.role || userRole;
-                        currentUser = {
-                            id: doc.id,
-                            ...data
-                        };
-
-                        // Update session storage
-                        sessionStorage.setItem("role", userRole);
-                        sessionStorage.setItem("department", data.department || "");
-
-                        // Update UI
-                        updateUserInfo(currentUser.fullname || currentUser.email);
-
-                        // Check if user is eligible for feedback
-                        await checkEligibility();
-                    } else {
-                        // Account doesn't exist
-                        await auth.signOut();
-                        window.location.href = "../login.html";
-                        return;
-                    }
-                } catch (e) {
-                    console.error("Lỗi khi lấy account:", e);
-                    showStatus("Có lỗi xảy ra khi tải thông tin người dùng", "error");
-                }
-            } else {
+            if (!user) {
                 window.location.href = "../login.html";
-            }
-        });
-
-        // Update user info in the header
-        function updateUserInfo(fullname) {
-            const userAvatarEl = document.getElementById("user-avatar");
-            if (userAvatarEl) userAvatarEl.textContent = fullname.charAt(0).toUpperCase();
-        }
-
-// Check if user is eligible for feedback
-async function checkEligibility() {
-    try {
-        // Kiểm tra hệ thống feedback có được kích hoạt không
-        const settingsDoc = await db.collection('system').doc('feedback_settings').get();
-        
-        if (!settingsDoc.exists || settingsDoc.data().enabled !== true) {
-            showAccessDenied('Hệ thống feedback hiện chưa được kích hoạt');
-            return;
-        }
-        
-        // Kiểm tra thời hạn
-        if (settingsDoc.data().deadline) {
-            const deadline = settingsDoc.data().deadline.toDate();
-            if (new Date() > deadline) {
-                showAccessDenied('Thời hạn gửi feedback đã kết thúc');
                 return;
             }
-        }
 
-        // Check if user is in round 3 and has a team
-        const appSnapshot = await db
-            .collection("applications")
-            .where("email", "==", currentUser.email)
-            .limit(1)
-            .get();
+            try {
+                // Lấy thông tin account
+                const snap = await db
+                    .collection("account")
+                    .where("email", "==", user.email)
+                    .limit(1)
+                    .get();
 
-        if (appSnapshot.empty) {
-            showAccessDenied('Không tìm thấy thông tin ứng viên');
-            return;
-        }
+                if (snap.empty) {
+                    await auth.signOut();
+                    window.location.href = "../login.html";
+                    return;
+                }
 
-        const appDoc = appSnapshot.docs[0];
-        const appData = appDoc.data();
+                const doc = snap.docs[0];
+                const data = doc.data();
 
-        if (appData.current_round !== "round3") {
-            showAccessDenied('Bạn không nằm trong danh sách ứng viên vòng 3');
-            return;
-        }
+                userRole = data.role || userRole;
+                currentUser = { id: doc.id, ...data };
 
-        if (!appData.round3 || !appData.round3.team) {
-            showAccessDenied('Bạn chưa được xếp vào team cho vòng 3');
-            return;
-        }
+                sessionStorage.setItem("role", userRole);
+                sessionStorage.setItem("department", data.department || "");
 
-        // Check if user has permission
-        if (!appData.feedback_permission) {
-            showAccessDenied('Bạn chưa được cấp quyền gửi feedback');
-            return;
-        }
+                // Cập nhật avatar
+                const avatar = document.getElementById("user-avatar");
+                if (avatar) {
+                    avatar.textContent = (data.fullname || data.email || "U").charAt(0).toUpperCase();
+                }
 
-        // Get team members
-        await loadTeamMembers(appData.round3.team);
+                // Kiểm tra quyền feedback
+                await checkEligibility();
 
-        // Check if feedback already submitted
-        await checkFeedbackSubmission(appDoc.id);
-
-        // Show feedback form và render questions
-        showFeedbackForm();
-        renderDynamicQuestions();
-        setupDynamicEventListeners();
-
-    } catch (error) {
-        console.error("Lỗi khi kiểm tra điều kiện:", error);
-        showStatus("Có lỗi xảy ra khi kiểm tra điều kiện", "error");
-    }
-}
-
-        // Render dynamic questions from feedback.js
-function renderDynamicQuestions() {
-    const form = document.getElementById('feedback-form');
-    if (!form) return;
-    
-    form.innerHTML = ''; // Xóa form cũ
-    
-    Object.keys(feedbackQuestions).forEach(partKey => {
-        const part = feedbackQuestions[partKey];
-        
-        // Tạo section
-        const section = document.createElement('div');
-        section.className = 'section';
-        section.innerHTML = `
-            <h2 class="section-title">
-                <i class="fas fa-${part.icon || 'question'}"></i>
-                ${part.title}
-            </h2>
-        `;
-        
-        // Render từng câu hỏi
-        part.questions.forEach(question => {
-            const questionElement = renderQuestion(question);
-            if (questionElement) {
-                section.appendChild(questionElement);
+            } catch (error) {
+                console.error("Lỗi khi tải thông tin:", error);
+                showStatus("Có lỗi xảy ra khi tải thông tin người dùng", "error");
             }
         });
-        
-        form.appendChild(section);
-    });
-    
-    // Thêm nút submit
-    const submitBtn = document.createElement('button');
-    submitBtn.type = 'submit';
-    submitBtn.className = 'submit-btn';
-    submitBtn.id = 'submit-btn';
-    submitBtn.textContent = 'Gửi Feedback';
-    submitBtn.disabled = feedbackSubmitted;
-    
-    form.appendChild(submitBtn);
-}
 
-// Render individual question
-function renderQuestion(question) {
-    const questionDiv = document.createElement('div');
-    questionDiv.className = 'question';
-    
-    // Question text
-    const questionText = document.createElement('p');
-    questionText.className = 'question-text';
-    questionText.textContent = question.question;
-    questionDiv.appendChild(questionText);
-    
-    // Render based on question type
-    switch(question.type) {
-        case 'radio':
-            questionDiv.appendChild(renderRadioQuestion(question));
-            break;
-        case 'text':
-            questionDiv.appendChild(renderTextQuestion(question));
-            break;
-        case 'rating':
-            questionDiv.appendChild(renderRatingQuestion(question));
-            break;
-        case 'tag':
-            questionDiv.appendChild(renderTagQuestion(question));
-            break;
-        case 'textarea':
-            questionDiv.appendChild(renderTextareaQuestion(question));
-            break;
-        case 'checkbox':
-            questionDiv.appendChild(renderCheckboxQuestion(question));
-            break;
-        default:
-            console.warn('Unknown question type:', question.type);
-    }
-    
-    return questionDiv;
-}
-
-// Render radio question
-function renderRadioQuestion(question) {
-    const container = document.createElement('div');
-    container.className = 'options-container';
-    
-    question.options.forEach((option, index) => {
-        const optionId = `${question.id}-option${index + 1}`;
-        const optionDiv = document.createElement('div');
-        optionDiv.className = 'option';
-        
-        optionDiv.innerHTML = `
-            <input type="radio" id="${optionId}" name="${question.id}" value="${option}" ${question.required ? 'required' : ''}>
-            <label for="${optionId}">${option}</label>
-        `;
-        
-        container.appendChild(optionDiv);
-    });
-    
-    return container;
-}
-
-// Render text question
-function renderTextQuestion(question) {
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'text-input';
-    input.id = question.id;
-    input.placeholder = question.placeholder || '';
-    input.maxLength = question.maxLength || 100;
-    input.required = question.required || false;
-    
-    return input;
-}
-
-// Render rating question
-function renderRatingQuestion(question) {
-    const container = document.createElement('div');
-    container.className = 'rating-container';
-    
-    for (let i = 1; i <= question.maxRating; i++) {
-        const ratingOption = document.createElement('div');
-        ratingOption.className = 'rating-option';
-        ratingOption.setAttribute('data-value', i);
-        ratingOption.textContent = '🌟'.repeat(i);
-        container.appendChild(ratingOption);
-    }
-    
-    const hiddenInput = document.createElement('input');
-    hiddenInput.type = 'hidden';
-    hiddenInput.id = question.id;
-    hiddenInput.name = question.id;
-    hiddenInput.required = question.required || false;
-    
-    container.appendChild(hiddenInput);
-    return container;
-}
-
-// Render tag question
-function renderTagQuestion(question) {
-    const container = document.createElement('div');
-    
-    const tagInputContainer = document.createElement('div');
-    tagInputContainer.className = 'tag-input-container';
-    
-    tagInputContainer.innerHTML = `
-        <input type="text" class="text-input tag-input" id="${question.id}-input" placeholder="${question.placeholder || 'Gõ @ để tag thành viên'}">
-        <div class="tag-suggestions" id="${question.id}-suggestions"></div>
-    `;
-    
-    const tagsContainer = document.createElement('div');
-    tagsContainer.id = `${question.id}-tags`;
-    tagsContainer.style.marginTop = '8px';
-    
-    const hiddenInput = document.createElement('input');
-    hiddenInput.type = 'hidden';
-    hiddenInput.id = question.id;
-    hiddenInput.name = question.id;
-    
-    container.appendChild(tagInputContainer);
-    container.appendChild(tagsContainer);
-    container.appendChild(hiddenInput);
-    
-    return container;
-}
-
-// Render textarea question
-function renderTextareaQuestion(question) {
-    const container = document.createElement('div');
-    
-    const textarea = document.createElement('textarea');
-    textarea.className = 'text-input';
-    textarea.id = question.id;
-    textarea.placeholder = question.placeholder || '';
-    textarea.rows = 3;
-    textarea.maxLength = question.maxLength || 200;
-    textarea.required = question.required || false;
-    
-    const counter = document.createElement('div');
-    counter.className = 'char-counter';
-    counter.innerHTML = `<span id="${question.id}-counter">0</span>/${question.maxLength || 200}`;
-    
-    container.appendChild(textarea);
-    container.appendChild(counter);
-    
-    return container;
-}
-
-// Handle form submission
-async function handleFormSubmit(event) {
-    event.preventDefault();
-    
-    // Validate form
-    if (!validateForm()) {
-        return;
-    }
-    
-    try {
-        // Get application data
-        const appSnapshot = await db
-            .collection("applications")
-            .where("email", "==", currentUser.email)
-            .limit(1)
-            .get();
-
-        if (appSnapshot.empty) {
-            showStatus("Không tìm thấy thông tin ứng viên", "error");
-            return;
-        }
-
-        const appDoc = appSnapshot.docs[0];
-        const appData = appDoc.data();
-
-        // Collect form data
-        const formData = {
-            applicantId: appDoc.id,
-            applicantName: appData.fullname,
-            applicantEmail: currentUser.email,
-            team: appData.round3?.team || '',
-            timestamp: new Date(),
-            
-            // Collect answers from all questions
-            q1: document.querySelector('input[name="q1"]:checked')?.value || '',
-            q2: document.getElementById('q2')?.value || '',
-            q3: document.getElementById('q3')?.value || '',
-            q4: document.getElementById('q4')?.value || '',
-            q5: document.querySelector('input[name="q5"]:checked')?.value || '',
-            q6: document.getElementById('q6')?.value ? JSON.parse(document.getElementById('q6').value) : [],
-            q7: document.querySelector('input[name="q7"]:checked')?.value || '',
-            q8: document.getElementById('q8')?.value || '',
-            q9: Array.from(document.querySelectorAll('input[name="q9"]:checked')).map(cb => cb.value) || [],
-            q9Details: document.getElementById('q9-details')?.value || ''
-        };
-
-        // Submit to Firebase
-        await db.collection('feedback').add(formData);
-        
-        // Update UI
-        feedbackSubmitted = true;
-        document.getElementById("submit-btn").disabled = true;
-        document.getElementById("submit-btn").textContent = "Đã gửi Feedback";
-        
-        showStatus("✅ Cảm ơn bạn đã gửi feedback! Đóng góp của bạn rất có giá trị với chúng tôi.", "success");
-        
-    } catch (error) {
-        console.error("Lỗi khi gửi feedback:", error);
-        showStatus("❌ Có lỗi xảy ra khi gửi feedback. Vui lòng thử lại.", "error");
-    }
-}
-
-// Add form submit event listener
-document.addEventListener('DOMContentLoaded', function() {
-    // Logout button
-    document.getElementById('logout-btn').addEventListener('click', function() {
-        auth.signOut().then(() => {
-            sessionStorage.clear();
-            window.location.href = "../login.html";
-        });
-    });
-    
-    // Form submission
-    const form = document.getElementById('feedback-form');
-    if (form) {
-        form.addEventListener('submit', handleFormSubmit);
-    }
-});
-
-// Setup event listeners for dynamic questions
-function setupDynamicEventListeners() {
-    // Rating options
-    document.querySelectorAll('.rating-option').forEach(option => {
-        option.addEventListener('click', function() {
-            const value = this.getAttribute('data-value');
-            const questionId = this.closest('.question').querySelector('input[type="hidden"]').id;
-            document.getElementById(questionId).value = value;
-            
-            // Update UI
-            this.closest('.rating-container').querySelectorAll('.rating-option').forEach(opt => {
-                opt.classList.remove('selected');
+        // ============================================================
+        // LOGOUT
+        // ============================================================
+        document.getElementById("logout-btn").addEventListener("click", function() {
+            auth.signOut().then(() => {
+                sessionStorage.clear();
+                window.location.href = "../login.html";
             });
-            this.classList.add('selected');
         });
-    });
 
-    // Option selection styling
-    document.querySelectorAll('.option input[type="radio"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            // Remove selected class from all options in this question
-            const questionOptions = this.closest('.options-container').querySelectorAll('.option');
-            questionOptions.forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            
-            // Add selected class to current option
-            this.closest('.option').classList.add('selected');
-        });
-    });
-
-    // Character counters for textareas
-    document.querySelectorAll('textarea.text-input').forEach(textarea => {
-        textarea.addEventListener('input', function() {
-            const counterId = this.id + '-counter';
-            const counter = document.getElementById(counterId);
-            if (counter) {
-                counter.textContent = this.value.length;
-            }
-        });
-    });
-
-    // Setup tag input for question 6
-    setupTagInput();
-}
-
-// Setup tag input functionality
-function setupTagInput() {
-    const tagInput = document.getElementById('q6-input');
-    if (!tagInput) return;
-
-    const tagSuggestions = document.getElementById('q6-suggestions');
-    const tagsContainer = document.getElementById('q6-tags');
-    const hiddenInput = document.getElementById('q6');
-    let selectedTags = [];
-
-    tagInput.addEventListener('input', function() {
-        const value = this.value;
-        
-        if (value.includes('@')) {
-            const searchTerm = value.split('@').pop().toLowerCase();
-            
-            if (searchTerm.length > 0) {
-                const filteredMembers = teamMembers.filter(member => 
-                    member.name.toLowerCase().includes(searchTerm)
-                );
+        // ============================================================
+        // CHECK ELIGIBILITY
+        // ============================================================
+        async function checkEligibility() {
+            try {
+                // 1. Kiểm tra hệ thống có bật không
+                const settingsDoc = await db.collection("system").doc("feedback_settings").get();
                 
-                showTagSuggestions(filteredMembers, 'q6');
-            } else {
-                showTagSuggestions(teamMembers, 'q6');
+                if (!settingsDoc.exists || settingsDoc.data().enabled !== true) {
+                    showAccessDenied("Hệ thống feedback hiện chưa được kích hoạt");
+                    return;
+                }
+
+                // 2. Kiểm tra thời hạn
+                if (settingsDoc.data().deadline) {
+                    const deadline = settingsDoc.data().deadline.toDate();
+                    if (new Date() > deadline) {
+                        showAccessDenied("⏰ Thời hạn gửi feedback đã kết thúc");
+                        return;
+                    }
+                }
+
+                // 3. Kiểm tra ứng viên vòng 3
+                const appSnapshot = await db
+                    .collection("applications")
+                    .where("email", "==", currentUser.email)
+                    .limit(1)
+                    .get();
+
+                if (appSnapshot.empty) {
+                    showAccessDenied("Không tìm thấy thông tin ứng viên");
+                    return;
+                }
+
+                const appDoc = appSnapshot.docs[0];
+                const appData = appDoc.data();
+                currentApplication = { id: appDoc.id, ...appData };
+
+                if (appData.current_round !== "round3") {
+                    showAccessDenied("Bạn không nằm trong danh sách ứng viên vòng 3");
+                    return;
+                }
+
+                if (!appData.round3 || !appData.round3.team) {
+                    showAccessDenied("Bạn chưa được xếp vào team cho vòng 3");
+                    return;
+                }
+
+                if (!appData.feedback_permission) {
+                    showAccessDenied("Bạn chưa được cấp quyền gửi feedback. Vui lòng liên hệ admin.");
+                    return;
+                }
+
+                // 4. Load team members
+                await loadTeamMembers(appData.round3.team);
+
+                // 5. Load questions từ Firestore
+                await loadQuestions();
+
+                // 6. Kiểm tra đã gửi feedback chưa
+                await checkFeedbackSubmission(appDoc.id);
+
+                // 7. Hiển thị form
+                showFeedbackForm();
+
+            } catch (error) {
+                console.error("Lỗi khi kiểm tra điều kiện:", error);
+                showStatus("Có lỗi xảy ra khi kiểm tra điều kiện", "error");
             }
-        } else {
-            hideTagSuggestions('q6');
         }
-    });
 
-    function showTagSuggestions(members, questionId) {
-        const suggestions = document.getElementById(`${questionId}-suggestions`);
-        suggestions.innerHTML = '';
-        
-        if (members.length === 0) {
-            suggestions.innerHTML = '<div class="tag-suggestion">Không tìm thấy thành viên</div>';
-        } else {
-            members.forEach(member => {
-                // Skip if already tagged
-                if (selectedTags.some(tag => tag.id === member.id)) return;
-                
-                const div = document.createElement('div');
-                div.className = 'tag-suggestion';
-                div.textContent = member.name;
-                div.addEventListener('click', () => {
-                    addTag(member, 'q6');
-                    tagInput.value = '';
-                    hideTagSuggestions('q6');
-                });
-                suggestions.appendChild(div);
-            });
+        // ============================================================
+        // LOAD QUESTIONS FROM FIRESTORE
+        // ============================================================
+        async function loadQuestions() {
+            try {
+                const doc = await db.collection("system").doc("feedback_questions").get();
+                if (doc.exists && doc.data().questions) {
+                    questions = doc.data().questions;
+                } else {
+                    // Fallback: tạo câu hỏi mặc định
+                    questions = getDefaultQuestions();
+                    await db.collection("system").doc("feedback_questions").set({ 
+                        questions: questions, 
+                        updatedAt: new Date() 
+                    });
+                }
+            } catch (error) {
+                console.error("Lỗi tải câu hỏi:", error);
+                questions = getDefaultQuestions();
+            }
         }
-        
-        suggestions.style.display = 'block';
-    }
 
-    function hideTagSuggestions(questionId) {
-        const suggestions = document.getElementById(`${questionId}-suggestions`);
-        suggestions.style.display = 'none';
-    }
+        function getDefaultQuestions() {
+            return [
+                { id: "q1", text: "Tuần teamwork của bạn diễn ra như thế nào?", type: "radio", required: true, options: ["Rất tệ", "Chưa tốt", "Bình thường", "Tốt", "Rất tốt"] },
+                { id: "q2", text: "Bạn cảm thấy mình phát triển được điều gì nhất?", type: "textarea", required: true, placeholder: "Chia sẻ điều bạn học được...", maxLength: 500 },
+                { id: "q3", text: "Đánh giá khả năng dẫn dắt của Team Lead", type: "rating", required: true, maxRating: 5 },
+                { id: "q4", text: "Không khí làm việc của nhóm bạn như thế nào?", type: "radio", required: true, options: ["Căng thẳng", "Thiếu giao tiếp", "Ổn", "Thoải mái", "Rất tích cực"] },
+                { id: "q5", text: "Thành viên bạn thấy đáng học hỏi nhất", type: "tag", required: false, placeholder: "Gõ @ để tag thành viên" },
+                { id: "q6", text: "Đánh giá Supporter của nhóm", type: "radio", required: true, options: ["Không hỗ trợ gì", "Ít hỗ trợ", "Bình thường", "Nhiệt tình", "Rất tuyệt"] },
+                { id: "q7", text: "Trải lòng về vòng 3", type: "textarea", required: false, placeholder: "Chia sẻ cảm nhận...", maxLength: 1000 },
+            ];
+        }
 
-    function addTag(member, questionId) {
-        // Check if already tagged
-        if (selectedTags.some(tag => tag.id === member.id)) return;
-        
-        selectedTags.push(member);
-        updateTagsDisplay(questionId);
-    }
-
-    function updateTagsDisplay(questionId) {
-        const container = document.getElementById(`${questionId}-tags`);
-        const hidden = document.getElementById(questionId);
-        
-        container.innerHTML = '';
-        selectedTags.forEach(tag => {
-            const tagEl = document.createElement('span');
-            tagEl.className = 'tag';
-            tagEl.innerHTML = `${tag.name} <i class="fas fa-times"></i>`;
-            tagEl.querySelector('i').addEventListener('click', () => removeTag(tag.id, questionId));
-            container.appendChild(tagEl);
-        });
-        
-        // Update hidden input
-        hidden.value = JSON.stringify(selectedTags);
-    }
-
-    function removeTag(memberId, questionId) {
-        selectedTags = selectedTags.filter(tag => tag.id !== memberId);
-        updateTagsDisplay(questionId);
-    }
-}
-
-// Render checkbox question
-function renderCheckboxQuestion(question) {
-    const container = document.createElement('div');
-    container.className = 'options-container';
-    
-    question.options.forEach((option, index) => {
-        const optionId = `${question.id}-option${index + 1}`;
-        const optionDiv = document.createElement('div');
-        optionDiv.className = 'option';
-        
-        optionDiv.innerHTML = `
-            <input type="checkbox" id="${optionId}" name="${question.id}" value="${option.replace(/^[^a-zA-Z0-9]+/, '')}">
-            <label for="${optionId}">${option}</label>
-        `;
-        
-        container.appendChild(optionDiv);
-    });
-    
-    return container;
-}
-
-        // Load team members for tagging
+        // ============================================================
+        // LOAD TEAM MEMBERS
+        // ============================================================
         async function loadTeamMembers(teamName) {
             try {
                 const teamSnapshot = await db
@@ -1045,10 +812,10 @@ function renderCheckboxQuestion(question) {
                 teamMembers = [];
                 teamSnapshot.forEach(doc => {
                     const data = doc.data();
-                    if (data.email !== currentUser.email) { // Exclude current user
+                    if (data.email !== currentUser.email) {
                         teamMembers.push({
                             id: doc.id,
-                            name: data.fullname,
+                            name: data.fullname || "Ứng viên",
                             email: data.email
                         });
                     }
@@ -1057,10 +824,13 @@ function renderCheckboxQuestion(question) {
                 console.log("Team members loaded:", teamMembers);
             } catch (error) {
                 console.error("Lỗi khi tải danh sách thành viên:", error);
+                teamMembers = [];
             }
         }
 
-        // Check if feedback already submitted
+        // ============================================================
+        // CHECK FEEDBACK SUBMISSION
+        // ============================================================
         async function checkFeedbackSubmission(appId) {
             try {
                 const feedbackSnapshot = await db
@@ -1071,115 +841,651 @@ function renderCheckboxQuestion(question) {
 
                 if (!feedbackSnapshot.empty) {
                     feedbackSubmitted = true;
-                    showStatus("Bạn đã gửi feedback trước đó. Cảm ơn bạn đã đóng góp ý kiến!", "success");
-                    document.getElementById("submit-btn").disabled = true;
-                    document.getElementById("submit-btn").textContent = "Đã gửi Feedback";
+                    showStatus("✅ Bạn đã gửi feedback trước đó. Cảm ơn bạn đã đóng góp!", "success");
                 }
             } catch (error) {
                 console.error("Lỗi khi kiểm tra feedback:", error);
             }
         }
 
-// Show access denied message
-function showAccessDenied(message = 'Bạn chưa được cấp quyền để gửi feedback hoặc không nằm trong danh sách ứng viên vòng 3.') {
-    document.getElementById("access-denied").style.display = "block";
-    document.getElementById("feedback-form-container").style.display = "none";
-    
-    // Cập nhật message
-    const messageElement = document.querySelector('#access-denied p');
-    if (messageElement) {
-        messageElement.textContent = message;
-    }
-}
-
-// Show feedback form
-function showFeedbackForm() {
-    document.getElementById("access-denied").style.display = "none";
-    document.getElementById("feedback-form-container").style.display = "block";
-    
-    // CHỈ disable nút submit nếu đã gửi feedback
-    const submitBtn = document.getElementById("submit-btn");
-    if (submitBtn) {
-        submitBtn.disabled = feedbackSubmitted;
-        if (feedbackSubmitted) {
-            submitBtn.textContent = "Đã gửi Feedback";
+        // ============================================================
+        // SHOW ACCESS DENIED
+        // ============================================================
+        function showAccessDenied(message) {
+            document.getElementById("loading-state").style.display = "none";
+            document.getElementById("access-denied").style.display = "block";
+            document.getElementById("feedback-form-container").style.display = "none";
+            
+            const msgEl = document.getElementById("access-message");
+            if (msgEl && message) {
+                msgEl.textContent = message;
+            }
         }
-    }
-}
 
-        // Show status message
+        // ============================================================
+        // SHOW FEEDBACK FORM
+        // ============================================================
+        function showFeedbackForm() {
+            document.getElementById("loading-state").style.display = "none";
+            document.getElementById("access-denied").style.display = "none";
+            document.getElementById("feedback-form-container").style.display = "block";
+            
+            renderDynamicQuestions();
+            setupDynamicEventListeners();
+        }
+
+        // ============================================================
+        // RENDER DYNAMIC QUESTIONS
+        // ============================================================
+        function renderDynamicQuestions() {
+            const form = document.getElementById("feedback-form");
+            if (!form) return;
+            
+            form.innerHTML = "";
+
+            if (!questions || questions.length === 0) {
+                form.innerHTML = `<div class="status-message status-warning">Chưa có câu hỏi nào được cấu hình.</div>`;
+                return;
+            }
+
+            // Tạo section duy nhất
+            const section = document.createElement("div");
+            section.className = "section";
+            section.innerHTML = `
+                <h2 class="section-title">
+                    <i class="fas fa-question-circle"></i>
+                    Câu hỏi đánh giá
+                </h2>
+            `;
+
+            questions.forEach((q, index) => {
+                const questionElement = renderQuestion(q, index + 1);
+                if (questionElement) {
+                    section.appendChild(questionElement);
+                }
+            });
+
+            form.appendChild(section);
+
+            // Thêm nút submit
+            const submitBtn = document.createElement("button");
+            submitBtn.type = "submit";
+            submitBtn.className = "submit-btn";
+            submitBtn.id = "submit-btn";
+            submitBtn.textContent = feedbackSubmitted ? "✅ Đã gửi Feedback" : "📤 Gửi Feedback";
+            submitBtn.disabled = feedbackSubmitted;
+            form.appendChild(submitBtn);
+
+            // Event submit
+            form.addEventListener("submit", handleFormSubmit);
+        }
+
+        // ============================================================
+        // RENDER INDIVIDUAL QUESTION
+        // ============================================================
+        function renderQuestion(q, index) {
+            const div = document.createElement("div");
+            div.className = "question";
+            div.dataset.questionId = q.id;
+
+            const text = document.createElement("p");
+            text.className = "question-text";
+            text.innerHTML = `<span style="color:var(--gray-400);font-weight:500;margin-right:8px;">${index}.</span> ${q.text}`;
+            if (q.required) {
+                text.innerHTML += ' <span class="required-star">*</span>';
+            }
+            div.appendChild(text);
+
+            switch (q.type) {
+                case "radio":
+                    div.appendChild(renderRadio(q));
+                    break;
+                case "checkbox":
+                    div.appendChild(renderCheckbox(q));
+                    break;
+                case "text":
+                    div.appendChild(renderText(q));
+                    break;
+                case "textarea":
+                    div.appendChild(renderTextarea(q));
+                    break;
+                case "rating":
+                    div.appendChild(renderRating(q));
+                    break;
+                case "tag":
+                    div.appendChild(renderTag(q));
+                    break;
+                default:
+                    div.innerHTML += `<p style="color:var(--gray-400);font-size:14px;">Loại câu hỏi không hỗ trợ</p>`;
+            }
+
+            return div;
+        }
+
+        // ============================================================
+        // RENDER RADIO
+        // ============================================================
+        function renderRadio(q) {
+            const container = document.createElement("div");
+            container.className = "options-container";
+
+            (q.options || []).forEach((option, idx) => {
+                const id = `${q.id}-${idx}`;
+                const optionDiv = document.createElement("div");
+                optionDiv.className = "option";
+
+                optionDiv.innerHTML = `
+                    <input type="radio" id="${id}" name="${q.id}" value="${option}" ${q.required ? "required" : ""}>
+                    <label for="${id}">${option}</label>
+                `;
+
+                const radio = optionDiv.querySelector("input");
+                radio.addEventListener("change", function() {
+                    optionDiv.closest(".options-container").querySelectorAll(".option").forEach(opt => {
+                        opt.classList.remove("selected");
+                    });
+                    if (this.checked) {
+                        optionDiv.classList.add("selected");
+                    }
+                });
+
+                container.appendChild(optionDiv);
+            });
+
+            return container;
+        }
+
+        // ============================================================
+        // RENDER CHECKBOX
+        // ============================================================
+        function renderCheckbox(q) {
+            const container = document.createElement("div");
+            container.className = "options-container";
+
+            (q.options || []).forEach((option, idx) => {
+                const id = `${q.id}-${idx}`;
+                const optionDiv = document.createElement("div");
+                optionDiv.className = "option";
+
+                optionDiv.innerHTML = `
+                    <input type="checkbox" id="${id}" name="${q.id}" value="${option}">
+                    <label for="${id}">${option}</label>
+                `;
+
+                const checkbox = optionDiv.querySelector("input");
+                checkbox.addEventListener("change", function() {
+                    if (this.checked) {
+                        optionDiv.classList.add("selected");
+                    } else {
+                        optionDiv.classList.remove("selected");
+                    }
+                });
+
+                container.appendChild(optionDiv);
+            });
+
+            return container;
+        }
+
+        // ============================================================
+        // RENDER TEXT
+        // ============================================================
+        function renderText(q) {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "text-input";
+            input.id = q.id;
+            input.name = q.id;
+            input.placeholder = q.placeholder || "";
+            input.maxLength = q.maxLength || 500;
+            input.required = q.required || false;
+            return input;
+        }
+
+        // ============================================================
+        // RENDER TEXTAREA
+        // ============================================================
+        function renderTextarea(q) {
+            const container = document.createElement("div");
+
+            const textarea = document.createElement("textarea");
+            textarea.className = "text-input";
+            textarea.id = q.id;
+            textarea.name = q.id;
+            textarea.placeholder = q.placeholder || "";
+            textarea.rows = 4;
+            textarea.maxLength = q.maxLength || 1000;
+            textarea.required = q.required || false;
+
+            const maxLen = q.maxLength || 1000;
+            const counter = document.createElement("div");
+            counter.className = "char-counter";
+            counter.innerHTML = `<span id="${q.id}-counter">0</span> / ${maxLen}`;
+
+            textarea.addEventListener("input", function() {
+                const count = this.value.length;
+                const counterSpan = document.getElementById(`${q.id}-counter`);
+                if (counterSpan) {
+                    counterSpan.textContent = count;
+                }
+                // Cảnh báo khi gần đạt max
+                counter.className = "char-counter";
+                if (count > maxLen * 0.9) {
+                    counter.classList.add("warning");
+                }
+                if (count >= maxLen) {
+                    counter.classList.add("danger");
+                }
+            });
+
+            container.appendChild(textarea);
+            container.appendChild(counter);
+            return container;
+        }
+
+        // ============================================================
+        // RENDER RATING
+        // ============================================================
+        function renderRating(q) {
+            const container = document.createElement("div");
+            container.className = "rating-container";
+
+            const maxRating = q.maxRating || 5;
+
+            for (let i = 1; i <= maxRating; i++) {
+                const star = document.createElement("div");
+                star.className = "rating-option";
+                star.dataset.value = i;
+                star.innerHTML = "⭐".repeat(i);
+                star.title = `${i} sao`;
+
+                star.addEventListener("click", function() {
+                    const parent = this.closest(".rating-container");
+                    parent.querySelectorAll(".rating-option").forEach(s => s.classList.remove("selected"));
+                    this.classList.add("selected");
+                    
+                    const hidden = parent.querySelector(`input[type="hidden"]`);
+                    if (hidden) {
+                        hidden.value = i;
+                    }
+                });
+
+                container.appendChild(star);
+            }
+
+            const hidden = document.createElement("input");
+            hidden.type = "hidden";
+            hidden.id = q.id;
+            hidden.name = q.id;
+            hidden.required = q.required || false;
+
+            container.appendChild(hidden);
+            return container;
+        }
+
+        // ============================================================
+        // RENDER TAG
+        // ============================================================
+        function renderTag(q) {
+            const container = document.createElement("div");
+
+            const inputContainer = document.createElement("div");
+            inputContainer.className = "tag-input-container";
+
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "tag-input";
+            input.id = `${q.id}-input`;
+            input.placeholder = q.placeholder || "Gõ @ để tag thành viên";
+
+            const suggestions = document.createElement("div");
+            suggestions.className = "tag-suggestions";
+            suggestions.id = `${q.id}-suggestions`;
+
+            inputContainer.appendChild(input);
+            inputContainer.appendChild(suggestions);
+
+            const tagsContainer = document.createElement("div");
+            tagsContainer.id = `${q.id}-tags`;
+            tagsContainer.style.marginTop = "8px";
+
+            const hidden = document.createElement("input");
+            hidden.type = "hidden";
+            hidden.id = q.id;
+            hidden.name = q.id;
+
+            container.appendChild(inputContainer);
+            container.appendChild(tagsContainer);
+            container.appendChild(hidden);
+
+            // State cho tag
+            let selectedTags = [];
+
+            // Xử lý input tag
+            input.addEventListener("input", function() {
+                const value = this.value;
+                
+                if (value.includes("@")) {
+                    const searchTerm = value.split("@").pop().toLowerCase();
+                    
+                    if (searchTerm.length > 0) {
+                        const filtered = teamMembers.filter(m => 
+                            m.name.toLowerCase().includes(searchTerm) &&
+                            !selectedTags.some(t => t.id === m.id)
+                        );
+                        showTagSuggestions(filtered, q.id);
+                    } else {
+                        showTagSuggestions(
+                            teamMembers.filter(m => !selectedTags.some(t => t.id === m.id)),
+                            q.id
+                        );
+                    }
+                } else {
+                    hideTagSuggestions(q.id);
+                }
+            });
+
+            input.addEventListener("blur", function() {
+                setTimeout(() => hideTagSuggestions(q.id), 300);
+            });
+
+            input.addEventListener("keydown", function(e) {
+                if (e.key === "Enter" && this.value.trim()) {
+                    e.preventDefault();
+                    // Nếu nhập tên không có @, tìm thành viên gần nhất
+                    const searchTerm = this.value.trim().toLowerCase();
+                    const found = teamMembers.find(m => 
+                        m.name.toLowerCase().includes(searchTerm) &&
+                        !selectedTags.some(t => t.id === m.id)
+                    );
+                    if (found) {
+                        addTag(found, q.id);
+                        this.value = "";
+                        hideTagSuggestions(q.id);
+                    }
+                }
+            });
+
+            // Hàm show suggestions
+            function showTagSuggestions(members, qId) {
+                const suggEl = document.getElementById(`${qId}-suggestions`);
+                if (!suggEl) return;
+                
+                suggEl.innerHTML = "";
+                
+                if (members.length === 0) {
+                    suggEl.innerHTML = '<div class="tag-suggestion" style="color:var(--gray-400);">Không tìm thấy thành viên</div>';
+                } else {
+                    members.forEach(member => {
+                        const div = document.createElement("div");
+                        div.className = "tag-suggestion";
+                        div.textContent = member.name;
+                        div.addEventListener("mousedown", function(e) {
+                            e.preventDefault();
+                            addTag(member, qId);
+                            document.getElementById(`${qId}-input`).value = "";
+                            hideTagSuggestions(qId);
+                        });
+                        suggEl.appendChild(div);
+                    });
+                }
+                
+                suggEl.style.display = "block";
+            }
+
+            function hideTagSuggestions(qId) {
+                const suggEl = document.getElementById(`${qId}-suggestions`);
+                if (suggEl) suggEl.style.display = "none";
+            }
+
+            function addTag(member, qId) {
+                if (selectedTags.some(t => t.id === member.id)) return;
+                
+                selectedTags.push(member);
+                updateTagsDisplay(qId);
+            }
+
+            function removeTag(memberId, qId) {
+                selectedTags = selectedTags.filter(t => t.id !== memberId);
+                updateTagsDisplay(qId);
+            }
+
+            function updateTagsDisplay(qId) {
+                const container = document.getElementById(`${qId}-tags`);
+                const hidden = document.getElementById(qId);
+                
+                if (!container) return;
+                
+                container.innerHTML = "";
+                
+                selectedTags.forEach(tag => {
+                    const tagEl = document.createElement("span");
+                    tagEl.className = "tag";
+                    tagEl.innerHTML = `${tag.name} <i class="fas fa-times"></i>`;
+                    tagEl.querySelector("i").addEventListener("click", function(e) {
+                        e.stopPropagation();
+                        removeTag(tag.id, qId);
+                    });
+                    container.appendChild(tagEl);
+                });
+                
+                if (hidden) {
+                    hidden.value = JSON.stringify(selectedTags);
+                }
+            }
+
+            // Lưu tham chiếu để dùng sau
+            container._tagData = { selectedTags, addTag, removeTag, updateTagsDisplay };
+
+            return container;
+        }
+
+        // ============================================================
+        // SETUP DYNAMIC EVENT LISTENERS
+        // ============================================================
+        function setupDynamicEventListeners() {
+            // Rating click (đã được xử lý trong render)
+            // Radio/Checkbox đã được xử lý trong render
+            
+            // Textarea counter đã được xử lý trong render
+        }
+
+        // ============================================================
+        // FORM SUBMISSION
+        // ============================================================
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+
+            if (feedbackSubmitted) {
+                showStatus("Bạn đã gửi feedback trước đó", "warning");
+                return;
+            }
+
+            // Validate
+            if (!validateForm()) {
+                return;
+            }
+
+            // Disable button
+            const submitBtn = document.getElementById("submit-btn");
+            submitBtn.disabled = true;
+            submitBtn.textContent = "⏳ Đang gửi...";
+
+            try {
+                // Thu thập dữ liệu
+                const formData = {
+                    applicantId: currentApplication.id,
+                    applicantName: currentUser.fullname || currentUser.email,
+                    applicantEmail: currentUser.email,
+                    team: currentApplication.round3?.team || "",
+                    timestamp: new Date(),
+                    answers: {}
+                };
+
+                // Lấy câu trả lời cho từng câu hỏi
+                questions.forEach(q => {
+                    const questionDiv = document.querySelector(`.question[data-question-id="${q.id}"]`);
+                    if (!questionDiv) return;
+
+                    let answer = null;
+
+                    switch (q.type) {
+                        case "radio": {
+                            const selected = questionDiv.querySelector('input[type="radio"]:checked');
+                            answer = selected ? selected.value : null;
+                            break;
+                        }
+                        case "checkbox": {
+                            const checked = questionDiv.querySelectorAll('input[type="checkbox"]:checked');
+                            answer = checked.length > 0 ? Array.from(checked).map(cb => cb.value) : null;
+                            break;
+                        }
+                        case "text":
+                        case "textarea": {
+                            const input = questionDiv.querySelector(".text-input");
+                            answer = input ? input.value.trim() : null;
+                            break;
+                        }
+                        case "rating": {
+                            const hidden = questionDiv.querySelector('input[type="hidden"]');
+                            answer = hidden ? hidden.value : null;
+                            if (answer) answer = parseInt(answer);
+                            break;
+                        }
+                        case "tag": {
+                            const hidden = document.getElementById(q.id);
+                            if (hidden && hidden.value) {
+                                try {
+                                    answer = JSON.parse(hidden.value);
+                                } catch (e) {
+                                    answer = null;
+                                }
+                            }
+                            break;
+                        }
+                    }
+
+                    if (answer !== null && answer !== "") {
+                        formData.answers[q.id] = answer;
+                    }
+                });
+
+                // Lưu vào Firestore
+                await db.collection("feedback").add(formData);
+
+                feedbackSubmitted = true;
+                submitBtn.textContent = "✅ Đã gửi Feedback";
+                showStatus("✅ Cảm ơn bạn đã gửi feedback! Đóng góp của bạn rất có giá trị.", "success");
+
+                // Cập nhật trạng thái đã gửi trong ứng dụng
+                await db.collection("applications").doc(currentApplication.id).update({
+                    feedback_submitted: true,
+                    feedback_submitted_at: new Date()
+                });
+
+            } catch (error) {
+                console.error("Lỗi khi gửi feedback:", error);
+                showStatus("❌ Có lỗi xảy ra khi gửi feedback. Vui lòng thử lại.", "error");
+                submitBtn.disabled = false;
+                submitBtn.textContent = "📤 Gửi Feedback";
+            }
+        }
+
+        // ============================================================
+        // VALIDATE FORM
+        // ============================================================
+        function validateForm() {
+            let isValid = true;
+            let firstError = null;
+
+            // Xóa class error cũ
+            document.querySelectorAll(".text-input.error").forEach(el => el.classList.remove("error"));
+
+            for (const q of questions) {
+                if (!q.required) continue;
+
+                const questionDiv = document.querySelector(`.question[data-question-id="${q.id}"]`);
+                if (!questionDiv) continue;
+
+                let hasValue = false;
+
+                switch (q.type) {
+                    case "radio": {
+                        const selected = questionDiv.querySelector('input[type="radio"]:checked');
+                        hasValue = !!selected;
+                        break;
+                    }
+                    case "checkbox": {
+                        // Checkbox không bắt buộc trong logic hiện tại
+                        hasValue = true;
+                        break;
+                    }
+                    case "text":
+                    case "textarea": {
+                        const input = questionDiv.querySelector(".text-input");
+                        if (input) {
+                            hasValue = input.value.trim() !== "";
+                            if (!hasValue) {
+                                input.classList.add("error");
+                            }
+                        }
+                        break;
+                    }
+                    case "rating": {
+                        const hidden = questionDiv.querySelector('input[type="hidden"]');
+                        hasValue = hidden && hidden.value !== "";
+                        break;
+                    }
+                    case "tag": {
+                        // Tag không bắt buộc
+                        hasValue = true;
+                        break;
+                    }
+                    default:
+                        hasValue = true;
+                }
+
+                if (!hasValue) {
+                    isValid = false;
+                    if (!firstError) {
+                        firstError = q.text;
+                        // Scroll đến câu hỏi đầu tiên bị lỗi
+                        questionDiv.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }
+                }
+            }
+
+            if (!isValid) {
+                showStatus(`⚠️ Vui lòng trả lời câu hỏi bắt buộc: "${firstError}"`, "error");
+                return false;
+            }
+
+            return true;
+        }
+
+        // ============================================================
+        // SHOW STATUS MESSAGE
+        // ============================================================
         function showStatus(message, type) {
             const statusEl = document.getElementById("status-message");
             statusEl.textContent = message;
             statusEl.className = `status-message status-${type}`;
             statusEl.style.display = "block";
 
-            // Auto hide after 5 seconds for success messages
+            // Tự động ẩn sau 6 giây
             if (type === "success") {
                 setTimeout(() => {
                     statusEl.style.display = "none";
-                }, 5000);
+                }, 6000);
             }
         }
 
-        // Initialize event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            // Logout button
-            document.getElementById('logout-btn').addEventListener('click', function() {
-                auth.signOut().then(() => {
-                    sessionStorage.clear();
-                    window.location.href = "../login.html";
-                });
-            });
+        // ============================================================
+        // XỬ LÝ KHI TRANG TẢI XONG
+        // ============================================================
+        document.addEventListener("DOMContentLoaded", function() {
+            // Đã có auth listener xử lý
         });
-
-       // Form validation
-function validateForm() {
-    // Check required fields từ feedbackQuestions
-    const requiredQuestions = [];
-    
-    // Tìm tất cả câu hỏi required
-    Object.keys(feedbackQuestions).forEach(partKey => {
-        feedbackQuestions[partKey].questions.forEach(question => {
-            if (question.required) {
-                requiredQuestions.push(question);
-            }
-        });
-    });
-    
-    // Validate từng câu hỏi required
-    for (const question of requiredQuestions) {
-        let isValid = false;
-        
-        switch(question.type) {
-            case 'radio':
-                isValid = document.querySelector(`input[name="${question.id}"]:checked`) !== null;
-                break;
-            case 'text':
-            case 'textarea':
-                isValid = document.getElementById(question.id)?.value.trim() !== '';
-                break;
-            case 'rating':
-                isValid = document.getElementById(question.id)?.value !== '';
-                break;
-            case 'checkbox':
-                // Checkbox không bắt buộc trong cấu hình hiện tại
-                isValid = true;
-                break;
-            case 'tag':
-                // Tag không bắt buộc
-                isValid = true;
-                break;
-        }
-        
-        if (!isValid) {
-            showStatus(`Vui lòng trả lời: ${question.question}`, "error");
-            return false;
-        }
-    }
-    
-    return true;
-}
     </script>
 </body>
 </html>
