@@ -567,7 +567,7 @@
     <!-- Header -->
     <div class="header">
         <div class="logo">
-            <img src="../assets/logo_den.png" alt="Enactus FTU Hanoi Logo">
+            <img src="/assets/logo_den.png" alt="Enactus FTU Hanoi Logo">
             <div class="logo-text">Enactus FTU Hanoi</div>
         </div>
         <div class="user-section">
@@ -590,7 +590,7 @@
             <p>Đang tải dữ liệu...</p>
         </div>
 
-        <!-- Access Denied (hidden by default) -->
+        <!-- Access Denied -->
         <div id="access-denied" class="access-denied" style="display: none;">
             <i class="fas fa-lock"></i>
             <h2>Không có quyền truy cập</h2>
@@ -601,10 +601,10 @@
             </button>
         </div>
 
-        <!-- Feedback Form (hidden by default) -->
+        <!-- Feedback Form -->
         <div id="feedback-form-container" class="feedback-container" style="display: none;">
             <h1 class="feedback-title">Feedback</h1>
-            <p class="feedback-subtitle">Chia sẻ trải nghiệm của bạn sau quá trình tham gia vòng Teamwwork</p>
+            <p class="feedback-subtitle">Chia sẻ trải nghiệm của bạn sau quá trình tham gia vòng 3</p>
 
             <form id="feedback-form" novalidate>
                 <!-- Form sẽ được render động bằng JavaScript -->
@@ -617,13 +617,37 @@
         © 2026 Enactus FTU Hanoi. All rights reserved.
     </div>
 
-    <script src="/script/config.js"></script>
+    <!-- ====== CONFIG FIREBASE ====== -->
     <script>
+        // Cấu hình Firebase - COPY TỪ FILE config.js CỦA BẠN
+        var firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+    </script>
+
+    <!-- ====== MAIN SCRIPT ====== -->
+    <script>
+        // ============================================================
+        // KIỂM TRA FIREBASE ĐÃ SẴN SÀNG
+        // ============================================================
+        if (typeof firebase === 'undefined' || !firebase.app) {
+            console.error('Firebase chưa được khởi tạo!');
+            alert('Lỗi: Firebase chưa được khởi tạo. Vui lòng tải lại trang.');
+        }
+
         // ============================================================
         // GLOBAL STATE
         // ============================================================
-        const userEmail = sessionStorage.getItem("email");
-        let userRole = sessionStorage.getItem("role") || null;
         let currentUser = null;
         let currentApplication = null;
         let teamMembers = [];
@@ -631,23 +655,17 @@
         let questions = [];
 
         // ============================================================
-        // AUTH CHECK
-        // ============================================================
-        if (!userEmail || !userRole) {
-            window.location.href = "../login.html";
-        }
-
-        // ============================================================
         // FIREBASE AUTH LISTENER
         // ============================================================
         auth.onAuthStateChanged(async (user) => {
+            // Nếu chưa đăng nhập -> chuyển về login
             if (!user) {
                 window.location.href = "../login.html";
                 return;
             }
 
             try {
-                // Lấy thông tin account
+                // Lấy thông tin account từ Firestore
                 const snap = await db
                     .collection("account")
                     .where("email", "==", user.email)
@@ -663,16 +681,13 @@
                 const doc = snap.docs[0];
                 const data = doc.data();
 
-                userRole = data.role || userRole;
                 currentUser = { id: doc.id, ...data };
-
-                sessionStorage.setItem("role", userRole);
-                sessionStorage.setItem("department", data.department || "");
 
                 // Cập nhật avatar
                 const avatar = document.getElementById("user-avatar");
                 if (avatar) {
-                    avatar.textContent = (data.fullname || data.email || "U").charAt(0).toUpperCase();
+                    const name = data.fullname || data.email || "U";
+                    avatar.textContent = name.charAt(0).toUpperCase();
                 }
 
                 // Kiểm tra quyền feedback
@@ -689,7 +704,6 @@
         // ============================================================
         document.getElementById("logout-btn").addEventListener("click", function() {
             auth.signOut().then(() => {
-                sessionStorage.clear();
                 window.location.href = "../login.html";
             });
         });
@@ -781,6 +795,7 @@
                         updatedAt: new Date() 
                     });
                 }
+                console.log("✅ Đã tải", questions.length, "câu hỏi");
             } catch (error) {
                 console.error("Lỗi tải câu hỏi:", error);
                 questions = getDefaultQuestions();
@@ -821,7 +836,7 @@
                     }
                 });
 
-                console.log("Team members loaded:", teamMembers);
+                console.log("✅ Team members loaded:", teamMembers.length, "người");
             } catch (error) {
                 console.error("Lỗi khi tải danh sách thành viên:", error);
                 teamMembers = [];
@@ -871,7 +886,6 @@
             document.getElementById("feedback-form-container").style.display = "block";
             
             renderDynamicQuestions();
-            setupDynamicEventListeners();
         }
 
         // ============================================================
@@ -888,7 +902,7 @@
                 return;
             }
 
-            // Tạo section duy nhất
+            // Tạo section
             const section = document.createElement("div");
             section.className = "section";
             section.innerHTML = `
@@ -1068,7 +1082,6 @@
                 if (counterSpan) {
                     counterSpan.textContent = count;
                 }
-                // Cảnh báo khi gần đạt max
                 counter.className = "char-counter";
                 if (count > maxLen * 0.9) {
                     counter.classList.add("warning");
@@ -1192,7 +1205,6 @@
             input.addEventListener("keydown", function(e) {
                 if (e.key === "Enter" && this.value.trim()) {
                     e.preventDefault();
-                    // Nếu nhập tên không có @, tìm thành viên gần nhất
                     const searchTerm = this.value.trim().toLowerCase();
                     const found = teamMembers.find(m => 
                         m.name.toLowerCase().includes(searchTerm) &&
@@ -1206,7 +1218,6 @@
                 }
             });
 
-            // Hàm show suggestions
             function showTagSuggestions(members, qId) {
                 const suggEl = document.getElementById(`${qId}-suggestions`);
                 if (!suggEl) return;
@@ -1240,7 +1251,6 @@
 
             function addTag(member, qId) {
                 if (selectedTags.some(t => t.id === member.id)) return;
-                
                 selectedTags.push(member);
                 updateTagsDisplay(qId);
             }
@@ -1274,20 +1284,7 @@
                 }
             }
 
-            // Lưu tham chiếu để dùng sau
-            container._tagData = { selectedTags, addTag, removeTag, updateTagsDisplay };
-
             return container;
-        }
-
-        // ============================================================
-        // SETUP DYNAMIC EVENT LISTENERS
-        // ============================================================
-        function setupDynamicEventListeners() {
-            // Rating click (đã được xử lý trong render)
-            // Radio/Checkbox đã được xử lý trong render
-            
-            // Textarea counter đã được xử lý trong render
         }
 
         // ============================================================
@@ -1375,6 +1372,7 @@
 
                 feedbackSubmitted = true;
                 submitBtn.textContent = "✅ Đã gửi Feedback";
+                submitBtn.disabled = true;
                 showStatus("✅ Cảm ơn bạn đã gửi feedback! Đóng góp của bạn rất có giá trị.", "success");
 
                 // Cập nhật trạng thái đã gửi trong ứng dụng
@@ -1416,7 +1414,6 @@
                         break;
                     }
                     case "checkbox": {
-                        // Checkbox không bắt buộc trong logic hiện tại
                         hasValue = true;
                         break;
                     }
@@ -1437,7 +1434,6 @@
                         break;
                     }
                     case "tag": {
-                        // Tag không bắt buộc
                         hasValue = true;
                         break;
                     }
@@ -1449,7 +1445,6 @@
                     isValid = false;
                     if (!firstError) {
                         firstError = q.text;
-                        // Scroll đến câu hỏi đầu tiên bị lỗi
                         questionDiv.scrollIntoView({ behavior: "smooth", block: "center" });
                     }
                 }
@@ -1472,7 +1467,6 @@
             statusEl.className = `status-message status-${type}`;
             statusEl.style.display = "block";
 
-            // Tự động ẩn sau 6 giây
             if (type === "success") {
                 setTimeout(() => {
                     statusEl.style.display = "none";
@@ -1480,12 +1474,7 @@
             }
         }
 
-        // ============================================================
-        // XỬ LÝ KHI TRANG TẢI XONG
-        // ============================================================
-        document.addEventListener("DOMContentLoaded", function() {
-            // Đã có auth listener xử lý
-        });
+        console.log("✅ User Feedback page loaded successfully!");
     </script>
 </body>
 </html>
