@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feedback | Enactus FTU Hanoi</title>
+    <title>Feedback Vòng 3 | Enactus FTU Hanoi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -603,7 +603,7 @@
 
         <!-- Feedback Form -->
         <div id="feedback-form-container" class="feedback-container" style="display: none;">
-            <h1 class="feedback-title">Feedback</h1>
+            <h1 class="feedback-title">📝 Feedback Vòng 3 - Teamwork</h1>
             <p class="feedback-subtitle">Chia sẻ trải nghiệm của bạn sau quá trình tham gia vòng 3</p>
 
             <form id="feedback-form" novalidate>
@@ -618,22 +618,7 @@
     </div>
 
     <!-- ====== CONFIG FIREBASE ====== -->
-    <script>
-        // Cấu hình Firebase - COPY TỪ FILE config.js CỦA BẠN
-        var firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-        
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-    </script>
+    <script src="/script/config.js"></script>
 
     <!-- ====== MAIN SCRIPT ====== -->
     <script>
@@ -641,8 +626,8 @@
         // KIỂM TRA FIREBASE ĐÃ SẴN SÀNG
         // ============================================================
         if (typeof firebase === 'undefined' || !firebase.app) {
-            console.error('Firebase chưa được khởi tạo!');
-            alert('Lỗi: Firebase chưa được khởi tạo. Vui lòng tải lại trang.');
+            console.error('Firebase chưa được khởi tạo! Đang chuyển hướng đến login...');
+            window.location.href = "../login.html";
         }
 
         // ============================================================
@@ -660,9 +645,12 @@
         auth.onAuthStateChanged(async (user) => {
             // Nếu chưa đăng nhập -> chuyển về login
             if (!user) {
+                console.log('❌ Chưa đăng nhập, chuyển về login');
                 window.location.href = "../login.html";
                 return;
             }
+
+            console.log('✅ Đã đăng nhập:', user.email);
 
             try {
                 // Lấy thông tin account từ Firestore
@@ -673,6 +661,7 @@
                     .get();
 
                 if (snap.empty) {
+                    console.log('❌ Không tìm thấy account, đăng xuất');
                     await auth.signOut();
                     window.location.href = "../login.html";
                     return;
@@ -682,6 +671,7 @@
                 const data = doc.data();
 
                 currentUser = { id: doc.id, ...data };
+                console.log('✅ Đã tải thông tin user:', currentUser.fullname || currentUser.email);
 
                 // Cập nhật avatar
                 const avatar = document.getElementById("user-avatar");
@@ -694,7 +684,7 @@
                 await checkEligibility();
 
             } catch (error) {
-                console.error("Lỗi khi tải thông tin:", error);
+                console.error("❌ Lỗi khi tải thông tin:", error);
                 showStatus("Có lỗi xảy ra khi tải thông tin người dùng", "error");
             }
         });
@@ -713,6 +703,8 @@
         // ============================================================
         async function checkEligibility() {
             try {
+                console.log('🔍 Đang kiểm tra quyền feedback...');
+
                 // 1. Kiểm tra hệ thống có bật không
                 const settingsDoc = await db.collection("system").doc("feedback_settings").get();
                 
@@ -746,6 +738,8 @@
                 const appData = appDoc.data();
                 currentApplication = { id: appDoc.id, ...appData };
 
+                console.log('📋 Application found:', appData.fullname, '| Round:', appData.current_round);
+
                 if (appData.current_round !== "round3") {
                     showAccessDenied("Bạn không nằm trong danh sách ứng viên vòng 3");
                     return;
@@ -761,6 +755,8 @@
                     return;
                 }
 
+                console.log('✅ Đã đủ điều kiện gửi feedback');
+
                 // 4. Load team members
                 await loadTeamMembers(appData.round3.team);
 
@@ -774,7 +770,7 @@
                 showFeedbackForm();
 
             } catch (error) {
-                console.error("Lỗi khi kiểm tra điều kiện:", error);
+                console.error("❌ Lỗi khi kiểm tra điều kiện:", error);
                 showStatus("Có lỗi xảy ra khi kiểm tra điều kiện", "error");
             }
         }
@@ -797,7 +793,7 @@
                 }
                 console.log("✅ Đã tải", questions.length, "câu hỏi");
             } catch (error) {
-                console.error("Lỗi tải câu hỏi:", error);
+                console.error("❌ Lỗi tải câu hỏi:", error);
                 questions = getDefaultQuestions();
             }
         }
@@ -838,7 +834,7 @@
 
                 console.log("✅ Team members loaded:", teamMembers.length, "người");
             } catch (error) {
-                console.error("Lỗi khi tải danh sách thành viên:", error);
+                console.error("❌ Lỗi khi tải danh sách thành viên:", error);
                 teamMembers = [];
             }
         }
@@ -859,7 +855,7 @@
                     showStatus("✅ Bạn đã gửi feedback trước đó. Cảm ơn bạn đã đóng góp!", "success");
                 }
             } catch (error) {
-                console.error("Lỗi khi kiểm tra feedback:", error);
+                console.error("❌ Lỗi khi kiểm tra feedback:", error);
             }
         }
 
@@ -1382,7 +1378,7 @@
                 });
 
             } catch (error) {
-                console.error("Lỗi khi gửi feedback:", error);
+                console.error("❌ Lỗi khi gửi feedback:", error);
                 showStatus("❌ Có lỗi xảy ra khi gửi feedback. Vui lòng thử lại.", "error");
                 submitBtn.disabled = false;
                 submitBtn.textContent = "📤 Gửi Feedback";
@@ -1475,6 +1471,7 @@
         }
 
         console.log("✅ User Feedback page loaded successfully!");
+        console.log("📌 Đang đợi Firebase Auth...");
     </script>
 </body>
 </html>
