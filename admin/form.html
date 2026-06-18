@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Form | Enactus FTU Hanoi</title>
+    <title>Form | Enactus FTU Hanoi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Clash+Display:wght@600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -302,19 +302,32 @@
         .category-btn:hover { background: var(--gray-100); }
         .category-btn.active { background: var(--primary); border-color: var(--primary-light); }
 
+        .slot-item {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding: 10px 12px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            border: 1px solid var(--gray-200);
+            margin-bottom: 8px;
+        }
+        .slot-item input { flex: 1; }
+
         @media (max-width: 768px) {
             .header { flex-direction: column; gap: 12px; }
             .tabs { overflow-x: auto; }
+            .slot-item { flex-wrap: wrap; }
+            .slot-item input { min-width: 120px; }
         }
     </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
     <div class="logo">
         <img src="../assets/logo_den.png" alt="Enactus FTU Hanoi Logo">
-        <div class="logo-text">📝 Quản lý Form</div>
+        <div class="logo-text">Quan ly Form</div>
     </div>
     <div>
         <button class="action-btn" onclick="window.location.href='dashboard.html'">
@@ -323,71 +336,65 @@
     </div>
 </div>
 
-<!-- TABS -->
 <div class="tabs">
-    <div class="tab active" data-tab="overview">Tổng quan</div>
-    <div class="tab" data-tab="questions">Câu hỏi</div>
-    <div class="tab" data-tab="settings">Cài đặt</div>
+    <div class="tab active" data-tab="overview">Tong quan</div>
+    <div class="tab" data-tab="questions">Cau hoi</div>
+    <div class="tab" data-tab="settings">Cai dat</div>
 </div>
 
-<!-- MAIN -->
 <div class="main-content">
 
-    <!-- ===== OVERVIEW TAB ===== -->
     <div id="tab-overview" class="tab-content active">
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-value" id="stat-total">0</div><div class="stat-label">Tổng câu hỏi</div></div>
-            <div class="stat-card"><div class="stat-value" id="stat-general">0</div><div class="stat-label">Câu hỏi chung</div></div>
-            <div class="stat-card"><div class="stat-value" id="stat-ban">0</div><div class="stat-label">Câu hỏi theo ban</div></div>
-            <div class="stat-card"><div class="stat-value" id="stat-status">🔴</div><div class="stat-label">Trạng thái form</div></div>
+            <div class="stat-card"><div class="stat-value" id="stat-total">0</div><div class="stat-label">Tong cau hoi</div></div>
+            <div class="stat-card"><div class="stat-value" id="stat-general">0</div><div class="stat-label">Cau hoi chung</div></div>
+            <div class="stat-card"><div class="stat-value" id="stat-ban">0</div><div class="stat-label">Cau hoi theo ban</div></div>
+            <div class="stat-card"><div class="stat-value" id="stat-status"><i class="fas fa-circle" style="color:#ef4444;"></i></div><div class="stat-label">Trang thai form</div></div>
         </div>
         <div class="card">
-            <div class="card-title"><i class="fas fa-info-circle"></i> Hướng dẫn</div>
+            <div class="card-title"><i class="fas fa-info-circle"></i> Huong dan</div>
             <p style="color: var(--gray-600); line-height: 1.8;">
-                📌 Quản lý câu hỏi trong form tuyển dụng của Enactus FTU Hanoi.<br>
-                📌 Bạn có thể <strong>thêm, sửa, xóa</strong> câu hỏi cho từng phần.<br>
-                📌 Câu hỏi được chia thành: <strong>Câu hỏi chung</strong> và <strong>Câu hỏi theo ban</strong>.<br>
-                📌 Khi ứng viên chọn ban, hệ thống sẽ tự động hiển thị câu hỏi tương ứng.
+                Quan ly cau hoi trong form tuyen dung cua Enactus FTU Hanoi.<br>
+                Ban co the them, sua, xoa cau hoi cho tung phan.<br>
+                Cau hoi duoc chia thanh: Cau hoi chung va Cau hoi theo ban.<br>
+                Khi ung vien chon ban, he thong se tu dong hien thi cau hoi tuong ung.
             </p>
         </div>
     </div>
 
-    <!-- ===== QUESTIONS TAB ===== -->
     <div id="tab-questions" class="tab-content">
         <div class="card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-                <div class="card-title"><i class="fas fa-list-ul"></i> Danh sách câu hỏi</div>
+                <div class="card-title"><i class="fas fa-list-ul"></i> Danh sach cau hoi</div>
                 <button class="action-btn primary" onclick="openAddQuestion()">
-                    <i class="fas fa-plus"></i> Thêm câu hỏi
+                    <i class="fas fa-plus"></i> Them cau hoi
                 </button>
             </div>
 
-            <!-- Category filter -->
             <div class="category-filter" id="category-filter">
-                <button class="category-btn active" data-category="all">Tất cả</button>
-                <button class="category-btn" data-category="general">📌 Chung</button>
-                <button class="category-btn" data-category="md-design">🎨 MD Design</button>
-                <button class="category-btn" data-category="md-content">✍️ MD Content</button>
-                <button class="category-btn" data-category="hr">👥 HR</button>
-                <button class="category-btn" data-category="er">🤝 ER</button>
-                <button class="category-btn" data-category="pd">📊 PD</button>
+                <button class="category-btn active" data-category="all">Tat ca</button>
+                <button class="category-btn" data-category="general">Chung</button>
+                <button class="category-btn" data-category="md-design">MD Design</button>
+                <button class="category-btn" data-category="md-content">MD Content</button>
+                <button class="category-btn" data-category="hr">HR</button>
+                <button class="category-btn" data-category="er">ER</button>
+                <button class="category-btn" data-category="pd">PD</button>
             </div>
 
             <div id="question-list">
-                <div class="loading"><i class="fas fa-spinner"></i> Đang tải...</div>
+                <div class="loading"><i class="fas fa-spinner"></i> Dang tai...</div>
             </div>
         </div>
     </div>
 
-    <!-- ===== SETTINGS TAB ===== -->
     <div id="tab-settings" class="tab-content">
         <div class="card">
-            <div class="card-title"><i class="fas fa-cog"></i> Cài đặt Form</div>
+            <div class="card-title"><i class="fas fa-cog"></i> Cai dat Form</div>
             
             <div class="setting-row">
                 <div class="setting-info">
-                    <div class="setting-title">Mở form tuyển dụng</div>
-                    <div class="setting-desc">Cho phép ứng viên truy cập và điền form</div>
+                    <div class="setting-title">Mo form tuyen dung</div>
+                    <div class="setting-desc">Cho phep ung vien truy cap va dien form</div>
                 </div>
                 <label class="toggle-switch">
                     <input type="checkbox" id="toggle-enabled" onchange="saveSettings()">
@@ -397,32 +404,32 @@
 
             <div class="setting-row">
                 <div class="setting-info">
-                    <div class="setting-title">Thời gian mở form</div>
-                    <div class="setting-desc">Ứng viên chỉ có thể điền form trong khoảng thời gian này</div>
+                    <div class="setting-title">Thoi gian mo form</div>
+                    <div class="setting-desc">Ung vien chi co the dien form trong khoang thoi gian nay</div>
                 </div>
                 <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                     <input type="datetime-local" class="form-input" id="start-time" style="width:200px;">
                     <span style="color:var(--gray-500);">→</span>
                     <input type="datetime-local" class="form-input" id="end-time" style="width:200px;">
-                    <button class="action-btn primary" onclick="saveDeadline()">Lưu</button>
+                    <button class="action-btn primary" onclick="saveDeadline()">Luu</button>
                 </div>
             </div>
 
             <div class="setting-row">
                 <div class="setting-info">
-                    <div class="setting-title">Giới hạn số lượng ứng viên</div>
-                    <div class="setting-desc">Số lượng ứng viên tối đa có thể nộp đơn</div>
+                    <div class="setting-title">Gioi han so luong ung vien</div>
+                    <div class="setting-desc">So luong ung vien toi da co the nop don</div>
                 </div>
                 <div style="display:flex;gap:8px;align-items:center;">
                     <input type="number" class="form-input" id="max-applicants" style="width:120px;" min="0">
-                    <button class="action-btn primary" onclick="saveMaxApplicants()">Lưu</button>
+                    <button class="action-btn primary" onclick="saveMaxApplicants()">Luu</button>
                 </div>
             </div>
 
             <div class="setting-row">
                 <div class="setting-info">
-                    <div class="setting-title">Cho phép ứng viên chọn nhiều ban</div>
-                    <div class="setting-desc">Ứng viên có thể chọn cả nguyện vọng 1 và 2</div>
+                    <div class="setting-title">Cho phep ung vien chon nhieu ban</div>
+                    <div class="setting-desc">Ung vien co the chon ca nguyen vong 1 va 2</div>
                 </div>
                 <label class="toggle-switch">
                     <input type="checkbox" id="toggle-multiple-ban" onchange="saveSettings()">
@@ -432,8 +439,8 @@
 
             <div class="setting-row">
                 <div class="setting-info">
-                    <div class="setting-title">Hiển thị câu hỏi theo ban</div>
-                    <div class="setting-desc">Chỉ hiển thị câu hỏi của ban mà ứng viên đã chọn</div>
+                    <div class="setting-title">Hien thi cau hoi theo ban</div>
+                    <div class="setting-desc">Chi hien thi cau hoi cua ban ma ung vien da chon</div>
                 </div>
                 <label class="toggle-switch">
                     <input type="checkbox" id="toggle-show-ban-questions" onchange="saveSettings()" checked>
@@ -441,14 +448,49 @@
                 </label>
             </div>
 
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">Cho phep ung vien chon phong van thay don</div>
+                    <div class="setting-desc">Ung vien co the chon phong van thay vi dien don</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-interview-mode" onchange="saveSettings()" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">Thoi gian dang ky phong van</div>
+                    <div class="setting-desc">Khung thoi gian ung vien co the dang ky lich phong van</div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <input type="datetime-local" class="form-input" id="interview-start" style="width:200px;">
+                    <span style="color:var(--gray-500);">→</span>
+                    <input type="datetime-local" class="form-input" id="interview-end" style="width:200px;">
+                    <button class="action-btn primary" onclick="saveInterviewDeadline()">Luu</button>
+                </div>
+            </div>
+
+            <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:12px;">
+                <div class="setting-info">
+                    <div class="setting-title">Danh sach ca phong van</div>
+                    <div class="setting-desc">Cac ca phong van de ung vien dang ky</div>
+                </div>
+                <div id="interview-slots-list"></div>
+                <button class="action-btn" onclick="addInterviewSlot()" style="align-self:flex-start;">
+                    <i class="fas fa-plus"></i> Them ca
+                </button>
+            </div>
+
             <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--gray-200);">
-                <div class="card-title" style="font-size:15px;margin-bottom:12px;">⚠️ Nguy hiểm</div>
+                <div class="card-title" style="font-size:15px;margin-bottom:12px;">Nguy hiem</div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;">
                     <button class="action-btn danger" onclick="resetForm()">
-                        <i class="fas fa-undo"></i> Reset về mặc định
+                        <i class="fas fa-undo"></i> Reset ve mac dinh
                     </button>
                     <button class="action-btn danger" onclick="deleteAllResponses()">
-                        <i class="fas fa-trash"></i> Xóa toàn bộ phản hồi
+                        <i class="fas fa-trash"></i> Xoa toan bo phan hoi
                     </button>
                 </div>
             </div>
@@ -456,11 +498,10 @@
     </div>
 </div>
 
-<!-- MODAL: ADD/EDIT QUESTION -->
 <div class="modal-overlay" id="question-modal">
     <div class="modal">
         <div class="modal-header">
-            <div class="modal-title" id="modal-title">Thêm câu hỏi mới</div>
+            <div class="modal-title" id="modal-title">Them cau hoi moi</div>
             <button class="modal-close" onclick="closeModal()">&times;</button>
         </div>
         <div class="modal-body">
@@ -468,57 +509,57 @@
             <input type="hidden" id="q-category">
 
             <div class="form-group">
-                <label class="form-label">Phân loại</label>
+                <label class="form-label">Phan loai</label>
                 <select class="form-select" id="q-category-select">
-                    <option value="general">Câu hỏi chung</option>
+                    <option value="general">Cau hoi chung</option>
                     <option value="md-design">MD - Design</option>
                     <option value="md-content">MD - Content</option>
-                    <option value="hr">Nhân sự (HR)</option>
-                    <option value="er">Đối ngoại (ER)</option>
-                    <option value="pd">Dự án (PD)</option>
+                    <option value="hr">Nhan su (HR)</option>
+                    <option value="er">Doi ngoai (ER)</option>
+                    <option value="pd">Du an (PD)</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Nội dung câu hỏi <span style="color:var(--error)">*</span></label>
-                <textarea class="form-textarea" id="q-text" rows="3" placeholder="Nhập nội dung câu hỏi..."></textarea>
+                <label class="form-label">Noi dung cau hoi <span style="color:var(--error)">*</span></label>
+                <textarea class="form-textarea" id="q-text" rows="3" placeholder="Nhap noi dung cau hoi..."></textarea>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Loại trả lời</label>
+                <label class="form-label">Loai tra loi</label>
                 <select class="form-select" id="q-type" onchange="toggleOptions()">
-                    <option value="textarea">Text dài (textarea)</option>
-                    <option value="text">Text ngắn (input)</option>
-                    <option value="radio">Chọn 1 (Radio)</option>
-                    <option value="checkbox">Chọn nhiều (Checkbox)</option>
+                    <option value="textarea">Text dai (textarea)</option>
+                    <option value="text">Text ngan (input)</option>
+                    <option value="radio">Chon 1 (Radio)</option>
+                    <option value="checkbox">Chon nhieu (Checkbox)</option>
                 </select>
             </div>
 
             <div class="form-group" id="options-group" style="display:none;">
-                <label class="form-label">Các lựa chọn</label>
+                <label class="form-label">Cac lua chon</label>
                 <div id="options-list"></div>
                 <button class="action-btn" onclick="addOption()" style="margin-top:8px;">
-                    <i class="fas fa-plus"></i> Thêm lựa chọn
+                    <i class="fas fa-plus"></i> Them lua chon
                 </button>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Placeholder / Hướng dẫn</label>
-                <input type="text" class="form-input" id="q-placeholder" placeholder="VD: Nhập câu trả lời...">
+                <label class="form-label">Placeholder / Huong dan</label>
+                <input type="text" class="form-input" id="q-placeholder" placeholder="VD: Nhap cau tra loi...">
             </div>
 
             <div class="form-group">
-                <label class="form-label">Bắt buộc</label>
+                <label class="form-label">Bat buoc</label>
                 <select class="form-select" id="q-required">
-                    <option value="true">Có</option>
-                    <option value="false">Không</option>
+                    <option value="true">Co</option>
+                    <option value="false">Khong</option>
                 </select>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="action-btn" onclick="closeModal()">Hủy</button>
+            <button class="action-btn" onclick="closeModal()">Huy</button>
             <button class="action-btn primary" onclick="saveQuestion()">
-                <i class="fas fa-save"></i> Lưu câu hỏi
+                <i class="fas fa-save"></i> Luu cau hoi
             </button>
         </div>
     </div>
@@ -591,56 +632,50 @@ auth.onAuthStateChanged(async user => {
 });
 
 // ============================================================
-// LOAD DATA - CHỈ DÙNG FIRESTORE
+// LOAD DATA - CHI DUNG FIRESTORE
 // ============================================================
 async function loadQuestions() {
     try {
         const doc = await db.collection("system").doc("form_questions").get();
         if (doc.exists && doc.data().questions) {
             questions = doc.data().questions;
-            console.log("✅ Đã tải câu hỏi từ Firestore");
         } else {
-            // Tạo câu hỏi mặc định nếu chưa có
             questions = getDefaultQuestions();
             await saveQuestionsToFirestore();
-            console.log("✅ Đã tạo câu hỏi mặc định");
         }
     } catch(e) {
-        console.error("Lỗi load câu hỏi:", e);
+        console.error("Loi load cau hoi:", e);
         questions = getDefaultQuestions();
         await saveQuestionsToFirestore();
     }
 }
 
-// ============================================================
-// CÂU HỎI MẶC ĐỊNH
-// ============================================================
 function getDefaultQuestions() {
     return {
         general: [
-            { id: genId(), text: "Đâu là lý do khiến bạn mong muốn trở thành một mảnh ghép của đại gia nhà E?", type: "textarea", required: true, placeholder: "Chia sẻ những thông tin bạn biết về CLB" },
-            { id: genId(), text: "Hãy chia sẻ về một trải nghiệm ngoại khóa mà bạn cảm thấy tự hào nhất.", type: "textarea", required: true },
-            { id: genId(), text: "“We change while creating the change” - Bạn có nhận ra bản thân cũng đã thay đổi?", type: "textarea", required: true },
+            { id: genId(), text: "Dau la ly do khi ban mong muon tro thanh mot manh ghep cua dai gia dinh Nha E?", type: "textarea", required: true, placeholder: "Chia se nhung thong tin ban biet ve CLB" },
+            { id: genId(), text: "Hay chia se ve mot trai nghiem ngoai khoa ma ban cam thay tu hao nhat.", type: "textarea", required: true },
+            { id: genId(), text: "We change while creating the change - Ban co nhan ra ban than cung da thay doi?", type: "textarea", required: true },
         ],
         'md-design': [
-            { id: genId(), text: "Nếu có thể quay về quá khứ và thay đổi một quyết định, bạn sẽ chọn khoảnh khắc nào?", type: "textarea", required: true },
-            { id: genId(), text: "Bạn thường sử dụng những phần mềm thiết kế nào?", type: "checkbox", required: true, options: ["Photoshop", "Illustrator", "Canva", "Figma", "Premiere Pro", "Khác"] },
+            { id: genId(), text: "Neu co the quay ve qua khu va thay doi mot quyet dinh, ban se chon khoanh khac nao?", type: "textarea", required: true },
+            { id: genId(), text: "Ban thuong su dung nhung phan mem thiet ke nao?", type: "checkbox", required: true, options: ["Photoshop", "Illustrator", "Canva", "Figma", "Premiere Pro", "Khac"] },
         ],
         'md-content': [
-            { id: genId(), text: "Nếu có thể quay về quá khứ và thay đổi một quyết định, bạn sẽ chọn khoảnh khắc nào?", type: "textarea", required: true },
-            { id: genId(), text: "AI đang phát triển mạnh mẽ. Bạn đồng ý với quan điểm nào về AI?", type: "textarea", required: true },
+            { id: genId(), text: "Neu co the quay ve qua khu va thay doi mot quyet dinh, ban se chon khoanh khac nao?", type: "textarea", required: true },
+            { id: genId(), text: "AI dang phat trien manh me. Ban dong y voi quan diem nao ve AI?", type: "textarea", required: true },
         ],
         hr: [
-            { id: genId(), text: "Bạn hiểu như thế nào về vai trò của ban Nhân sự - Sự Kiện?", type: "textarea", required: true },
-            { id: genId(), text: "Hãy chia sẻ quan điểm về sự khác nhau giữa tập thể đồng đều và đa dạng.", type: "textarea", required: true },
+            { id: genId(), text: "Ban hieu nhu the nao ve vai tro cua ban Nhan su - Su kien?", type: "textarea", required: true },
+            { id: genId(), text: "Hay chia se quan diem ve su khac nhau giua tap the dong deu va da dang.", type: "textarea", required: true },
         ],
         er: [
-            { id: genId(), text: "Theo bạn, ban Đối ngoại đóng vai trò gì trong CLB?", type: "textarea", required: true },
-            { id: genId(), text: "Tại sao bạn chọn ban Đối ngoại của Enactus FTU Hanoi?", type: "textarea", required: true },
+            { id: genId(), text: "Theo ban, ban Doi ngoai dong vai tro gi trong CLB?", type: "textarea", required: true },
+            { id: genId(), text: "Tai sao ban chon ban Doi ngoai cua Enactus FTU Hanoi?", type: "textarea", required: true },
         ],
         pd: [
-            { id: genId(), text: "Tại sao bạn lựa chọn ứng tuyển vào Ban Dự án?", type: "textarea", required: true },
-            { id: genId(), text: "Sự khác biệt cốt lõi giữa kinh doanh thông thường và kinh doanh xã hội là gì?", type: "textarea", required: true },
+            { id: genId(), text: "Tai sao ban lua chon ung tuyen vao ban Du an?", type: "textarea", required: true },
+            { id: genId(), text: "Su khac biet cot loi giua kinh doanh thong thuong va kinh doanh xa hoi la gi?", type: "textarea", required: true },
         ]
     };
 }
@@ -670,8 +705,9 @@ function renderOverview() {
     document.getElementById("stat-total").textContent = total;
     document.getElementById("stat-general").textContent = generalCount;
     document.getElementById("stat-ban").textContent = banCount;
-    document.getElementById("stat-status").textContent = isEnabled ? "🟢 Đang mở" : "🔴 Đã đóng";
-    document.getElementById("stat-status").style.color = isEnabled ? "var(--success)" : "var(--error)";
+    document.getElementById("stat-status").innerHTML = isEnabled 
+        ? '<i class="fas fa-circle" style="color:#10b981;"></i> Dang mo' 
+        : '<i class="fas fa-circle" style="color:#ef4444;"></i> Da dong';
 }
 
 // ============================================================
@@ -689,7 +725,7 @@ function renderQuestions() {
     });
 
     if (allQuestions.length === 0) {
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>Chưa có câu hỏi nào. Nhấn "Thêm câu hỏi" để bắt đầu.</p></div>`;
+        container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>Chua co cau hoi nao. Nhan "Them cau hoi" de bat dau.</p></div>`;
         return;
     }
 
@@ -698,22 +734,22 @@ function renderQuestions() {
 
 function buildQuestionCard(q, i) {
     const categoryLabels = {
-        general: "📌 Chung",
-        'md-design': "🎨 MD Design",
-        'md-content': "✍️ MD Content",
-        hr: "👥 HR",
-        er: "🤝 ER",
-        pd: "📊 PD"
+        general: "Chung",
+        'md-design': "MD Design",
+        'md-content': "MD Content",
+        hr: "HR",
+        er: "ER",
+        pd: "PD"
     };
     const typeLabels = {
-        text: "Text ngắn",
-        textarea: "Text dài",
-        radio: "Chọn 1",
-        checkbox: "Chọn nhiều"
+        text: "Text ngan",
+        textarea: "Text dai",
+        radio: "Chon 1",
+        checkbox: "Chon nhieu"
     };
 
-    const optionsPreview = q.options?.length ? `• ${q.options.slice(0,2).join(" / ")}${q.options.length>2?" ...":""}` : "";
-    const requiredText = q.required ? '<span class="badge badge-danger">Bắt buộc</span>' : '';
+    const optionsPreview = q.options?.length ? q.options.slice(0,2).join(" / ") + (q.options.length>2?" ...":"") : "";
+    const requiredText = q.required ? '<span class="badge badge-danger">Bat buoc</span>' : '';
 
     return `
     <div class="question-card">
@@ -727,15 +763,15 @@ function buildQuestionCard(q, i) {
                 </div>
                 <div class="question-meta">
                     <span class="badge badge-warning">${typeLabels[q.type] || q.type}</span>
-                    ${optionsPreview}
-                    ${q.placeholder ? `<span>• "${q.placeholder}"</span>` : ''}
+                    ${optionsPreview ? `• ${optionsPreview}` : ''}
+                    ${q.placeholder ? `• "${q.placeholder}"` : ''}
                 </div>
             </div>
             <div class="question-actions">
-                <button class="icon-btn" onclick="openEditQuestion('${q.id}', '${q.category}')" title="Sửa">
+                <button class="icon-btn" onclick="openEditQuestion('${q.id}', '${q.category}')" title="Sua">
                     <i class="fas fa-pencil"></i>
                 </button>
-                <button class="icon-btn danger" onclick="deleteQuestion('${q.id}', '${q.category}')" title="Xóa">
+                <button class="icon-btn danger" onclick="deleteQuestion('${q.id}', '${q.category}')" title="Xoa">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -749,7 +785,7 @@ function buildQuestionCard(q, i) {
 function openAddQuestion() {
     editingId = null;
     editingCategory = null;
-    document.getElementById("modal-title").textContent = "Thêm câu hỏi mới";
+    document.getElementById("modal-title").textContent = "Them cau hoi moi";
     document.getElementById("q-id").value = "";
     document.getElementById("q-text").value = "";
     document.getElementById("q-type").value = "textarea";
@@ -767,7 +803,7 @@ function openEditQuestion(qId, category) {
 
     editingId = qId;
     editingCategory = category;
-    document.getElementById("modal-title").textContent = "Chỉnh sửa câu hỏi";
+    document.getElementById("modal-title").textContent = "Chinh sua cau hoi";
     document.getElementById("q-id").value = qId;
     document.getElementById("q-text").value = q.text || "";
     document.getElementById("q-type").value = q.type || "textarea";
@@ -795,7 +831,7 @@ function addOption(val = "") {
     const row = document.createElement("div");
     row.className = "option-row";
     row.innerHTML = `
-        <input type="text" class="form-input" value="${val}" placeholder="Nhập lựa chọn...">
+        <input type="text" class="form-input" value="${val}" placeholder="Nhap lua chon...">
         <button class="icon-btn danger" onclick="this.parentNode.remove()"><i class="fas fa-times"></i></button>
     `;
     document.getElementById("options-list").appendChild(row);
@@ -803,7 +839,7 @@ function addOption(val = "") {
 
 async function saveQuestion() {
     const text = document.getElementById("q-text").value.trim();
-    if (!text) { alert("Vui lòng nhập nội dung câu hỏi"); return; }
+    if (!text) { alert("Vui long nhap noi dung cau hoi"); return; }
 
     const category = document.getElementById("q-category-select").value;
     const type = document.getElementById("q-type").value;
@@ -821,7 +857,7 @@ async function saveQuestion() {
     if (["radio", "checkbox"].includes(type)) {
         const options = Array.from(document.querySelectorAll("#options-list .option-row input"))
             .map(i => i.value.trim()).filter(Boolean);
-        if (options.length === 0) { alert("Vui lòng thêm ít nhất 1 lựa chọn"); return; }
+        if (options.length === 0) { alert("Vui long them it nhat 1 lua chon"); return; }
         q.options = options;
     }
 
@@ -845,7 +881,7 @@ async function saveQuestion() {
 }
 
 async function deleteQuestion(qId, category) {
-    if (!confirm("Xóa câu hỏi này?")) return;
+    if (!confirm("Xoa cau hoi nay?")) return;
     questions[category] = questions[category].filter(q => q.id !== qId);
     await saveQuestionsToFirestore();
     renderQuestions();
@@ -859,6 +895,7 @@ function renderSettingsUI() {
     document.getElementById("toggle-enabled").checked = settings.enabled || false;
     document.getElementById("toggle-multiple-ban").checked = settings.allowMultipleBan !== false;
     document.getElementById("toggle-show-ban-questions").checked = settings.showBanQuestions !== false;
+    document.getElementById("toggle-interview-mode").checked = settings.allowInterviewMode !== false;
     document.getElementById("max-applicants").value = settings.maxApplicants || "";
 
     if (settings.startTime) {
@@ -869,6 +906,61 @@ function renderSettingsUI() {
         const d = settings.endTime.toDate ? settings.endTime.toDate() : new Date(settings.endTime);
         document.getElementById("end-time").value = d.toISOString().slice(0,16);
     }
+    if (settings.interviewStart) {
+        const d = settings.interviewStart.toDate ? settings.interviewStart.toDate() : new Date(settings.interviewStart);
+        document.getElementById("interview-start").value = d.toISOString().slice(0,16);
+    }
+    if (settings.interviewEnd) {
+        const d = settings.interviewEnd.toDate ? settings.interviewEnd.toDate() : new Date(settings.interviewEnd);
+        document.getElementById("interview-end").value = d.toISOString().slice(0,16);
+    }
+
+    renderInterviewSlots();
+}
+
+function renderInterviewSlots() {
+    const container = document.getElementById('interview-slots-list');
+    const slots = settings.interviewSlots || [];
+    
+    if (slots.length === 0) {
+        container.innerHTML = '<p style="color: var(--gray-400); font-size: 13px;">Chua co ca phong van nao</p>';
+        return;
+    }
+    
+    container.innerHTML = slots.map((slot, index) => `
+        <div class="slot-item">
+            <span style="font-weight:500;min-width:60px;">Ca ${index + 1}</span>
+            <input type="datetime-local" class="form-input" value="${slot.time || ''}" 
+                   onchange="updateInterviewSlot(${index}, 'time', this.value)">
+            <input type="text" class="form-input" value="${slot.location || ''}" 
+                   placeholder="Dia diem/Link" onchange="updateInterviewSlot(${index}, 'location', this.value)">
+            <input type="text" class="form-input" value="${slot.interviewer || ''}" 
+                   placeholder="Nguoi phong van" onchange="updateInterviewSlot(${index}, 'interviewer', this.value)">
+            <button class="icon-btn danger" onclick="removeInterviewSlot(${index})">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+function addInterviewSlot() {
+    if (!settings.interviewSlots) settings.interviewSlots = [];
+    settings.interviewSlots.push({ time: '', location: '', interviewer: '' });
+    renderInterviewSlots();
+    saveSettings();
+}
+
+function removeInterviewSlot(index) {
+    if (!confirm('Xoa ca phong van nay?')) return;
+    settings.interviewSlots.splice(index, 1);
+    renderInterviewSlots();
+    saveSettings();
+}
+
+function updateInterviewSlot(index, field, value) {
+    if (!settings.interviewSlots) return;
+    settings.interviewSlots[index][field] = value;
+    saveSettings();
 }
 
 async function saveSettings() {
@@ -876,12 +968,14 @@ async function saveSettings() {
         enabled: document.getElementById("toggle-enabled").checked,
         allowMultipleBan: document.getElementById("toggle-multiple-ban").checked,
         showBanQuestions: document.getElementById("toggle-show-ban-questions").checked,
+        allowInterviewMode: document.getElementById("toggle-interview-mode").checked,
+        interviewSlots: settings.interviewSlots || [],
         updatedAt: new Date(),
     };
     await db.collection("system").doc("form_settings").set(updates, { merge: true });
     Object.assign(settings, updates);
     renderOverview();
-    alert("✅ Đã lưu cài đặt!");
+    alert("Da luu cai dat!");
 }
 
 async function saveDeadline() {
@@ -893,39 +987,56 @@ async function saveDeadline() {
     if (end) updates.endTime = new Date(end);
     updates.updatedAt = new Date();
 
-    if (!start && !end) { alert("Vui lòng chọn ít nhất một mốc thời gian"); return; }
-    if (start && end && new Date(start) > new Date(end)) { alert("Thời gian bắt đầu phải trước thời gian kết thúc"); return; }
+    if (!start && !end) { alert("Vui long chon it nhat mot moc thoi gian"); return; }
+    if (start && end && new Date(start) > new Date(end)) { alert("Thoi gian bat dau phai truoc thoi gian ket thuc"); return; }
 
     await db.collection("system").doc("form_settings").set(updates, { merge: true });
     Object.assign(settings, updates);
-    alert("✅ Đã lưu thời gian!");
+    alert("Da luu thoi gian!");
+}
+
+async function saveInterviewDeadline() {
+    const start = document.getElementById("interview-start").value;
+    const end = document.getElementById("interview-end").value;
+    
+    const updates = {};
+    if (start) updates.interviewStart = new Date(start);
+    if (end) updates.interviewEnd = new Date(end);
+    updates.updatedAt = new Date();
+
+    if (!start && !end) { alert("Vui long chon it nhat mot moc thoi gian"); return; }
+    if (start && end && new Date(start) > new Date(end)) { alert("Thoi gian bat dau phai truoc thoi gian ket thuc"); return; }
+
+    await db.collection("system").doc("form_settings").set(updates, { merge: true });
+    Object.assign(settings, updates);
+    alert("Da luu thoi gian dang ky phong van!");
 }
 
 async function saveMaxApplicants() {
     const val = document.getElementById("max-applicants").value;
-    if (!val || parseInt(val) < 0) { alert("Vui lòng nhập số hợp lệ"); return; }
+    if (!val || parseInt(val) < 0) { alert("Vui long nhap so hop le"); return; }
     await db.collection("system").doc("form_settings").set({ maxApplicants: parseInt(val), updatedAt: new Date() }, { merge: true });
     settings.maxApplicants = parseInt(val);
-    alert("✅ Đã lưu giới hạn!");
+    alert("Da luu gioi han!");
 }
 
 async function resetForm() {
-    if (!confirm("⚠️ Reset về câu hỏi mặc định? Tất cả câu hỏi đã chỉnh sửa sẽ bị mất!")) return;
+    if (!confirm("Reset ve cau hoi mac dinh? Tat ca cau hoi da chinh sua se bi mat!")) return;
     questions = getDefaultQuestions();
     await saveQuestionsToFirestore();
     renderQuestions();
     renderOverview();
-    alert("✅ Đã reset về mặc định!");
+    alert("Da reset ve mac dinh!");
 }
 
 async function deleteAllResponses() {
-    if (!confirm("⚠️ Xóa toàn bộ phản hồi? Hành động không thể hoàn tác!")) return;
-    if (!confirm("Xác nhận lần 2:")) return;
+    if (!confirm("Xoa toan bo phan hoi? Hanh dong khong the hoan tac!")) return;
+    if (!confirm("Xac nhan lan 2:")) return;
     const snap = await db.collection("applications").get();
     const batch = db.batch();
     snap.docs.forEach(d => batch.delete(d.ref));
     await batch.commit();
-    alert("✅ Đã xóa toàn bộ phản hồi!");
+    alert("Da xoa toan bo phan hoi!");
 }
 </script>
 </body>
