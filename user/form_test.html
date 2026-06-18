@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Form | Enactus FTU Hanoi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <style>
+        :root {
+            --primary: #f8f3ce;
+            --primary-light: #ffd54f;
+            --gray-50: #fafafa;
+            --gray-100: #f5f5f5;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --white: #ffffff;
+            --error: #ef4444;
+            --error-light: #fee2e2;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --info: #3b82f6;
+            --info-light: #dbeafe;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --transition: all 0.3s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Plus Jakarta Sans", sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, #f6f9fc 0%, #edf2f7 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            padding: 32px 40px;
+            text-align: center;
+        }
+
+        .header .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+
+        .header .logo img {
+            height: 60px;
+            width: auto;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--gray-900);
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: var(--gray-700);
+            font-size: 16px;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* Form Body */
+        .form-body {
+            padding: 40px;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 16px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gray-200);
+            z-index: 0;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+            flex: 1;
+        }
+
+        .step-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--gray-200);
+            color: var(--gray-500);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            transition: var(--transition);
+            margin-bottom: 6px;
+            border: 3px solid var(--white);
+        }
+
+        .progress-step.active .step-number {
+            background: var(--primary);
+            color: var(--gray-900);
+            box-shadow: 0 4px 12px rgba(248, 243, 206, 0.4);
+        }
+
+        .progress-step.completed .step-number {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: var(--gray-500);
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .progress-step.active .step-label {
+            color: var(--gray-800);
+            font-weight: 600;
+        }
+
+        /* Form Sections */
+        .form-section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: var(--primary-light);
+            font-size: 24px;
+        }
+
+        .section-desc {
+            color: var(--gray-600);
+            margin-bottom: 24px;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        /* Form Groups */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--gray-700);
+            margin-bottom: 6px;
+        }
+
+        .form-label .required {
+            color: var(--error);
+            margin-left: 4px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            font-size: 15px;
+            transition: var(--transition);
+            background: var(--white);
+            color: var(--gray-800);
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 4px rgba(248, 243, 206, 0.3);
+        }
+
+        .form-input.error, .form-select.error, .form-textarea.error {
+            border-color: var(--error);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+
+        /* Radio & Checkbox */
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .option-item:hover {
+            border-color: var(--gray-300);
+            background: var(--gray-50);
+        }
+
+        .option-item.selected {
+            border-color: var(--primary-light);
+            background: var(--primary);
+        }
+
+        .option-item input[type="radio"],
+        .option-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary-light);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .option-item label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 15px;
+            color: var(--gray-700);
+        }
+
+        /* Application Type */
+        .app-type-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .app-type-card {
+            padding: 24px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .app-type-card:hover {
+            border-color: var(--gray-300);
+            transform: translateY(-2px);
+        }
+
+        .app-type-card.selected {
+            border-color: var(--primary-light);
+            background: var(--primary);
+            box-shadow: 0 4px 16px rgba(248, 243, 206, 0.4);
+        }
+
+        .app-type-card i {
+            font-size: 32px;
+            color: var(--gray-600);
+            margin-bottom: 12px;
+        }
+
+        .app-type-card.selected i {
+            color: var(--gray-900);
+        }
+
+        .app-type-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 6px;
+        }
+
+        .app-type-card p {
+            font-size: 13px;
+            color: var(--gray-600);
+            line-height: 1.5;
+        }
+
+        /* Buttons */
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-prev {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .btn-prev:hover {
+            background: var(--gray-200);
+        }
+
+        .btn-next {
+            background: var(--primary);
+            color: var(--gray-900);
+        }
+
+        .btn-next:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(248, 243, 206, 0.4);
+        }
+
+        .btn-submit {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .btn-submit:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-spacer {
+            flex: 1;
+        }
+
+        /* Success Message */
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .success-message i {
+            font-size: 64px;
+            color: var(--success);
+            margin-bottom: 20px;
+        }
+
+        .success-message h2 {
+            font-size: 24px;
+            color: var(--gray-900);
+            margin-bottom: 12px;
+        }
+
+        .success-message p {
+            color: var(--gray-600);
+            max-width: 500px;
+            margin: 0 auto 24px;
+            line-height: 1.6;
+        }
+
+        /* Status Message */
+        .status-msg {
+            padding: 12px 16px;
+            border-radius: var(--border-radius);
+            margin-bottom: 16px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status-msg.error {
+            display: block;
+            background: var(--error-light);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        .status-msg.success {
+            display: block;
+            background: var(--success-light);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .status-msg.warning {
+            display: block;
+            background: var(--warning-light);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .status-msg.info {
+            display: block;
+            background: var(--info-light);
+            color: var(--info);
+            border: 1px solid var(--info);
+        }
+
+        /* Loading */
+        .loading-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading-state .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--gray-200);
+            border-top-color: var(--primary-light);
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Disabled state */
+        .form-disabled {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body { padding: 16px; }
+            .header { padding: 24px 20px; }
+            .form-body { padding: 24px 20px; }
+            .app-type-grid { grid-template-columns: 1fr; }
+            .buttons { flex-direction: column; }
+            .btn { justify-content: center; }
+            .progress-bar { overflow-x: auto; gap: 8px; }
+            .step-label { font-size: 10px; }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 { font-size: 20px; }
+            .section-title { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <!-- HEADER -->
+    <div class="header">
+        <div class="logo">
+            <img src="/assets/logo_den.png" alt="Enactus FTU Hanoi">
+            <h1>Enactus FTU Hanoi</h1>
+        </div>
+        <p>18th Gen Membership Recruitment</p>
+    </div>
+
+    <!-- FORM BODY -->
+    <div class="form-body" id="form-body">
+        <!-- Loading State -->
+        <div id="loading-state" class="loading-state">
+            <div class="spinner"></div>
+            <p style="color: var(--gray-500);">Dang tai du lieu form...</p>
+        </div>
+
+        <!-- Form Disabled -->
+        <div id="form-disabled" style="display: none; text-align: center; padding: 40px 20px;">
+            <i class="fas fa-lock" style="font-size: 48px; color: var(--error); margin-bottom: 16px;"></i>
+            <h3 style="color: var(--gray-800); margin-bottom: 8px;">Form da dong</h3>
+            <p id="disabled-reason" style="color: var(--gray-600);"></p>
+        </div>
+
+        <!-- Status Message -->
+        <div id="status-msg" class="status-msg"></div>
+
+        <!-- Progress Bar -->
+        <div class="progress-bar" id="progress-bar" style="display: none;">
+            <div class="progress-step active" data-step="0">
+                <div class="step-number">1</div>
+                <div class="step-label">Hinh thuc</div>
+            </div>
+            <div class="progress-step" data-step="1">
+                <div class="step-number">2</div>
+                <div class="step-label">Thong tin</div>
+            </div>
+            <div class="progress-step" data-step="2">
+                <div class="step-number">3</div>
+                <div class="step-label">Vi tri</div>
+            </div>
+            <div class="progress-step" data-step="3">
+                <div class="step-number">4</div>
+                <div class="step-label">Cau hoi</div>
+            </div>
+            <div class="progress-step" data-step="4">
+                <div class="step-number">5</div>
+                <div class="step-label">Xac nhan</div>
+            </div>
+        </div>
+
+        <!-- FORM -->
+        <form id="feedback-form" style="display: none;" novalidate>
+            <!-- Step 0: Application Type -->
+            <div class="form-section active" data-step="0">
+                <div class="section-title">
+                    <i class="fas fa-clipboard-list"></i>
+                    Hinh thuc ung tuyen
+                </div>
+                <p class="section-desc">Chon hinh thuc ban muon tham gia ung tuyen.</p>
+
+                <div class="app-type-grid" id="app-type-grid">
+                    <div class="app-type-card" data-type="form" onclick="selectType('form')">
+                        <i class="fas fa-file-alt"></i>
+                        <h3>Dien don ung tuyen</h3>
+                        <p>Hoan thanh don ung tuyen truc tuyen voi day du thong tin va cau hoi</p>
+                    </div>
+                    <div class="app-type-card" data-type="interview" onclick="selectType('interview')">
+                        <i class="fas fa-microphone"></i>
+                        <h3>Phong van thay don</h3>
+                        <p>Chi can cung cap thong tin co ban va tham gia phong van thay cho viec dien don</p>
+                    </div>
+                </div>
+
+                <input type="hidden" id="application_type" name="application_type" value="">
+
+                <div id="interview-info" style="display: none; margin-top: 16px;">
+                    <div id="interview-questions"></div>
+                </div>
+
+                <div class="buttons">
+                    <div class="btn-spacer"></div>
+                    <button type="button" class="btn btn-next" onclick="nextStep(0)" disabled>
+                        Tiep theo <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 1: Personal Info -->
+            <div class="form-section" data-step="1">
+                <div class="section-title">
+                    <i class="fas fa-user-circle"></i>
+                    Thong tin ca nhan
+                </div>
+                <p class="section-desc">Vui long dien day du thong tin ca nhan cua ban.</p>
+
+                <div class="form-group">
+                    <label class="form-label">Ho va ten <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="fullname" name="fullname" required placeholder="Nhap ho va ten cua ban">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ngay sinh <span class="required">*</span></label>
+                    <input type="date" class="form-input" id="birthdate" name="birthdate" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Gioi tinh <span class="required">*</span></label>
+                    <select class="form-select" id="gender" name="gender" required>
+                        <option value="">-- Chon gioi tinh --</option>
+                        <option value="Nam">Nam</option>
+                        <option value="Nu">Nu</option>
+                        <option value="Khac">Khac</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email <span class="required">*</span></label>
+                    <input type="email" class="form-input" id="email" name="email" required placeholder="example@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">So dien thoai <span class="required">*</span></label>
+                    <input type="tel" class="form-input" id="phone" name="phone" required placeholder="0123456789">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Truong dang theo hoc <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="school" name="school" required placeholder="Ten truong dai hoc/cao dang">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Khoa/Chuyen nganh <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="major" name="major" required placeholder="VD: K61 - Kinh te doi ngoai">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Link Facebook <span class="required">*</span></label>
+                    <input type="url" class="form-input" id="facebook" name="facebook" required placeholder="https://facebook.com/yourusername">
+                </div>
+
+                <div class="buttons">
+                    <button type="button" class="btn btn-prev" onclick="prevStep(1)">
+                        <i class="fas fa-arrow-left"></i> Quay lai
+                    </button>
+                    <div class="btn-spacer"></div>
+                    <button type="button" class="btn btn-next" onclick="nextStep(1)">
+                        Tiep theo <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Position -->
+            <div class="form-section" data-step="2">
+                <div class="section-title">
+                    <i class="fas fa-briefcase"></i>
+                    Vi tri ung tuyen
+                </div>
+                <p class="section-desc">Chon ban ma ban muon ung tuyen.</p>
+
+                <div class="form-group">
+                    <label class="form-label">Nguyen vong 1 <span class="required">*</span></label>
+                    <select class="form-select" id="priority_position" name="priority_position" required onchange="updateDepartments()">
+                        <option value="">-- Chon ban --</option>
+                        <option value="MD">Ban Truyen thong</option>
+                        <option value="HR">Ban Nhan su - Su kien</option>
+                        <option value="ER">Ban Doi ngoai</option>
+                        <option value="PD">Ban Du an</option>
+                    </select>
+                </div>
+
+                <!-- MD Sub-departments -->
+                <div id="md-sub" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Tieu ban Truyen thong</label>
+                        <div class="options-group">
+                            <div class="option-item" onclick="toggleSubDept(this)">
+                                <input type="checkbox" id="md_design" name="md_sub[]" value="Design">
+                                <label for="md_design">Design</label>
+                            </div>
+                            <div class="option-item" onclick="toggleSubDept(this)">
+                                <input type="checkbox" id="md_content" name="md_sub[]" value="Content">
+                                <label for="md_content">Content</label>
+                            </div>
+                        </div>
+                        <div class="form-hint">Ban co the chon mot hoac ca hai tieu ban</div>
+                    </div>
+                </div>
+
+                <div class="form-group" id="secondary-group">
+                    <label class="form-label">Nguyen vong 2</label>
+                    <select class="form-select" id="secondary_position" name="secondary_position" onchange="updateDepartments()">
+                        <option value="">-- Khong chon --</option>
+                        <option value="None">Khong co</option>
+                        <option value="MD">Ban Truyen thong</option>
+                        <option value="HR">Ban Nhan su - Su kien</option>
+                        <option value="ER">Ban Doi ngoai</option>
+                        <option value="PD">Ban Du an</option>
+                    </select>
+                </div>
+
+                <!-- MD Sub-departments for secondary -->
+                <div id="md-sub-secondary" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Tieu ban Truyen thong (NV2)</label>
+                        <div class="options-group">
+                            <div class="option-item" onclick="toggleSubDept(this)">
+                                <input type="checkbox" id="md_design_secondary" name="md_sub_secondary[]" value="Design">
+                                <label for="md_design_secondary">Design</label>
+                            </div>
+                            <div class="option-item" onclick="toggleSubDept(this)">
+                                <input type="checkbox" id="md_content_secondary" name="md_sub_secondary[]" value="Content">
+                                <label for="md_content_secondary">Content</label>
+                            </div>
+                        </div>
+                        <div class="form-hint">Ban co the chon mot hoac ca hai tieu ban</div>
+                    </div>
+                </div>
+
+                <div class="buttons">
+                    <button type="button" class="btn btn-prev" onclick="prevStep(2)">
+                        <i class="fas fa-arrow-left"></i> Quay lai
+                    </button>
+                    <div class="btn-spacer"></div>
+                    <button type="button" class="btn btn-next" onclick="nextStep(2)">
+                        Tiep theo <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Questions -->
+            <div class="form-section" data-step="3">
+                <div class="section-title">
+                    <i class="fas fa-tasks"></i>
+                    Cau hoi ung tuyen
+                </div>
+                <p class="section-desc">Vui long tra loi cac cau hoi duoi day.</p>
+
+                <div id="questions-container">
+                    <!-- Questions will be rendered here -->
+                </div>
+
+                <div class="buttons">
+                    <button type="button" class="btn btn-prev" onclick="prevStep(3)">
+                        <i class="fas fa-arrow-left"></i> Quay lai
+                    </button>
+                    <div class="btn-spacer"></div>
+                    <button type="button" class="btn btn-next" onclick="nextStep(3)">
+                        Tiep theo <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Confirm -->
+            <div class="form-section" data-step="4">
+                <div class="section-title">
+                    <i class="fas fa-check-circle"></i>
+                    Xac nhan thong tin
+                </div>
+                <p class="section-desc">Vui long kiem tra lai thong tin truoc khi gui.</p>
+
+                <div id="summary" style="background: var(--gray-50); padding: 24px; border-radius: var(--border-radius); border-left: 4px solid var(--primary-light); margin-bottom: 24px;">
+                    <!-- Summary will be rendered here -->
+                </div>
+
+                <div class="form-group">
+                    <div class="option-item" onclick="toggleAgree(this)">
+                        <input type="checkbox" id="agree" name="agree" required>
+                        <label for="agree">Toi xac nhan rang tat ca thong tin tren la chinh xac <span class="required">*</span></label>
+                    </div>
+                </div>
+
+                <div class="buttons">
+                    <button type="button" class="btn btn-prev" onclick="prevStep(4)">
+                        <i class="fas fa-arrow-left"></i> Quay lai
+                    </button>
+                    <div class="btn-spacer"></div>
+                    <button type="submit" class="btn btn-submit" id="submit-btn">
+                        <i class="fas fa-paper-plane"></i> Gui don ung tuyen
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Success Message -->
+        <div id="success-message" class="success-message">
+            <i class="fas fa-check-circle"></i>
+            <h2>Don ung tuyen da duoc gui thanh cong!</h2>
+            <p>Cam on ban da nop don ung tuyen den Enactus FTU Hanoi. Chung toi se lien he voi ban trong thoi gian som nhat.</p>
+            <button class="btn btn-next" onclick="window.location.href='/user/dashboard.html'">
+                <i class="fas fa-arrow-right"></i> Ve trang chu
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="/script/config.js"></script>
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let formQuestions = {
+    general: [],
+    'md-design': [],
+    'md-content': [],
+    hr: [],
+    er: [],
+    pd: []
+};
+let formSettings = {};
+let currentStep = 0;
+let totalSteps = 5;
+let selectedType = null;
+let isSubmitting = false;
+let isFormLoaded = false;
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadFormData();
+    renderQuestions();
+    setupEventListeners();
+});
+
+// ============================================================
+// LOAD FORM DATA FROM FIRESTORE
+// ============================================================
+async function loadFormData() {
+    try {
+        // 1. Load settings
+        const settingsDoc = await db.collection('system').doc('form_settings').get();
+        if (settingsDoc.exists) {
+            formSettings = settingsDoc.data();
+        }
+
+        // 2. Check if form is enabled
+        if (!formSettings.enabled) {
+            showFormDisabled('Form tuyen dung hien dang dong. Vui long quay lai sau.');
+            return;
+        }
+
+        // 3. Check time
+        const now = new Date();
+        if (formSettings.startTime) {
+            const start = formSettings.startTime.toDate ? formSettings.startTime.toDate() : new Date(formSettings.startTime);
+            if (now < start) {
+                showFormDisabled('Form se mo vao luc ' + start.toLocaleString('vi-VN'));
+                return;
+            }
+        }
+        if (formSettings.endTime) {
+            const end = formSettings.endTime.toDate ? formSettings.endTime.toDate() : new Date(formSettings.endTime);
+            if (now > end) {
+                showFormDisabled('Thoi han nop don da ket thuc.');
+                return;
+            }
+        }
+
+        // 4. Check max applicants
+        if (formSettings.maxApplicants) {
+            const appsSnap = await db.collection('applications').get();
+            if (appsSnap.size >= formSettings.maxApplicants) {
+                showFormDisabled('So luong ung vien da dat gioi han toi da.');
+                return;
+            }
+        }
+
+        // 5. Load questions
+        const questionsDoc = await db.collection('system').doc('form_questions').get();
+        if (questionsDoc.exists && questionsDoc.data().questions) {
+            formQuestions = questionsDoc.data().questions;
+        } else {
+            // Fallback: create default questions
+            formQuestions = getDefaultQuestions();
+            await db.collection('system').doc('form_questions').set({ questions: formQuestions, updatedAt: new Date() });
+        }
+
+        // 6. Show form
+        isFormLoaded = true;
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('progress-bar').style.display = 'flex';
+        document.getElementById('feedback-form').style.display = 'block';
+        showStep(0);
+
+    } catch (error) {
+        console.error('Loi tai du lieu form:', error);
+        document.getElementById('loading-state').innerHTML = `
+            <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: var(--error); margin-bottom: 16px;"></i>
+            <p style="color: var(--error);">Co loi xay ra khi tai du lieu. Vui long thu lai sau.</p>
+            <button class="btn btn-next" onclick="location.reload()" style="margin-top: 16px;">
+                <i class="fas fa-sync"></i> Tai lai
+            </button>
+        `;
+    }
+}
+
+function showFormDisabled(reason) {
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('form-disabled').style.display = 'block';
+    document.getElementById('disabled-reason').textContent = reason;
+}
+
+// ============================================================
+// DEFAULT QUESTIONS (fallback)
+// ============================================================
+function getDefaultQuestions() {
+    return {
+        general: [
+            { id: 'g1', text: 'Dau la ly do khi ban mong muon tro thanh mot manh ghep cua dai gia dinh Nha E o Gen 18.0?', type: 'textarea', required: true, placeholder: 'Chia se nhung thong tin ban biet ve CLB' },
+            { id: 'g2', text: 'Hay chia se ve mot trai nghiem ngoai khoa ma ban cam thay tu hao nhat.', type: 'textarea', required: true },
+            { id: 'g3', text: '"We change while creating the change" - Ban co nhan ra ban than cung da thay doi?', type: 'textarea', required: true },
+        ],
+        'md-design': [
+            { id: 'md1', text: 'Neu co the quay ve qua khu va thay doi mot quyet dinh, ban se chon khoanh khac nao?', type: 'textarea', required: true },
+            { id: 'md2', text: 'Ban thuong su dung nhung phan mem thiet ke nao?', type: 'checkbox', required: true, options: ['Photoshop', 'Illustrator', 'Canva', 'Figma', 'Premiere Pro', 'Khac'] },
+        ],
+        'md-content': [
+            { id: 'mc1', text: 'Neu co the quay ve qua khu va thay doi mot quyet dinh, ban se chon khoanh khac nao?', type: 'textarea', required: true },
+            { id: 'mc2', text: 'AI dang phat trien manh me. Ban dong y voi quan diem nao ve AI?', type: 'textarea', required: true },
+        ],
+        hr: [
+            { id: 'hr1', text: 'Ban hieu nhu the nao ve vai tro cua ban Nhan su - Su Kien?', type: 'textarea', required: true },
+            { id: 'hr2', text: 'Hay chia se quan diem ve su khac nhau giua tap the dong deu va da dang.', type: 'textarea', required: true },
+        ],
+        er: [
+            { id: 'er1', text: 'Theo ban, ban Doi ngoai dong vai tro gi trong CLB?', type: 'textarea', required: true },
+            { id: 'er2', text: 'Tai sao ban chon ban Doi ngoai cua Enactus FTU Hanoi?', type: 'textarea', required: true },
+        ],
+        pd: [
+            { id: 'pd1', text: 'Tai sao ban lua chon ung tuyen vao ban Du an?', type: 'textarea', required: true },
+            { id: 'pd2', text: 'Su khac biet cot loi giua kinh doanh thong thuong va kinh doanh xa hoi la gi?', type: 'textarea', required: true },
+        ]
+    };
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showStep(step) {
+    currentStep = step;
+
+    document.querySelectorAll('.form-section').forEach((el, index) => {
+        el.classList.toggle('active', index === step);
+    });
+
+    document.querySelectorAll('.progress-step').forEach((el, index) => {
+        el.classList.remove('active', 'completed');
+        if (index === step) el.classList.add('active');
+        else if (index < step) el.classList.add('completed');
+    });
+
+    document.querySelector('.form-body').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function nextStep(current) {
+    if (!validateStep(current)) return;
+    if (current < totalSteps - 1) {
+        showStep(current + 1);
+        if (current + 1 === 3) renderQuestions();
+        if (current + 1 === 4) renderSummary();
+    }
+}
+
+function prevStep(current) {
+    if (current > 0) showStep(current - 1);
+}
+
+// ============================================================
+// VALIDATION
+// ============================================================
+function validateStep(step) {
+    const section = document.querySelector('.form-section[data-step="' + step + '"]');
+    const inputs = section.querySelectorAll('[required]');
+    let isValid = true;
+
+    inputs.forEach(input => {
+        const value = input.value?.trim() || '';
+        if (!value) {
+            input.classList.add('error');
+            isValid = false;
+        } else {
+            input.classList.remove('error');
+        }
+    });
+
+    // Special validation for step 0
+    if (step === 0) {
+        const type = document.getElementById('application_type').value;
+        if (!type) {
+            showStatus('Vui long chon hinh thuc ung tuyen', 'error');
+            return false;
+        }
+        
+        // If interview type, check slots
+        if (type === 'interview') {
+            const checked = document.querySelectorAll('.interview-slot input:checked').length;
+            if (checked < 3) {
+                showStatus('Vui long chon it nhat 3 ca phong van', 'error');
+                return false;
+            }
+        }
+    }
+
+    // Special validation for step 4
+    if (step === 4) {
+        const agree = document.getElementById('agree').checked;
+        if (!agree) {
+            showStatus('Vui long xac nhan thong tin', 'error');
+            return false;
+        }
+    }
+
+    if (!isValid) {
+        showStatus('Vui long dien day du thong tin bat buoc', 'error');
+        return false;
+    }
+
+    return true;
+}
+
+// ============================================================
+// APPLICATION TYPE
+// ============================================================
+function selectType(type) {
+    selectedType = type;
+    document.getElementById('application_type').value = type;
+
+    document.querySelectorAll('.app-type-card').forEach(el => {
+        el.classList.toggle('selected', el.dataset.type === type);
+    });
+
+    document.querySelector('.btn-next[data-step="0"]').disabled = false;
+    document.querySelector('.btn-next[data-step="0"]').style.opacity = '1';
+
+    // Show/hide interview info
+    if (type === 'interview') {
+        document.getElementById('interview-info').style.display = 'block';
+        renderInterviewSlots();
+    } else {
+        document.getElementById('interview-info').style.display = 'none';
+    }
+}
+
+// ============================================================
+// INTERVIEW SLOTS
+// ============================================================
+function renderInterviewSlots() {
+    const container = document.getElementById('interview-questions');
+    if (!container) return;
+    
+    // Check if interview mode is allowed
+    if (!formSettings.allowInterviewMode) {
+        container.innerHTML = '<p style="color: var(--gray-500);">Hinh thuc phong van thay don hien khong kha dung.</p>';
+        return;
+    }
+    
+    // Check interview registration time
+    const now = new Date();
+    if (formSettings.interviewStart) {
+        const start = formSettings.interviewStart.toDate ? formSettings.interviewStart.toDate() : new Date(formSettings.interviewStart);
+        if (now < start) {
+            container.innerHTML = '<p style="color: var(--warning);">Dang ky phong van se mo vao luc ' + start.toLocaleString('vi-VN') + '</p>';
+            return;
+        }
+    }
+    if (formSettings.interviewEnd) {
+        const end = formSettings.interviewEnd.toDate ? formSettings.interviewEnd.toDate() : new Date(formSettings.interviewEnd);
+        if (now > end) {
+            container.innerHTML = '<p style="color: var(--error);">Thoi gian dang ky phong van da ket thuc.</p>';
+            return;
+        }
+    }
+    
+    const slots = formSettings.interviewSlots || [];
+    if (slots.length === 0) {
+        container.innerHTML = '<p style="color: var(--gray-500);">Chua co ca phong van nao. Vui long quay lai sau.</p>';
+        return;
+    }
+    
+    let html = `
+        <div style="margin-top: 16px;">
+            <p style="color: var(--gray-600); margin-bottom: 16px;">Vui long chon it nhat <strong>3 ca</strong> phong van ma ban co the tham gia:</p>
+            <div class="options-group" id="interview-slots-container">
+    `;
+    
+    slots.forEach((slot, index) => {
+        let timeStr = 'Chua co thoi gian';
+        if (slot.time) {
+            try {
+                const d = new Date(slot.time);
+                timeStr = d.toLocaleString('vi-VN', {
+                    weekday: 'short',
+                    day: '2-digit',
+                    month: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch(e) {
+                timeStr = slot.time;
+            }
+        }
+        
+        html += `
+            <div class="option-item interview-slot" data-index="${index}" onclick="toggleInterviewSlot(this)">
+                <input type="checkbox" id="slot_${index}" name="interview_slots[]" value="${index}">
+                <label for="slot_${index}">
+                    <strong>Ca ${index + 1}</strong><br>
+                    <span style="font-size: 13px; color: var(--gray-600);">
+                        <i class="far fa-clock"></i> ${timeStr}
+                        ${slot.location ? ' • <i class="fas fa-map-marker-alt"></i> ' + slot.location : ''}
+                        ${slot.interviewer ? ' • <i class="fas fa-user"></i> ' + slot.interviewer : ''}
+                    </span>
+                </label>
+            </div>
+        `;
+    });
+    
+    html += `
+            </div>
+            <div id="slot-count" style="margin-top: 12px; font-size: 14px; color: var(--gray-500);">
+                Da chon: <span id="slot-count-number">0</span> / 3 ca
+                <span id="slot-warning" style="color: var(--error); display: none; margin-left: 12px;">
+                    <i class="fas fa-exclamation-circle"></i> Can chon it nhat 3 ca
+                </span>
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+    
+    // Add validation for slots
+    document.querySelectorAll('.interview-slot input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', function() {
+            const checked = document.querySelectorAll('.interview-slot input:checked').length;
+            document.getElementById('slot-count-number').textContent = checked;
+            
+            const warning = document.getElementById('slot-warning');
+            if (checked < 3) {
+                warning.style.display = 'inline';
+            } else {
+                warning.style.display = 'none';
+            }
+        });
+    });
+}
+
+function toggleInterviewSlot(el) {
+    const cb = el.querySelector('input[type="checkbox"]');
+    cb.checked = !cb.checked;
+    el.classList.toggle('selected', cb.checked);
+    
+    const checked = document.querySelectorAll('.interview-slot input:checked').length;
+    document.getElementById('slot-count-number').textContent = checked;
+    
+    const warning = document.getElementById('slot-warning');
+    if (checked < 3) {
+        warning.style.display = 'inline';
+    } else {
+        warning.style.display = 'none';
+    }
+}
+
+// ============================================================
+// DEPARTMENTS
+// ============================================================
+function updateDepartments() {
+    const priority = document.getElementById('priority_position').value;
+    const secondary = document.getElementById('secondary_position').value;
+
+    document.getElementById('md-sub').style.display = priority === 'MD' ? 'block' : 'none';
+    document.getElementById('md-sub-secondary').style.display = secondary === 'MD' ? 'block' : 'none';
+}
+
+function toggleSubDept(el) {
+    const checkbox = el.querySelector('input[type="checkbox"]');
+    checkbox.checked = !checkbox.checked;
+    el.classList.toggle('selected', checkbox.checked);
+}
+
+function toggleAgree(el) {
+    const checkbox = el.querySelector('input[type="checkbox"]');
+    checkbox.checked = !checkbox.checked;
+    el.classList.toggle('selected', checkbox.checked);
+}
+
+// ============================================================
+// RENDER QUESTIONS
+// ============================================================
+function renderQuestions() {
+    const container = document.getElementById('questions-container');
+    container.innerHTML = '';
+
+    const priority = document.getElementById('priority_position').value;
+    const secondary = document.getElementById('secondary_position').value;
+
+    // Get sub-departments
+    const mdSubs = [];
+    document.querySelectorAll('input[name="md_sub[]"]:checked').forEach(el => mdSubs.push(el.value));
+
+    // 1. General questions
+    formQuestions.general.forEach((q, index) => {
+        container.appendChild(createQuestionElement(q, 'general', index));
+    });
+
+    // 2. Priority department questions
+    if (priority === 'MD' && mdSubs.length > 0) {
+        mdSubs.forEach(sub => {
+            const key = sub.toLowerCase() === 'design' ? 'md-design' : 'md-content';
+            if (formQuestions[key]) {
+                formQuestions[key].forEach((q, index) => {
+                    container.appendChild(createQuestionElement(q, 'NV1 - ' + sub, index));
+                });
+            }
+        });
+    } else if (priority && priority !== 'MD') {
+        const key = priority.toLowerCase();
+        if (formQuestions[key]) {
+            formQuestions[key].forEach((q, index) => {
+                container.appendChild(createQuestionElement(q, 'NV1 - ' + getDepartmentName(priority), index));
+            });
+        }
+    }
+
+    // 3. Secondary department questions (if allowed)
+    if (formSettings.allowMultipleBan !== false && secondary && secondary !== 'None') {
+        if (secondary === 'MD') {
+            const mdSubsSecondary = [];
+            document.querySelectorAll('input[name="md_sub_secondary[]"]:checked').forEach(el => mdSubsSecondary.push(el.value));
+            mdSubsSecondary.forEach(sub => {
+                const key = sub.toLowerCase() === 'design' ? 'md-design' : 'md-content';
+                if (formQuestions[key]) {
+                    formQuestions[key].forEach((q, index) => {
+                        container.appendChild(createQuestionElement(q, 'NV2 - ' + sub, index));
+                    });
+                }
+            });
+        } else {
+            const key = secondary.toLowerCase();
+            if (formQuestions[key]) {
+                formQuestions[key].forEach((q, index) => {
+                    container.appendChild(createQuestionElement(q, 'NV2 - ' + getDepartmentName(secondary), index));
+                });
+            }
+        }
+    }
+}
+
+function getDepartmentName(code) {
+    const map = { MD: 'Truyen thong', HR: 'Nhan su', ER: 'Doi ngoai', PD: 'Du an' };
+    return map[code] || code;
+}
+
+function createQuestionElement(q, category, index) {
+    const div = document.createElement('div');
+    div.className = 'form-group';
+    div.dataset.questionId = q.id;
+
+    const label = document.createElement('label');
+    label.className = 'form-label';
+    label.innerHTML = q.text + (q.required ? ' <span class="required">*</span>' : '');
+    if (category) {
+        label.innerHTML += ' <span style="font-size: 11px; color: var(--gray-500); font-weight: 400;">(' + category + ')</span>';
+    }
+    div.appendChild(label);
+
+    switch (q.type) {
+        case 'textarea':
+            const textarea = document.createElement('textarea');
+            textarea.className = 'form-textarea';
+            textarea.id = q.id;
+            textarea.name = q.id;
+            textarea.placeholder = q.placeholder || '';
+            textarea.required = q.required || false;
+            textarea.rows = 4;
+            div.appendChild(textarea);
+            break;
+
+        case 'text':
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'form-input';
+            input.id = q.id;
+            input.name = q.id;
+            input.placeholder = q.placeholder || '';
+            input.required = q.required || false;
+            div.appendChild(input);
+            break;
+
+        case 'radio':
+            const radioGroup = document.createElement('div');
+            radioGroup.className = 'options-group';
+            (q.options || []).forEach(opt => {
+                const item = document.createElement('div');
+                item.className = 'option-item';
+                const radioId = q.id + '_' + opt.replace(/\s/g, '_');
+                item.innerHTML = `
+                    <input type="radio" id="${radioId}" name="${q.id}" value="${opt}" ${q.required ? 'required' : ''}>
+                    <label for="${radioId}">${opt}</label>
+                `;
+                item.addEventListener('click', function() {
+                    const radio = this.querySelector('input[type="radio"]');
+                    radio.checked = true;
+                    this.closest('.options-group').querySelectorAll('.option-item').forEach(el => el.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+                radioGroup.appendChild(item);
+            });
+            div.appendChild(radioGroup);
+            break;
+
+        case 'checkbox':
+            const checkboxGroup = document.createElement('div');
+            checkboxGroup.className = 'options-group';
+            (q.options || []).forEach(opt => {
+                const item = document.createElement('div');
+                item.className = 'option-item';
+                const cbId = q.id + '_' + opt.replace(/\s/g, '_');
+                item.innerHTML = `
+                    <input type="checkbox" id="${cbId}" name="${q.id}" value="${opt}">
+                    <label for="${cbId}">${opt}</label>
+                `;
+                item.addEventListener('click', function() {
+                    const cb = this.querySelector('input[type="checkbox"]');
+                    cb.checked = !cb.checked;
+                    this.classList.toggle('selected', cb.checked);
+                });
+                checkboxGroup.appendChild(item);
+            });
+            div.appendChild(checkboxGroup);
+            break;
+
+        default:
+            div.innerHTML += '<p style="color: var(--gray-500); font-size: 14px;">Loai cau hoi khong ho tro</p>';
+    }
+
+    return div;
+}
+
+// ============================================================
+// SUMMARY
+// ============================================================
+function renderSummary() {
+    const container = document.getElementById('summary');
+    const form = document.getElementById('feedback-form');
+    const formData = new FormData(form);
+
+    let html = '<h4 style="margin-bottom: 16px;">Thong tin cua ban</h4>';
+
+    const fields = [
+        { id: 'fullname', label: 'Ho va ten' },
+        { id: 'birthdate', label: 'Ngay sinh' },
+        { id: 'gender', label: 'Gioi tinh' },
+        { id: 'email', label: 'Email' },
+        { id: 'phone', label: 'So dien thoai' },
+        { id: 'school', label: 'Truong' },
+        { id: 'major', label: 'Chuyen nganh' },
+        { id: 'facebook', label: 'Facebook' },
+    ];
+
+    fields.forEach(f => {
+        const el = document.getElementById(f.id);
+        if (el && el.value) {
+            html += '<div style="display: flex; padding: 8px 0; border-bottom: 1px solid var(--gray-200);">';
+            html += '<span style="width: 140px; font-weight: 500; color: var(--gray-600);">' + f.label + ':</span>';
+            html += '<span style="color: var(--gray-800);">' + el.value + '</span>';
+            html += '</div>';
+        }
+    });
+
+    const priority = document.getElementById('priority_position');
+    const secondary = document.getElementById('secondary_position');
+    if (priority.value) {
+        html += '<div style="display: flex; padding: 8px 0; border-bottom: 1px solid var(--gray-200);">';
+        html += '<span style="width: 140px; font-weight: 500; color: var(--gray-600);">Nguyen vong 1:</span>';
+        html += '<span style="color: var(--gray-800);">' + getDepartmentName(priority.value) + '</span>';
+        html += '</div>';
+    }
+    if (secondary.value && secondary.value !== 'None') {
+        html += '<div style="display: flex; padding: 8px 0; border-bottom: 1px solid var(--gray-200);">';
+        html += '<span style="width: 140px; font-weight: 500; color: var(--gray-600);">Nguyen vong 2:</span>';
+        html += '<span style="color: var(--gray-800);">' + getDepartmentName(secondary.value) + '</span>';
+        html += '</div>';
+    }
+
+    // Show selected interview slots
+    const type = document.getElementById('application_type').value;
+    if (type === 'interview') {
+        const selectedSlots = [];
+        document.querySelectorAll('.interview-slot input:checked').forEach(cb => {
+            const index = parseInt(cb.value);
+            const slots = formSettings.interviewSlots || [];
+            if (slots[index]) {
+                let timeStr = 'Chua co thoi gian';
+                if (slots[index].time) {
+                    try {
+                        const d = new Date(slots[index].time);
+                        timeStr = d.toLocaleString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                    } catch(e) {
+                        timeStr = slots[index].time;
+                    }
+                }
+                selectedSlots.push('Ca ' + (index + 1) + ' - ' + timeStr);
+            }
+        });
+        if (selectedSlots.length > 0) {
+            html += '<div style="display: flex; padding: 8px 0; border-bottom: 1px solid var(--gray-200);">';
+            html += '<span style="width: 140px; font-weight: 500; color: var(--gray-600);">Ca phong van:</span>';
+            html += '<span style="color: var(--gray-800);">' + selectedSlots.join('; ') + '</span>';
+            html += '</div>';
+        }
+    }
+
+    html += '<div style="margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--gray-200);">';
+    html += '<p style="color: var(--gray-500); font-size: 14px; text-align: center;">';
+    html += '<i class="fas fa-check-circle" style="color: var(--success);"></i> Vui long kiem tra lai thong tin va xac nhan.';
+    html += '</p></div>';
+
+    container.innerHTML = html;
+}
+
+// ============================================================
+// SUBMIT
+// ============================================================
+document.getElementById('feedback-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    if (isSubmitting) return;
+
+    if (!document.getElementById('agree').checked) {
+        showStatus('Vui long xac nhan thong tin', 'error');
+        return;
+    }
+
+    isSubmitting = true;
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Dang gui...';
+
+    try {
+        const formData = {
+            fullname: document.getElementById('fullname').value.trim(),
+            birthdate: document.getElementById('birthdate').value,
+            gender: document.getElementById('gender').value,
+            email: document.getElementById('email').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            school: document.getElementById('school').value.trim(),
+            major: document.getElementById('major').value.trim(),
+            facebook: document.getElementById('facebook').value.trim(),
+            priority_position: document.getElementById('priority_position').value,
+            secondary_position: document.getElementById('secondary_position').value || 'None',
+            application_type: document.getElementById('application_type').value || 'form',
+            timestamp: new Date(),
+            status: 'new',
+            current_round: 'round1',
+            answers: {}
+        };
+
+        // Get MD sub-departments
+        const mdSubs = [];
+        document.querySelectorAll('input[name="md_sub[]"]:checked').forEach(el => mdSubs.push(el.value));
+        if (mdSubs.length > 0) {
+            formData.md_sub_departments = mdSubs;
+        }
+
+        const mdSubsSecondary = [];
+        document.querySelectorAll('input[name="md_sub_secondary[]"]:checked').forEach(el => mdSubsSecondary.push(el.value));
+        if (mdSubsSecondary.length > 0) {
+            formData.md_sub_departments_secondary = mdSubsSecondary;
+        }
+
+        // Get interview slots
+        if (formData.application_type === 'interview') {
+            const interviewSlots = [];
+            document.querySelectorAll('.interview-slot input:checked').forEach(cb => {
+                interviewSlots.push(parseInt(cb.value));
+            });
+            if (interviewSlots.length > 0) {
+                formData.interview_slots = interviewSlots;
+            }
+        }
+
+        // Get answers
+        const questionIds = new Set();
+        document.querySelectorAll('#questions-container .form-group').forEach(el => {
+            const qId = el.dataset.questionId;
+            if (qId) questionIds.add(qId);
+        });
+
+        questionIds.forEach(qId => {
+            const el = document.getElementById(qId);
+            if (!el) return;
+
+            if (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && el.type === 'text')) {
+                if (el.value.trim()) formData.answers[qId] = el.value.trim();
+            } else if (el.type === 'radio') {
+                const checked = document.querySelector('input[name="' + qId + '"]:checked');
+                if (checked) formData.answers[qId] = checked.value;
+            } else if (el.type === 'checkbox') {
+                const checked = document.querySelectorAll('input[name="' + qId + '"]:checked');
+                if (checked.length > 0) {
+                    formData.answers[qId] = Array.from(checked).map(cb => cb.value);
+                }
+            }
+        });
+
+        // Save to Firestore
+        await db.collection('applications').add(formData);
+
+        // Show success
+        document.getElementById('feedback-form').style.display = 'none';
+        document.getElementById('progress-bar').style.display = 'none';
+        document.getElementById('success-message').classList.add('show');
+
+        showStatus('Da gui don thanh cong!', 'success');
+
+    } catch (error) {
+        console.error('Loi khi gui don:', error);
+        showStatus('Co loi xay ra khi gui don. Vui long thu lai.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Gui don ung tuyen';
+        isSubmitting = false;
+    }
+});
+
+// ============================================================
+// STATUS MESSAGE
+// ============================================================
+function showStatus(message, type) {
+    const el = document.getElementById('status-msg');
+    el.textContent = message;
+    el.className = 'status-msg ' + type;
+    el.style.display = 'block';
+
+    if (type === 'success') {
+        setTimeout(() => {
+            el.style.display = 'none';
+        }, 5000);
+    }
+}
+
+// ============================================================
+// EVENT LISTENERS
+// ============================================================
+function setupEventListeners() {
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.target.closest('textarea')) {
+            const activeSection = document.querySelector('.form-section.active');
+            if (activeSection) {
+                const step = parseInt(activeSection.dataset.step);
+                const nextBtn = activeSection.querySelector('.btn-next');
+                if (nextBtn && !nextBtn.disabled) {
+                    nextBtn.click();
+                }
+            }
+        }
+    });
+}
+</script>
+</body>
+</html>
