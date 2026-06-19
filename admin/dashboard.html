@@ -5914,7 +5914,7 @@ function filterRound3Applications() {
         return appTime > tenMinutesAgo;
       }
 
-// Hàm gửi email thông báo - GỌI QUA WORKER CỦA MÀY
+// Hàm gửi email thông báo - GỌI QUA WORKER MỚI
 async function sendEmailNotification(application) {
     if (emailSendingInProgress.has(application.id)) {
         console.log("⏳ Email đang được gửi...");
@@ -5954,152 +5954,54 @@ async function sendEmailNotification(application) {
             : new Date(application.timestamp || application.createdAt || application.submittedAt);
 
         // Tạo nội dung email
-        const emailHtml = buildEmailHtml(application, applicationTime);
         const emailText = buildEmailText(application, applicationTime);
 
-        // === GỌI WORKER CỦA MÀY ===
-        const WORKER_URL = 'https://s.enactusftuhanoi.id.vn/admin/send-email';
+        // === GỌI WORKER MỚI ===
+        const WORKER_URL = 'https://mail.enactusftuhanoi.workers.dev/';
 
-        // Lấy token auth từ session hoặc tạo Basic Auth
-        const username = sessionStorage.getItem("username") || "superadmin";
-        const password = sessionStorage.getItem("password") || "superadmin";
-        const auth = btoa(`${username}:${password}`);
-
-        // Gửi cho từng email
-        let successCount = 0;
-        for (const email of recipientEmails) {
-            try {
-                const response = await fetch(WORKER_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Basic ${auth}`
-                    },
-                    body: JSON.stringify({
-                        recipients: [{ email: email }],
-                        subject: `📋 Ứng viên mới: ${application.fullname || 'Ứng viên'} - Enactus FTU Hanoi`,
-                        body: `${emailText}\n\n---\nXem chi tiết: https://recruitment.enactusftuhanoi.com/dashboard.html`
-                    })
-                });
-
-                const result = await response.json();
-                
-                if (result.success) {
-                    console.log(`✅ Email đã gửi thành công đến: ${email}`);
-                    successCount++;
-                } else {
-                    console.error(`❌ Lỗi gửi đến ${email}:`, result.error || result.log);
-                }
-            } catch (err) {
-                console.error(`❌ Lỗi gửi đến ${email}:`, err);
-            }
-        }
-
-        console.log(`✅ Đã gửi thành công ${successCount}/${recipientEmails.length} email`);
-
-        if (application.id && successCount > 0) {
-            await db.collection("applications").doc(application.id).update({
-                notification_sent: true,
-                notification_sent_at: new Date(),
-                notification_recipients: recipientEmails,
+        // Gửi cho tất cả admin trong 1 lần
+        try {
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    to: recipientEmails,
+                    subject: `📋 Ứng viên mới: ${application.fullname || 'Ứng viên'} - Enactus FTU Hanoi`,
+                    body: emailText
+                })
             });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log(`✅ Email đã gửi thành công đến ${recipientEmails.length} admin`);
+                
+                if (application.id) {
+                    await db.collection("applications").doc(application.id).update({
+                        notification_sent: true,
+                        notification_sent_at: new Date(),
+                        notification_recipients: recipientEmails,
+                    });
+                }
+                
+                return true;
+            } else {
+                console.error(`❌ Lỗi gửi email:`, result.error);
+                return false;
+            }
+        } catch (err) {
+            console.error(`❌ Lỗi gửi email:`, err);
+            return false;
         }
 
-        return successCount > 0;
     } catch (error) {
         console.error("❌ Lỗi gửi email:", error);
         return false;
     } finally {
         emailSendingInProgress.delete(application.id);
     }
-}
-
-// Hàm build HTML email (giữ nguyên)
-function buildEmailHtml(application, applicationTime) {
-    return `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <style>
-                body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; background: #f5f5f5; padding: 20px; }
-                .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-                .header { text-align: center; border-bottom: 3px solid #f8f3ce; padding-bottom: 20px; margin-bottom: 24px; }
-                .logo { font-size: 24px; font-weight: 800; color: #111827; }
-                .logo span { color: #f59e0b; }
-                h2 { color: #111827; margin-bottom: 16px; }
-                .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
-                .info-item { background: #fafafa; padding: 12px 16px; border-radius: 8px; }
-                .info-label { font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; }
-                .info-value { font-size: 16px; font-weight: 600; color: #111827; margin-top: 4px; }
-                .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-                .badge-form { background: #dbeafe; color: #3b82f6; }
-                .badge-interview { background: #fef3c7; color: #f59e0b; }
-                .footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af; text-align: center; }
-                .btn { display: inline-block; background: #f8f3ce; color: #111827; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <div class="logo">📋 Enactus <span>FTU</span> Hanoi</div>
-                    <p style="color: #6b7280; margin-top: 4px;">🔔 Thông báo đơn ứng tuyển mới</p>
-                </div>
-
-                <h2>👋 Ứng viên mới vừa đăng ký!</h2>
-                
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Họ và tên</div>
-                        <div class="info-value">${application.fullname || 'Chưa có tên'}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Email</div>
-                        <div class="info-value">${application.email || 'Chưa cung cấp'}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Số điện thoại</div>
-                        <div class="info-value">${application.phone || 'Chưa cung cấp'}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Thời gian</div>
-                        <div class="info-value">${applicationTime.toLocaleString('vi-VN')}</div>
-                    </div>
-                </div>
-
-                <div style="margin: 20px 0;">
-                    <div class="info-item" style="margin-bottom: 8px;">
-                        <div class="info-label">Nguyện vọng 1</div>
-                        <div class="info-value">${getDepartmentName(application.priority_position) || 'Chưa có'}</div>
-                    </div>
-                    ${application.secondary_position && application.secondary_position !== 'None' ? `
-                    <div class="info-item">
-                        <div class="info-label">Nguyện vọng 2</div>
-                        <div class="info-value">${getDepartmentName(application.secondary_position)}</div>
-                    </div>
-                    ` : ''}
-                </div>
-
-                <div style="text-align: center; margin: 24px 0;">
-                    <span class="badge ${application.application_type === 'interview' ? 'badge-interview' : 'badge-form'}">
-                        ${application.application_type === 'interview' ? '🎤 Phỏng vấn thay đơn' : '📝 Điền form'}
-                    </span>
-                </div>
-
-                <div style="text-align: center;">
-                    <a href="https://recruitment.enactusftuhanoi.com/dashboard.html" class="btn">
-                        📊 Xem chi tiết trên Dashboard
-                    </a>
-                </div>
-
-                <div class="footer">
-                    <p>Email này được gửi tự động từ hệ thống Enactus FTU Hanoi Recruitment.</p>
-                    <p>Vui lòng không trả lời email này.</p>
-                </div>
-            </div>
-        </body>
-        </html>
-    `;
 }
 
 // Hàm build text email
@@ -6117,7 +6019,7 @@ ${application.secondary_position && application.secondary_position !== 'None' ? 
 Loại đơn: ${application.application_type === 'interview' ? 'Phỏng vấn thay đơn' : 'Điền form'}
 Thời gian: ${applicationTime.toLocaleString('vi-VN')}
 
-Xem chi tiết: https://recruitment.enactusftuhanoi.com/dashboard.html
+Xem chi tiết: https://recruitment.enactusftuhanoi.id.vn/dashboard.html
     `;
 }
 
