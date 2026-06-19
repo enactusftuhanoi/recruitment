@@ -354,17 +354,67 @@ function selectApplicationType(type) {
 }
 
 // ============================================================
-// LOAD INTRO TỪ MARKDOWN
+// LOAD INTRO TỪ FIREBASE (thay thế loadIntroFromMarkdown)
 // ============================================================
 async function loadIntroFromMarkdown() {
     try {
-        const response = await fetch('/content/intro.md');
-        const markdown = await response.text();
-        const html = marked.parse(markdown);
+        if (typeof db === 'undefined' || db === null) {
+            console.warn('[Form] db not available, skipping intro load');
+            return;
+        }
+
+        const doc = await db.collection("system").doc("intro_settings").get();
+
         const container = document.getElementById("intro-info-container");
-        if (container) container.innerHTML = html;
-    } catch (err) {
-        console.warn("[Form] Không tải được intro.md:", err);
+        const titleEl   = document.querySelector("#sectionIntro h2");
+
+        if (doc.exists) {
+            const data = doc.data();
+
+            // Cập nhật tiêu đề (phần sau icon.png)
+            if (titleEl && data.title) {
+                // Giữ lại img tag, chỉ thay text
+                const img = titleEl.querySelector("img");
+                titleEl.innerHTML = "";
+                if (img) titleEl.appendChild(img);
+                titleEl.appendChild(document.createTextNode(" " + data.title));
+            }
+
+            // Cập nhật nội dung giới thiệu
+            if (container && data.contentHtml) {
+                container.innerHTML = data.contentHtml;
+                return; // đã load xong từ Firebase
+            }
+        }
+
+        // Fallback: thử load từ intro.md nếu không có dữ liệu Firebase
+        try {
+            const response = await fetch('/content/intro.md');
+            if (response.ok) {
+                const markdown = await response.text();
+                if (typeof marked !== 'undefined' && container) {
+                    container.innerHTML = marked.parse(markdown);
+                }
+            }
+        } catch (mdErr) {
+            console.warn("[Form] Không tải được intro.md:", mdErr);
+        }
+
+    } catch (e) {
+        console.warn("[Form] Lỗi tải intro từ Firebase:", e);
+        // Fallback về intro.md
+        try {
+            const response = await fetch('/content/intro.md');
+            if (response.ok) {
+                const markdown = await response.text();
+                const container = document.getElementById("intro-info-container");
+                if (typeof marked !== 'undefined' && container) {
+                    container.innerHTML = marked.parse(markdown);
+                }
+            }
+        } catch (mdErr) {
+            console.warn("[Form] Không tải được intro.md:", mdErr);
+        }
     }
 }
 
