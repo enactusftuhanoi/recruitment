@@ -6,6 +6,11 @@ let userDept = sessionStorage.getItem("department") || null;
 let applications = [];
 let currentApplicationId = null;
 
+// ==== CÁC BIẾN NÀY SẼ ĐƯỢC LOAD TỪ FIREBASE ====
+let interview = [];
+let generalQuestions = [];
+let banQuestions = {};
+
 if (!userEmail || !userRole) {
   window.location.href = "login.html";
 }
@@ -20,17 +25,116 @@ function getUrlParameter(name) {
 function autoOpenApplicationFromUrl() {
   const applicationId = getUrlParameter("id");
   if (applicationId) {
-    // Tìm ứng viên trong danh sách
     const application = applications.find((app) => app.id === applicationId);
     if (application) {
-      // Tự động hiển thị chi tiết ứng viên
       setTimeout(() => {
         showApplicationDetail(applicationId);
-      }, 500); // Delay để đảm bảo trang đã load xong
+      }, 500);
     } else {
       console.warn("Không tìm thấy ứng viên với ID:", applicationId);
     }
   }
+}
+
+// ==== HÀM LOAD INTERVIEW & QUESTIONS TỪ FIREBASE ====
+async function loadInterviewAndQuestions() {
+    try {
+        // Load interview settings
+        const interviewDoc = await db.collection("system").doc("interview_settings").get();
+        if (interviewDoc.exists) {
+            const data = interviewDoc.data();
+            const slots = data.slots || [];
+            if (slots.length > 0) {
+                interview = buildInterviewFromSlots(slots);
+            } else {
+                interview = [];
+            }
+        }
+
+        // Load questions
+        const questionsDoc = await db.collection("system").doc("form_questions").get();
+        if (questionsDoc.exists && questionsDoc.data().questions) {
+            const raw = questionsDoc.data().questions;
+            generalQuestions = raw.general || [];
+            banQuestions = {
+                "MD-Design": raw["MD-Design"] || [],
+                "MD-Content": raw["MD-Content"] || [],
+                HR: raw.HR || [],
+                ER: raw.ER || [],
+                PD: raw.PD || [],
+                MD: {
+                    Design: raw["MD-Design"] || [],
+                    Content: raw["MD-Content"] || []
+                }
+            };
+        }
+        console.log('[Response] Đã tải dữ liệu từ Firebase:', {
+            generalQuestions: generalQuestions.length,
+            banQuestions: Object.keys(banQuestions),
+            interviewSlots: interview.length
+        });
+    } catch (error) {
+        console.error('[Response] Lỗi tải dữ liệu:', error);
+    }
+}
+
+// ==== BUILD INTERVIEW FROM SLOTS ====
+function buildInterviewFromSlots(slots) {
+    if (!slots || slots.length === 0) return [];
+
+    const question = {
+        id: "interview_schedule",
+        question: "Vui lòng chọn các khung giờ phỏng vấn bạn có thể tham gia (chọn ít nhất 3 ca)",
+        options: []
+    };
+
+    slots.forEach((slot, index) => {
+        let displayLabel = '';
+        const caNum = index + 1;
+        
+        // Lấy thông tin ngày
+        let dateInfo = '';
+        let timeRange = '';
+        
+        if (slot.dateTime) {
+            try {
+                const date = new Date(slot.dateTime);
+                if (!isNaN(date.getTime())) {
+                    const weekdays = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+                    const dayOfWeek = weekdays[date.getDay()];
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    dateInfo = `${dayOfWeek}, ${day}/${month}/${year}`;
+                }
+            } catch(e) {}
+        }
+        
+        // Lấy giờ
+        if (slot.startTime && slot.endTime) {
+            timeRange = `${slot.startTime} - ${slot.endTime}`;
+        } else if (slot.label) {
+            const timeMatch = slot.label.match(/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/);
+            if (timeMatch) {
+                timeRange = `${timeMatch[1]} - ${timeMatch[2]}`;
+            }
+        }
+        
+        // Ghép thành label: "Ca 1 (08:00 - 09:30) - Thứ 5, 25/06/2026"
+        if (timeRange && dateInfo) {
+            displayLabel = `Ca ${caNum} (${timeRange}) - ${dateInfo}`;
+        } else if (timeRange) {
+            displayLabel = `Ca ${caNum} (${timeRange})`;
+        } else if (dateInfo) {
+            displayLabel = `Ca ${caNum} - ${dateInfo}`;
+        } else {
+            displayLabel = slot.label || `Ca ${caNum}`;
+        }
+        
+        question.options.push(displayLabel);
+    });
+
+    return [question];
 }
 
 // CHÚ Ý: không gọi loadApplications trực tiếp khi load trang.
@@ -49,19 +153,14 @@ auth.onAuthStateChanged(async (user) => {
 
         userRole = data.role || userRole;
         userDept = data.department || userDept;
-
-        // 👉 Lấy fullname từ document ID
         window.currentUserFullname = doc.id;
 
-        // Lưu session
         sessionStorage.setItem("role", userRole);
         sessionStorage.setItem("department", userDept);
 
-        // 👉 Gọi 2 hàm sau khi đã xác định role và fullname
         applyRoleUIRules();
         renderUserInfoBox(window.currentUserFullname);
       } else {
-        // account không tồn tại
         await auth.signOut();
         window.location.href = "login.html";
         return;
@@ -70,9 +169,12 @@ auth.onAuthStateChanged(async (user) => {
       console.error("Lỗi khi lấy account:", e);
     }
 
-    // 👉 SỬA LẠI: Đợi loadApplications hoàn thành trước khi autoOpen
+    // ==== LOAD INTERVIEW & QUESTIONS TỪ FIREBASE ====
+    await loadInterviewAndQuestions();
+    
+    // ==== LOAD APPLICATIONS ====
     await loadApplications();
-    autoOpenApplicationFromUrl(); // 👈 Giờ applications đã có dữ liệu
+    autoOpenApplicationFromUrl();
   } else {
     window.location.href = "login.html";
   }
@@ -845,36 +947,46 @@ function showApplicationDetail(appId) {
     interviewInfoSection.className = "detail-section";
 
     let interviewHTML = `
-            <h3><i class="fas fa-calendar-alt"></i> Thông tin phỏng vấn</h3>
-            <div class="application-details">
-                <div class="detail-item">
-                    <span class="detail-label">Hình thức</span>
-                    <span class="detail-value">Phỏng vấn trực tiếp</span>
-                </div>
-        `;
+        <h3><i class="fas fa-calendar-alt"></i> Thông tin phỏng vấn</h3>
+        <div class="application-details">
+            <div class="detail-item">
+                <span class="detail-label">Hình thức</span>
+                <span class="detail-value">Phỏng vấn trực tiếp</span>
+            </div>
+    `;
 
-    // HIỂN THỊ LỊCH PHỎNG VẤN ĐÃ CHỌN
+    // HIỂN THỊ LỊCH PHỎNG VẤN ĐÃ CHỌN - Format: Thứ ngày + Ca
     let hasInterviewData = false;
-    interview.forEach((day) => {
-      const dayData = application[day.id];
-      if (dayData && Array.isArray(dayData) && dayData.length > 0) {
-        hasInterviewData = true;
-        interviewHTML += `
+    if (interview && interview.length > 0) {
+        interview.forEach((day) => {
+            const dayData = application[day.id];
+            if (dayData && Array.isArray(dayData) && dayData.length > 0) {
+                hasInterviewData = true;
+                // Format lại để hiển thị đẹp
+                let scheduleHTML = '<div style="display:flex;flex-direction:column;gap:4px;">';
+                dayData.forEach(slot => {
+                    // Slot đã có format "Ca 1 (08:00 - 09:30) - Thứ 5, 25/06/2026"
+                    scheduleHTML += `<div style="padding:4px 8px;background:var(--gray-100);border-radius:4px;font-size:13px;">${slot}</div>`;
+                });
+                scheduleHTML += '</div>';
+                
+                interviewHTML += `
                     <div class="detail-item">
                         <span class="detail-label">${day.question}</span>
-                        <span class="detail-value">${dayData.join(", ")}</span>
+                        <span class="detail-value">${scheduleHTML}</span>
                     </div>
                 `;
-      }
-    });
+            }
+        });
+    }
 
     if (!hasInterviewData) {
-      interviewHTML += `
-                <div class="detail-item">
-                    <span class="detail-label">Lịch đã chọn</span>
-                    <span class="detail-value" style="color: var(--error);">Chưa chọn lịch phỏng vấn</span>
-                </div>
-            `;
+        interviewHTML += `
+            <div class="detail-item">
+                <span class="detail-label">Lịch đã chọn</span>
+                <span class="detail-value" style="color: var(--error);">Chưa chọn lịch phỏng vấn</span>
+            </div>
+        `;
     }
 
     interviewHTML += `</div>`;
@@ -1311,40 +1423,51 @@ function renderInterviewSchedule(application, container) {
         <div class="application-details">
     `;
 
-  // Duyệt qua tất cả các ngày phỏng vấn có thể
-  interview.forEach((day) => {
-    const dayData = application[day.id];
-    if (dayData && Array.isArray(dayData) && dayData.length > 0) {
-      interviewHTML += `
-                <div class="detail-item">
-                    <span class="detail-label">${day.question}</span>
-                    <span class="detail-value">${dayData.join(", ")}</span>
-                </div>
-            `;
-    }
-  });
+  if (interview && interview.length > 0) {
+    interview.forEach((day) => {
+      const dayData = application[day.id];
+      if (dayData && Array.isArray(dayData) && dayData.length > 0) {
+        let scheduleHTML = '<div style="display:flex;flex-direction:column;gap:4px;">';
+        dayData.forEach(slot => {
+          scheduleHTML += `<div style="padding:4px 8px;background:var(--gray-100);border-radius:4px;font-size:13px;">${slot}</div>`;
+        });
+        scheduleHTML += '</div>';
+        
+        interviewHTML += `
+          <div class="detail-item">
+              <span class="detail-label">${day.question}</span>
+              <span class="detail-value">${scheduleHTML}</span>
+          </div>
+        `;
+      }
+    });
+  }
 
   // Nếu không có lịch nào được chọn
-  let hasInterviewData = interview.some(
-    (day) =>
-      application[day.id] &&
-      Array.isArray(application[day.id]) &&
-      application[day.id].length > 0
-  );
+  let hasInterviewData = false;
+  if (interview && interview.length > 0) {
+    hasInterviewData = interview.some(
+      (day) =>
+        application[day.id] &&
+        Array.isArray(application[day.id]) &&
+        application[day.id].length > 0
+    );
+  }
 
   if (!hasInterviewData) {
     interviewHTML += `
-            <div class="detail-item">
-                <span class="detail-label">Lịch đã chọn</span>
-                <span class="detail-value" style="color: var(--error);">Chưa chọn lịch phỏng vấn</span>
-            </div>
-        `;
+      <div class="detail-item">
+          <span class="detail-label">Lịch đã chọn</span>
+          <span class="detail-value" style="color: var(--error);">Chưa chọn lịch phỏng vấn</span>
+      </div>
+    `;
   }
 
   interviewHTML += `</div>`;
   interviewSection.innerHTML = interviewHTML;
   container.appendChild(interviewSection);
 }
+
 // Hàm hiển thị câu trả lời đặc thù của từng ban
 function renderBanSpecificAnswers(application, type, container) {
   const banCode =
@@ -2577,19 +2700,41 @@ async function exportInterviewSchedule() {
     // Tạo dữ liệu cho sheet
     const data = [];
 
-    // Header theo template - dòng 2
-    const headerRow2 = ["STT", "Họ và tên", "Ban ưu tiên", "Ban dự bị"];
-
-    // Thêm các ca phỏng vấn từ calendar
+    // Header - lấy các ca từ interview
+    const headers = ["STT", "Họ và tên", "Ban ưu tiên", "Ban dự bị"];
+    
+    // Thêm các ca phỏng vấn vào header - Format "Ca 1 (08:00 - 09:30) - Thứ 5, 25/06"
     if (interview && interview.length > 0) {
       interview.forEach((day) => {
         day.options.forEach((option) => {
-          headerRow2.push(option);
+          // Rút gọn để làm header: "Ca 1 - 08:00-09:30 - Thứ 5 25/06"
+          let shortHeader = option;
+          // Lấy phần ca và thời gian
+          const caMatch = option.match(/(Ca \d+)/);
+          const timeMatch = option.match(/\((\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})\)/);
+          const dateMatch = option.match(/-\s*(Thứ\s*\d+,\s*\d{2}\/\d{2}\/\d{4})/);
+          
+          if (caMatch && timeMatch) {
+            let short = `${caMatch[1]} (${timeMatch[1]}-${timeMatch[2]})`;
+            if (dateMatch) {
+              // Rút gọn ngày: "Thứ 5, 25/06"
+              const dateParts = dateMatch[1].split(',');
+              if (dateParts.length === 2) {
+                const dayMonth = dateParts[1].trim().split('/');
+                if (dayMonth.length >= 2) {
+                  short += ` - ${dateParts[0].trim()} ${dayMonth[0]}/${dayMonth[1]}`;
+                }
+              }
+            }
+            headers.push(short);
+          } else {
+            headers.push(option);
+          }
         });
       });
     }
 
-    data.push(headerRow2);
+    data.push(headers);
 
     // Thêm dữ liệu ứng viên
     interviewApps.forEach((app, index) => {
@@ -2602,7 +2747,7 @@ async function exportInterviewSchedule() {
           : "Không có",
       ];
 
-      // Thêm dữ liệu lịch phỏng vấn đã chọn
+      // Thêm dữ liệu lịch phỏng vấn đã chọn - Đánh dấu X
       if (interview && interview.length > 0) {
         interview.forEach((day) => {
           const dayData = app[day.id];
@@ -2619,10 +2764,10 @@ async function exportInterviewSchedule() {
     // Tạo worksheet từ dữ liệu
     const ws = XLSX.utils.aoa_to_sheet(data);
 
-    // Điều chỉnh độ rộng cột cho phù hợp
+    // Điều chỉnh độ rộng cột
     const colWidths = [
-      { wch: 5 }, // STT
-      { wch: 20 }, // Họ và tên
+      { wch: 5 },  // STT
+      { wch: 25 }, // Họ và tên
       { wch: 15 }, // Ban ưu tiên
       { wch: 15 }, // Ban dự bị
     ];
@@ -2631,7 +2776,7 @@ async function exportInterviewSchedule() {
     if (interview && interview.length > 0) {
       interview.forEach((day) => {
         day.options.forEach(() => {
-          colWidths.push({ wch: 12 });
+          colWidths.push({ wch: 20 });
         });
       });
     }

@@ -4,1040 +4,2660 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form | Enactus FTU Hanoi</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Clash+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
         :root {
-            --primary: #f8f3ce;
-            --primary-light: #ffd54f;
-            --gray-50: #fafafa;
-            --gray-100: #f5f5f5;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
+            --yellow-50: #FFFDE7;
+            --yellow-100: #FFF9C4;
+            --yellow-200: #FFF59D;
+            --yellow-300: #FFF176;
+            --yellow-400: #FFEE58;
+            --yellow-500: #FFEB3B;
+            --yellow-600: #FDD835;
+            --yellow-700: #F9A825;
+            --gray-50: #FAFAFA;
+            --gray-100: #F5F5F5;
+            --gray-150: #EFEFEF;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
             --gray-700: #374151;
-            --gray-800: #1f2937;
+            --gray-800: #1F2937;
             --gray-900: #111827;
-            --white: #ffffff;
-            --error: #ef4444;
-            --error-light: #fee2e2;
-            --success: #10b981;
-            --success-light: #d1fae5;
-            --warning: #f59e0b;
-            --warning-light: #fef3c7;
-            --info: #3b82f6;
-            --info-light: #dbeafe;
-            --border-radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-            --transition: all 0.3s ease;
+            --white: #FFFFFF;
+            --red-50: #FEF2F2;
+            --red-100: #FEE2E2;
+            --red-500: #EF4444;
+            --red-600: #DC2626;
+            --green-50: #F0FDF4;
+            --green-100: #DCFCE7;
+            --green-500: #22C55E;
+            --green-600: #16A34A;
+            --blue-50: #EFF6FF;
+            --blue-100: #DBEAFE;
+            --blue-500: #3B82F6;
+            --blue-600: #2563EB;
+            --orange-50: #FFF7ED;
+            --orange-100: #FFEDD5;
+            --orange-500: #F97316;
+            --orange-600: #EA580C;
+            --purple-50: #FAF5FF;
+            --purple-100: #F3E8FF;
+            --purple-500: #A855F7;
+            --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+            --shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+            --radius: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 20px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Plus Jakarta Sans", sans-serif; }
-        body { background-color: var(--gray-50); color: var(--gray-800); min-height: 100vh; }
 
-        .header {
-            background: var(--white);
-            padding: 16px 24px;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .logo { display: flex; align-items: center; gap: 12px; }
-        .logo img { height: 40px; }
-        .logo-text { font-size: 20px; font-weight: 700; color: var(--gray-900); }
-        .action-btn {
-            padding: 8px 16px;
-            background: var(--gray-100);
-            border: none;
-            border-radius: var(--border-radius);
-            color: var(--gray-700);
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .action-btn:hover { background: var(--gray-200); }
-        .action-btn.primary { background: var(--primary); color: var(--gray-800); }
-        .action-btn.primary:hover { background: var(--primary-light); }
-        .action-btn.success { background: var(--success-light); color: var(--success); }
-        .action-btn.success:hover { background: var(--success); color: white; }
-        .action-btn.danger { background: var(--error-light); color: var(--error); }
-        .action-btn.danger:hover { background: var(--error); color: white; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .main-content { max-width: 1400px; margin: 24px auto; padding: 0 24px; }
-        
-        .tabs {
-            display: flex;
+        body {
+            font-family: "Plus Jakarta Sans", sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-800);
+            min-height: 100vh;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* ========================
+           TOPBAR
+        ======================== */
+        .topbar {
             background: var(--white);
             border-bottom: 1px solid var(--gray-200);
             padding: 0 24px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
         }
-        .tab {
-            padding: 16px 24px;
-            font-weight: 500;
-            color: var(--gray-600);
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: var(--transition);
-        }
-        .tab:hover { color: var(--gray-800); }
-        .tab.active { color: var(--info); border-bottom-color: var(--info); }
 
-        .tab-content { display: none; padding: 24px 0; }
-        .tab-content.active { display: block; }
-
-        .card {
-            background: var(--white);
-            border-radius: var(--border-radius);
-            padding: 24px;
-            box-shadow: var(--shadow);
-            margin-bottom: 24px;
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
-        .card-title {
-            font-family: "Clash Display", sans-serif;
-            font-size: 18px;
+
+        .topbar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .topbar-logo img {
+            height: 36px;
+        }
+
+        .topbar-divider {
+            width: 1px;
+            height: 28px;
+            background: var(--gray-200);
+        }
+
+        .topbar-title {
+            font-size: 15px;
             font-weight: 700;
             color: var(--gray-900);
-            margin-bottom: 16px;
+        }
+
+        .topbar-right {
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        .stat-card {
-            background: var(--white);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            text-align: center;
-        }
-        .stat-value { font-size: 28px; font-weight: 700; color: var(--gray-800); margin-bottom: 4px; }
-        .stat-label { font-size: 13px; color: var(--gray-500); }
-
-        .question-list { display: flex; flex-direction: column; gap: 12px; }
-        .question-card {
-            border: 1px solid var(--gray-200);
-            border-radius: var(--border-radius);
-            padding: 16px;
-            background: var(--gray-50);
-            transition: var(--transition);
-        }
-        .question-card:hover { border-color: var(--info); background: var(--white); }
-        .question-header { display: flex; align-items: flex-start; gap: 12px; }
-        .question-content { flex: 1; }
-        .question-label { font-weight: 600; color: var(--gray-800); margin-bottom: 4px; }
-        .question-meta { font-size: 12px; color: var(--gray-500); display: flex; gap: 8px; flex-wrap: wrap; }
-        .question-actions { display: flex; gap: 6px; flex-shrink: 0; }
-
-        .icon-btn {
-            background: none;
-            border: 1px solid var(--gray-200);
-            border-radius: 8px;
-            width: 32px;
-            height: 32px;
+        /* ========================
+           LAYOUT
+        ======================== */
+        .layout {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: var(--gray-500);
-            transition: var(--transition);
+            min-height: calc(100vh - 60px);
         }
-        .icon-btn:hover { border-color: var(--info); color: var(--info); background: var(--info-light); }
-        .icon-btn.danger:hover { border-color: var(--error); color: var(--error); background: var(--error-light); }
 
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-overlay.active { display: flex; }
-        .modal {
+        .sidebar {
+            width: 220px;
             background: var(--white);
-            border-radius: var(--border-radius);
-            width: 90%;
-            max-width: 700px;
-            max-height: 90vh;
+            border-right: 1px solid var(--gray-200);
+            padding: 20px 12px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 60px;
+            height: calc(100vh - 60px);
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
         }
-        .modal-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--gray-200);
+
+        .sidebar-section-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--gray-400);
+            padding: 0 8px;
+            margin-bottom: 6px;
+            margin-top: 16px;
+        }
+
+        .sidebar-section-label:first-child {
+            margin-top: 0;
+        }
+
+        .sidebar-item {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--gray-600);
+            font-weight: 500;
+            font-size: 13.5px;
+            transition: var(--transition);
+            user-select: none;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
         }
-        .modal-title { font-size: 18px; font-weight: 700; }
-        .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--gray-500); }
-        .modal-body { padding: 24px; }
-        .modal-footer {
-            padding: 16px 24px;
-            border-top: 1px solid var(--gray-200);
+
+        .sidebar-item:hover {
+            background: var(--gray-100);
+            color: var(--gray-900);
+        }
+
+        .sidebar-item.active {
+            background: var(--yellow-100);
+            color: var(--gray-900);
+            font-weight: 600;
+        }
+
+        .sidebar-item svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            opacity: 0.7;
+        }
+
+        .sidebar-item.active svg {
+            opacity: 1;
+        }
+
+        .content {
+            flex: 1;
+            padding: 28px;
+            max-width: 960px;
+            overflow: auto;
+        }
+
+        /* ========================
+           PAGE HEADER
+        ======================== */
+        .page-header {
             display: flex;
-            justify-content: flex-end;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            gap: 16px;
+        }
+
+        .page-header-text h1 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .page-header-text p {
+            color: var(--gray-500);
+            font-size: 13.5px;
+        }
+
+        /* ========================
+           TABS
+        ======================== */
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* ========================
+           CARDS
+        ======================== */
+        .card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--gray-100);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .card-header-left {
+            display: flex;
+            align-items: center;
             gap: 10px;
         }
 
-        .form-group { margin-bottom: 16px; }
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .card-icon svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .card-icon.yellow { background: var(--yellow-100); color: var(--yellow-700); }
+        .card-icon.blue { background: var(--blue-50); color: var(--blue-600); }
+        .card-icon.green { background: var(--green-50); color: var(--green-600); }
+        .card-icon.red { background: var(--red-50); color: var(--red-600); }
+        .card-icon.orange { background: var(--orange-50); color: var(--orange-600); }
+        .card-icon.purple { background: var(--purple-50); color: var(--purple-500); }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-top: 1px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* ========================
+           STATS GRID
+        ======================== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--gray-900);
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--gray-500);
+            font-weight: 500;
+        }
+
+        .stat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 20px;
+            margin-top: 8px;
+        }
+
+        .stat-badge.green { background: var(--green-100); color: var(--green-600); }
+        .stat-badge.red { background: var(--red-100); color: var(--red-600); }
+        .stat-badge.yellow { background: var(--yellow-100); color: var(--yellow-700); }
+        .stat-badge.blue { background: var(--blue-100); color: var(--blue-600); }
+
+        .stat-badge svg { width: 10px; height: 10px; }
+
+        /* ========================
+           BUTTONS
+        ======================== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            white-space: nowrap;
+            font-family: inherit;
+        }
+
+        .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+        .btn-primary {
+            background: var(--gray-900);
+            color: var(--white);
+        }
+        .btn-primary:hover { background: var(--gray-700); }
+
+        .btn-yellow {
+            background: var(--yellow-400);
+            color: var(--gray-900);
+        }
+        .btn-yellow:hover { background: var(--yellow-500); }
+
+        .btn-ghost {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+        .btn-ghost:hover { background: var(--gray-200); }
+
+        .btn-danger {
+            background: var(--red-50);
+            color: var(--red-600);
+        }
+        .btn-danger:hover { background: var(--red-100); }
+
+        .btn-success {
+            background: var(--green-50);
+            color: var(--green-600);
+        }
+        .btn-success:hover { background: var(--green-100); }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .btn-icon {
+            padding: 6px;
+            border-radius: 7px;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon svg { width: 14px; height: 14px; }
+
+        /* ========================
+           FORM CONTROLS
+        ======================== */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
         .form-label {
             display: block;
+            font-size: 13px;
             font-weight: 600;
-            font-size: 14px;
             color: var(--gray-700);
             margin-bottom: 6px;
         }
+
+        .form-label .required {
+            color: var(--red-500);
+            margin-left: 2px;
+        }
+
+        .form-hint {
+            font-size: 11.5px;
+            color: var(--gray-400);
+            margin-top: 4px;
+        }
+
         .form-input, .form-select, .form-textarea {
             width: 100%;
-            padding: 10px 12px;
+            padding: 9px 12px;
             border: 1px solid var(--gray-300);
-            border-radius: var(--border-radius);
-            font-size: 14px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-family: inherit;
+            color: var(--gray-800);
+            background: var(--white);
             transition: var(--transition);
-        }
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
             outline: none;
-            border-color: var(--info);
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
         }
 
-        .option-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-        .option-row input { flex: 1; }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: var(--yellow-600);
+            box-shadow: 0 0 0 3px rgba(249, 168, 37, 0.12);
+        }
 
-        .toggle-row {
+        .form-textarea { resize: vertical; min-height: 80px; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        /* ========================
+           TOGGLE
+        ======================== */
+        .toggle-group {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 12px;
-            background: var(--gray-50);
-            border-radius: 8px;
-            margin-bottom: 8px;
+            padding: 14px 16px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            margin-bottom: 10px;
+            background: var(--white);
         }
-        .toggle-switch {
+
+        .toggle-info .toggle-title {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .toggle-info .toggle-desc {
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-top: 2px;
+        }
+
+        .toggle {
             position: relative;
-            width: 40px;
-            height: 22px;
-            cursor: pointer;
+            width: 42px;
+            height: 24px;
+            flex-shrink: 0;
         }
-        .toggle-switch input { display: none; }
+
+        .toggle input { opacity: 0; width: 0; height: 0; }
+
         .toggle-slider {
             position: absolute;
             inset: 0;
             background: var(--gray-300);
-            border-radius: 20px;
+            border-radius: 24px;
+            cursor: pointer;
             transition: var(--transition);
         }
+
         .toggle-slider::before {
             content: '';
             position: absolute;
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
+            background: var(--white);
             border-radius: 50%;
-            background: white;
             top: 3px;
             left: 3px;
             transition: var(--transition);
+            box-shadow: var(--shadow-sm);
         }
-        .toggle-switch input:checked + .toggle-slider { background: var(--info); }
-        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
 
-        .badge {
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 500;
+        .toggle input:checked + .toggle-slider {
+            background: var(--yellow-600);
         }
-        .badge-info { background: var(--info-light); color: var(--info); }
-        .badge-success { background: var(--success-light); color: var(--success); }
-        .badge-warning { background: var(--warning-light); color: var(--warning); }
-        .badge-danger { background: var(--error-light); color: var(--error); }
 
-        .setting-row {
+        .toggle input:checked + .toggle-slider::before {
+            transform: translateX(18px);
+        }
+
+        /* ========================
+           QUESTION LIST
+        ======================== */
+        .filter-bar {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 16px 0;
-            border-bottom: 1px solid var(--gray-100);
-        }
-        .setting-row:last-child { border-bottom: none; }
-        .setting-info .setting-title { font-weight: 600; color: var(--gray-800); margin-bottom: 2px; }
-        .setting-info .setting-desc { font-size: 13px; color: var(--gray-500); }
-
-        .empty-state { text-align: center; padding: 40px 20px; color: var(--gray-500); }
-        .loading { text-align: center; padding: 40px; color: var(--gray-400); }
-        .loading i { font-size: 24px; display: block; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .category-filter {
-            display: flex;
             gap: 8px;
             flex-wrap: wrap;
             margin-bottom: 16px;
         }
-        .category-btn {
-            padding: 6px 14px;
-            border: 1px solid var(--gray-300);
+
+        .filter-chip {
+            padding: 5px 12px;
             border-radius: 20px;
-            background: var(--white);
+            font-size: 12.5px;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 13px;
+            border: 1px solid var(--gray-200);
+            background: var(--white);
+            color: var(--gray-600);
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        .filter-chip:hover { background: var(--gray-100); }
+
+        .filter-chip.active {
+            background: var(--gray-900);
+            color: var(--white);
+            border-color: var(--gray-900);
+        }
+
+        .question-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .question-item {
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            background: var(--white);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
             transition: var(--transition);
         }
-        .category-btn:hover { background: var(--gray-100); }
-        .category-btn.active { background: var(--primary); border-color: var(--primary-light); }
 
-        .slot-item {
+        .question-item:hover {
+            border-color: var(--gray-300);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .question-order {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--gray-400);
+            min-width: 24px;
+            text-align: center;
+            padding-top: 2px;
+        }
+
+        .question-main { flex: 1; min-width: 0; }
+
+        .question-text-display {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .question-meta {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge svg { width: 10px; height: 10px; }
+
+        .badge-gray { background: var(--gray-100); color: var(--gray-600); }
+        .badge-blue { background: var(--blue-50); color: var(--blue-600); }
+        .badge-green { background: var(--green-100); color: var(--green-600); }
+        .badge-orange { background: var(--orange-50); color: var(--orange-600); }
+        .badge-red { background: var(--red-50); color: var(--red-600); }
+        .badge-yellow { background: var(--yellow-100); color: var(--yellow-700); }
+        .badge-purple { background: var(--purple-100); color: var(--purple-500); }
+
+        .question-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--gray-400);
+        }
+
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+            opacity: 0.4;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* ========================
+           MODAL
+        ======================== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        .modal {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+            animation: modal-in 0.2s ease;
+        }
+
+        @keyframes modal-in {
+            from { opacity: 0; transform: scale(0.97) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--gray-100);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .modal-header-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .modal-body {
+            padding: 20px 22px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 14px 22px;
+            border-top: 1px solid var(--gray-100);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        /* ========================
+           OPTIONS IN MODAL
+        ======================== */
+        .option-row {
             display: flex;
             gap: 8px;
             align-items: center;
-            padding: 10px 12px;
-            background: var(--gray-50);
-            border-radius: 8px;
-            border: 1px solid var(--gray-200);
             margin-bottom: 8px;
         }
-        .slot-item input { flex: 1; }
 
-        @media (max-width: 768px) {
-            .header { flex-direction: column; gap: 12px; }
-            .tabs { overflow-x: auto; }
-            .slot-item { flex-wrap: wrap; }
-            .slot-item input { min-width: 120px; }
+        .option-row input {
+            flex: 1;
+        }
+
+        /* ========================
+           SLOTS
+        ======================== */
+        .slot-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .slot-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            background: var(--gray-50);
+        }
+
+        .slot-number {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--gray-400);
+            min-width: 28px;
+        }
+
+        .slot-row input {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* ========================
+           NOTIFICATION PREVIEW
+        ======================== */
+        .notif-preview {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--gray-700);
+            line-height: 1.5;
+        }
+
+        .notif-preview.active-warning {
+            background: var(--orange-50);
+            border-color: var(--orange-500);
+            color: var(--orange-600);
+        }
+
+        .notif-preview.active-info {
+            background: var(--blue-50);
+            border-color: var(--blue-500);
+            color: var(--blue-600);
+        }
+
+        /* ========================
+           STATUS INDICATOR
+        ======================== */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .status-dot.online { background: var(--green-500); }
+        .status-dot.offline { background: var(--red-500); }
+        .status-dot.warning { background: var(--orange-500); }
+
+        /* ========================
+           SECTION DIVIDER
+        ======================== */
+        .section-divider {
+            height: 1px;
+            background: var(--gray-150);
+            margin: 20px 0;
+        }
+
+        /* ========================
+           ALERT
+        ======================== */
+        .alert {
+            padding: 12px 14px;
+            border-radius: var(--radius);
+            font-size: 13px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .alert svg { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; }
+
+        .alert-warning { background: var(--orange-50); color: var(--orange-600); border: 1px solid var(--orange-100); }
+        .alert-danger { background: var(--red-50); color: var(--red-600); border: 1px solid var(--red-100); }
+        .alert-success { background: var(--green-50); color: var(--green-600); border: 1px solid var(--green-100); }
+        .alert-info { background: var(--blue-50); color: var(--blue-600); border: 1px solid var(--blue-100); }
+
+        /* ========================
+           LOADING
+        ======================== */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid var(--gray-200);
+            border-top-color: var(--gray-700);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-state {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--gray-500);
+            padding: 32px;
+            justify-content: center;
+            font-size: 13.5px;
+        }
+
+        /* ========================
+           TOAST
+        ======================== */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            background: var(--gray-900);
+            color: var(--white);
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            animation: toast-in 0.25s ease;
+            max-width: 320px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast svg { width: 15px; height: 15px; flex-shrink: 0; }
+        .toast.success { background: var(--green-600); }
+        .toast.error { background: var(--red-600); }
+
+        @keyframes toast-in {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ========================
+           RESPONSIVE
+        ======================== */
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 600px) {
+            .content { padding: 16px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .form-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <div class="logo">
-        <img src="../assets/logo_den.png" alt="Enactus FTU Hanoi Logo">
-        <div class="logo-text">Quan ly Form</div>
+<!-- TOPBAR -->
+<div class="topbar">
+    <div class="topbar-left">
+        <a href="dashboard.html" class="topbar-logo">
+            <img src="/assets/logo_den.png" alt="Enactus FTU Hanoi">
+        </a>
+        <div class="topbar-divider"></div>
+        <span class="topbar-title">Quản lý Form</span>
     </div>
-    <div>
-        <button class="action-btn" onclick="window.location.href='dashboard.html'">
-            <i class="fas fa-arrow-left"></i> Dashboard
+    <div class="topbar-right">
+        <button class="btn btn-ghost" onclick="window.location.href='dashboard.html'">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10 12l-4-4 4-4"/>
+            </svg>
+            Dashboard
         </button>
     </div>
 </div>
 
-<div class="tabs">
-    <div class="tab active" data-tab="overview">Tong quan</div>
-    <div class="tab" data-tab="questions">Cau hoi</div>
-    <div class="tab" data-tab="settings">Cai dat</div>
-</div>
+<!-- LAYOUT -->
+<div class="layout">
 
-<div class="main-content">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-section-label">Tổng quan</div>
+        <button class="sidebar-item active" onclick="switchTab('overview', this)">
+            <svg viewBox="0 0 16 16" fill="currentColor">
+                <rect x="1" y="1" width="6" height="6" rx="1"/>
+                <rect x="9" y="1" width="6" height="6" rx="1"/>
+                <rect x="1" y="9" width="6" height="6" rx="1"/>
+                <rect x="9" y="9" width="6" height="6" rx="1"/>
+            </svg>
+            Tổng quan
+        </button>
 
-    <div id="tab-overview" class="tab-content active">
-        <div class="stats-grid">
-            <div class="stat-card"><div class="stat-value" id="stat-total">0</div><div class="stat-label">Tong cau hoi</div></div>
-            <div class="stat-card"><div class="stat-value" id="stat-general">0</div><div class="stat-label">Cau hoi chung</div></div>
-            <div class="stat-card"><div class="stat-value" id="stat-ban">0</div><div class="stat-label">Cau hoi theo ban</div></div>
-            <div class="stat-card"><div class="stat-value" id="stat-status"><i class="fas fa-circle" style="color:#ef4444;"></i></div><div class="stat-label">Trang thai form</div></div>
-        </div>
-        <div class="card">
-            <div class="card-title"><i class="fas fa-info-circle"></i> Huong dan</div>
-            <p style="color: var(--gray-600); line-height: 1.8;">
-                Quan ly cau hoi trong form tuyen dung cua Enactus FTU Hanoi.<br>
-                Ban co the them, sua, xoa cau hoi cho tung phan.<br>
-                Cau hoi duoc chia thanh: Cau hoi chung va Cau hoi theo ban.<br>
-                Khi ung vien chon ban, he thong se tu dong hien thi cau hoi tuong ung.
-            </p>
-        </div>
+        <div class="sidebar-section-label">Nội dung</div>
+        <button class="sidebar-item" onclick="switchTab('general-questions', this)">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="8" cy="8" r="6.5"/>
+                <path d="M6 6.5c0-1.1.9-2 2-2a2 2 0 0 1 1.5 3.3C9 8.4 8 9 8 10M8 12h.01"/>
+            </svg>
+            Câu hỏi chung
+        </button>
+        <button class="sidebar-item" onclick="switchTab('ban-questions', this)">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 10c0 2.2-2.7 4-6 4S2 12.2 2 10s2.7-4 6-4 6 1.8 6 4z"/>
+                <path d="M14 6c0-2.2-2.7-4-6-4S2 3.8 2 6"/>
+                <path d="M14 6v4M2 6v4"/>
+            </svg>
+            Câu hỏi theo ban
+        </button>
+
+        <div class="sidebar-section-label">Cài đặt</div>
+        <button class="sidebar-item" onclick="switchTab('settings-form', this)">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="1.5" y="3.5" width="13" height="10" rx="1.5"/>
+                <path d="M5.5 1.5v2M10.5 1.5v2M1.5 7h13"/>
+            </svg>
+            Thời gian form
+        </button>
+        <button class="sidebar-item" onclick="switchTab('settings-interview', this)">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2 3.5h12M2 8h8M2 12.5h5"/>
+                <circle cx="12.5" cy="10.5" r="2.5"/>
+                <path d="M14.5 12.5l1.5 1.5"/>
+            </svg>
+            Phỏng vấn thay đơn
+        </button>
+        <button class="sidebar-item" onclick="switchTab('settings-notify', this)">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M8 1.5A4.5 4.5 0 0 0 3.5 6v2.5L2 10.5h12l-1.5-2V6A4.5 4.5 0 0 0 8 1.5z"/>
+                <path d="M6.5 13a1.5 1.5 0 0 0 3 0"/>
+            </svg>
+            Thông báo
+        </button>
+
+        <div class="sidebar-section-label">Nguy hiểm</div>
+        <button class="sidebar-item" onclick="switchTab('danger-zone', this)" style="color:var(--red-500)">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M8 2L1.5 13.5h13L8 2zM8 6.5v3M8 11.5h.01"/>
+            </svg>
+            Khu vực nguy hiểm
+        </button>
     </div>
 
-    <div id="tab-questions" class="tab-content">
-        <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-                <div class="card-title"><i class="fas fa-list-ul"></i> Danh sach cau hoi</div>
-                <button class="action-btn primary" onclick="openAddQuestion()">
-                    <i class="fas fa-plus"></i> Them cau hoi
+    <!-- CONTENT -->
+    <div class="content">
+
+        <!-- ========================
+             TAB: TỔNG QUAN
+        ======================== -->
+        <div id="tab-overview" class="tab-pane active">
+            <div class="page-header">
+                <div class="page-header-text">
+                    <h1>Tổng quan</h1>
+                    <p>Trạng thái form và số liệu thống kê</p>
+                </div>
+                <button class="btn btn-yellow" onclick="refreshOverview()">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13.5 2.5A6.5 6.5 0 1 0 14 8M14 2.5V6h-3.5"/>
+                    </svg>
+                    Làm mới
                 </button>
             </div>
 
-            <div class="category-filter" id="category-filter">
-                <button class="category-btn active" data-category="all">Tat ca</button>
-                <button class="category-btn" data-category="general">Chung</button>
-                <button class="category-btn" data-category="md-design">MD Design</button>
-                <button class="category-btn" data-category="md-content">MD Content</button>
-                <button class="category-btn" data-category="hr">HR</button>
-                <button class="category-btn" data-category="er">ER</button>
-                <button class="category-btn" data-category="pd">PD</button>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-total">--</div>
+                    <div class="stat-label">Tổng số câu hỏi</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-general">--</div>
+                    <div class="stat-label">Câu hỏi chung</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-ban">--</div>
+                    <div class="stat-label">Câu hỏi theo ban</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-interview">--</div>
+                    <div class="stat-label">Ca phỏng vấn</div>
+                </div>
             </div>
 
-            <div id="question-list">
-                <div class="loading"><i class="fas fa-spinner"></i> Dang tai...</div>
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon yellow">
+                            <svg viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm.75 10.5h-1.5v-4.5h1.5v4.5zm0-6h-1.5v-1.5h1.5v1.5z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="card-title">Trạng thái hệ thống</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="overview-status-loading" class="loading-state">
+                        <div class="spinner"></div>
+                        Đang tải...
+                    </div>
+                    <div id="overview-status" style="display:none;">
+                        <div class="toggle-group" style="margin-bottom:10px;">
+                            <div class="toggle-info">
+                                <div class="toggle-title" id="form-status-text">Form tuyển dụng</div>
+                                <div class="toggle-desc" id="form-status-time"></div>
+                            </div>
+                            <span id="form-status-badge"></span>
+                        </div>
+                        <div class="toggle-group">
+                            <div class="toggle-info">
+                                <div class="toggle-title" id="interview-status-text">Phỏng vấn thay đơn</div>
+                                <div class="toggle-desc" id="interview-status-time"></div>
+                            </div>
+                            <span id="interview-status-badge"></span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="tab-settings" class="tab-content">
-        <div class="card">
-            <div class="card-title"><i class="fas fa-cog"></i> Cai dat Form</div>
-            
-            <div class="setting-row">
-                <div class="setting-info">
-                    <div class="setting-title">Mo form tuyen dung</div>
-                    <div class="setting-desc">Cho phep ung vien truy cap va dien form</div>
+        <!-- ========================
+             TAB: CÂU HỎI CHUNG
+        ======================== -->
+        <div id="tab-general-questions" class="tab-pane">
+            <div class="page-header">
+                <div class="page-header-text">
+                    <h1>Câu hỏi chung</h1>
+                    <p>Áp dụng cho tất cả ứng viên điền đơn</p>
                 </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="toggle-enabled" onchange="saveSettings()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-
-            <div class="setting-row">
-                <div class="setting-info">
-                    <div class="setting-title">Thoi gian mo form</div>
-                    <div class="setting-desc">Ung vien chi co the dien form trong khoang thoi gian nay</div>
-                </div>
-                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                    <input type="datetime-local" class="form-input" id="start-time" style="width:200px;">
-                    <span style="color:var(--gray-500);">→</span>
-                    <input type="datetime-local" class="form-input" id="end-time" style="width:200px;">
-                    <button class="action-btn primary" onclick="saveDeadline()">Luu</button>
-                </div>
-            </div>
-
-            <div class="setting-row">
-                <div class="setting-info">
-                    <div class="setting-title">Gioi han so luong ung vien</div>
-                    <div class="setting-desc">So luong ung vien toi da co the nop don</div>
-                </div>
-                <div style="display:flex;gap:8px;align-items:center;">
-                    <input type="number" class="form-input" id="max-applicants" style="width:120px;" min="0">
-                    <button class="action-btn primary" onclick="saveMaxApplicants()">Luu</button>
-                </div>
-            </div>
-
-            <div class="setting-row">
-                <div class="setting-info">
-                    <div class="setting-title">Cho phep ung vien chon nhieu ban</div>
-                    <div class="setting-desc">Ung vien co the chon ca nguyen vong 1 va 2</div>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="toggle-multiple-ban" onchange="saveSettings()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-
-            <div class="setting-row">
-                <div class="setting-info">
-                    <div class="setting-title">Hien thi cau hoi theo ban</div>
-                    <div class="setting-desc">Chi hien thi cau hoi cua ban ma ung vien da chon</div>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="toggle-show-ban-questions" onchange="saveSettings()" checked>
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-
-            <div class="setting-row">
-                <div class="setting-info">
-                    <div class="setting-title">Cho phep ung vien chon phong van thay don</div>
-                    <div class="setting-desc">Ung vien co the chon phong van thay vi dien don</div>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="toggle-interview-mode" onchange="saveSettings()" checked>
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-
-            <div class="setting-row">
-                <div class="setting-info">
-                    <div class="setting-title">Thoi gian dang ky phong van</div>
-                    <div class="setting-desc">Khung thoi gian ung vien co the dang ky lich phong van</div>
-                </div>
-                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                    <input type="datetime-local" class="form-input" id="interview-start" style="width:200px;">
-                    <span style="color:var(--gray-500);">→</span>
-                    <input type="datetime-local" class="form-input" id="interview-end" style="width:200px;">
-                    <button class="action-btn primary" onclick="saveInterviewDeadline()">Luu</button>
-                </div>
-            </div>
-
-            <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:12px;">
-                <div class="setting-info">
-                    <div class="setting-title">Danh sach ca phong van</div>
-                    <div class="setting-desc">Cac ca phong van de ung vien dang ky</div>
-                </div>
-                <div id="interview-slots-list"></div>
-                <button class="action-btn" onclick="addInterviewSlot()" style="align-self:flex-start;">
-                    <i class="fas fa-plus"></i> Them ca
+                <button class="btn btn-primary" onclick="openAddQuestion('general')">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M8 3v10M3 8h10"/>
+                    </svg>
+                    Thêm câu hỏi
                 </button>
             </div>
 
-            <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--gray-200);">
-                <div class="card-title" style="font-size:15px;margin-bottom:12px;">Nguy hiem</div>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                    <button class="action-btn danger" onclick="resetForm()">
-                        <i class="fas fa-undo"></i> Reset ve mac dinh
-                    </button>
-                    <button class="action-btn danger" onclick="deleteAllResponses()">
-                        <i class="fas fa-trash"></i> Xoa toan bo phan hoi
+            <div class="card">
+                <div class="card-body" id="general-question-list">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        Đang tải câu hỏi...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================
+             TAB: CÂU HỎI THEO BAN
+        ======================== -->
+        <div id="tab-ban-questions" class="tab-pane">
+            <div class="page-header">
+                <div class="page-header-text">
+                    <h1>Câu hỏi theo ban</h1>
+                    <p>Hiển thị riêng cho từng ban ứng viên đăng ký</p>
+                </div>
+                <button class="btn btn-primary" onclick="openAddQuestion('ban')">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M8 3v10M3 8h10"/>
+                    </svg>
+                    Thêm câu hỏi
+                </button>
+            </div>
+
+            <div class="filter-bar">
+                <button class="filter-chip active" data-ban="all" onclick="filterBan(this)">Tất cả</button>
+                <button class="filter-chip" data-ban="MD-Design" onclick="filterBan(this)">MD - Design</button>
+                <button class="filter-chip" data-ban="MD-Content" onclick="filterBan(this)">MD - Content</button>
+                <button class="filter-chip" data-ban="HR" onclick="filterBan(this)">Nhân sự (HR)</button>
+                <button class="filter-chip" data-ban="ER" onclick="filterBan(this)">Đối ngoại (ER)</button>
+                <button class="filter-chip" data-ban="PD" onclick="filterBan(this)">Dự án (PD)</button>
+            </div>
+
+            <div class="card">
+                <div class="card-body" id="ban-question-list">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        Đang tải câu hỏi...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================
+             TAB: THỜI GIAN FORM
+        ======================== -->
+        <div id="tab-settings-form" class="tab-pane">
+            <div class="page-header">
+                <div class="page-header-text">
+                    <h1>Thời gian form</h1>
+                    <p>Điều chỉnh thời gian mở và đóng form điền đơn</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon green">
+                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="1.5" y="3.5" width="13" height="10" rx="1.5"/>
+                                <path d="M5.5 1.5v2M10.5 1.5v2M1.5 7h13"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="card-title">Trạng thái form điền đơn</div>
+                            <div class="card-subtitle">Khi form bật thủ công, thời gian sẽ bị bỏ qua</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <div class="toggle-title">Bật form thủ công</div>
+                            <div class="toggle-desc">Cho phép ứng viên truy cập form ngay lập tức, bỏ qua lịch thời gian</div>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-form-enabled" onchange="saveFormSettings()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="section-divider"></div>
+
+                    <div class="form-group">
+                        <label class="form-label">Thời gian mở form</label>
+                        <input type="datetime-local" class="form-input" id="form-start-time">
+                        <div class="form-hint">Ứng viên có thể bắt đầu điền form từ thời điểm này</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Thời gian đóng form</label>
+                        <input type="datetime-local" class="form-input" id="form-end-time">
+                        <div class="form-hint">Sau thời điểm này, form sẽ tự động bị đóng</div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="saveFormTimeSettings()">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13.5 4.5l-7 7-3-3"/>
+                        </svg>
+                        Lưu cài đặt thời gian
                     </button>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<div class="modal-overlay" id="question-modal">
+        <!-- ========================
+             TAB: PHỎNG VẤN THAY ĐƠN
+        ======================== -->
+        <div id="tab-settings-interview" class="tab-pane">
+            <div class="page-header">
+                <div class="page-header-text">
+                    <h1>Phỏng vấn thay đơn</h1>
+                    <p>Cài đặt hình thức phỏng vấn và danh sách ca phỏng vấn</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon blue">
+                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M2 3.5h12M2 8h8M2 12.5h5"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="card-title">Trạng thái phỏng vấn thay đơn</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <div class="toggle-title">Cho phép hình thức phỏng vấn thay đơn</div>
+                            <div class="toggle-desc">Ứng viên có thể chọn phỏng vấn thay vì điền đơn</div>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-interview-enabled" onchange="saveInterviewSettings()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="section-divider"></div>
+
+                    <div class="form-group">
+                        <label class="form-label">Thời gian mở đăng ký phỏng vấn</label>
+                        <input type="datetime-local" class="form-input" id="interview-start-time">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Thời gian đóng đăng ký phỏng vấn</label>
+                        <input type="datetime-local" class="form-input" id="interview-end-time">
+                    </div>
+
+                    <button class="btn btn-primary" onclick="saveInterviewTimeSettings()" style="margin-bottom:20px;">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13.5 4.5l-7 7-3-3"/>
+                        </svg>
+                        Lưu thời gian đăng ký
+                    </button>
+
+                    <div class="section-divider"></div>
+
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                        <div>
+                            <div style="font-size:13.5px;font-weight:700;color:var(--gray-800);">Danh sách ca phỏng vấn</div>
+                            <div style="font-size:12px;color:var(--gray-500);margin-top:2px;">Ứng viên sẽ chọn ít nhất 3 ca từ danh sách này</div>
+                        </div>
+                    </div>
+
+                    <div class="slot-list" id="interview-slot-list">
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            Đang tải...
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" style="margin-top:14px;" onclick="saveInterviewSlots()">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13.5 4.5l-7 7-3-3"/>
+                        </svg>
+                        Lưu danh sách ca
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================
+             TAB: THÔNG BÁO
+        ======================== -->
+        <div id="tab-settings-notify" class="tab-pane">
+            <div class="page-header">
+                <div class="page-header-text">
+                    <h1>Thông báo</h1>
+                    <p>Tuỳ chỉnh thông báo hiển thị cho ứng viên</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon orange">
+                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M8 1.5A4.5 4.5 0 0 0 3.5 6v2.5L2 10.5h12l-1.5-2V6A4.5 4.5 0 0 0 8 1.5z"/>
+                                <path d="M6.5 13a1.5 1.5 0 0 0 3 0"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="card-title">Thông báo trên form</div>
+                            <div class="card-subtitle">Hiển thị ở đầu trang khi ứng viên vào form</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="toggle-group" style="margin-bottom:16px;">
+                        <div class="toggle-info">
+                            <div class="toggle-title">Hiển thị thông báo</div>
+                            <div class="toggle-desc">Bật để hiện thông báo tùy chỉnh cho ứng viên</div>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-notify-enabled">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Kiểu thông báo</label>
+                        <select class="form-select" id="notify-type" onchange="previewNotify()">
+                            <option value="info">Thông tin (xanh lam)</option>
+                            <option value="warning">Cảnh báo (cam)</option>
+                            <option value="success">Thành công (xanh lá)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tiêu đề thông báo</label>
+                        <input type="text" class="form-input" id="notify-title" placeholder="Ví dụ: Lưu ý quan trọng" oninput="previewNotify()">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Nội dung thông báo</label>
+                        <textarea class="form-textarea" id="notify-content" placeholder="Nhập nội dung thông báo..." rows="4" oninput="previewNotify()"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Xem trước</label>
+                        <div class="notif-preview" id="notify-preview">
+                            Chưa có nội dung thông báo.
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="saveNotifySettings()">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13.5 4.5l-7 7-3-3"/>
+                        </svg>
+                        Lưu thông báo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================
+             TAB: KHU VỰC NGUY HIỂM
+        ======================== -->
+        <div id="tab-danger-zone" class="tab-pane">
+            <div class="page-header">
+                <div class="page-header-text">
+                    <h1>Khu vực nguy hiểm</h1>
+                    <p>Các thao tác không thể hoàn tác</p>
+                </div>
+            </div>
+
+            <div class="alert alert-danger">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M8 2L1.5 13.5h13L8 2zM8 6.5v3M8 11.5h.01"/>
+                </svg>
+                Các thao tác trong khu vực này không thể hoàn tác. Hãy cân nhắc kỹ trước khi thực hiện.
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--gray-100);">
+                        <div>
+                            <div style="font-size:13.5px;font-weight:700;color:var(--gray-800);margin-bottom:4px;">Đặt lại câu hỏi về mặc định</div>
+                            <div style="font-size:12.5px;color:var(--gray-500);">Toàn bộ câu hỏi sẽ được thay thế bằng bộ câu hỏi mặc định. Dữ liệu hiện tại bị mất.</div>
+                        </div>
+                        <button class="btn btn-danger btn-sm" onclick="confirmResetQuestions()" style="margin-left:16px;flex-shrink:0;">
+                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M13.5 2.5A6.5 6.5 0 1 0 14 8M14 2.5V6h-3.5"/>
+                            </svg>
+                            Đặt lại
+                        </button>
+                    </div>
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:16px 0;">
+                        <div>
+                            <div style="font-size:13.5px;font-weight:700;color:var(--gray-800);margin-bottom:4px;">Xóa toàn bộ đơn ứng tuyển</div>
+                            <div style="font-size:12.5px;color:var(--gray-500);">Xóa vĩnh viễn tất cả dữ liệu ứng viên đã nộp đơn. Không thể khôi phục.</div>
+                        </div>
+                        <button class="btn btn-danger btn-sm" onclick="confirmDeleteAllResponses()" style="margin-left:16px;flex-shrink:0;">
+                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M2 4h12M5.5 4V2.5h5V4M6.5 7.5v5M9.5 7.5v5M3.5 4l.5 9.5h8l.5-9.5"/>
+                            </svg>
+                            Xóa tất cả
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end .content -->
+</div><!-- end .layout -->
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ========================
+     MODAL: THÊM / SỬA CÂU HỎI
+======================== -->
+<div class="modal-overlay" id="modal-question">
     <div class="modal">
         <div class="modal-header">
-            <div class="modal-title" id="modal-title">Them cau hoi moi</div>
-            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div class="modal-header-title" id="modal-question-title">Thêm câu hỏi mới</div>
+            <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-question')">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 4L4 12M4 4l8 8"/>
+                </svg>
+            </button>
         </div>
         <div class="modal-body">
-            <input type="hidden" id="q-id">
-            <input type="hidden" id="q-category">
+            <input type="hidden" id="q-editing-id">
 
-            <div class="form-group">
-                <label class="form-label">Phan loai</label>
-                <select class="form-select" id="q-category-select">
-                    <option value="general">Cau hoi chung</option>
-                    <option value="md-design">MD - Design</option>
-                    <option value="md-content">MD - Content</option>
-                    <option value="hr">Nhan su (HR)</option>
-                    <option value="er">Doi ngoai (ER)</option>
-                    <option value="pd">Du an (PD)</option>
-                </select>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Phân loại <span class="required">*</span></label>
+                    <select class="form-select" id="q-category" onchange="onCategoryChange()">
+                        <option value="general">Câu hỏi chung</option>
+                        <option value="MD-Design">MD - Design</option>
+                        <option value="MD-Content">MD - Content</option>
+                        <option value="HR">Nhân sự (HR)</option>
+                        <option value="ER">Đối ngoại (ER)</option>
+                        <option value="PD">Dự án (PD)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Loại câu trả lời <span class="required">*</span></label>
+                    <select class="form-select" id="q-type" onchange="onTypeChange()">
+                        <option value="textarea">Văn bản dài (textarea)</option>
+                        <option value="text">Văn bản ngắn (input)</option>
+                        <option value="radio">Chọn một (radio)</option>
+                        <option value="checkbox">Chọn nhiều (checkbox)</option>
+                        <option value="dropdown">Danh sách thả xuống</option>
+                        <option value="scale">Thang điểm</option>
+                    </select>
+                </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Noi dung cau hoi <span style="color:var(--error)">*</span></label>
-                <textarea class="form-textarea" id="q-text" rows="3" placeholder="Nhap noi dung cau hoi..."></textarea>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Loai tra loi</label>
-                <select class="form-select" id="q-type" onchange="toggleOptions()">
-                    <option value="textarea">Text dai (textarea)</option>
-                    <option value="text">Text ngan (input)</option>
-                    <option value="radio">Chon 1 (Radio)</option>
-                    <option value="checkbox">Chon nhieu (Checkbox)</option>
-                </select>
+                <label class="form-label">Nội dung câu hỏi <span class="required">*</span></label>
+                <textarea class="form-textarea" id="q-text" rows="3" placeholder="Nhập nội dung câu hỏi..."></textarea>
             </div>
 
             <div class="form-group" id="options-group" style="display:none;">
-                <label class="form-label">Cac lua chon</label>
+                <label class="form-label">Các lựa chọn</label>
                 <div id="options-list"></div>
-                <button class="action-btn" onclick="addOption()" style="margin-top:8px;">
-                    <i class="fas fa-plus"></i> Them lua chon
+                <button class="btn btn-ghost btn-sm" onclick="addOptionRow()" style="margin-top:8px;">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M8 3v10M3 8h10"/>
+                    </svg>
+                    Thêm lựa chọn
                 </button>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Placeholder / Huong dan</label>
-                <input type="text" class="form-input" id="q-placeholder" placeholder="VD: Nhap cau tra loi...">
+            <div id="scale-group" style="display:none;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Giá trị nhỏ nhất</label>
+                        <input type="number" class="form-input" id="q-scale-min" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Giá trị lớn nhất</label>
+                        <input type="number" class="form-input" id="q-scale-max" value="5">
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Bat buoc</label>
-                <select class="form-select" id="q-required">
-                    <option value="true">Co</option>
-                    <option value="false">Khong</option>
-                </select>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Placeholder / Gợi ý</label>
+                    <input type="text" class="form-input" id="q-placeholder" placeholder="Nhập gợi ý cho ứng viên...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Bắt buộc</label>
+                    <select class="form-select" id="q-required">
+                        <option value="true">Có</option>
+                        <option value="false">Không</option>
+                    </select>
+                </div>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="action-btn" onclick="closeModal()">Huy</button>
-            <button class="action-btn primary" onclick="saveQuestion()">
-                <i class="fas fa-save"></i> Luu cau hoi
+            <button class="btn btn-ghost" onclick="closeModal('modal-question')">Hủy</button>
+            <button class="btn btn-primary" onclick="saveQuestion()">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13.5 4.5l-7 7-3-3"/>
+                </svg>
+                Lưu câu hỏi
             </button>
+        </div>
+    </div>
+</div>
+
+<!-- ========================
+     MODAL: XÁC NHẬN
+======================== -->
+<div class="modal-overlay" id="modal-confirm">
+    <div class="modal" style="max-width:420px;">
+        <div class="modal-header">
+            <div class="modal-header-title" id="confirm-title">Xác nhận</div>
+            <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-confirm')">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 4L4 12M4 4l8 8"/>
+                </svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p id="confirm-message" style="color:var(--gray-600);font-size:13.5px;line-height:1.6;"></p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('modal-confirm')">Hủy</button>
+            <button class="btn btn-danger" id="confirm-action-btn">Xác nhận</button>
         </div>
     </div>
 </div>
 
 <script src="/script/config.js"></script>
 <script>
-// ============================================================
-// AUTH
-// ============================================================
-const userEmail = sessionStorage.getItem("email");
-const userRole = sessionStorage.getItem("role");
-if (!userEmail || !["superadmin","admin"].includes(userRole)) {
-    window.location.href = "/admin/login.html";
-}
-
-// ============================================================
-// STATE
-// ============================================================
-let questions = {
-    general: [],
-    'md-design': [],
-    'md-content': [],
-    hr: [],
-    er: [],
-    pd: []
-};
-let settings = {};
-let editingId = null;
-let editingCategory = null;
-let currentFilter = 'all';
-
-// ============================================================
-// TABS
-// ============================================================
-document.querySelectorAll(".tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
-        tab.classList.add("active");
-        const id = "tab-" + tab.getAttribute("data-tab");
-        document.getElementById(id).classList.add("active");
-        if (tab.getAttribute("data-tab") === "overview") renderOverview();
-        if (tab.getAttribute("data-tab") === "questions") renderQuestions();
-        if (tab.getAttribute("data-tab") === "settings") renderSettingsUI();
-    });
-});
-
-// ============================================================
-// CATEGORY FILTER
-// ============================================================
-document.querySelectorAll('.category-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        currentFilter = this.dataset.category;
-        renderQuestions();
-    });
-});
-
-// ============================================================
-// INIT
-// ============================================================
-auth.onAuthStateChanged(async user => {
-    if (!user) { window.location.href = "/admin/login.html"; return; }
-    await Promise.all([loadQuestions(), loadSettings()]);
-    renderOverview();
-    renderQuestions();
-    renderSettingsUI();
-});
-
-// ============================================================
-// LOAD DATA - CHI DUNG FIRESTORE
-// ============================================================
-async function loadQuestions() {
-    try {
-        const doc = await db.collection("system").doc("form_questions").get();
-        if (doc.exists && doc.data().questions) {
-            questions = doc.data().questions;
-        } else {
-            questions = getDefaultQuestions();
-            await saveQuestionsToFirestore();
-        }
-    } catch(e) {
-        console.error("Loi load cau hoi:", e);
-        questions = getDefaultQuestions();
-        await saveQuestionsToFirestore();
+    // ========================
+    // AUTH CHECK
+    // ========================
+    const userEmail = sessionStorage.getItem("email");
+    const userRole  = sessionStorage.getItem("role");
+    if (!userEmail || !["superadmin", "admin"].includes(userRole)) {
+        window.location.href = "/admin/login.html";
     }
-}
 
-function getDefaultQuestions() {
-    return {
-        general: [
-            { id: genId(), text: "Dau la ly do khi ban mong muon tro thanh mot manh ghep cua dai gia dinh Nha E?", type: "textarea", required: true, placeholder: "Chia se nhung thong tin ban biet ve CLB" },
-            { id: genId(), text: "Hay chia se ve mot trai nghiem ngoai khoa ma ban cam thay tu hao nhat.", type: "textarea", required: true },
-            { id: genId(), text: "We change while creating the change - Ban co nhan ra ban than cung da thay doi?", type: "textarea", required: true },
-        ],
-        'md-design': [
-            { id: genId(), text: "Neu co the quay ve qua khu va thay doi mot quyet dinh, ban se chon khoanh khac nao?", type: "textarea", required: true },
-            { id: genId(), text: "Ban thuong su dung nhung phan mem thiet ke nao?", type: "checkbox", required: true, options: ["Photoshop", "Illustrator", "Canva", "Figma", "Premiere Pro", "Khac"] },
-        ],
-        'md-content': [
-            { id: genId(), text: "Neu co the quay ve qua khu va thay doi mot quyet dinh, ban se chon khoanh khac nao?", type: "textarea", required: true },
-            { id: genId(), text: "AI dang phat trien manh me. Ban dong y voi quan diem nao ve AI?", type: "textarea", required: true },
-        ],
-        hr: [
-            { id: genId(), text: "Ban hieu nhu the nao ve vai tro cua ban Nhan su - Su kien?", type: "textarea", required: true },
-            { id: genId(), text: "Hay chia se quan diem ve su khac nhau giua tap the dong deu va da dang.", type: "textarea", required: true },
-        ],
-        er: [
-            { id: genId(), text: "Theo ban, ban Doi ngoai dong vai tro gi trong CLB?", type: "textarea", required: true },
-            { id: genId(), text: "Tai sao ban chon ban Doi ngoai cua Enactus FTU Hanoi?", type: "textarea", required: true },
-        ],
-        pd: [
-            { id: genId(), text: "Tai sao ban lua chon ung tuyen vao ban Du an?", type: "textarea", required: true },
-            { id: genId(), text: "Su khac biet cot loi giua kinh doanh thong thuong va kinh doanh xa hoi la gi?", type: "textarea", required: true },
-        ]
+    // ========================
+    // STATE
+    // ========================
+    let currentUser = null;
+    let questionData = {
+        general: [],
+        "MD-Design": [],
+        "MD-Content": [],
+        HR: [],
+        ER: [],
+        PD: []
     };
-}
+    let formSettings = {};
+    let interviewSettings = {};
+    let notifySettings = {};
+    let currentBanFilter = "all";
+    let editingQuestionId = null;
+    let addingToCategory = "general";
 
-function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+    // ========================
+    // INIT
+    // ========================
+    auth.onAuthStateChanged(async user => {
+        if (!user) { window.location.href = "/admin/login.html"; return; }
+        currentUser = user;
+        await Promise.all([
+            loadQuestions(),
+            loadFormSettings(),
+            loadInterviewSettings(),
+            loadNotifySettings()
+        ]);
+        renderOverview();
+        renderGeneralQuestions();
+        renderBanQuestions();
+        populateSettingsUI();
+    });
 
-async function saveQuestionsToFirestore() {
-    await db.collection("system").doc("form_questions").set({ questions, updatedAt: new Date() }, { merge: true });
-}
+    // ========================
+    // TAB SWITCHING
+    // ========================
+    function switchTab(tabId, btn) {
+        document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+        document.querySelectorAll(".sidebar-item").forEach(b => b.classList.remove("active"));
+        document.getElementById("tab-" + tabId).classList.add("active");
+        if (btn) btn.classList.add("active");
+    }
 
-async function loadSettings() {
-    try {
-        const doc = await db.collection("system").doc("form_settings").get();
-        settings = doc.exists ? doc.data() : {};
-    } catch(e) { settings = {}; }
-}
+    // ========================
+    // MODAL
+    // ========================
+    function openModal(id) {
+        document.getElementById(id).classList.add("open");
+    }
 
-// ============================================================
-// RENDER OVERVIEW
-// ============================================================
-function renderOverview() {
-    const total = Object.values(questions).reduce((sum, arr) => sum + arr.length, 0);
-    const generalCount = questions.general.length;
-    const banCount = total - generalCount;
-    const isEnabled = settings.enabled || false;
+    function closeModal(id) {
+        document.getElementById(id).classList.remove("open");
+    }
 
-    document.getElementById("stat-total").textContent = total;
-    document.getElementById("stat-general").textContent = generalCount;
-    document.getElementById("stat-ban").textContent = banCount;
-    document.getElementById("stat-status").innerHTML = isEnabled 
-        ? '<i class="fas fa-circle" style="color:#10b981;"></i> Dang mo' 
-        : '<i class="fas fa-circle" style="color:#ef4444;"></i> Da dong';
-}
-
-// ============================================================
-// RENDER QUESTIONS
-// ============================================================
-function renderQuestions() {
-    const container = document.getElementById("question-list");
-    const allQuestions = [];
-
-    Object.keys(questions).forEach(category => {
-        if (currentFilter !== 'all' && currentFilter !== category) return;
-        questions[category].forEach(q => {
-            allQuestions.push({ ...q, category });
+    // Close on overlay click
+    document.querySelectorAll(".modal-overlay").forEach(overlay => {
+        overlay.addEventListener("click", function(e) {
+            if (e.target === this) {
+                this.classList.remove("open");
+            }
         });
     });
 
-    if (allQuestions.length === 0) {
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>Chua co cau hoi nao. Nhan "Them cau hoi" de bat dau.</p></div>`;
-        return;
+    // ========================
+    // TOAST
+    // ========================
+    function showToast(msg, type = "default") {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+
+        const icons = {
+            success: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M13.5 4.5l-7 7-3-3"/></svg>`,
+            error: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4L4 12M4 4l8 8"/></svg>`,
+            default: `<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1z"/></svg>`
+        };
+
+        toast.innerHTML = (icons[type] || icons.default) + msg;
+        container.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = "0"; toast.style.transform = "translateX(20px)"; toast.style.transition = "all 0.3s"; setTimeout(() => toast.remove(), 300); }, 3000);
     }
 
-    container.innerHTML = allQuestions.map((q, i) => buildQuestionCard(q, i)).join("");
-}
+    // ========================
+    // CONFIRM DIALOG
+    // ========================
+    function showConfirm(title, message, action) {
+        document.getElementById("confirm-title").textContent = title;
+        document.getElementById("confirm-message").textContent = message;
+        document.getElementById("confirm-action-btn").onclick = () => {
+            closeModal("modal-confirm");
+            action();
+        };
+        openModal("modal-confirm");
+    }
 
-function buildQuestionCard(q, i) {
-    const categoryLabels = {
+    // ========================
+    // LOAD DATA
+    // ========================
+    async function loadQuestions() {
+        try {
+            const doc = await db.collection("system").doc("form_questions").get();
+            if (doc.exists && doc.data().questions) {
+                const raw = doc.data().questions;
+                questionData = {
+                    general: raw.general || [],
+                    "MD-Design": raw["MD-Design"] || raw["md-design"] || [],
+                    "MD-Content": raw["MD-Content"] || raw["md-content"] || [],
+                    HR: raw.HR || raw.hr || [],
+                    ER: raw.ER || raw.er || [],
+                    PD: raw.PD || raw.pd || []
+                };
+            } else {
+                questionData = getDefaultQuestions();
+                await saveQuestions();
+            }
+        } catch (e) {
+            console.error("Lỗi tải câu hỏi:", e);
+            questionData = getDefaultQuestions();
+        }
+    }
+
+    async function loadFormSettings() {
+        try {
+            const doc = await db.collection("system").doc("form_settings").get();
+            formSettings = doc.exists ? doc.data() : {};
+        } catch (e) { formSettings = {}; }
+    }
+
+    async function loadInterviewSettings() {
+        try {
+            const doc = await db.collection("system").doc("interview_settings").get();
+            interviewSettings = doc.exists ? doc.data() : {};
+        } catch (e) { interviewSettings = {}; }
+    }
+
+    async function loadNotifySettings() {
+        try {
+            const doc = await db.collection("system").doc("notify_settings").get();
+            notifySettings = doc.exists ? doc.data() : {};
+        } catch (e) { notifySettings = {}; }
+    }
+
+    // ========================
+    // SAVE DATA
+    // ========================
+    async function saveQuestions() {
+        await db.collection("system").doc("form_questions").set({
+            questions: questionData,
+            updatedAt: new Date(),
+            updatedBy: currentUser ? currentUser.email : "unknown"
+        }, { merge: true });
+    }
+
+    // ========================
+    // OVERVIEW
+    // ========================
+    function renderOverview() {
+        const totalBan = Object.entries(questionData)
+            .filter(([k]) => k !== "general")
+            .reduce((sum, [, arr]) => sum + arr.length, 0);
+
+        document.getElementById("stat-total").textContent = questionData.general.length + totalBan;
+        document.getElementById("stat-general").textContent = questionData.general.length;
+        document.getElementById("stat-ban").textContent = totalBan;
+        document.getElementById("stat-interview").textContent = (interviewSettings.slots || []).length;
+
+        const loading = document.getElementById("overview-status-loading");
+        const statusEl = document.getElementById("overview-status");
+        if (loading) loading.style.display = "none";
+        if (statusEl) statusEl.style.display = "block";
+
+        // Form status
+        const now = new Date();
+        const formEnabled = formSettings.enabled;
+        const formStart = formSettings.startTime ? (formSettings.startTime.toDate ? formSettings.startTime.toDate() : new Date(formSettings.startTime)) : null;
+        const formEnd = formSettings.endTime ? (formSettings.endTime.toDate ? formSettings.endTime.toDate() : new Date(formSettings.endTime)) : null;
+
+        let formOpen = formEnabled;
+        if (!formEnabled && formStart && formEnd) {
+            formOpen = now >= formStart && now <= formEnd;
+        }
+
+        const formBadge = document.getElementById("form-status-badge");
+        const formText = document.getElementById("form-status-text");
+        const formTime = document.getElementById("form-status-time");
+
+        if (formBadge) formBadge.innerHTML = formOpen
+            ? `<span class="stat-badge green"><svg viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="3"/></svg>Đang mở</span>`
+            : `<span class="stat-badge red"><svg viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="3"/></svg>Đã đóng</span>`;
+
+        if (formTime && formEnd) formTime.textContent = "Đóng lúc: " + formEnd.toLocaleString("vi-VN");
+
+        // Interview status
+        const ivEnabled = interviewSettings.enabled;
+        const ivEnd = interviewSettings.endTime ? (interviewSettings.endTime.toDate ? interviewSettings.endTime.toDate() : new Date(interviewSettings.endTime)) : null;
+        const ivOpen = ivEnabled || (ivEnd && now <= ivEnd);
+
+        const ivBadge = document.getElementById("interview-status-badge");
+        const ivTime = document.getElementById("interview-status-time");
+
+        if (ivBadge) ivBadge.innerHTML = ivOpen
+            ? `<span class="stat-badge green"><svg viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="3"/></svg>Đang mở</span>`
+            : `<span class="stat-badge red"><svg viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="3"/></svg>Đã đóng</span>`;
+
+        if (ivTime && ivEnd) ivTime.textContent = "Đóng lúc: " + ivEnd.toLocaleString("vi-VN");
+    }
+
+    function refreshOverview() {
+        Promise.all([loadFormSettings(), loadInterviewSettings()]).then(renderOverview);
+    }
+
+    // ========================
+    // POPULATE SETTINGS UI
+    // ========================
+    function populateSettingsUI() {
+        // Form settings
+        const toggleForm = document.getElementById("toggle-form-enabled");
+        if (toggleForm) toggleForm.checked = !!formSettings.enabled;
+
+        const toLocal = (ts) => {
+            if (!ts) return "";
+            const d = ts.toDate ? ts.toDate() : new Date(ts);
+            // Format to datetime-local (YYYY-MM-DDTHH:MM)
+            const pad = n => String(n).padStart(2, "0");
+            return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        };
+
+        const fs = document.getElementById("form-start-time");
+        const fe = document.getElementById("form-end-time");
+        if (fs) fs.value = toLocal(formSettings.startTime);
+        if (fe) fe.value = toLocal(formSettings.endTime);
+
+        // Interview settings
+        const toggleIv = document.getElementById("toggle-interview-enabled");
+        if (toggleIv) toggleIv.checked = !!interviewSettings.enabled;
+
+        const is = document.getElementById("interview-start-time");
+        const ie = document.getElementById("interview-end-time");
+        if (is) is.value = toLocal(interviewSettings.startTime);
+        if (ie) ie.value = toLocal(interviewSettings.endTime);
+
+        renderInterviewSlots();
+
+        // Notify settings
+        const toggleNotify = document.getElementById("toggle-notify-enabled");
+        if (toggleNotify) toggleNotify.checked = !!notifySettings.enabled;
+
+        const nt = document.getElementById("notify-type");
+        const ntitle = document.getElementById("notify-title");
+        const ncontent = document.getElementById("notify-content");
+        if (nt) nt.value = notifySettings.type || "info";
+        if (ntitle) ntitle.value = notifySettings.title || "";
+        if (ncontent) ncontent.value = notifySettings.content || "";
+        previewNotify();
+    }
+
+    // ========================
+    // RENDER QUESTIONS
+    // ========================
+    const TYPE_LABELS = {
+        textarea: "Văn bản dài",
+        text: "Văn bản ngắn",
+        radio: "Chọn một",
+        checkbox: "Chọn nhiều",
+        dropdown: "Thả xuống",
+        scale: "Thang điểm"
+    };
+
+    const CAT_LABELS = {
         general: "Chung",
-        'md-design': "MD Design",
-        'md-content': "MD Content",
-        hr: "HR",
-        er: "ER",
-        pd: "PD"
-    };
-    const typeLabels = {
-        text: "Text ngan",
-        textarea: "Text dai",
-        radio: "Chon 1",
-        checkbox: "Chon nhieu"
+        "MD-Design": "MD Design",
+        "MD-Content": "MD Content",
+        HR: "Nhân sự",
+        ER: "Đối ngoại",
+        PD: "Dự án"
     };
 
-    const optionsPreview = q.options?.length ? q.options.slice(0,2).join(" / ") + (q.options.length>2?" ...":"") : "";
-    const requiredText = q.required ? '<span class="badge badge-danger">Bat buoc</span>' : '';
+    const CAT_BADGE_CLASS = {
+        general: "badge-blue",
+        "MD-Design": "badge-purple",
+        "MD-Content": "badge-orange",
+        HR: "badge-green",
+        ER: "badge-yellow",
+        PD: "badge-gray"
+    };
 
-    return `
-    <div class="question-card">
-        <div class="question-header">
-            <div class="question-content">
-                <div class="question-label">
-                    <span style="color:var(--gray-400);font-size:13px;font-weight:500;">#${i+1}</span>
-                    <span class="badge badge-info">${categoryLabels[q.category] || q.category}</span>
-                    ${requiredText}
-                    <span>${q.text}</span>
-                </div>
+    function renderGeneralQuestions() {
+        const container = document.getElementById("general-question-list");
+        if (!container) return;
+        const list = questionData.general || [];
+        container.innerHTML = "";
+
+        if (!list.length) {
+            container.innerHTML = buildEmptyState("Chưa có câu hỏi chung nào. Thêm câu hỏi để bắt đầu.");
+            return;
+        }
+
+        const ul = document.createElement("div");
+        ul.className = "question-list";
+        list.forEach((q, i) => {
+            ul.appendChild(buildQuestionItem(q, i + 1, "general"));
+        });
+        container.appendChild(ul);
+    }
+
+    function renderBanQuestions() {
+        const container = document.getElementById("ban-question-list");
+        if (!container) return;
+        container.innerHTML = "";
+
+        const categories = ["MD-Design", "MD-Content", "HR", "ER", "PD"];
+        let items = [];
+
+        categories.forEach(cat => {
+            if (currentBanFilter !== "all" && currentBanFilter !== cat) return;
+            (questionData[cat] || []).forEach((q, i) => {
+                items.push({ q, cat, i });
+            });
+        });
+
+        if (!items.length) {
+            container.innerHTML = buildEmptyState("Không có câu hỏi nào cho bộ lọc hiện tại.");
+            return;
+        }
+
+        const ul = document.createElement("div");
+        ul.className = "question-list";
+        items.forEach(({ q, cat, i }) => {
+            ul.appendChild(buildQuestionItem(q, i + 1, cat));
+        });
+        container.appendChild(ul);
+    }
+
+    function buildEmptyState(msg) {
+        return `<div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="3"/>
+                <path d="M12 8v4M12 16h.01"/>
+            </svg>
+            <p>${msg}</p>
+        </div>`;
+    }
+
+    function buildQuestionItem(q, index, category) {
+        const div = document.createElement("div");
+        div.className = "question-item";
+        div.dataset.id = q.id;
+        div.dataset.cat = category;
+
+        const requiredBadge = q.required
+            ? `<span class="badge badge-red"><svg viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="3"/></svg>Bắt buộc</span>`
+            : "";
+
+        div.innerHTML = `
+            <div class="question-order">${index}</div>
+            <div class="question-main">
+                <div class="question-text-display">${escHtml(q.text || "")}</div>
                 <div class="question-meta">
-                    <span class="badge badge-warning">${typeLabels[q.type] || q.type}</span>
-                    ${optionsPreview ? `• ${optionsPreview}` : ''}
-                    ${q.placeholder ? `• "${q.placeholder}"` : ''}
+                    <span class="badge ${CAT_BADGE_CLASS[category] || "badge-gray"}">${CAT_LABELS[category] || category}</span>
+                    <span class="badge badge-gray">${TYPE_LABELS[q.type] || q.type}</span>
+                    ${requiredBadge}
+                    ${q.options && q.options.length ? `<span class="badge badge-gray">${q.options.length} lựa chọn</span>` : ""}
                 </div>
             </div>
             <div class="question-actions">
-                <button class="icon-btn" onclick="openEditQuestion('${q.id}', '${q.category}')" title="Sua">
-                    <i class="fas fa-pencil"></i>
+                <button class="btn btn-ghost btn-icon" title="Chỉnh sửa" onclick="openEditQuestion('${q.id}', '${category}')">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M11.5 2.5l2 2-8 8H3.5v-2l8-8z"/>
+                        <path d="M10 4l2 2"/>
+                    </svg>
                 </button>
-                <button class="icon-btn danger" onclick="deleteQuestion('${q.id}', '${q.category}')" title="Xoa">
-                    <i class="fas fa-trash"></i>
+                <button class="btn btn-danger btn-icon" title="Xóa" onclick="deleteQuestion('${q.id}', '${category}')">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M2 4h12M5.5 4V2.5h5V4M6.5 7.5v5M9.5 7.5v5M3.5 4l.5 9.5h8l.5-9.5"/>
+                    </svg>
                 </button>
             </div>
-        </div>
-    </div>`;
-}
-
-// ============================================================
-// MODAL
-// ============================================================
-function openAddQuestion() {
-    editingId = null;
-    editingCategory = null;
-    document.getElementById("modal-title").textContent = "Them cau hoi moi";
-    document.getElementById("q-id").value = "";
-    document.getElementById("q-text").value = "";
-    document.getElementById("q-type").value = "textarea";
-    document.getElementById("q-placeholder").value = "";
-    document.getElementById("q-required").value = "true";
-    document.getElementById("q-category-select").value = "general";
-    document.getElementById("options-list").innerHTML = "";
-    toggleOptions();
-    document.getElementById("question-modal").classList.add("active");
-}
-
-function openEditQuestion(qId, category) {
-    const q = questions[category]?.find(x => x.id === qId);
-    if (!q) return;
-
-    editingId = qId;
-    editingCategory = category;
-    document.getElementById("modal-title").textContent = "Chinh sua cau hoi";
-    document.getElementById("q-id").value = qId;
-    document.getElementById("q-text").value = q.text || "";
-    document.getElementById("q-type").value = q.type || "textarea";
-    document.getElementById("q-placeholder").value = q.placeholder || "";
-    document.getElementById("q-required").value = q.required ? "true" : "false";
-    document.getElementById("q-category-select").value = category;
-
-    document.getElementById("options-list").innerHTML = "";
-    (q.options || []).forEach(opt => addOption(opt));
-
-    toggleOptions();
-    document.getElementById("question-modal").classList.add("active");
-}
-
-function closeModal() {
-    document.getElementById("question-modal").classList.remove("active");
-}
-
-function toggleOptions() {
-    const type = document.getElementById("q-type").value;
-    document.getElementById("options-group").style.display = ["radio", "checkbox"].includes(type) ? "block" : "none";
-}
-
-function addOption(val = "") {
-    const row = document.createElement("div");
-    row.className = "option-row";
-    row.innerHTML = `
-        <input type="text" class="form-input" value="${val}" placeholder="Nhap lua chon...">
-        <button class="icon-btn danger" onclick="this.parentNode.remove()"><i class="fas fa-times"></i></button>
-    `;
-    document.getElementById("options-list").appendChild(row);
-}
-
-async function saveQuestion() {
-    const text = document.getElementById("q-text").value.trim();
-    if (!text) { alert("Vui long nhap noi dung cau hoi"); return; }
-
-    const category = document.getElementById("q-category-select").value;
-    const type = document.getElementById("q-type").value;
-    const required = document.getElementById("q-required").value === "true";
-    const placeholder = document.getElementById("q-placeholder").value.trim();
-
-    const q = {
-        id: editingId || genId(),
-        text,
-        type,
-        required,
-        placeholder: placeholder || undefined,
-    };
-
-    if (["radio", "checkbox"].includes(type)) {
-        const options = Array.from(document.querySelectorAll("#options-list .option-row input"))
-            .map(i => i.value.trim()).filter(Boolean);
-        if (options.length === 0) { alert("Vui long them it nhat 1 lua chon"); return; }
-        q.options = options;
+        `;
+        return div;
     }
 
-    if (!questions[category]) questions[category] = [];
+    function escHtml(str) {
+        return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
 
-    if (editingId && editingCategory) {
-        const idx = questions[editingCategory].findIndex(x => x.id === editingId);
-        if (idx >= 0) questions[editingCategory][idx] = q;
-        if (editingCategory !== category) {
-            questions[editingCategory] = questions[editingCategory].filter(x => x.id !== editingId);
-            questions[category].push(q);
+    // ========================
+    // FILTER BAN
+    // ========================
+    function filterBan(btn) {
+        document.querySelectorAll(".filter-chip").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentBanFilter = btn.dataset.ban;
+        renderBanQuestions();
+    }
+
+    // ========================
+    // ADD / EDIT QUESTION
+    // ========================
+    function openAddQuestion(category) {
+        editingQuestionId = null;
+        addingToCategory = category === "ban" ? "MD-Design" : "general";
+
+        document.getElementById("modal-question-title").textContent = "Thêm câu hỏi mới";
+        document.getElementById("q-editing-id").value = "";
+        document.getElementById("q-category").value = addingToCategory;
+        document.getElementById("q-type").value = "textarea";
+        document.getElementById("q-text").value = "";
+        document.getElementById("q-placeholder").value = "";
+        document.getElementById("q-required").value = "true";
+        document.getElementById("options-list").innerHTML = "";
+
+        onTypeChange();
+        openModal("modal-question");
+    }
+
+    function openEditQuestion(qId, category) {
+        const list = questionData[category] || [];
+        const q = list.find(x => x.id === qId);
+        if (!q) return;
+
+        editingQuestionId = qId;
+        addingToCategory = category;
+
+        document.getElementById("modal-question-title").textContent = "Chỉnh sửa câu hỏi";
+        document.getElementById("q-editing-id").value = qId;
+        document.getElementById("q-category").value = category;
+        document.getElementById("q-type").value = q.type || "textarea";
+        document.getElementById("q-text").value = q.text || "";
+        document.getElementById("q-placeholder").value = q.placeholder || "";
+        document.getElementById("q-required").value = q.required ? "true" : "false";
+
+        document.getElementById("options-list").innerHTML = "";
+        (q.options || []).forEach(opt => addOptionRow(opt));
+
+        if (q.type === "scale") {
+            document.getElementById("q-scale-min").value = q.min || 1;
+            document.getElementById("q-scale-max").value = q.max || 5;
         }
-    } else {
-        questions[category].push(q);
+
+        onTypeChange();
+        openModal("modal-question");
     }
 
-    await saveQuestionsToFirestore();
-    closeModal();
-    renderQuestions();
-    renderOverview();
-}
-
-async function deleteQuestion(qId, category) {
-    if (!confirm("Xoa cau hoi nay?")) return;
-    questions[category] = questions[category].filter(q => q.id !== qId);
-    await saveQuestionsToFirestore();
-    renderQuestions();
-    renderOverview();
-}
-
-// ============================================================
-// SETTINGS
-// ============================================================
-function renderSettingsUI() {
-    document.getElementById("toggle-enabled").checked = settings.enabled || false;
-    document.getElementById("toggle-multiple-ban").checked = settings.allowMultipleBan !== false;
-    document.getElementById("toggle-show-ban-questions").checked = settings.showBanQuestions !== false;
-    document.getElementById("toggle-interview-mode").checked = settings.allowInterviewMode !== false;
-    document.getElementById("max-applicants").value = settings.maxApplicants || "";
-
-    if (settings.startTime) {
-        const d = settings.startTime.toDate ? settings.startTime.toDate() : new Date(settings.startTime);
-        document.getElementById("start-time").value = d.toISOString().slice(0,16);
-    }
-    if (settings.endTime) {
-        const d = settings.endTime.toDate ? settings.endTime.toDate() : new Date(settings.endTime);
-        document.getElementById("end-time").value = d.toISOString().slice(0,16);
-    }
-    if (settings.interviewStart) {
-        const d = settings.interviewStart.toDate ? settings.interviewStart.toDate() : new Date(settings.interviewStart);
-        document.getElementById("interview-start").value = d.toISOString().slice(0,16);
-    }
-    if (settings.interviewEnd) {
-        const d = settings.interviewEnd.toDate ? settings.interviewEnd.toDate() : new Date(settings.interviewEnd);
-        document.getElementById("interview-end").value = d.toISOString().slice(0,16);
+    function onCategoryChange() {
+        addingToCategory = document.getElementById("q-category").value;
     }
 
+    function onTypeChange() {
+        const type = document.getElementById("q-type").value;
+        const optGroup = document.getElementById("options-group");
+        const scaleGroup = document.getElementById("scale-group");
+        optGroup.style.display = ["radio", "checkbox", "dropdown"].includes(type) ? "block" : "none";
+        scaleGroup.style.display = type === "scale" ? "block" : "none";
+    }
+
+    function addOptionRow(val = "") {
+        const row = document.createElement("div");
+        row.className = "option-row";
+        row.innerHTML = `
+            <input type="text" class="form-input" value="${escHtml(val)}" placeholder="Nhập lựa chọn...">
+            <button class="btn btn-danger btn-icon" onclick="this.closest('.option-row').remove()" type="button">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 4L4 12M4 4l8 8"/>
+                </svg>
+            </button>
+        `;
+        document.getElementById("options-list").appendChild(row);
+    }
+
+    async function saveQuestion() {
+        const text = document.getElementById("q-text").value.trim();
+        if (!text) { showToast("Vui lòng nhập nội dung câu hỏi", "error"); return; }
+
+        const category = document.getElementById("q-category").value;
+        const type = document.getElementById("q-type").value;
+        const required = document.getElementById("q-required").value === "true";
+        const placeholder = document.getElementById("q-placeholder").value.trim();
+
+        const q = {
+            id: editingQuestionId || genId(),
+            text,
+            type,
+            required
+        };
+
+        if (placeholder) q.placeholder = placeholder;
+
+        if (["radio", "checkbox", "dropdown"].includes(type)) {
+            const opts = Array.from(document.querySelectorAll("#options-list .option-row input"))
+                .map(i => i.value.trim()).filter(Boolean);
+            if (!opts.length) { showToast("Vui lòng thêm ít nhất một lựa chọn", "error"); return; }
+            q.options = opts;
+        }
+
+        if (type === "scale") {
+            q.min = parseInt(document.getElementById("q-scale-min").value) || 1;
+            q.max = parseInt(document.getElementById("q-scale-max").value) || 5;
+        }
+
+        if (!questionData[category]) questionData[category] = [];
+
+        if (editingQuestionId) {
+            // Remove from old category if changed
+            Object.keys(questionData).forEach(cat => {
+                questionData[cat] = questionData[cat].filter(x => x.id !== editingQuestionId);
+            });
+        }
+
+        questionData[category] = questionData[category] || [];
+        if (editingQuestionId) {
+            questionData[category].push(q);
+        } else {
+            questionData[category].push(q);
+        }
+
+        try {
+            await saveQuestions();
+            showToast(editingQuestionId ? "Đã cập nhật câu hỏi" : "Đã thêm câu hỏi mới", "success");
+            closeModal("modal-question");
+            renderGeneralQuestions();
+            renderBanQuestions();
+            renderOverview();
+        } catch (e) {
+            showToast("Có lỗi xảy ra: " + e.message, "error");
+        }
+    }
+
+    async function deleteQuestion(qId, category) {
+        showConfirm("Xóa câu hỏi", "Bạn có chắc chắn muốn xóa câu hỏi này không? Thao tác không thể hoàn tác.", async () => {
+            questionData[category] = (questionData[category] || []).filter(q => q.id !== qId);
+            try {
+                await saveQuestions();
+                showToast("Đã xóa câu hỏi", "success");
+                renderGeneralQuestions();
+                renderBanQuestions();
+                renderOverview();
+            } catch (e) {
+                showToast("Có lỗi xảy ra: " + e.message, "error");
+            }
+        });
+    }
+
+    // ========================
+    // FORM SETTINGS
+    // ========================
+    async function saveFormSettings() {
+        const enabled = document.getElementById("toggle-form-enabled").checked;
+        try {
+            await db.collection("system").doc("form_settings").set({
+                enabled,
+                updatedAt: new Date()
+            }, { merge: true });
+            formSettings.enabled = enabled;
+            showToast(enabled ? "Đã bật form thủ công" : "Đã tắt form thủ công", "success");
+            renderOverview();
+        } catch (e) { showToast("Lỗi: " + e.message, "error"); }
+    }
+
+    async function saveFormTimeSettings() {
+        const start = document.getElementById("form-start-time").value;
+        const end = document.getElementById("form-end-time").value;
+
+        if (!start && !end) { showToast("Vui lòng chọn ít nhất một mốc thời gian", "error"); return; }
+        if (start && end && new Date(start) >= new Date(end)) {
+            showToast("Thời gian mở phải trước thời gian đóng", "error"); return;
+        }
+
+        const updates = { updatedAt: new Date() };
+        if (start) updates.startTime = new Date(start);
+        if (end) updates.endTime = new Date(end);
+
+        try {
+            await db.collection("system").doc("form_settings").set(updates, { merge: true });
+            Object.assign(formSettings, updates);
+            showToast("Đã lưu thời gian form", "success");
+            renderOverview();
+        } catch (e) { showToast("Lỗi: " + e.message, "error"); }
+    }
+
+    // ========================
+    // INTERVIEW SETTINGS
+    // ========================
+    async function saveInterviewSettings() {
+        const enabled = document.getElementById("toggle-interview-enabled").checked;
+        try {
+            await db.collection("system").doc("interview_settings").set({
+                enabled,
+                updatedAt: new Date()
+            }, { merge: true });
+            interviewSettings.enabled = enabled;
+            showToast(enabled ? "Đã bật phỏng vấn thay đơn" : "Đã tắt phỏng vấn thay đơn", "success");
+            renderOverview();
+        } catch (e) { showToast("Lỗi: " + e.message, "error"); }
+    }
+
+    async function saveInterviewTimeSettings() {
+        const start = document.getElementById("interview-start-time").value;
+        const end = document.getElementById("interview-end-time").value;
+
+        if (!start && !end) { showToast("Vui lòng chọn ít nhất một mốc thời gian", "error"); return; }
+        if (start && end && new Date(start) >= new Date(end)) {
+            showToast("Thời gian mở phải trước thời gian đóng", "error"); return;
+        }
+
+        const updates = { updatedAt: new Date() };
+        if (start) updates.startTime = new Date(start);
+        if (end) updates.endTime = new Date(end);
+
+        try {
+            await db.collection("system").doc("interview_settings").set(updates, { merge: true });
+            Object.assign(interviewSettings, updates);
+            showToast("Đã lưu thời gian đăng ký phỏng vấn", "success");
+            renderOverview();
+        } catch (e) { showToast("Lỗi: " + e.message, "error"); }
+    }
+
+    // Thêm hàm addNewDate() 
+function addNewDate() {
+    if (!interviewSettings.slots) interviewSettings.slots = [];
+    
+    let lastDate = new Date();
+    if (interviewSettings.slots.length > 0) {
+        let maxDate = null;
+        interviewSettings.slots.forEach(slot => {
+            if (slot.dateTime) {
+                try {
+                    const d = new Date(slot.dateTime);
+                    if (!isNaN(d.getTime())) {
+                        if (!maxDate || d > maxDate) maxDate = d;
+                    }
+                } catch(e) {}
+            }
+        });
+        if (maxDate) {
+            lastDate = new Date(maxDate);
+            lastDate.setDate(lastDate.getDate() + 1);
+        }
+    }
+    
+    const dateStr = lastDate.toISOString().split('T')[0];
+    const weekdays = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+    const dayOfWeek = weekdays[lastDate.getDay()];
+    const day = String(lastDate.getDate()).padStart(2, '0');
+    const month = String(lastDate.getMonth() + 1).padStart(2, '0');
+    const year = lastDate.getFullYear();
+    const dateDisplay = `${dayOfWeek}, ${day}/${month}/${year}`;
+    
+    const timeSlots = [
+        { start: '08:00', end: '09:30' },
+        { start: '09:30', end: '11:00' },
+        { start: '13:00', end: '14:30' }
+    ];
+    
+    // Đếm số ca hiện có trong ngày mới (sẽ là 0 vì ngày mới)
+    timeSlots.forEach((time, idx) => {
+        const caNum = idx + 1; // Bắt đầu từ 1 cho mỗi ngày mới
+        interviewSettings.slots.push({
+            dateTime: dateStr,
+            startTime: time.start,
+            endTime: time.end,
+            label: `Ca ${caNum} (${time.start} - ${time.end}) - ${dateDisplay}`
+        });
+    });
+    
     renderInterviewSlots();
+    showToast(`Đã thêm ngày ${dateDisplay} với 3 ca mặc định`, "success");
 }
 
 function renderInterviewSlots() {
-    const container = document.getElementById('interview-slots-list');
-    const slots = settings.interviewSlots || [];
-    
-    if (slots.length === 0) {
-        container.innerHTML = '<p style="color: var(--gray-400); font-size: 13px;">Chua co ca phong van nao</p>';
+    const container = document.getElementById("interview-slot-list");
+    if (!container) return;
+    const slots = interviewSettings.slots || [];
+
+    container.innerHTML = '';
+
+    // Nút Thêm ngày
+    const addDateBtn = document.createElement('div');
+    addDateBtn.style.cssText = `
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        padding: 12px 16px;
+        background: var(--blue-50);
+        border: 1px dashed var(--blue-300);
+        border-radius: 8px;
+    `;
+    addDateBtn.innerHTML = `
+        <div>
+            <div style="font-weight:600;color:var(--blue-700);font-size:14px;">Thêm ngày mới</div>
+            <div style="font-size:12px;color:var(--blue-600);">Tạo 3 ca mặc định cho ngày mới (08:00, 09:30, 13:00)</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="addNewDate()">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;">
+                <path d="M8 3v10M3 8h10"/>
+            </svg>
+            Thêm ngày
+        </button>
+    `;
+    container.appendChild(addDateBtn);
+
+    if (!slots.length) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.style.cssText = 'color:var(--gray-400);font-size:13px;padding:20px;text-align:center;border:1px dashed var(--gray-300);border-radius:8px;';
+        emptyDiv.innerHTML = 'Chưa có ca phỏng vấn nào. Nhấn "Thêm ngày" để tạo ngày mới với 3 ca mặc định.';
+        container.appendChild(emptyDiv);
         return;
     }
-    
-    container.innerHTML = slots.map((slot, index) => `
-        <div class="slot-item">
-            <span style="font-weight:500;min-width:60px;">Ca ${index + 1}</span>
-            <input type="datetime-local" class="form-input" value="${slot.time || ''}" 
-                   onchange="updateInterviewSlot(${index}, 'time', this.value)">
-            <input type="text" class="form-input" value="${slot.location || ''}" 
-                   placeholder="Dia diem/Link" onchange="updateInterviewSlot(${index}, 'location', this.value)">
-            <input type="text" class="form-input" value="${slot.interviewer || ''}" 
-                   placeholder="Nguoi phong van" onchange="updateInterviewSlot(${index}, 'interviewer', this.value)">
-            <button class="icon-btn danger" onclick="removeInterviewSlot(${index})">
-                <i class="fas fa-times"></i>
+
+    // Nhóm theo ngày
+    const groupedSlots = {};
+    slots.forEach((slot, index) => {
+        let dateKey = 'Không có ngày';
+        if (slot.dateTime) {
+            try {
+                const d = new Date(slot.dateTime);
+                if (!isNaN(d.getTime())) {
+                    const weekdays = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+                    const dayOfWeek = weekdays[d.getDay()];
+                    const day = String(d.getDate()).padStart(2, '0');
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const year = d.getFullYear();
+                    dateKey = `${dayOfWeek}, ${day}/${month}/${year}`;
+                }
+            } catch(e) {}
+        }
+        if (!groupedSlots[dateKey]) {
+            groupedSlots[dateKey] = [];
+        }
+        groupedSlots[dateKey].push({ ...slot, index });
+    });
+
+    // Render từng ngày
+    Object.keys(groupedSlots).forEach(dateKey => {
+        const dateGroup = document.createElement('div');
+        dateGroup.style.cssText = 'margin-bottom:16px;border:1px solid var(--gray-200);border-radius:8px;overflow:hidden;';
+        
+        const dateHeader = document.createElement('div');
+        dateHeader.style.cssText = `
+            background: var(--gray-50);
+            padding: 10px 14px;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--gray-700);
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        `;
+        dateHeader.innerHTML = `
+            <div style="display:flex;align-items:center;gap:8px;">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:16px;height:16px;">
+                    <rect x="1.5" y="3.5" width="13" height="10" rx="1.5"/>
+                    <path d="M5.5 1.5v2M10.5 1.5v2M1.5 7h13"/>
+                </svg>
+                ${dateKey}
+                <span style="font-weight:400;font-size:12px;color:var(--gray-500);">(${groupedSlots[dateKey].length} ca)</span>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="removeDate('${dateKey}')" style="font-size:12px;padding:4px 10px;">
+                Xóa ngày
             </button>
-        </div>
-    `).join('');
+        `;
+        dateGroup.appendChild(dateHeader);
+        
+        const slotsContainer = document.createElement('div');
+        slotsContainer.style.cssText = 'padding:10px 14px;background:var(--white);';
+        
+        // Sắp xếp ca theo thứ tự trong ngày
+        const sortedSlots = groupedSlots[dateKey].sort((a, b) => {
+            if (a.startTime && b.startTime) {
+                return a.startTime.localeCompare(b.startTime);
+            }
+            return 0;
+        });
+        
+        sortedSlots.forEach((slot, idx) => {
+            const row = document.createElement('div');
+            row.style.cssText = `
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 12px;
+                border: 1px solid var(--gray-200);
+                border-radius: 6px;
+                background: var(--gray-50);
+                margin-bottom: ${idx === sortedSlots.length - 1 ? '0' : '8px'};
+            `;
+            
+            let timeDisplay = 'Chưa set giờ';
+            if (slot.startTime && slot.endTime) {
+                timeDisplay = `${slot.startTime} - ${slot.endTime}`;
+            }
+            
+            // Ca số trong ngày (bắt đầu từ 1)
+            const caNum = idx + 1;
+            
+            row.innerHTML = `
+                <div style="font-weight:600;color:var(--gray-600);min-width:50px;font-size:13px;">Ca ${caNum}</div>
+                <input type="time" class="form-input" value="${slot.startTime || ''}"
+                    onchange="updateSlot(${slot.index}, 'startTime', this.value, '${dateKey}')" 
+                    placeholder="Bắt đầu" style="flex:0.4;padding:6px 10px;font-size:13px;">
+                <input type="time" class="form-input" value="${slot.endTime || ''}"
+                    onchange="updateSlot(${slot.index}, 'endTime', this.value, '${dateKey}')" 
+                    placeholder="Kết thúc" style="flex:0.4;padding:6px 10px;font-size:13px;">
+                <div style="font-size:13px;color:var(--gray-700);flex:1;font-weight:500;padding:0 8px;">
+                    ${timeDisplay}
+                </div>
+                <button class="btn btn-danger btn-icon" onclick="removeSlot(${slot.index}, '${dateKey}')" style="flex-shrink:0;">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+                        <path d="M12 4L4 12M4 4l8 8"/>
+                    </svg>
+                </button>
+            `;
+            slotsContainer.appendChild(row);
+        });
+        
+        // Thêm nút thêm ca trong ngày
+        const addSlotBtn = document.createElement('div');
+        addSlotBtn.style.cssText = `
+            margin-top: 8px;
+            text-align: center;
+        `;
+        addSlotBtn.innerHTML = `
+            <button class="btn btn-ghost btn-sm" onclick="addSlotToDate('${dateKey}')" style="font-size:12px;padding:4px 12px;">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;">
+                    <path d="M8 3v10M3 8h10"/>
+                </svg>
+                Thêm ca vào ngày này
+            </button>
+        `;
+        slotsContainer.appendChild(addSlotBtn);
+        
+        dateGroup.appendChild(slotsContainer);
+        container.appendChild(dateGroup);
+    });
 }
 
-function addInterviewSlot() {
-    if (!settings.interviewSlots) settings.interviewSlots = [];
-    settings.interviewSlots.push({ time: '', location: '', interviewer: '' });
-    renderInterviewSlots();
-    saveSettings();
-}
-
-function removeInterviewSlot(index) {
-    if (!confirm('Xoa ca phong van nay?')) return;
-    settings.interviewSlots.splice(index, 1);
-    renderInterviewSlots();
-    saveSettings();
-}
-
-function updateInterviewSlot(index, field, value) {
-    if (!settings.interviewSlots) return;
-    settings.interviewSlots[index][field] = value;
-    saveSettings();
-}
-
-async function saveSettings() {
-    const updates = {
-        enabled: document.getElementById("toggle-enabled").checked,
-        allowMultipleBan: document.getElementById("toggle-multiple-ban").checked,
-        showBanQuestions: document.getElementById("toggle-show-ban-questions").checked,
-        allowInterviewMode: document.getElementById("toggle-interview-mode").checked,
-        interviewSlots: settings.interviewSlots || [],
-        updatedAt: new Date(),
-    };
-    await db.collection("system").doc("form_settings").set(updates, { merge: true });
-    Object.assign(settings, updates);
-    renderOverview();
-    alert("Da luu cai dat!");
-}
-
-async function saveDeadline() {
-    const start = document.getElementById("start-time").value;
-    const end = document.getElementById("end-time").value;
+function addNewDate() {
+    if (!interviewSettings.slots) interviewSettings.slots = [];
     
-    const updates = {};
-    if (start) updates.startTime = new Date(start);
-    if (end) updates.endTime = new Date(end);
-    updates.updatedAt = new Date();
-
-    if (!start && !end) { alert("Vui long chon it nhat mot moc thoi gian"); return; }
-    if (start && end && new Date(start) > new Date(end)) { alert("Thoi gian bat dau phai truoc thoi gian ket thuc"); return; }
-
-    await db.collection("system").doc("form_settings").set(updates, { merge: true });
-    Object.assign(settings, updates);
-    alert("Da luu thoi gian!");
-}
-
-async function saveInterviewDeadline() {
-    const start = document.getElementById("interview-start").value;
-    const end = document.getElementById("interview-end").value;
+    let lastDate = new Date();
+    if (interviewSettings.slots.length > 0) {
+        let maxDate = null;
+        interviewSettings.slots.forEach(slot => {
+            if (slot.dateTime) {
+                try {
+                    const d = new Date(slot.dateTime);
+                    if (!isNaN(d.getTime())) {
+                        if (!maxDate || d > maxDate) maxDate = d;
+                    }
+                } catch(e) {}
+            }
+        });
+        if (maxDate) {
+            lastDate = new Date(maxDate);
+            lastDate.setDate(lastDate.getDate() + 1);
+        }
+    }
     
-    const updates = {};
-    if (start) updates.interviewStart = new Date(start);
-    if (end) updates.interviewEnd = new Date(end);
-    updates.updatedAt = new Date();
-
-    if (!start && !end) { alert("Vui long chon it nhat mot moc thoi gian"); return; }
-    if (start && end && new Date(start) > new Date(end)) { alert("Thoi gian bat dau phai truoc thoi gian ket thuc"); return; }
-
-    await db.collection("system").doc("form_settings").set(updates, { merge: true });
-    Object.assign(settings, updates);
-    alert("Da luu thoi gian dang ky phong van!");
+    const dateStr = lastDate.toISOString().split('T')[0];
+    const weekdays = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+    const dayOfWeek = weekdays[lastDate.getDay()];
+    const day = String(lastDate.getDate()).padStart(2, '0');
+    const month = String(lastDate.getMonth() + 1).padStart(2, '0');
+    const year = lastDate.getFullYear();
+    const dateDisplay = `${dayOfWeek}, ${day}/${month}/${year}`;
+    
+    // Tạo 3 ca mặc định, mỗi ca 1 tiếng, cách nhau 15 phút
+    const timeSlots = [
+        { start: '08:00', end: '09:00' },
+        { start: '09:15', end: '10:15' },
+        { start: '10:30', end: '11:30' }
+    ];
+    
+    timeSlots.forEach((time, idx) => {
+        const caNum = idx + 1;
+        interviewSettings.slots.push({
+            dateTime: dateStr,
+            startTime: time.start,
+            endTime: time.end,
+            label: `Ca ${caNum} (${time.start} - ${time.end}) - ${dateDisplay}`
+        });
+    });
+    
+    renderInterviewSlots();
+    showToast(`Đã thêm ngày ${dateDisplay} với 3 ca mặc định`, "success");
 }
 
-async function saveMaxApplicants() {
-    const val = document.getElementById("max-applicants").value;
-    if (!val || parseInt(val) < 0) { alert("Vui long nhap so hop le"); return; }
-    await db.collection("system").doc("form_settings").set({ maxApplicants: parseInt(val), updatedAt: new Date() }, { merge: true });
-    settings.maxApplicants = parseInt(val);
-    alert("Da luu gioi han!");
+function removeDate(dateKey) {
+    showConfirm(
+        `Xóa ngày ${dateKey}`,
+        `Bạn có chắc muốn xóa tất cả ca trong ngày ${dateKey}?`,
+        () => {
+            interviewSettings.slots = interviewSettings.slots.filter(slot => {
+                if (slot.dateTime) {
+                    try {
+                        const d = new Date(slot.dateTime);
+                        if (!isNaN(d.getTime())) {
+                            const weekdays = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+                            const dayOfWeek = weekdays[d.getDay()];
+                            const day = String(d.getDate()).padStart(2, '0');
+                            const month = String(d.getMonth() + 1).padStart(2, '0');
+                            const year = d.getFullYear();
+                            const key = `${dayOfWeek}, ${day}/${month}/${year}`;
+                            return key !== dateKey;
+                        }
+                    } catch(e) {}
+                }
+                return true;
+            });
+            renderInterviewSlots();
+            showToast(`Đã xóa ngày ${dateKey}`, "success");
+        }
+    );
 }
 
-async function resetForm() {
-    if (!confirm("Reset ve cau hoi mac dinh? Tat ca cau hoi da chinh sua se bi mat!")) return;
-    questions = getDefaultQuestions();
-    await saveQuestionsToFirestore();
-    renderQuestions();
-    renderOverview();
-    alert("Da reset ve mac dinh!");
+function updateSlot(index, field, value, dateKey) {
+    if (interviewSettings.slots && interviewSettings.slots[index]) {
+        interviewSettings.slots[index][field] = value;
+        
+        if (field === 'startTime' || field === 'endTime') {
+            const slot = interviewSettings.slots[index];
+            if (slot.startTime && slot.endTime && slot.dateTime) {
+                try {
+                    const d = new Date(slot.dateTime);
+                    if (!isNaN(d.getTime())) {
+                        const weekdays = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+                        const dayOfWeek = weekdays[d.getDay()];
+                        const day = String(d.getDate()).padStart(2, '0');
+                        const month = String(d.getMonth() + 1).padStart(2, '0');
+                        const year = d.getFullYear();
+                        const dateDisplay = `${dayOfWeek}, ${day}/${month}/${year}`;
+                        
+                        // Tính số ca trong ngày
+                        const slotsInDay = interviewSettings.slots.filter(s => {
+                            if (s.dateTime) {
+                                try {
+                                    const d2 = new Date(s.dateTime);
+                                    if (!isNaN(d2.getTime())) {
+                                        const weekdays2 = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+                                        const dayOfWeek2 = weekdays2[d2.getDay()];
+                                        const day2 = String(d2.getDate()).padStart(2, '0');
+                                        const month2 = String(d2.getMonth() + 1).padStart(2, '0');
+                                        const year2 = d2.getFullYear();
+                                        return `${dayOfWeek2}, ${day2}/${month2}/${year2}` === dateDisplay;
+                                    }
+                                } catch(e) {}
+                            }
+                            return false;
+                        });
+                        
+                        const caNum = slotsInDay.findIndex(s => s === slot) + 1;
+                        slot.label = `Ca ${caNum} (${slot.startTime} - ${slot.endTime}) - ${dateDisplay}`;
+                    }
+                } catch(e) {}
+            }
+        }
+        renderInterviewSlots();
+    }
 }
 
-async function deleteAllResponses() {
-    if (!confirm("Xoa toan bo phan hoi? Hanh dong khong the hoan tac!")) return;
-    if (!confirm("Xac nhan lan 2:")) return;
-    const snap = await db.collection("applications").get();
-    const batch = db.batch();
-    snap.docs.forEach(d => batch.delete(d.ref));
-    await batch.commit();
-    alert("Da xoa toan bo phan hoi!");
+function removeSlot(index, dateKey) {
+    showConfirm(
+        "Xóa ca phỏng vấn",
+        "Bạn có chắc muốn xóa ca này?",
+        () => {
+            interviewSettings.slots.splice(index, 1);
+            
+            // Cập nhật lại label cho các ca cùng ngày
+            if (dateKey) {
+                interviewSettings.slots.forEach((slot, idx) => {
+                    if (slot.dateTime && slot.startTime && slot.endTime) {
+                        try {
+                            const d = new Date(slot.dateTime);
+                            if (!isNaN(d.getTime())) {
+                                const weekdays = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+                                const dayOfWeek = weekdays[d.getDay()];
+                                const day = String(d.getDate()).padStart(2, '0');
+                                const month = String(d.getMonth() + 1).padStart(2, '0');
+                                const year = d.getFullYear();
+                                const currentDateKey = `${dayOfWeek}, ${day}/${month}/${year}`;
+                                if (currentDateKey === dateKey) {
+                                    // Đếm lại số ca trong ngày
+                                    const slotsInDay = interviewSettings.slots.filter(s => {
+                                        if (s.dateTime) {
+                                            try {
+                                                const d2 = new Date(s.dateTime);
+                                                if (!isNaN(d2.getTime())) {
+                                                    const weekdays2 = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+                                                    const dayOfWeek2 = weekdays2[d2.getDay()];
+                                                    const day2 = String(d2.getDate()).padStart(2, '0');
+                                                    const month2 = String(d2.getMonth() + 1).padStart(2, '0');
+                                                    const year2 = d2.getFullYear();
+                                                    return `${dayOfWeek2}, ${day2}/${month2}/${year2}` === currentDateKey;
+                                                }
+                                            } catch(e) {}
+                                        }
+                                        return false;
+                                    });
+                                    const caNum = slotsInDay.findIndex(s => s === slot) + 1;
+                                    slot.label = `Ca ${caNum} (${slot.startTime} - ${slot.endTime}) - ${currentDateKey}`;
+                                }
+                            }
+                        } catch(e) {}
+                    }
+                });
+            }
+            
+            renderInterviewSlots();
+            showToast("Đã xóa ca", "success");
+        }
+    );
 }
+
+async function saveInterviewSlots() {
+    try {
+        await db.collection("system").doc("interview_settings").set({
+            slots: interviewSettings.slots || [],
+            updatedAt: new Date()
+        }, { merge: true });
+        showToast("Đã lưu danh sách ca phỏng vấn", "success");
+        renderOverview();
+    } catch (e) { 
+        showToast("Lỗi: " + e.message, "error"); 
+    }
+}
+
+    // ========================
+    // NOTIFY SETTINGS
+    // ========================
+    function previewNotify() {
+        const type = document.getElementById("notify-type")?.value || "info";
+        const title = document.getElementById("notify-title")?.value?.trim() || "";
+        const content = document.getElementById("notify-content")?.value?.trim() || "";
+
+        const preview = document.getElementById("notify-preview");
+        if (!preview) return;
+
+        if (!title && !content) {
+            preview.className = "notif-preview";
+            preview.textContent = "Chưa có nội dung thông báo.";
+            return;
+        }
+
+        const classes = {
+            info: "notif-preview active-info",
+            warning: "notif-preview active-warning",
+            success: "notif-preview"
+        };
+
+        preview.className = classes[type] || "notif-preview";
+        preview.innerHTML = title
+            ? `<strong>${escHtml(title)}</strong><br>${escHtml(content)}`
+            : escHtml(content);
+    }
+
+    async function saveNotifySettings() {
+        const enabled = document.getElementById("toggle-notify-enabled").checked;
+        const type = document.getElementById("notify-type").value;
+        const title = document.getElementById("notify-title").value.trim();
+        const content = document.getElementById("notify-content").value.trim();
+
+        try {
+            const data = { enabled, type, title, content, updatedAt: new Date() };
+            await db.collection("system").doc("notify_settings").set(data, { merge: true });
+            notifySettings = { ...notifySettings, ...data };
+            showToast("Đã lưu cài đặt thông báo", "success");
+        } catch (e) { showToast("Lỗi: " + e.message, "error"); }
+    }
+
+    // ========================
+    // DANGER ZONE
+    // ========================
+    function confirmResetQuestions() {
+        showConfirm(
+            "Đặt lại câu hỏi về mặc định",
+            "Toàn bộ câu hỏi hiện tại sẽ bị xóa và thay thế bằng bộ câu hỏi mặc định. Dữ liệu không thể khôi phục.",
+            async () => {
+                questionData = getDefaultQuestions();
+                try {
+                    await saveQuestions();
+                    showToast("Đã đặt lại câu hỏi về mặc định", "success");
+                    renderGeneralQuestions();
+                    renderBanQuestions();
+                    renderOverview();
+                } catch (e) { showToast("Lỗi: " + e.message, "error"); }
+            }
+        );
+    }
+
+    function confirmDeleteAllResponses() {
+        showConfirm(
+            "Xóa toàn bộ đơn ứng tuyển",
+            "Thao tác này sẽ xóa vĩnh viễn toàn bộ đơn ứng tuyển. Dữ liệu KHÔNG THỂ khôi phục. Bạn có chắc chắn không?",
+            () => {
+                showConfirm(
+                    "Xác nhận lần cuối",
+                    "Đây là lần xác nhận cuối. Sau khi xác nhận, tất cả dữ liệu ứng viên sẽ bị xóa vĩnh viễn.",
+                    async () => {
+                        try {
+                            const snap = await db.collection("applications").get();
+                            const batch = db.batch();
+                            snap.docs.forEach(d => batch.delete(d.ref));
+                            await batch.commit();
+                            showToast(`Đã xóa ${snap.size} đơn ứng tuyển`, "success");
+                        } catch (e) { showToast("Lỗi: " + e.message, "error"); }
+                    }
+                );
+            }
+        );
+    }
+
+    // ========================
+    // UTILS
+    // ========================
+    function genId() {
+        return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
 </script>
 </body>
 </html>

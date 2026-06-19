@@ -1,71 +1,623 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Quản trị tài khoản</title>
-  <link rel="stylesheet" href="/css/accounts.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản trị tài khoản | Enactus FTU Hanoi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #f8f3ce;
+            --primary-light: #ffd54f;
+            --gray-50: #fafafa;
+            --gray-100: #f5f5f5;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --white: #ffffff;
+            --error: #ef4444;
+            --error-light: #fee2e2;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --info: #3b82f6;
+            --info-light: #dbeafe;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Plus Jakarta Sans", sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-800);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        /* ======================== TOPBAR ======================== */
+        .topbar {
+            background: var(--white);
+            border-bottom: 1px solid var(--gray-200);
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .topbar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .topbar-logo img {
+            height: 40px;
+        }
+
+        .topbar-divider {
+            width: 1px;
+            height: 32px;
+            background: var(--gray-200);
+        }
+
+        .topbar-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        .btn-ghost {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+        .btn-ghost:hover { background: var(--gray-200); }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--gray-900);
+        }
+        .btn-primary:hover { background: var(--primary-light); }
+
+        .btn-danger {
+            background: var(--error);
+            color: var(--white);
+        }
+        .btn-danger:hover { background: #dc2626; }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        /* ======================== CONTAINER ======================== */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 80px;
+        }
+
+        /* ======================== PAGE HEADER ======================== */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .page-header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--gray-900);
+        }
+
+        .page-header p {
+            color: var(--gray-500);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ======================== CARD ======================== */
+        .card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+
+        /* ======================== TABLE ======================== */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: var(--gray-100);
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gray-700);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        tr:hover td {
+            background: var(--gray-50);
+        }
+
+        /* ======================== BADGE ======================== */
+        .badge {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .badge-superadmin { background: var(--warning-light); color: var(--warning); }
+        .badge-admin { background: var(--info-light); color: var(--info); }
+        .badge-member { background: var(--gray-100); color: var(--gray-600); }
+
+        /* ======================== MODAL ======================== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 560px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: var(--gray-500);
+        }
+
+        .modal-body { padding: 24px; }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* ======================== FORM ======================== */
+        .form-group { margin-bottom: 16px; }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--gray-700);
+            margin-bottom: 6px;
+        }
+        .form-label .required { color: var(--error); margin-left: 2px; }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            color: var(--gray-800);
+            background: var(--white);
+            transition: var(--transition);
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(248, 243, 206, 0.3);
+        }
+
+        .form-textarea { resize: vertical; min-height: 80px; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        /* ======================== RESPONSIVE ======================== */
+        @media (max-width: 768px) {
+            .page-header { flex-direction: column; align-items: flex-start; }
+            .form-row { grid-template-columns: 1fr; }
+            .topbar-title { display: none; }
+        }
+    </style>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>👑 Quản trị tài khoản</h1>
-      <button onclick="logout()">Đăng xuất</button>
-    </header>
 
-    <button onclick="showAddAccountForm()">➕ Thêm tài khoản</button>
-
-    <table id="accounts-table" border="1" cellspacing="0" cellpadding="5">
-      <thead>
-        <tr>
-          <th>Họ tên (ID)</th>
-          <th>Email</th>
-          <th>Role</th>
-          <th>Department</th>
-          <th>Note</th>
-          <th>Hành động</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <!-- Modal form -->
-    <div id="account-form-modal" style="display:none;">
-      <form id="account-form">
-        <input type="hidden" id="account-id">
-        <label>Họ tên (ID)</label>
-        <input type="text" id="account-name" required>
-        <label>Email</label>
-        <input type="email" id="account-email" required>
-        <label>Role</label>
-        <select id="account-role">
-          <option value="superadmin">Super Admin</option>
-          <option value="admin">Admin</option>
-          <option value="member">Member</option>
-        </select>
-        <label>Department</label>
-        <select id="account-department">
-          <option value="">--Chọn ban--</option>
-          <option value="HR">Nhân sự</option>
-          <option value="MD">Truyền thông</option>
-          <option value="ER">Đối ngoại</option>
-          <option value="PD">Dự án</option>
-        </select>
-        <label>Note</label>
-        <textarea id="account-note"></textarea>
-        <button type="submit">Lưu</button>
-        <button type="button" onclick="closeForm()">Hủy</button>
-      </form>
+<!-- TOPBAR -->
+<div class="topbar">
+    <div class="topbar-left">
+        <a href="dashboard.html" class="topbar-logo">
+            <img src="/assets/logo_den.png" alt="Enactus FTU Hanoi">
+        </a>
+        <div class="topbar-divider"></div>
+        <span class="topbar-title">Quản trị tài khoản</span>
     </div>
-  </div>
+    <div class="topbar-right">
+        <button class="btn btn-ghost" onclick="window.location.href='dashboard.html'">
+            <i class="fas fa-arrow-left"></i> Dashboard
+        </button>
+        <button class="btn btn-danger" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+        </button>
+    </div>
+</div>
 
-  <!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<!-- CONTENT -->
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1><i class="fas fa-shield-halved" style="color: var(--warning);"></i> Quản trị tài khoản</h1>
+            <p>Quản lý tài khoản admin, superadmin và member</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-primary" onclick="showAddAccountForm()">
+                <i class="fas fa-plus"></i> Thêm tài khoản
+            </button>
+            <button class="btn btn-ghost" onclick="loadAccounts()">
+                <i class="fas fa-sync-alt"></i> Làm mới
+            </button>
+        </div>
+    </div>
 
-  <!-- Config -->
-  <script src="/script/config.js"></script>
-  <!-- Logic quản trị -->
-  <script src="/script/accounts.js"></script>
+    <div class="card">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Họ tên (ID)</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Department</th>
+                        <th>Note</th>
+                        <th style="width:100px;">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="accounts-table-body">
+                    <tr>
+                        <td colspan="6" style="text-align:center;padding:40px;color:var(--gray-400);">
+                            <i class="fas fa-spinner fa-spin" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+                            Đang tải danh sách...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Thêm/Sửa tài khoản -->
+<div class="modal-overlay" id="account-form-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="form-modal-title">Thêm tài khoản mới</div>
+            <button class="modal-close" onclick="closeForm()">&times;</button>
+        </div>
+        <form id="account-form">
+            <div class="modal-body">
+                <input type="hidden" id="account-id">
+
+                <div class="form-group">
+                    <label class="form-label">Họ và tên <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="account-name" placeholder="Nhập họ tên" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email <span class="required">*</span></label>
+                    <input type="email" class="form-input" id="account-email" placeholder="example@email.com" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Role <span class="required">*</span></label>
+                        <select class="form-select" id="account-role">
+                            <option value="superadmin">Super Admin</option>
+                            <option value="admin">Admin</option>
+                            <option value="member">Member</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Department</label>
+                        <select class="form-select" id="account-department">
+                            <option value="">-- Chọn ban --</option>
+                            <option value="HR">Nhân sự</option>
+                            <option value="MD">Truyền thông</option>
+                            <option value="ER">Đối ngoại</option>
+                            <option value="PD">Dự án</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Note</label>
+                    <textarea class="form-textarea" id="account-note" placeholder="Ghi chú thêm..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeForm()">Hủy</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Lưu tài khoản
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="/script/config.js"></script>
+<script>
+// ===== Load danh sách account =====
+async function loadAccounts() {
+  const tbody = document.getElementById("accounts-table-body");
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="6" style="text-align:center;padding:40px;color:var(--gray-400);">
+        <i class="fas fa-spinner fa-spin" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+        Đang tải danh sách...
+      </td>
+    </tr>
+  `;
+
+  try {
+    const snapshot = await db.collection("account").get();
+    if (snapshot.empty) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align:center;padding:40px;color:var(--gray-400);">
+            <i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+            Chưa có tài khoản nào
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const tr = document.createElement("tr");
+
+      const roleBadge = {
+        superadmin: 'badge-superadmin',
+        admin: 'badge-admin',
+        member: 'badge-member'
+      };
+
+      tr.innerHTML = `
+        <td><strong>${doc.id}</strong></td>
+        <td>${data.email}</td>
+        <td><span class="badge ${roleBadge[data.role] || 'badge-member'}">${data.role}</span></td>
+        <td>${data.department || '—'}</td>
+        <td>${data.note || '—'}</td>
+        <td>
+          <button class="btn btn-ghost btn-sm" onclick="editAccount('${doc.id}')" title="Sửa">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deleteAccount('${doc.id}')" title="Xóa">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("Lỗi load accounts:", err);
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align:center;padding:40px;color:var(--error);">
+          <i class="fas fa-exclamation-triangle" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+          Không thể tải danh sách tài khoản!
+        </td>
+      </tr>
+    `;
+  }
+}
+
+// ===== Form =====
+function showAddAccountForm() {
+  document.getElementById("account-form").reset();
+  document.getElementById("account-id").value = "";
+  document.getElementById("account-name").disabled = false;
+  document.getElementById("form-modal-title").textContent = "Thêm tài khoản mới";
+  document.getElementById("account-form-modal").classList.add("active");
+}
+
+function closeForm() {
+  document.getElementById("account-form-modal").classList.remove("active");
+}
+
+// ===== Save (thêm/sửa) =====
+document.getElementById("account-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const id = document.getElementById("account-id").value || document.getElementById("account-name").value.trim();
+
+  if (!id) {
+    alert("Tên tài khoản (ID) không được để trống!");
+    return;
+  }
+
+  const data = {
+    email: document.getElementById("account-email").value.trim(),
+    role: document.getElementById("account-role").value,
+    department: document.getElementById("account-department").value,
+    note: document.getElementById("account-note").value.trim()
+  };
+
+  try {
+    await db.collection("account").doc(id).set(data, { merge: true });
+    closeForm();
+    loadAccounts();
+  } catch (err) {
+    console.error("Lỗi khi lưu account:", err);
+    alert("Không thể lưu account!");
+  }
+});
+
+// ===== Edit =====
+async function editAccount(id) {
+  try {
+    const docSnap = await db.collection("account").doc(id).get();
+    if (!docSnap.exists) return;
+
+    const data = docSnap.data();
+    document.getElementById("account-id").value = id;
+    document.getElementById("account-name").value = id;
+    document.getElementById("account-name").disabled = true;
+    document.getElementById("account-email").value = data.email;
+    document.getElementById("account-role").value = data.role;
+    document.getElementById("account-department").value = data.department || "";
+    document.getElementById("account-note").value = data.note || "";
+    document.getElementById("form-modal-title").textContent = "Chỉnh sửa tài khoản";
+
+    document.getElementById("account-form-modal").classList.add("active");
+  } catch (err) {
+    console.error("Lỗi khi edit account:", err);
+  }
+}
+
+// ===== Delete =====
+async function deleteAccount(id) {
+  if (!confirm("Bạn có chắc muốn xóa tài khoản này?")) return;
+  try {
+    await db.collection("account").doc(id).delete();
+    loadAccounts();
+  } catch (err) {
+    console.error("Lỗi khi xóa account:", err);
+    alert("Không thể xóa account!");
+  }
+}
+
+// ===== Logout =====
+function logout() {
+  if (!confirm("Bạn có chắc muốn đăng xuất?")) return;
+  auth.signOut().then(() => {
+    sessionStorage.clear();
+    window.location.href = "login.html";
+  });
+}
+
+// ===== Kiểm tra quyền =====
+auth.onAuthStateChanged(user => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+  const role = sessionStorage.getItem("role");
+  if (role !== "superadmin") {
+    alert("Bạn không có quyền truy cập trang này!");
+    window.location.href = "dashboard.html";
+    return;
+  }
+  loadAccounts();
+});
+
+// Click outside modal to close
+document.getElementById("account-form-modal").addEventListener("click", function(e) {
+  if (e.target === this) closeForm();
+});
+</script>
 </body>
 </html>

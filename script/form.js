@@ -1,1199 +1,1361 @@
+// ============================================================
+// KHỞI TẠO FIREBASE - TỰ ĐỘNG TRONG FORM.JS
+// ============================================================
 
-      
-        // Biến toàn cục để lưu hình thức ứng tuyển
-        let applicationType = '';
-        let currentSection = 0;
-        const totalSections = 4;
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBrHfc2ERn3oxu6va8RkAckxiBoo6GocgM",
+  authDomain: "enactusftuhanoi.firebaseapp.com",
+  projectId: "enactusftuhanoi",
+  storageBucket: "enactusftuhanoi.firebasestorage.app",
+  messagingSenderId: "281439714678",
+  appId: "1:281439714678:web:c310c2836e4ca7ad38ce57",
+  measurementId: "G-4V8B3GJ38D"
+};
+
+// Khai báo biến global trong file
+let db, auth;
+
+// Kiểm tra và khởi tạo Firebase nếu chưa có
+if (typeof firebase !== 'undefined') {
+    try {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        // Khởi tạo services
+        auth = firebase.auth();
+        db = firebase.firestore();
         
-        // Hàm chọn hình thức ứng tuyển
-        function selectApplicationType(type) {
-            if (type === 'interview') {
+        // Gán vào window để dùng toàn cục
+        window.auth = auth;
+        window.db = db;
+        
+        console.log('[Form] Firebase initialized successfully');
+        console.log('[Form] db:', db ? 'OK' : 'FAILED');
+        console.log('[Form] auth:', auth ? 'OK' : 'FAILED');
+    } catch (e) {
+        console.error('[Form] Error initializing Firebase services:', e);
+    }
+} else {
+    console.error('[Form] Firebase SDK not loaded!');
+}
+
+// ============================================================
+// BIẾN TOÀN CỤC
+// ============================================================
+let applicationType = '';
+let currentSection = 0;
+const totalSections = 4;
+
+// Dữ liệu câu hỏi - sẽ được tải từ Firebase
+let generalQuestions = [];
+let banQuestions = {};
+let interview = [];
+let formSettings = {};
+let interviewSettings = {};
+let notifySettings = {};
+
+// ============================================================
+// KHỞI TẠO - TẢI DỮ LIỆU TỪ FIREBASE
+// ============================================================
+async function initFormData() {
+    try {
+        // KIỂM TRA DB TRƯỚC KHI DÙNG
+        if (typeof db === 'undefined' || db === null) {
+            console.error('[Form] db is undefined! Cannot fetch data.');
+            return;
+        }
+
+        const [questionsDoc, formSettingsDoc, interviewSettingsDoc, notifyDoc] = await Promise.all([
+            db.collection("system").doc("form_questions").get(),
+            db.collection("system").doc("form_settings").get(),
+            db.collection("system").doc("interview_settings").get(),
+            db.collection("system").doc("notify_settings").get()
+        ]);
+
+        // Tải câu hỏi
+        if (questionsDoc.exists && questionsDoc.data().questions) {
+            const raw = questionsDoc.data().questions;
+            generalQuestions = raw.general || [];
+            banQuestions = {
+                "MD-Design": raw["MD-Design"] || raw["md-design"] || [],
+                "MD-Content": raw["MD-Content"] || raw["md-content"] || [],
+                MD: {
+                    Design: raw["MD-Design"] || raw["md-design"] || [],
+                    Content: raw["MD-Content"] || raw["md-content"] || []
+                },
+                HR: raw.HR || raw.hr || [],
+                ER: raw.ER || raw.er || [],
+                PD: raw.PD || raw.pd || []
+            };
+        }
+
+        // Tải cài đặt form
+        if (formSettingsDoc.exists) {
+            formSettings = formSettingsDoc.data();
+        }
+
+        // Tải cài đặt phỏng vấn
+        if (interviewSettingsDoc.exists) {
+            interviewSettings = interviewSettingsDoc.data();
+            // Chuyển đổi slots từ Firebase thành định dạng interview[]
+            const slots = interviewSettings.slots || [];
+            if (slots.length > 0) {
+                interview = buildInterviewFromSlots(slots);
+            }
+        }
+
+        // Tải thông báo
+        if (notifyDoc.exists) {
+            notifySettings = notifyDoc.data();
+        }
+
+        console.log('[Form] Đã tải dữ liệu từ Firebase:', {
+            generalQuestions: generalQuestions.length,
+            banQuestions: Object.keys(banQuestions),
+            interviewSlots: (interviewSettings.slots || []).length,
+            notifyEnabled: notifySettings.enabled
+        });
+
+    } catch (error) {
+        console.error('[Form] Lỗi tải dữ liệu:', error);
+        // Fallback: không có câu hỏi nào
+        generalQuestions = [];
+        banQuestions = {};
+        interview = [];
+    }
+}
+
+function buildInterviewFromSlots(slots) {
+    if (!slots || !Array.isArray(slots) || slots.length === 0) {
+        console.warn('[Form] No interview slots found');
+        return [];
+    }
+
+    // Tạo options từ slots
+    const options = [];
+    
+    slots.forEach((slot, index) => {
+        let displayLabel = '';
+        
+        // Lấy thông tin từ slot
+        const caNumber = index + 1;
+        let timeRange = '';
+        let dateInfo = '';
+        
+        // Lấy giờ
+        if (slot.startTime && slot.endTime) {
+            timeRange = `${slot.startTime} - ${slot.endTime}`;
+        } else if (slot.label) {
+            const timeMatch = slot.label.match(/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/);
+            if (timeMatch) {
+                timeRange = `${timeMatch[1]} - ${timeMatch[2]}`;
+            }
+        }
+        
+        // Lấy ngày
+        if (slot.dateTime) {
+            try {
+                const date = new Date(slot.dateTime);
+                if (!isNaN(date.getTime())) {
+                    const weekdays = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+                    const dayOfWeek = weekdays[date.getDay()];
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    dateInfo = `${dayOfWeek}, ${day}/${month}/${year}`;
+                }
+            } catch(e) {}
+        }
+        
+        // Ghép thành label
+        if (timeRange && dateInfo) {
+            displayLabel = `Ca ${caNumber} (${timeRange}) - ${dateInfo}`;
+        } else if (timeRange) {
+            displayLabel = `Ca ${caNumber} (${timeRange})`;
+        } else if (dateInfo) {
+            displayLabel = `Ca ${caNumber} - ${dateInfo}`;
+        } else {
+            displayLabel = slot.label || `Ca ${caNumber}`;
+        }
+        
+        options.push(displayLabel);
+    });
+
+    // Tạo câu hỏi duy nhất
+    const interviewQuestion = {
+        id: "interview_schedule",
+        question: "Vui lòng chọn các khung giờ phỏng vấn bạn có thể tham gia (chọn ít nhất 3 ca)",
+        options: options
+    };
+
+    console.log('[Form] Built interview slots:', options.length);
+    return [interviewQuestion];
+}
+
+// ============================================================
+// KIỂM TRA THỜI GIAN VÀ THÔNG BÁO
+// ============================================================
+function checkFormAvailability() {
+    const now = new Date();
+    const formEl = document.getElementById("recruitmentForm");
+
+    // Kiểm tra bật thủ công
+    if (formSettings.enabled) return; // form mở
+
+    // Kiểm tra thời gian
+    const startTime = formSettings.startTime
+        ? (formSettings.startTime.toDate ? formSettings.startTime.toDate() : new Date(formSettings.startTime))
+        : null;
+    const endTime = formSettings.endTime
+        ? (formSettings.endTime.toDate ? formSettings.endTime.toDate() : new Date(formSettings.endTime))
+        : null;
+
+    if (startTime && now < startTime) {
+        // Form chưa mở
+        formEl.style.display = "none";
+        showFormClosed(`Form sẽ mở vào lúc <strong>${startTime.toLocaleString("vi-VN")}</strong>. Vui lòng quay lại sau!`);
+        return;
+    }
+
+    if (endTime && now > endTime) {
+        // Form đã đóng
+        formEl.style.display = "none";
+        showFormClosed(`Form tuyển dụng đã đóng vào lúc <strong>${endTime.toLocaleString("vi-VN")}</strong>. Cảm ơn bạn đã quan tâm!`);
+        return;
+    }
+    // Nếu không có startTime/endTime hoặc đang trong khoảng thời gian hợp lệ -> mở bình thường
+}
+
+function checkInterviewAvailability() {
+    const now = new Date();
+    const enabled = interviewSettings.enabled;
+    const endTime = interviewSettings.endTime
+        ? (interviewSettings.endTime.toDate ? interviewSettings.endTime.toDate() : new Date(interviewSettings.endTime))
+        : null;
+
+    const isOpen = enabled || (endTime && now <= endTime);
+
+    const typeInterview = document.getElementById("type-interview");
+    if (!typeInterview) return;
+
+    if (!isOpen) {
+        typeInterview.style.opacity = "0.5";
+        typeInterview.style.cursor = "not-allowed";
+        typeInterview.title = "Hình thức phỏng vấn thay đơn đã đóng";
+        typeInterview.onclick = function() {
+            Swal.fire({
+                icon: "warning",
+                title: "Phỏng vấn thay đơn đã đóng",
+                html: endTime
+                    ? `Thời hạn đăng ký đã kết thúc vào lúc <strong>${endTime.toLocaleString("vi-VN")}</strong>. Vui lòng chọn hình thức điền đơn.`
+                    : "Hình thức phỏng vấn thay đơn hiện chưa được mở. Vui lòng chọn hình thức điền đơn."
+            });
+        };
+    }
+}
+
+function showFormClosed(htmlMessage) {
+    const existing = document.getElementById("form-closed-msg");
+    if (existing) return;
+
+    const msgBox = document.createElement("div");
+    msgBox.id = "form-closed-msg";
+    msgBox.innerHTML = `
+        <div style="max-width:600px;margin:40px auto;padding:32px;background:#fff;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,0.08);text-align:center;">
+            <div style="width:56px;height:56px;background:#FEE2E2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+            </div>
+            <h2 style="font-size:20px;font-weight:700;color:#111827;margin-bottom:12px;">Form đã đóng</h2>
+            <p style="font-size:15px;color:#6B7280;line-height:1.6;">${htmlMessage}</p>
+        </div>
+    `;
+    const formEl = document.getElementById("recruitmentForm");
+    if (formEl && formEl.parentNode) {
+        formEl.parentNode.insertBefore(msgBox, formEl);
+    }
+}
+
+// ============================================================
+// HIỂN THỊ THÔNG BÁO TỪ FIREBASE
+// ============================================================
+async function showNotification() {
+    try {
+        // KIỂM TRA DB TRƯỚC KHI DÙNG
+        if (typeof db === 'undefined' || db === null) {
+            console.warn('[Form] db not available, skipping notification');
+            return;
+        }
+
+        const doc = await db.collection("system").doc("notify_settings").get();
+        if (!doc.exists) return;
+        const data = doc.data();
+        if (!data.enabled || (!data.title && !data.content)) return;
+
+        const colors = {
+            info: { bg: "#EFF6FF", border: "#DBEAFE", text: "#1E40AF" },
+            warning: { bg: "#FFF7ED", border: "#FFEDD5", text: "#9A3412" },
+            success: { bg: "#F0FDF4", border: "#DCFCE7", text: "#166534" }
+        };
+        const color = colors[data.type] || colors.info;
+
+        const icons = {
+            info: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8h.01M12 12v4"/></svg>`,
+            warning: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 22h20L12 2zM12 8v5M12 17h.01"/></svg>`,
+            success: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`
+        };
+
+        const notif = document.createElement("div");
+        notif.style.cssText = `
+            margin-bottom:20px;
+            padding:14px 16px;
+            background:${color.bg};
+            border:1px solid ${color.border};
+            border-radius:10px;
+            color:${color.text};
+            display:flex;
+            gap:10px;
+            align-items:flex-start;
+            font-size:14px;
+            line-height:1.5;
+        `;
+        notif.innerHTML = `
+            <div style="flex-shrink:0;margin-top:1px;">${icons[data.type] || icons.info}</div>
+            <div>
+                ${data.title ? `<div style="font-weight:700;margin-bottom:4px;">${data.title}</div>` : ""}
+                ${data.content ? `<div>${data.content}</div>` : ""}
+            </div>
+        `;
+
+        const container = document.querySelector(".form-container");
+        if (container) {
+            container.insertBefore(notif, container.firstChild);
+        }
+    } catch (e) {
+        console.warn("[Form] Không tải được thông báo:", e);
+    }
+}
+
+// ============================================================
+// CHỌN HÌNH THỨC ỨNG TUYỂN
+// ============================================================
+function selectApplicationType(type) {
+    applicationType = type;
+    document.getElementById('application_type').value = type;
+
+    document.querySelectorAll('.application-type').forEach(el => {
+        el.classList.remove('selected');
+    });
+    const target = document.getElementById(`type-${type}`);
+    if (target) target.classList.add('selected');
+}
+
+// ============================================================
+// LOAD INTRO TỪ MARKDOWN
+// ============================================================
+async function loadIntroFromMarkdown() {
+    try {
+        const response = await fetch('/content/intro.md');
+        const markdown = await response.text();
+        const html = marked.parse(markdown);
+        const container = document.getElementById("intro-info-container");
+        if (container) container.innerHTML = html;
+    } catch (err) {
+        console.warn("[Form] Không tải được intro.md:", err);
+    }
+}
+
+// ============================================================
+// CẬP NHẬT PROGRESS BAR
+// ============================================================
+function updateProgressBar() {
+    for (let i = 0; i <= totalSections; i++) {
+        const el = document.getElementById(`step${i}`);
+        if (el) el.className = 'step';
+    }
+    for (let i = 0; i < currentSection; i++) {
+        const el = document.getElementById(`step${i}`);
+        if (el) el.className = 'step completed';
+    }
+    const activeEl = document.getElementById(`step${currentSection}`);
+    if (activeEl) activeEl.className = 'step active';
+}
+
+// ============================================================
+// HIỂN THỊ SECTION
+// ============================================================
+function showSection(sectionNumber) {
+    const introSection = document.getElementById('sectionIntro');
+    if (introSection) introSection.style.display = 'none';
+
+    for (let i = 0; i <= totalSections; i++) {
+        const section = document.getElementById(`section${i}`);
+        if (section) section.style.display = 'none';
+    }
+
+    if (sectionNumber === -1) {
+        if (introSection) introSection.style.display = 'block';
+        currentSection = -1;
+        return;
+    }
+
+    const target = document.getElementById(`section${sectionNumber}`);
+    if (target) {
+        target.style.display = 'block';
+        currentSection = sectionNumber;
+        updateProgressBar();
+
+        if (sectionNumber === 4) generateSummary();
+        if (sectionNumber === 3) {
+            if (applicationType === 'interview') {
+                const tabContainer = document.querySelector('.tab-container');
+                if (tabContainer) tabContainer.style.display = 'none';
+                const interviewSchedule = document.getElementById('interview-schedule');
+                if (interviewSchedule) interviewSchedule.style.display = 'block';
+                renderInterviewSchedule();
+                setTimeout(() => {
+                    setupInterviewCheckboxListeners();
+                    updateInterviewSelectionCount();
+                }, 100);
+            } else {
+                const tabContainer = document.querySelector('.tab-container');
+                if (tabContainer) tabContainer.style.display = 'block';
+                const interviewSchedule = document.getElementById('interview-schedule');
+                if (interviewSchedule) interviewSchedule.style.display = 'none';
+                updatePositionNames();
+            }
+        }
+    }
+}
+
+// ============================================================
+// LỊCH PHỎNG VẤN
+// ============================================================
+function setupInterviewCheckboxListeners() {
+    const interviewContainer = document.getElementById('interview-questions');
+    if (interviewContainer) {
+        interviewContainer.removeEventListener('change', handleInterviewCheckboxChange);
+        interviewContainer.addEventListener('change', handleInterviewCheckboxChange);
+    }
+}
+
+function handleInterviewCheckboxChange(e) {
+    if (e.target.type === 'checkbox') {
+        updateInterviewSelectionCount();
+        simpleSaveFormData();
+    }
+}
+
+function renderInterviewSchedule() {
+    const container = document.getElementById('interview-questions');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const instruction = document.createElement('div');
+    instruction.innerHTML = `
+        <div style="background:#EFF6FF;padding:16px;border-radius:8px;margin-bottom:20px;border-left:4px solid #3B82F6;">
+            <strong style="color:#1D4ED8;">Hướng dẫn chọn lịch phỏng vấn:</strong>
+            <p style="margin:10px 0 0;color:#555;line-height:1.5;">
+                Vui lòng chọn <strong style="color:#DC2626;">ít nhất 3 khung giờ</strong> mà bạn có thể tham gia.<br>
+                Việc chọn nhiều khung giờ giúp ban tổ chức dễ dàng sắp xếp lịch phù hợp.
+            </p>
+        </div>
+    `;
+    container.appendChild(instruction);
+
+    if (!interview || interview.length === 0) {
+        const notice = document.createElement('div');
+        notice.innerHTML = `<p style="color:#6B7280;font-size:14px;">Chưa có ca phỏng vấn nào được cấu hình. Vui lòng liên hệ ban tổ chức.</p>`;
+        container.appendChild(notice);
+        return;
+    }
+
+    // Lấy tất cả options từ interview
+    const allOptions = [];
+    interview.forEach(q => {
+        if (q.options) {
+            q.options.forEach(opt => {
+                allOptions.push(opt);
+            });
+        }
+    });
+
+    if (allOptions.length === 0) {
+        const notice = document.createElement('div');
+        notice.innerHTML = `<p style="color:#6B7280;font-size:14px;">Chưa có ca phỏng vấn nào.</p>`;
+        container.appendChild(notice);
+        return;
+    }
+
+    // Nhóm các ca theo ngày
+    const groupedSlots = {};
+    allOptions.forEach(opt => {
+        // Parse label để lấy ngày
+        let dateKey = 'Khác';
+        // Tìm kiếm pattern: "Thứ 5, 25/06/2026" hoặc "25/06/2026"
+        const dateMatch = opt.match(/(Thứ\s*\d+,\s*\d{2}\/\d{2}\/\d{4})|(\d{2}\/\d{2}\/\d{4})/);
+        if (dateMatch) {
+            dateKey = dateMatch[0];
+        }
+        if (!groupedSlots[dateKey]) {
+            groupedSlots[dateKey] = [];
+        }
+        groupedSlots[dateKey].push(opt);
+    });
+
+    // Tạo div cho từng ngày
+    Object.keys(groupedSlots).forEach(dateKey => {
+        const dateDiv = document.createElement('div');
+        dateDiv.style.cssText = `
+            margin-bottom: 16px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            overflow: hidden;
+        `;
+        
+        // Header ngày
+        const header = document.createElement('div');
+        header.style.cssText = `
+            background: #F9FAFB;
+            padding: 10px 14px;
+            font-weight: 700;
+            font-size: 14px;
+            color: #374151;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        `;
+        header.innerHTML = `
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:16px;height:16px;">
+                <rect x="1.5" y="3.5" width="13" height="10" rx="1.5"/>
+                <path d="M5.5 1.5v2M10.5 1.5v2M1.5 7h13"/>
+            </svg>
+            ${dateKey}
+        `;
+        dateDiv.appendChild(header);
+        
+        // Danh sách ca trong ngày
+        const slotsContainer = document.createElement('div');
+        slotsContainer.style.cssText = 'padding:10px 14px;background:white;';
+        
+        groupedSlots[dateKey].forEach((opt, idx) => {
+            const item = document.createElement('div');
+            item.className = 'checkbox-item';
+            item.style.cssText = `
+                display: flex;
+                align-items: center;
+                padding: 8px 12px;
+                border: 1px solid #E5E7EB;
+                border-radius: 6px;
+                background: #FAFAFA;
+                margin-bottom: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+            `;
+            if (idx === groupedSlots[dateKey].length - 1) {
+                item.style.marginBottom = '0';
+            }
+            
+            // Tạo ID duy nhất
+            const optionId = `interview_${dateKey.replace(/[^a-zA-Z0-9]/g, '_')}_${idx}`;
+            
+            // Chỉ lấy phần thời gian (VD: "Ca 1 (08:00 - 09:30)")
+            let displayText = opt;
+            // Bỏ phần ngày tháng nếu có
+            const cleanOpt = opt.replace(/\s*[-–]\s*(Thứ\s*\d+,\s*\d{2}\/\d{2}\/\d{4}|\d{2}\/\d{2}\/\d{4})/, '').trim();
+            
+            item.innerHTML = `
+                <input type="checkbox" id="${optionId}" name="interview_schedule[]" value="${opt}" style="margin-right:10px;width:18px;height:18px;flex-shrink:0;">
+                <label for="${optionId}" style="cursor:pointer;font-weight:500;color:#374151;font-size:13.5px;flex:1;">${cleanOpt}</label>
+            `;
+            
+            // Hover effect
+            item.addEventListener('mouseenter', () => {
+                item.style.background = '#F3F4F6';
+                item.style.borderColor = '#D1D5DB';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.background = '#FAFAFA';
+                item.style.borderColor = '#E5E7EB';
+            });
+            
+            // Checked effect
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    item.style.background = '#FEF3C7';
+                    item.style.borderColor = '#F59E0B';
+                } else {
+                    item.style.background = '#FAFAFA';
+                    item.style.borderColor = '#E5E7EB';
+                }
+                updateInterviewSelectionCount();
+                simpleSaveFormData();
+            });
+            
+            slotsContainer.appendChild(item);
+        });
+        
+        dateDiv.appendChild(slotsContainer);
+        container.appendChild(dateDiv);
+    });
+
+    updateInterviewSelectionCount();
+}
+
+function updateInterviewSelectionCount() {
+    const checkedCount = document.querySelectorAll('#interview-schedule input[type="checkbox"]:checked').length;
+    let countElement = document.getElementById('interview-selection-count');
+
+    if (!countElement) {
+        countElement = document.createElement('div');
+        countElement.id = 'interview-selection-count';
+        countElement.style.cssText = `
+            margin:15px 0;padding:12px 16px;background:#F9FAFB;
+            border-radius:8px;font-weight:600;text-align:center;
+            border:2px solid #E5E7EB;transition:all 0.3s ease;
+        `;
+        const interviewContainer = document.getElementById('interview-questions');
+        if (interviewContainer) {
+            interviewContainer.parentNode.insertBefore(countElement, interviewContainer);
+        }
+    }
+
+    if (checkedCount < 3) {
+        countElement.style.color = '#EF4444';
+        countElement.style.borderColor = '#FEE2E2';
+        countElement.innerHTML = `Đã chọn: ${checkedCount}/3 ca phỏng vấn <span style="font-size:0.9em;">(Cần chọn thêm ${3 - checkedCount} ca)</span>`;
+    } else {
+        countElement.style.color = '#10B981';
+        countElement.style.borderColor = '#D1FAE5';
+        countElement.innerHTML = `Đã chọn: ${checkedCount}/3 ca phỏng vấn </span>`;
+    }
+}
+
+// ============================================================
+// RENDER CÂU HỎI CHUNG
+// ============================================================
+function renderGeneralQuestions() {
+    const container = document.getElementById('general-questions');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (!generalQuestions || generalQuestions.length === 0) {
+        container.innerHTML = '<p style="color:#9CA3AF;font-size:14px;">Chưa có câu hỏi chung nào.</p>';
+        return;
+    }
+
+    generalQuestions.forEach(q => {
+        const div = document.createElement('div');
+        div.className = 'form-group question-item';
+
+        const label = document.createElement('label');
+        label.setAttribute('for', `general_${q.id}`);
+        if (q.required) label.classList.add('required');
+
+        const questionText = q.text || q.question || '';
+        if (/\r?\n/.test(questionText)) {
+            const lines = questionText.split(/\r?\n/);
+            lines.forEach((line, idx) => {
+                label.appendChild(document.createTextNode(line));
+                if (idx < lines.length - 1) label.appendChild(document.createElement('br'));
+            });
+        } else {
+            label.textContent = questionText;
+        }
+        div.appendChild(label);
+
+        if (q.media) {
+            const mediaWrap = document.createElement('div');
+            mediaWrap.className = 'question-media';
+            if (q.media.type === 'image') {
+                const img = document.createElement('img');
+                img.className = 'question-img';
+                img.src = q.media.url;
+                img.alt = q.media.alt || '';
+                mediaWrap.appendChild(img);
+            }
+            div.appendChild(mediaWrap);
+        }
+
+        const inputEl = buildInputElement(q, `general_${q.id}`, `general_${q.id}`);
+        if (Array.isArray(inputEl)) {
+            inputEl.forEach(el => div.appendChild(el));
+        } else {
+            div.appendChild(inputEl);
+        }
+
+        container.appendChild(div);
+    });
+}
+
+// ============================================================
+// RENDER CÂU HỎI THEO BAN
+// ============================================================
+function renderBanQuestions(banCode, type) {
+    const containerId = type === 'priority' ? 'ban-specific-questions' : 'secondary-ban-specific-questions';
+    const questionsContainer = document.getElementById(containerId);
+    if (!questionsContainer) return;
+    questionsContainer.innerHTML = '';
+
+    if (!banCode) {
+        questionsContainer.innerHTML = '<p class="no-questions">Vui lòng chọn ban để hiển thị câu hỏi phù hợp.</p>';
+        return;
+    }
+
+    if (banCode === 'MD') {
+        const subIds = {
+            priority: ['md_design', 'md_content'],
+            secondary: ['md_design_secondary', 'md_content_secondary']
+        };
+        const subCheckboxIds = subIds[type] || subIds.priority;
+        const subValues = { md_design: 'Design', md_content: 'Content', md_design_secondary: 'Design', md_content_secondary: 'Content' };
+
+        const selected = subCheckboxIds
+            .filter(id => document.getElementById(id)?.checked)
+            .map(id => subValues[id]);
+
+        if (selected.length === 0) {
+            questionsContainer.innerHTML = '<p class="no-questions">Vui lòng chọn tiểu ban Design hoặc Content để hiển thị câu hỏi.</p>';
+            return;
+        }
+
+        selected.forEach(sub => {
+            const subtitle = document.createElement('div');
+            subtitle.className = 'sub-section';
+            subtitle.innerHTML = `<h3>Tiểu ban ${sub}</h3>`;
+            questionsContainer.appendChild(subtitle);
+
+            const questions = (banQuestions.MD && banQuestions.MD[sub]) || banQuestions[`MD-${sub}`] || [];
+            questions.forEach(q => {
+                const prefixedId = `${type}_${sub.toLowerCase()}_${q.id}`;
+                questionsContainer.appendChild(buildQuestionDiv(q, prefixedId));
+            });
+        });
+        return;
+    }
+
+    const questions = banQuestions[banCode] || [];
+    if (!questions.length) {
+        questionsContainer.innerHTML = '<p class="no-questions">Không có câu hỏi cụ thể cho ban này.</p>';
+        return;
+    }
+
+    questions.forEach(q => {
+        const prefixedId = `${type}_${q.id}`;
+        questionsContainer.appendChild(buildQuestionDiv(q, prefixedId));
+    });
+
+    // Gán sự kiện lưu tạm
+    questionsContainer.querySelectorAll('input, select, textarea').forEach(el => {
+        el.addEventListener('input', simpleSaveFormData);
+        el.addEventListener('change', simpleSaveFormData);
+    });
+}
+
+// ============================================================
+// XÂY DỰNG INPUT THEO LOẠI CÂU HỎI
+// ============================================================
+function buildQuestionDiv(q, prefixedId) {
+    const questionDiv = document.createElement('div');
+    questionDiv.className = 'form-group question-item';
+
+    const questionText = q.text || q.question || '';
+    let labelHtml = '';
+    if (/\r?\n/.test(questionText)) {
+        labelHtml = questionText.split(/\r?\n/).join('<br>');
+    } else {
+        labelHtml = questionText;
+    }
+
+    let html = `<label for="${prefixedId}" ${q.required ? 'class="required"' : ''}>${labelHtml}</label>`;
+
+    if (q.media) {
+        if (q.media.type === 'image') {
+            html += `<div class="question-media"><img src="${q.media.url}" alt="${q.media.alt || ''}" class="question-img"></div>`;
+        }
+    }
+
+    switch (q.type) {
+        case 'textarea':
+            html += `<textarea id="${prefixedId}" name="${prefixedId}" rows="3" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}></textarea>`;
+            break;
+        case 'checkbox':
+            html += `<div class="checkbox-group" id="${prefixedId}_group">`;
+            (q.options || []).forEach((option, idx) => {
+                const optionId = `${prefixedId}_${idx}`;
+                const req = (q.required && idx === 0) ? 'required' : '';
+                html += `<div class="checkbox-item"><input type="checkbox" id="${optionId}" name="${prefixedId}[]" value="${option}" ${req}><label for="${optionId}">${option}</label></div>`;
+            });
+            html += `</div>`;
+            break;
+        case 'radio':
+            html += `<div class="radio-group" id="${prefixedId}_group">`;
+            (q.options || []).forEach((option, idx) => {
+                const optionId = `${prefixedId}_${idx}`;
+                const req = (q.required && idx === 0) ? 'required' : '';
+                html += `<div class="radio-item"><input type="radio" id="${optionId}" name="${prefixedId}" value="${option}" ${req}><label for="${optionId}">${option}</label></div>`;
+            });
+            html += `</div>`;
+            break;
+        case 'dropdown':
+            html += `<select id="${prefixedId}" name="${prefixedId}" ${q.required ? 'required' : ''}><option value="">-- Chọn --</option>`;
+            (q.options || []).forEach(opt => { html += `<option value="${opt}">${opt}</option>`; });
+            html += `</select>`;
+            break;
+        case 'scale':
+            const mid = Math.round(((q.min || 1) + (q.max || 5)) / 2);
+            html += `<div class="scale-container">
+                <input type="range" id="${prefixedId}" name="${prefixedId}" min="${q.min || 1}" max="${q.max || 5}" value="${mid}" ${q.required ? 'required' : ''}>
+                <div class="scale-labels"><span>${q.min || 1}</span><span>${q.max || 5}</span></div>
+                <output for="${prefixedId}" id="${prefixedId}_value">${mid}</output>
+            </div>`;
+            break;
+        default:
+            html += `<input type="text" id="${prefixedId}" name="${prefixedId}" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}>`;
+    }
+
+    questionDiv.innerHTML = html;
+
+    // Xử lý scale range
+    if (q.type === 'scale') {
+        const range = questionDiv.querySelector(`#${prefixedId}`);
+        const out = questionDiv.querySelector(`#${prefixedId}_value`);
+        if (range && out) {
+            range.addEventListener('input', () => { out.value = range.value; });
+        }
+    }
+
+    // Gán sự kiện lưu
+    questionDiv.querySelectorAll('input, select, textarea').forEach(el => {
+        el.addEventListener('input', simpleSaveFormData);
+        el.addEventListener('change', simpleSaveFormData);
+        el.addEventListener('blur', simpleSaveFormData);
+    });
+
+    return questionDiv;
+}
+
+function buildInputElement(q, id, name) {
+    const questionText = q.text || q.question || '';
+    switch (q.type) {
+        case 'textarea': {
+            const ta = document.createElement('textarea');
+            ta.id = id;
+            ta.name = name;
+            ta.rows = 3;
+            if (q.placeholder) ta.placeholder = q.placeholder;
+            if (q.required) ta.required = true;
+            ta.addEventListener('input', simpleSaveFormData);
+            return ta;
+        }
+        case 'text':
+        case 'email':
+        case 'tel':
+        case 'date': {
+            const inp = document.createElement('input');
+            inp.type = q.type;
+            inp.id = id;
+            inp.name = name;
+            if (q.placeholder) inp.placeholder = q.placeholder;
+            if (q.required) inp.required = true;
+            inp.addEventListener('input', simpleSaveFormData);
+            return inp;
+        }
+        case 'radio': {
+            const group = document.createElement('div');
+            group.className = 'radio-group';
+            (q.options || []).forEach((opt, idx) => {
+                const optId = `${id}_${idx}`;
+                const item = document.createElement('div');
+                item.className = 'radio-item';
+                item.innerHTML = `<input type="radio" id="${optId}" name="${name}" value="${opt}" ${q.required && idx === 0 ? 'required' : ''}><label for="${optId}">${opt}</label>`;
+                item.querySelector('input').addEventListener('change', simpleSaveFormData);
+                group.appendChild(item);
+            });
+            return group;
+        }
+        case 'checkbox': {
+            const group = document.createElement('div');
+            group.className = 'checkbox-group';
+            (q.options || []).forEach((opt, idx) => {
+                const optId = `${id}_${idx}`;
+                const item = document.createElement('div');
+                item.className = 'checkbox-item';
+                item.innerHTML = `<input type="checkbox" id="${optId}" name="${name}[]" value="${opt}"><label for="${optId}">${opt}</label>`;
+                item.querySelector('input').addEventListener('change', simpleSaveFormData);
+                group.appendChild(item);
+            });
+            return group;
+        }
+        default: {
+            const inp = document.createElement('input');
+            inp.type = 'text';
+            inp.id = id;
+            inp.name = name;
+            if (q.placeholder) inp.placeholder = q.placeholder;
+            if (q.required) inp.required = true;
+            inp.addEventListener('input', simpleSaveFormData);
+            return inp;
+        }
+    }
+}
+
+// ============================================================
+// CẬP NHẬT TÊN BAN VÀ TABS
+// ============================================================
+function updatePositionNames() {
+    const prioritySelect = document.getElementById('priority_position');
+    const secondarySelect = document.getElementById('secondary_position');
+    if (!prioritySelect) return;
+
+    const priorityPositionName = prioritySelect.options[prioritySelect.selectedIndex]?.text || '';
+    const secondaryPositionName = secondarySelect?.options[secondarySelect.selectedIndex]?.text || '';
+
+    const priorityTabBtn = document.getElementById('priority-tab-btn');
+    if (priorityTabBtn) priorityTabBtn.textContent = `Câu hỏi dành cho ban ${priorityPositionName} (NV1)`;
+
+    const secondaryTabBtn = document.getElementById('secondary-tab-btn');
+    if (secondaryTabBtn) {
+        if (secondarySelect?.value && secondarySelect.value !== "" && secondarySelect.value !== "None") {
+            secondaryTabBtn.style.display = 'inline-block';
+            secondaryTabBtn.textContent = `Câu hỏi dành cho ban ${secondaryPositionName} (NV2)`;
+        } else {
+            secondaryTabBtn.style.display = 'none';
+            const savedData = JSON.parse(localStorage.getItem('enactus_form_data') || '{}');
+            Object.keys(savedData).forEach(key => {
+                if (key.startsWith("secondary_")) delete savedData[key];
+            });
+            localStorage.setItem('enactus_form_data', JSON.stringify(savedData));
+        }
+    }
+
+    const banName = document.getElementById('ban-name');
+    if (banName) banName.textContent = `${priorityPositionName} (NV1)`;
+
+    const secondaryBanName = document.getElementById('secondary-ban-name');
+    if (secondaryBanName) {
+        secondaryBanName.textContent = (secondarySelect?.value && secondarySelect.value !== "None")
+            ? `${secondaryPositionName} (NV2)`
+            : 'vị trí nguyện vọng 2';
+    }
+
+    renderBanQuestions(prioritySelect.value, 'priority');
+    if (secondarySelect?.value && secondarySelect.value !== "None") {
+        renderBanQuestions(secondarySelect.value, 'secondary');
+    }
+}
+
+function updateSecondaryOptions() {
+    const prioritySelect = document.getElementById('priority_position');
+    const secondarySelect = document.getElementById('secondary_position');
+    if (!prioritySelect || !secondarySelect) return;
+
+    const priorityValue = prioritySelect.value;
+    Array.from(secondarySelect.options).forEach(opt => { opt.disabled = false; });
+
+    if (priorityValue) {
+        Array.from(secondarySelect.options).forEach(opt => {
+            if (opt.value === priorityValue) {
+                opt.disabled = true;
+                if (secondarySelect.value === priorityValue) secondarySelect.value = "";
+            }
+        });
+    }
+}
+
+function updateMDSubDepartments() {
+    const prioritySelect = document.getElementById('priority_position');
+    const secondarySelect = document.getElementById('secondary_position');
+    const mdPrimary = document.getElementById('md-sub-departments');
+    const mdSecondary = document.getElementById('md-sub-departments-secondary');
+
+    if (mdPrimary) mdPrimary.style.display = (prioritySelect?.value === 'MD') ? 'block' : 'none';
+    if (mdSecondary) mdSecondary.style.display = (secondarySelect?.value === 'MD') ? 'block' : 'none';
+}
+
+// ============================================================
+// TABS CHI TIẾT ỨNG TUYỂN
+// ============================================================
+function showTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+
+    const tabContent = document.getElementById(`tab-${tabName}`);
+    if (tabContent) tabContent.classList.add('active');
+
+    const tabBtn = document.querySelector(`.tab-button[onclick="showTab('${tabName}')"]`);
+    if (tabBtn) tabBtn.classList.add('active');
+
+    // Khôi phục dữ liệu khi chuyển tab
+    setTimeout(() => restoreBanQuestionsDirectly(), 200);
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function nextSection(current) {
+    if (current === 0 && !applicationType) {
+        Swal.fire({ icon: 'warning', title: 'Chưa chọn hình thức', text: 'Vui lòng chọn hình thức ứng tuyển.', confirmButtonText: 'OK' });
+        return;
+    }
+
+    if (current === 3) {
+        if (applicationType === 'interview') {
+            const checkedBoxes = document.querySelectorAll('#interview-schedule input[type="checkbox"]:checked');
+            if (checkedBoxes.length < 3) {
                 Swal.fire({
                     icon: 'warning',
-                    title: '⚠️ Cảnh báo',
-                    html: `
-                            <p style="text-align:center; line-height:1.6; white-space:normal;">
-                                Hình thức <b>Phỏng vấn thay đơn</b> đã đóng
-                                <br>
-                                Vui lòng chọn hình thức <b>Điền đơn</b>.
-                            </p>`,
+                    title: 'Chưa đủ lịch phỏng vấn',
+                    html: `Bạn đã chọn <strong>${checkedBoxes.length}</strong> ca. Vui lòng chọn ít nhất <strong>3 ca phỏng vấn</strong> trước khi tiếp tục.`,
+                    confirmButtonText: 'Đã hiểu'
                 });
-                return; // không cho chọn
-            }
-
-            applicationType = type;
-            document.getElementById('application_type').value = type;
-            
-            // Cập nhật giao diện
-            document.querySelectorAll('.application-type').forEach(el => {
-                el.classList.remove('selected');
-            });
-            document.getElementById(`type-${type}`).classList.add('selected');
-        }
-
-        async function loadIntroFromMarkdown() {
-        try {
-            const response = await fetch('/content/intro.md');
-            const markdown = await response.text();
-            const html = marked.parse(markdown);
-            document.getElementById("intro-info-container").innerHTML = html; // ✅ chỉ intro
-        } catch (err) {
-            console.error("Không thể load intro.md:", err);
-        }
-        }
-
-        // Thiết lập sự kiện cho các checkbox phỏng vấn
-        function setupInterviewCheckboxListeners() {
-            const interviewContainer = document.getElementById('interview-questions');
-            if (interviewContainer) {
-                // Xóa sự kiện cũ nếu có
-                interviewContainer.removeEventListener('change', handleInterviewCheckboxChange);
-                
-                // Thêm sự kiện mới
-                interviewContainer.addEventListener('change', handleInterviewCheckboxChange);
-            }
-        }
-
-        // Xử lý khi checkbox thay đổi
-        function handleInterviewCheckboxChange(e) {
-            if (e.target.type === 'checkbox') {
-                updateInterviewSelectionCount();
-                saveFormDataComprehensive();
-                
-                // Highlight visual feedback
-                const checkedCount = document.querySelectorAll('#interview-schedule input[type="checkbox"]:checked').length;
-                const checkboxGroups = document.querySelectorAll('.interview-checkbox-group');
-                
-                checkboxGroups.forEach(group => {
-                    if (checkedCount < 3) {
-                        group.style.border = '2px solid #ffcdd2';
-                        group.style.backgroundColor = '#ffebee';
-                    } else {
-                        group.style.border = '2px solid #c8e6c9';
-                        group.style.backgroundColor = '#e8f5e8';
-                    }
-                });
-            }
-        }
-
-        function renderInterviewSchedule() {
-            const container = document.getElementById('interview-questions');
-            container.innerHTML = '';
-
-            // Thêm hướng dẫn chi tiết
-            const instruction = document.createElement('div');
-            instruction.className = 'interview-instruction';
-            instruction.innerHTML = `
-                <div style="background: #e3f2fd; padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
-                    <strong style="color: #1976d2;"> Hướng dẫn chọn lịch phỏng vấn:</strong>
-                    <p style="margin: 10px 0 0 0; color: #555; line-height: 1.5;">
-                        • Vui lòng chọn <strong style="color: #d32f2f;">ít nhất 3 khung giờ</strong> phỏng vấn mà bạn có thể tham gia<br>
-                        • Việc chọn nhiều khung giờ giúp BTC dễ dàng sắp xếp lịch phỏng vấn phù hợp<br>
-                        • Bạn có thể chọn nhiều hơn 3 ca nếu có thể sắp xếp thời gian
-                    </p>
-                </div>
-            `;
-            container.appendChild(instruction);
-
-            // Render các câu hỏi phỏng vấn
-            interview.forEach(q => {
-                const div = document.createElement('div');
-                div.className = 'form-group question-item';
-
-                const label = document.createElement('label');
-                label.innerHTML = q.question;
-                div.appendChild(label);
-
-                const group = document.createElement('div');
-                group.className = 'checkbox-group interview-checkbox-group';
-                q.options.forEach((opt, idx) => {
-                    const optionId = `${q.id}_${idx}`;
-                    const item = document.createElement('div');
-                    item.className = 'checkbox-item';
-                    item.innerHTML = `
-                        <input type="checkbox" id="${optionId}" name="${q.id}[]" value="${opt}">
-                        <label for="${optionId}">${opt}</label>
-                    `;
-                    group.appendChild(item);
-                });
-                div.appendChild(group);
-                container.appendChild(div);
-            });
-
-            // Khởi tạo đếm số lượng
-            updateInterviewSelectionCount();
-        }
-
-        // Thêm CSS cho phần phỏng vấn
-        const interviewStyle = document.createElement('style');
-        interviewStyle.textContent = `
-            .interview-instruction {
-                margin-bottom: 20px;
-            }
-            
-            #interview-selection-count {
-                transition: all 0.3s ease;
-                font-size: 1.1em;
-            }
-            
-            .interview-checkbox-group {
-                transition: all 0.3s ease;
-                padding: 12px;
-                border-radius: 8px;
-                border: 2px solid transparent;
-            }
-            
-            /* Hiệu ứng khi hover */
-            .interview-checkbox-group:hover {
-                background-color: #f5f5f5 !important;
-            }
-            
-            /* Style cho checkbox items */
-            #interview-schedule .checkbox-item {
-                margin: 8px 0;
-                padding: 8px 12px;
-                border-radius: 6px;
-                transition: background-color 0.2s;
-            }
-            
-            #interview-schedule .checkbox-item:hover {
-                background-color: #e3f2fd;
-            }
-            
-            #interview-schedule .checkbox-item input[type="checkbox"]:checked + label {
-                font-weight: 600;
-                color: #1976d2;
-            }
-            
-            /* Progress indicator */
-            .interview-progress {
-                height: 6px;
-                background: #e0e0e0;
-                border-radius: 3px;
-                margin: 10px 0;
-                overflow: hidden;
-            }
-            
-            .interview-progress-bar {
-                height: 100%;
-                background: #4caf50;
-                transition: width 0.3s ease;
-            }
-        `;
-        document.head.appendChild(interviewStyle);
-
-        // Helper: chuyển newline -> <p> và <br>, giữ paragraph
-        function formatQuestionText(str) {
-        if (!str) return '';
-        // Chia thành các đoạn cách nhau bởi 1 dòng trống -> mỗi đoạn thành <p>...</p>
-        const paragraphs = String(str).split(/\n\s*\n/).map(p => {
-            // trong 1 đoạn, các newline liên tiếp -> <br>
-            return '<p>' + p.trim().replace(/\n+/g, '<br>') + '</p>';
-        });
-        return paragraphs.join('');
-        }
-
-        // Hàm hiển thị câu hỏi chung
-        function renderGeneralQuestions() {
-            const container = document.getElementById('general-questions');
-            if (!container) {
-                console.warn('renderGeneralQuestions: missing #general-questions element');
                 return;
             }
-            container.innerHTML = '';
-
-            generalQuestions.forEach(q => {
-                const div = document.createElement('div');
-                div.className = 'form-group question-item';
-
-                // label
-                const label = document.createElement('label');
-                label.setAttribute('for', `general_${q.id}`);
-                if (q.required) label.classList.add('required');
-
-                const questionText = q.question || '';
-
-                // chỉ xử lý xuống dòng khi có \n
-                if (/\r?\n/.test(questionText)) {
-                const lines = questionText.split(/\r?\n/);
-                lines.forEach((line, idx) => {
-                    label.appendChild(document.createTextNode(line));
-                    if (idx < lines.length - 1) label.appendChild(document.createElement('br'));
-                });
-                } else {
-                // ko có xuống dòng -> đặt text đơn thuần (an toàn)
-                label.textContent = questionText;
-                }
-
-                div.appendChild(label);
-
-                // media (image/video)
-                if (q.media) {
-                const mediaWrap = document.createElement('div');
-                mediaWrap.className = 'question-media';
-                if (q.media.type === 'image') {
-                    const img = document.createElement('img');
-                    img.className = 'question-img';
-                    img.src = q.media.url;
-                    img.alt = q.media.alt || '';
-                    mediaWrap.appendChild(img);
-                } else if (q.media.type === 'video') {
-                    // nếu có thumbnail dùng img, ngược lại dùng <video>
-                    if (q.media.thumbnail) {
-                    const img = document.createElement('img');
-                    img.className = 'question-img';
-                    img.src = q.media.thumbnail;
-                    img.alt = q.media.alt || '';
-                    mediaWrap.appendChild(img);
-                    } else {
-                    const video = document.createElement('video');
-                    video.className = 'question-img';
-                    video.src = q.media.url;
-                    video.controls = true;
-                    mediaWrap.appendChild(video);
-                    }
-                }
-                div.appendChild(mediaWrap);
-                }
-
-                // input / textarea
-                let inputEl;
-                switch (q.type) {
-                case 'textarea':
-                    inputEl = document.createElement('textarea');
-                    inputEl.rows = 3;
-                    break;
-                case 'email':
-                case 'tel':
-                case 'date':
-                case 'text':
-                    inputEl = document.createElement('input');
-                    inputEl.type = q.type;
-                    break;
-                default:
-                    inputEl = document.createElement('input');
-                    inputEl.type = 'text';
-                }
-                inputEl.id = `general_${q.id}`;
-                inputEl.name = `general_${q.id}`;
-                if (q.placeholder) inputEl.placeholder = q.placeholder;
-                if (q.required) inputEl.required = true;
-
-                div.appendChild(inputEl);
-                container.appendChild(div);
-            });
-            }
-
-        // Hàm hiển thị câu hỏi theo phân ban
-        function renderBanQuestions(banCode, type) {
-            // container: 'priority' -> ban-specific-questions ; 'secondary' -> secondary-ban-specific-questions
-            const containerId = type === 'priority' ? 'ban-specific-questions' : 'secondary-ban-specific-questions';
-            const questionsContainer = document.getElementById(containerId);
-            questionsContainer.innerHTML = '';
-        
-            if (!banCode) {
-                questionsContainer.innerHTML = '<p class="no-questions">Vui lòng chọn ban để hiển thị câu hỏi phù hợp.</p>';
-                return;
-            }
-        
-            // Helper để render 1 câu hỏi (q) với prefixedId
-            function renderQuestion(q, prefixedId) {
-                const questionDiv = document.createElement('div');
-                questionDiv.className = 'form-group question-item';
-        
-                let labelHtml = '';
-                if (/\r?\n/.test(q.question)) {
-                const lines = q.question.split(/\r?\n/);
-                lines.forEach((line, idx) => {
-                    labelHtml += line;
-                    if (idx < lines.length - 1) labelHtml += '<br>';
-                });
-                } else {
-                labelHtml = q.question;
-                }
-
-                let html = `<label for="${prefixedId}" ${q.required ? 'class="required"' : ''}>${labelHtml}</label>`;
-
-                // Nếu có media kèm theo
-                if (q.media) {
-                    if (q.media.type === 'image') {
-                        html += `<div class="question-media">
-                                    <img src="${q.media.url}" alt="${q.media.alt || ''}" class="question-img">
-                                </div>`;
-                    } else if (q.media.type === 'video') {
-                        html += `<div class="question-media">
-                                    <video src="${q.media.url}" controls class="question-video"></video>
-                                </div>`;
-                    }
-                }
-                
-                switch (q.type) {
-                    case 'textarea':
-                        html += `<textarea id="${prefixedId}" name="${prefixedId}" rows="3" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}></textarea>`;
-                        break;
-        
-                    case 'checkbox':
-                        html += `<div class="checkbox-group" id="${prefixedId}_group">`;
-                        q.options.forEach((option, idx) => {
-                            const optionId = `${prefixedId}_${idx}`;
-                            // Thêm required vào checkbox đầu tiên nếu câu hỏi là bắt buộc
-                            const requiredAttr = (q.required && idx === 0) ? 'required' : '';
-                            html += `<div class="checkbox-item">
-                                        <input type="checkbox" id="${optionId}" name="${prefixedId}[]" value="${option}" ${requiredAttr}>
-                                        <label for="${optionId}">${option}</label>
-                                    </div>`;
-                        });
-                        html += `</div>`;
-                        break;
-        
-                    case 'radio':
-                        html += `<div class="radio-group" id="${prefixedId}_group">`;
-                        q.options.forEach((option, idx) => {
-                            const optionId = `${prefixedId}_${idx}`;
-                            // Thêm required vào radio đầu tiên nếu câu hỏi là bắt buộc
-                            const requiredAttr = (q.required && idx === 0) ? 'required' : '';
-                            html += `<div class="radio-item">
-                                        <input type="radio" id="${optionId}" name="${prefixedId}" value="${option}" ${requiredAttr}>
-                                        <label for="${optionId}">${option}</label>
-                                    </div>`;
-                        });
-                        html += `</div>`;
-                        break;
-
-        
-                    case 'dropdown':
-                        html += `<select id="${prefixedId}" name="${prefixedId}" ${q.required ? 'required' : ''}>`;
-                        html += `<option value="">-- Chọn --</option>`;
-                        q.options.forEach(opt => {
-                            html += `<option value="${opt}">${opt}</option>`;
-                        });
-                        html += `</select>`;
-                        break;
-        
-                    case 'scale':
-                        const mid = Math.round((q.min + q.max) / 2);
-                        html += `<div class="scale-container">
-                                    <input type="range" id="${prefixedId}" name="${prefixedId}" min="${q.min}" max="${q.max}" value="${mid}" ${q.required ? 'required' : ''}>
-                                    <div class="scale-labels"><span>${q.min}</span><span>${q.max}</span></div>
-                                    <output for="${prefixedId}" id="${prefixedId}_value">${mid}</output>
-                                 </div>`;
-                        break;
-        
-                    case 'date':
-                        html += `<input type="date" id="${prefixedId}" name="${prefixedId}" ${q.required ? 'required' : ''}>`;
-                        break;
-        
-                    default:
-                        html += `<input type="text" id="${prefixedId}" name="${prefixedId}" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}>`;
-                }
-        
-                // Trong hàm renderQuestion(), sửa phần gán sự kiện:
-                questionDiv.innerHTML = html;
-                questionsContainer.appendChild(questionDiv);
-
-                // Gán sự kiện lưu tạm cho input mới render - CẢI TIẾN
-                questionDiv.querySelectorAll('input, select, textarea').forEach(el => {
-                    el.addEventListener('input', saveFormDataComprehensive);
-                    el.addEventListener('change', saveFormDataComprehensive);
-                    el.addEventListener('blur', saveFormDataComprehensive);
-                });
-        
-                // Nếu là scale, add listener để cập nhật output
-                if (q.type === 'scale') {
-                    const range = document.getElementById(prefixedId);
-                    const out = document.getElementById(`${prefixedId}_value`);
-                    if (range && out) {
-                        range.addEventListener('input', () => { out.value = range.value; });
-                    }
-                }
-            }
-        
-            // --- Nếu ban là MD: dùng tiểu ban (Design / Content) để quyết định bộ câu hỏi ---
-            if (banCode === 'MD') {
-                const designCheckbox = document.getElementById(type === 'priority' ? 'md_design' : 'md_design_secondary');
-                const contentCheckbox = document.getElementById(type === 'priority' ? 'md_content' : 'md_content_secondary');
-        
-                const selected = [];
-                if (designCheckbox && designCheckbox.checked) selected.push('Design');
-                if (contentCheckbox && contentCheckbox.checked) selected.push('Content');
-        
-                if (selected.length === 0) {
-                    questionsContainer.innerHTML = '<p class="no-questions">Vui lòng chọn tiểu ban Design hoặc Content để hiển thị câu hỏi.</p>';
-                    return;
-                }
-        
-                selected.forEach(sub => {
-                    // tiêu đề phụ cho từng tiểu ban
-                    const subtitle = document.createElement('div');
-                    subtitle.className = 'sub-section';
-                    subtitle.innerHTML = `<h3>Tiểu ban ${sub}</h3>`;
-                    questionsContainer.appendChild(subtitle);
-        
-                    const questions = (banQuestions['MD'] && banQuestions['MD'][sub]) || [];
-                    questions.forEach(q => {
-                        // prefixedId: "priority_design_design_exp" hoặc "secondary_content_platforms", tránh trùng
-                        const prefixedId = `${type}_${sub.toLowerCase()}_${q.id}`;
-                        renderQuestion(q, prefixedId);
-                    });
-                });
-        
-                return; // xong MD
-            }
-        
-            // --- Non-MD: render như cũ (mỗi ban có 1 mảng câu hỏi) ---
-            const questions = banQuestions[banCode] || [];
-            if (!questions.length) {
-                questionsContainer.innerHTML = '<p class="no-questions">Không có câu hỏi cụ thể cho phân ban này.</p>';
-                return;
-            }
-        
-            questions.forEach(q => {
-                const prefixedId = `${type}_${q.id}`;
-                renderQuestion(q, prefixedId);
-            });
+            simpleSaveFormData();
+            showSection(4);
+            return;
+        } else {
+            simpleSaveFormData();
+            showSection(4);
+            return;
         }
-        
-        function updateProgressBar() {
-            // Reset all steps
-            for (let i = 0; i <= totalSections; i++) {
-                document.getElementById(`step${i}`).className = 'step';
-            }
-            
-            // Mark previous steps as completed and current as active
-            for (let i = 0; i < currentSection; i++) {
-                document.getElementById(`step${i}`).className = 'step completed';
-            }
-            
-            document.getElementById(`step${currentSection}`).className = 'step active';
-        }
-        
-        function showSection(sectionNumber) {
-            // Ẩn Intro
-            const introSection = document.getElementById('sectionIntro');
-            if (introSection) introSection.style.display = 'none';
+    }
 
-            // Ẩn tất cả section số (0..totalSections)
-            for (let i = 0; i <= totalSections; i++) {
-                const section = document.getElementById(`section${i}`);
-                if (section) {
-                section.style.display = 'none';
-                }
-            }
-
-            // Nếu muốn hiển thị Intro
-            if (sectionNumber === -1) {
-                if (introSection) introSection.style.display = 'block';
-                currentSection = -1;
-                return;
-            }
-
-            // Hiển thị sectionNumber
-            const target = document.getElementById(`section${sectionNumber}`);
-            if (target) {
-                target.style.display = 'block';
-                currentSection = sectionNumber;
-                updateProgressBar();
-
-                if (sectionNumber === 4) generateSummary();
-                if (sectionNumber === 3) {
-                    if (applicationType === 'interview') {
-                        document.querySelector('.tab-container').style.display = 'none';
-                        document.getElementById('interview-schedule').style.display = 'block';
-                        renderInterviewSchedule();
-                        
-                        // Thiết lập sự kiện và cập nhật số lượng
-                        setTimeout(() => {
-                            setupInterviewCheckboxListeners();
-                            updateInterviewSelectionCount();
-                        }, 100);
-                    } else {
-                        document.querySelector('.tab-container').style.display = 'block';
-                        document.getElementById('interview-schedule').style.display = 'none';
-                        updatePositionNames();
-                    }
-                }
-            }
-        }
-        
-        function updateSecondaryOptions() {
-            const prioritySelect = document.getElementById('priority_position');
-            const secondarySelect = document.getElementById('secondary_position');
-            const priorityValue = prioritySelect.value;
-            
-            // Enable all options first
-            for (let i = 0; i < secondarySelect.options.length; i++) {
-                secondarySelect.options[i].disabled = false;
-            }
-            
-            // Disable the selected priority option in secondary select
-            if (priorityValue) {
-                for (let i = 0; i < secondarySelect.options.length; i++) {
-                    if (secondarySelect.options[i].value === priorityValue) {
-                        secondarySelect.options[i].disabled = true;
-                        if (secondarySelect.value === priorityValue) {
-                            secondarySelect.value = "";
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-        
-        // Hàm cập nhật hiển thị lựa chọn tiểu ban cho Ban Truyền thông
-        function updateMDSubDepartments() {
-            const prioritySelect = document.getElementById('priority_position');
-            const secondarySelect = document.getElementById('secondary_position');
-            
-            // Hiển thị/ẩn tiểu ban cho vị trí ưu tiên
-            if (prioritySelect.value === 'MD') {
-                document.getElementById('md-sub-departments').style.display = 'block';
-            } else {
-                document.getElementById('md-sub-departments').style.display = 'none';
-            }
-            
-            // Hiển thị/ẩn tiểu ban cho vị trí dự bị
-            if (secondarySelect.value === 'MD') {
-                document.getElementById('md-sub-departments-secondary').style.display = 'block';
-            } else {
-                document.getElementById('md-sub-departments-secondary').style.display = 'none';
-            }
-        }
-        
-        function updatePositionNames() {
-            const prioritySelect = document.getElementById('priority_position');
-            const secondarySelect = document.getElementById('secondary_position');
-        
-            const priorityPositionName = prioritySelect.options[prioritySelect.selectedIndex].text;
-            const secondaryPositionName = secondarySelect.options[secondarySelect.selectedIndex].text;
-        
-            // UPDATE: đổi label của các tab
-            // Tab chung
-            const generalTabBtn = document.querySelector(`.tab-button[onclick="showTab('general')"]`);
-            if (generalTabBtn) generalTabBtn.textContent = 'Câu hỏi chung';
-        
-            // Tab ưu tiên
-            const priorityTabBtn = document.getElementById('priority-tab-btn');
-            if (priorityTabBtn) priorityTabBtn.textContent = `Câu hỏi dành cho ban ${priorityPositionName} (NV1)`;
-        
-            // Tab dự bị
-            const secondaryTabBtn = document.getElementById('secondary-tab-btn');
-            if (secondarySelect.value && secondarySelect.value !== "" && secondarySelect.value !== "None") {
-                if (secondaryTabBtn) {
-                    secondaryTabBtn.style.display = 'inline-block';
-                    secondaryTabBtn.textContent = `Câu hỏi dành cho ban ${secondaryPositionName} (NV2)`;
-                }
-            } else {
-                if (secondaryTabBtn) secondaryTabBtn.style.display = 'none';
-
-                // 🧹 Xóa dữ liệu tạm của ban dự bị trong localStorage khi không chọn
-                const savedData = JSON.parse(localStorage.getItem('enactus_form_data')) || {};
-                Object.keys(savedData).forEach(key => {
-                    if (key.startsWith("secondary_")) {
-                        delete savedData[key];
-                    }
-                });
-                localStorage.setItem('enactus_form_data', JSON.stringify(savedData));
-            }
-        
-            // Update header inside các sub-section
-            document.getElementById('ban-name').textContent = `${priorityPositionName} (NV1)`;
-            document.getElementById('secondary-ban-name').textContent = secondarySelect.value && secondarySelect.value !== "None" ? `${secondaryPositionName} (NV2)` : 'vị trí nguyện vọng 2';
-        
-            // Render câu hỏi tương ứng
-            renderBanQuestions(prioritySelect.value, 'priority');
-            if (secondarySelect.value && secondarySelect.value !== "None") {
-                renderBanQuestions(secondarySelect.value, 'secondary');
-            }
-        }
-
-        
-        // Hàm hiển thị tab
-        function showTab(tabName) {
-            // Ẩn tất cả các tab content
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Hiển thị tab được chọn
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-            
-            // Cập nhật trạng thái active của các nút tab
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            document.querySelector(`.tab-button[onclick="showTab('${tabName}')"]`).classList.add('active');
-        }
-
-        // Hàm cập nhật số lượng ca đã chọn và hiển thị
-        function updateInterviewSelectionCount() {
-            const checkedCount = document.querySelectorAll('#interview-schedule input[type="checkbox"]:checked').length;
-            const countElement = document.getElementById('interview-selection-count') || createInterviewCountElement();
-            
-            countElement.textContent = `Đã chọn: ${checkedCount}/3 ca phỏng vấn`;
-            
-            if (checkedCount < 3) {
-                countElement.style.color = 'var(--error)';
-                countElement.innerHTML += ' <span style="font-size: 0.9em;">(Cần chọn thêm ' + (3 - checkedCount) + ' ca)</span>';
-            } else {
-                countElement.style.color = 'var(--success)';
-                countElement.innerHTML += ' <span style="font-size: 0.9em;">✓ Đã đủ điều kiện</span>';
-            }
-        }
-
-        // Hàm tạo phần tử hiển thị số lượng
-        function createInterviewCountElement() {
-            const countElement = document.createElement('div');
-            countElement.id = 'interview-selection-count';
-            countElement.style.cssText = `
-                margin: 15px 0;
-                padding: 12px 16px;
-                background: #f8f9fa;
-                border-radius: 8px;
-                font-weight: 600;
-                text-align: center;
-                border: 2px solid #e9ecef;
-                transition: all 0.3s ease;
-            `;
-            
-            const interviewContainer = document.getElementById('interview-questions');
-            if (interviewContainer) {
-                interviewContainer.parentNode.insertBefore(countElement, interviewContainer);
-            }
-            
-            return countElement;
-        }
-
-        // Hàm validation tùy chỉnh cho checkbox và radio groups
-        function validateFormSection(section) {
-            let isValid = true;
-            
-            // Tìm tất cả các hidden required fields
-            const requiredHiddenInputs = section.querySelectorAll('input[type="hidden"][name$="_required"]');
-            
-            requiredHiddenInputs.forEach(hiddenInput => {
-                const fieldName = hiddenInput.name.replace('_required', '');
-                const fieldType = hiddenInput.name.includes('checkbox') ? 'checkbox' : 'radio';
-                
-                // Kiểm tra xem có ít nhất một checkbox/radio được chọn không
-                let isChecked = false;
-                if (fieldType === 'checkbox') {
-                    const checkboxes = section.querySelectorAll(`input[type="checkbox"][name="${fieldName}[]"]`);
-                    isChecked = Array.from(checkboxes).some(cb => cb.checked);
-                } else {
-                    const radios = section.querySelectorAll(`input[type="radio"][name="${fieldName}"]`);
-                    isChecked = Array.from(radios).some(radio => radio.checked);
-                }
-                
-                if (!isChecked) {
-                    isValid = false;
-                    // Highlight nhóm
-                    const group = section.querySelector(`#${fieldName}_group`);
+    let valid = true;
+    const currentSectionEl = document.getElementById(`section${current}`);
+    if (currentSectionEl) {
+        const requiredInputs = currentSectionEl.querySelectorAll('input[required], select[required], textarea[required]');
+        requiredInputs.forEach(input => {
+            if (input.type === 'radio' || input.type === 'checkbox') {
+                const name = input.name;
+                const checked = currentSectionEl.querySelectorAll(`input[name="${name}"]:checked`).length > 0;
+                if (!checked) {
+                    valid = false;
+                    const group = input.closest('.radio-group, .checkbox-group');
                     if (group) {
-                        group.style.border = '1px solid var(--error)';
+                        group.style.border = '1px solid #EF4444';
                         group.style.padding = '10px';
                         group.style.borderRadius = '8px';
                     }
                 }
-            });
-            
-            // Validate các trường required thông thường
-            const requiredInputs = section.querySelectorAll('input[required], select[required], textarea[required]');
-            
-            requiredInputs.forEach(input => {
-                if (input.offsetParent !== null && !input.value) { // Chỉ validate các trường visible
-                    isValid = false;
-                    input.style.borderColor = 'var(--error)';
-                    input.style.animation = 'shake 0.5s';
-                    setTimeout(() => {
-                        input.style.animation = '';
-                    }, 500);
-                } else {
-                    input.style.borderColor = 'var(--border)';
-                }
-            });
-            
-            return isValid;
-        }
-        
-        function nextSection(current) {
-            // Kiểm tra nếu chưa chọn hình thức ứng tuyển
-            if (current === 0 && !applicationType) {
-                alert('Vui lòng chọn hình thức ứng tuyển.');
-                return;
-            }
-            
-            if (current === 3) {
-                if (applicationType === 'interview') {
-                    // validate chọn lịch phỏng vấn - YÊU CẦU ÍT NHẤT 3 CA
-                    const checkedBoxes = document.querySelectorAll('#interview-schedule input[type="checkbox"]:checked');
-                    if (checkedBoxes.length < 3) {
-                        // Sử dụng SweetAlert2 thay vì alert thông thường
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Chưa đủ lịch phỏng vấn',
-                            html: `Bạn đã chọn <strong>${checkedBoxes.length}</strong> ca. Vui lòng chọn ít nhất <strong>3 ca phỏng vấn</strong> trước khi tiếp tục.`,
-                            confirmButtonText: 'Đã hiểu'
-                        });
-                        return;
-                    }
-                    showSection(4);
-                    return;
-                } else {
-                    // validate như cũ cho form
-                    const tabs = ['general', 'priority', 'secondary'];
-                    for (let tab of tabs) {
-                        const tabContent = document.getElementById(`tab-${tab}`);
-                        if (tabContent && tabContent.style.display !== 'none') {
-                            const requiredInputs = tabContent.querySelectorAll('input[required], select[required], textarea[required]');
-                            for (let input of requiredInputs) {
-                                if (!input.value) {
-                                    input.style.borderColor = 'var(--error)';
-                                    input.style.animation = 'shake 0.5s';
-                                    setTimeout(() => { input.style.animation = ''; }, 500);
-                                    showTab(tab);
-                                    alert('Vui lòng điền đầy đủ các thông tin trong tab này trước khi tiếp tục.');
-                                    return;
-                                } else {
-                                    input.style.borderColor = 'var(--border)';
-                                }
-                            }
-                        }
-                    }
-                    showSection(4);
-                    return;
-                }
-            }
-
-            // Basic validation
-            let valid = true;
-            const currentSection = document.getElementById(`section${current}`);
-            const requiredInputs = currentSection.querySelectorAll('input[required], select[required], textarea[required]');
-            
-            requiredInputs.forEach(input => {
-                // Kiểm tra radio buttons và checkboxes
-                if (input.type === 'radio' || input.type === 'checkbox') {
-                    const name = input.name;
-                    const checked = currentSection.querySelectorAll(`input[name="${name}"]:checked`).length > 0;
-                    
-                    if (!checked) {
-                        valid = false;
-                        // Highlight nhóm câu hỏi
-                        const group = input.closest('.radio-group, .checkbox-group');
-                        if (group) {
-                            group.style.border = '1px solid var(--error)';
-                            group.style.padding = '10px';
-                            group.style.borderRadius = '8px';
-                        }
-                    }
-                } 
-                // Kiểm tra các input khác
-                else if (!input.value) {
-                    valid = false;
-                    input.style.borderColor = 'var(--error)';
-                    // Add shake animation for error
-                    input.style.animation = 'shake 0.5s';
-                    setTimeout(() => {
-                        input.style.animation = '';
-                    }, 500);
-                } else {
-                    input.style.borderColor = 'var(--border)';
-                }
-            });
-            
-            if (valid) {
-                saveFormData();
-                showSection(current + 1);
+            } else if (!input.value) {
+                valid = false;
+                input.style.borderColor = '#EF4444';
+                input.style.animation = 'shake 0.5s';
+                setTimeout(() => { input.style.animation = ''; }, 500);
             } else {
-                alert('Vui lòng điền đầy đủ các thông tin bắt buộc.');
+                input.style.borderColor = '';
             }
-        }
-        
-        function prevSection(current) {
-            // Nếu đang ở section 0 thì quay lại Intro
-            if (current === 0) {
-                showSection(-1);
-                return;
-            }
+        });
+    }
 
-            // Ngược lại, quay về section trước đó
-            showSection(current - 1);
+    if (valid) {
+        simpleSaveFormData();
+        showSection(current + 1);
+    } else {
+        Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng điền đầy đủ các thông tin bắt buộc.', confirmButtonText: 'OK' });
+    }
+}
+
+function prevSection(current) {
+    if (current === 0) { showSection(-1); return; }
+    showSection(current - 1);
+}
+
+// ============================================================
+// SUMMARY
+// ============================================================
+function generateSummary() {
+    const form = document.getElementById('recruitmentForm');
+    if (!form) return;
+
+    const summaryDiv = document.getElementById('summary');
+    if (!summaryDiv) return;
+
+    const prioritySelect = form.priority_position;
+    const secondarySelect = form.secondary_position;
+    const priorityPositionText = prioritySelect?.options[prioritySelect?.selectedIndex]?.text || '';
+    const secondaryPositionText = secondarySelect?.options[secondarySelect?.selectedIndex]?.text || '';
+
+    let mdSubDepartments = [];
+    document.querySelectorAll('input[name="md_sub_departments[]"]:checked').forEach(cb => mdSubDepartments.push(cb.value));
+
+    let mdSubDepartmentsSecondary = [];
+    document.querySelectorAll('input[name="md_sub_departments_secondary[]"]:checked').forEach(cb => mdSubDepartmentsSecondary.push(cb.value));
+
+    let summaryHTML = `
+        <p><strong>Hình thức ứng tuyển:</strong> ${applicationType === 'form' ? 'Điền đơn ứng tuyển' : 'Phỏng vấn thay đơn'}</p>
+        <p><strong>Họ và tên:</strong> ${form.fullname?.value || ''}</p>
+        <p><strong>Ngày/tháng/năm sinh:</strong> ${formatDateToVN(form.birthdate?.value || '')}</p>
+        <p><strong>Giới tính:</strong> ${form.gender?.value || ''}</p>
+        <p><strong>Trường:</strong> ${form.school?.value || ''}</p>
+        <p><strong>Chuyên ngành:</strong> ${form.major?.value || ''}</p>
+        <p><strong>Email:</strong> ${form.email?.value || ''}</p>
+        <p><strong>Số điện thoại:</strong> ${form.phone?.value || ''}</p>
+        <p><strong>Ban ưu tiên:</strong> ${priorityPositionText}</p>
+    `;
+
+    if (prioritySelect?.value === 'MD' && mdSubDepartments.length > 0) {
+        summaryHTML += `<p><strong>Tiểu ban Truyền thông:</strong> ${mdSubDepartments.join(', ')}</p>`;
+    }
+
+    summaryHTML += `<p><strong>Ban dự bị:</strong> ${(secondarySelect?.value && secondarySelect.value !== 'None') ? secondaryPositionText : 'Không đăng ký'}</p>`;
+
+    if (secondarySelect?.value === 'MD' && mdSubDepartmentsSecondary.length > 0) {
+        summaryHTML += `<p><strong>Tiểu ban Truyền thông (NV2):</strong> ${mdSubDepartmentsSecondary.join(', ')}</p>`;
+    }
+
+    summaryDiv.innerHTML = summaryHTML;
+}
+
+function formatDateToVN(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
+// ============================================================
+// THU THẬP DỮ LIỆU FORM
+// ============================================================
+function collectFormData() {
+    const formData = {
+        application_type: applicationType,
+        fullname: document.getElementById('fullname')?.value || '',
+        birthdate: document.getElementById('birthdate')?.value || '',
+        gender: document.getElementById('gender')?.value || '',
+        email: document.getElementById('email')?.value || '',
+        phone: document.getElementById('phone')?.value || '',
+        school: document.getElementById('school')?.value || '',
+        major: document.getElementById('major')?.value || '',
+        facebook: document.getElementById('facebook')?.value || '',
+        priority_position: document.getElementById('priority_position')?.value || '',
+        secondary_position: document.getElementById('secondary_position')?.value || '',
+        md_sub_departments: Array.from(document.querySelectorAll('input[name="md_sub_departments[]"]:checked')).map(cb => cb.value),
+        md_sub_departments_secondary: Array.from(document.querySelectorAll('input[name="md_sub_departments_secondary[]"]:checked')).map(cb => cb.value),
+        timestamp: new Date().toISOString()
+    };
+
+    // Câu hỏi chung
+    const generalContainer = document.getElementById('general-questions');
+    if (generalContainer) {
+        generalContainer.querySelectorAll('input, textarea, select').forEach(input => {
+            const name = input.name || input.id;
+            if (!name) return;
+            if (input.type === 'checkbox') {
+                if (!formData[name]) formData[name] = [];
+                if (input.checked) formData[name].push(input.value);
+            } else if (input.type === 'radio') {
+                if (input.checked) formData[name] = input.value;
+            } else {
+                formData[name] = input.value || '';
+            }
+        });
+    }
+
+    // Câu hỏi phân ban
+    ['priority', 'secondary'].forEach(type => {
+        const containerId = type === 'priority' ? 'ban-specific-questions' : 'secondary-ban-specific-questions';
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        container.querySelectorAll('input, textarea, select').forEach(input => {
+            const name = input.name;
+            if (!name || !name.startsWith(type + '_')) return;
+            if (input.type === 'checkbox') {
+                if (!formData[name]) formData[name] = [];
+                if (input.checked) formData[name].push(input.value);
+            } else if (input.type === 'radio') {
+                if (input.checked) formData[name] = input.value;
+            } else {
+                formData[name] = input.value || '';
+            }
+        });
+    });
+
+    // Lịch phỏng vấn
+    if (applicationType === 'interview' && interview.length > 0) {
+        interview.forEach(q => {
+            const checked = Array.from(document.querySelectorAll(`input[name="${q.id}[]"]:checked`)).map(cb => cb.value);
+            if (checked.length > 0) formData[q.id] = checked;
+        });
+    }
+
+    return formData;
+}
+
+// ============================================================
+// LƯU TẠM VÀO LOCALSTORAGE
+// ============================================================
+function simpleSaveFormData() {
+    try {
+        const formData = collectFormData();
+        localStorage.setItem('enactus_form_data', JSON.stringify(formData));
+    } catch (error) {
+        console.warn('[Form] Lỗi lưu tạm:', error);
+    }
+}
+
+// ============================================================
+// KHÔI PHỤC DỮ LIỆU
+// ============================================================
+function loadFormData() {
+    try {
+        const saved = localStorage.getItem('enactus_form_data');
+        if (!saved) return;
+        const data = JSON.parse(saved);
+
+        if (data.application_type) selectApplicationType(data.application_type);
+        if (data.fullname) document.getElementById('fullname').value = data.fullname;
+        if (data.birthdate) document.getElementById('birthdate').value = data.birthdate;
+        if (data.gender) document.getElementById('gender').value = data.gender;
+        if (data.email) document.getElementById('email').value = data.email;
+        if (data.phone) document.getElementById('phone').value = data.phone;
+        if (data.school) document.getElementById('school').value = data.school;
+        if (data.major) document.getElementById('major').value = data.major;
+        if (data.facebook) document.getElementById('facebook').value = data.facebook;
+
+        if (data.priority_position) {
+            document.getElementById('priority_position').value = data.priority_position;
+            updateSecondaryOptions();
+            updateMDSubDepartments();
         }
-        
-        function generateSummary() {
-            const form = document.getElementById('recruitmentForm');
-            const summaryDiv = document.getElementById('summary');
-            
-            // Get position names from options
-            const priorityPositionText = form.priority_position.options[form.priority_position.selectedIndex].text;
-            const secondaryPositionText = form.secondary_position.options[form.secondary_position.selectedIndex].text;
-            
-            // Get selected MD sub-departments
-            let mdSubDepartments = [];
-            document.querySelectorAll('input[name="md_sub_departments[]"]:checked').forEach(cb => {
-                mdSubDepartments.push(cb.value);
+        if (data.secondary_position) document.getElementById('secondary_position').value = data.secondary_position;
+
+        if (data.md_sub_departments) {
+            data.md_sub_departments.forEach(value => {
+                const cb = document.querySelector(`input[name="md_sub_departments[]"][value="${value}"]`);
+                if (cb) cb.checked = true;
             });
-            
-            let mdSubDepartmentsSecondary = [];
-            document.querySelectorAll('input[name="md_sub_departments_secondary[]"]:checked').forEach(cb => {
-                mdSubDepartmentsSecondary.push(cb.value);
+        }
+        if (data.md_sub_departments_secondary) {
+            data.md_sub_departments_secondary.forEach(value => {
+                const cb = document.querySelector(`input[name="md_sub_departments_secondary[]"][value="${value}"]`);
+                if (cb) cb.checked = true;
             });
-            
-            let summaryHTML = `
-                <p><strong>Hình thức ứng tuyển:</strong> ${applicationType === 'form' ? 'Điền đơn ứng tuyển' : 'Phỏng vấn thay đơn'}</p>
-                <p><strong>Họ và tên:</strong> ${form.fullname.value}</p>
-                <p><strong>Ngày/tháng/năm sinh:</strong> ${formatDateToVN(form.birthdate.value)}</p>
-                <p><strong>Giới tính:</strong> ${form.gender.value}</p>
-                <p><strong>Trường:</strong> ${form.school.value}</p>
-                <p><strong>Khóa/Chuyên ngành đang theo học:</strong> ${form.major.value}</p>
-                <p><strong>Email:</strong> ${form.email.value}</p>
-                <p><strong>Số điện thoại:</strong> ${form.phone.value}</p>
-                <p><strong>Bạn muốn đăng ký vào ban:</strong> ${priorityPositionText}</p>
-            `;
-            
-            // Thêm thông tin tiểu ban nếu là Ban Truyền thông
-            if (form.priority_position.value === 'MD' && mdSubDepartments.length > 0) {
-                summaryHTML += `<p><strong>Tiểu ban Truyền thông:</strong> ${mdSubDepartments.join(', ')}</p>`;
-            }
-            
-            summaryHTML += `<p><strong>Bạn có nguyện vọng đăng ký vào ban:</strong> ${secondaryPositionText === "-- Chọn vị trí --" ? "Không chọn" : secondaryPositionText}</p>`;
-            
-            // Thêm thông tin tiểu ban dự bị nếu là Ban Truyền thông
-            if (form.secondary_position.value === 'MD' && mdSubDepartmentsSecondary.length > 0) {
-                summaryHTML += `<p><strong>Tiểu ban Truyền thông (NV2):</strong> ${mdSubDepartmentsSecondary.join(', ')}</p>`;
-            }
-            
-            summaryDiv.innerHTML = summaryHTML;
-        }
-        
-        // Hàm thu thập tất cả dữ liệu form - PHIÊN BẢN CẢI TIẾN
-        function collectFormData() {
-            const formObject = {
-                application_type: applicationType,
-
-                // Thông tin cá nhân
-                fullname: document.getElementById('fullname').value,
-                birthdate: document.getElementById('birthdate').value,
-                gender: document.getElementById('gender').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                school: document.getElementById('school').value,
-                major: document.getElementById('major').value,
-                facebook: document.getElementById('facebook').value,
-
-                // Vị trí ứng tuyển
-                priority_position: document.getElementById('priority_position').value,
-                secondary_position: document.getElementById('secondary_position').value,
-
-                // Câu hỏi chung - TÁCH RIÊNG để dễ khôi phục
-                general_questions: collectGeneralQuestions(),
-
-                // Tiểu ban truyền thông
-                md_sub_departments: Array.from(document.querySelectorAll('input[name="md_sub_departments[]"]:checked')).map(cb => cb.value),
-                md_sub_departments_secondary: Array.from(document.querySelectorAll('input[name="md_sub_departments_secondary[]"]:checked')).map(cb => cb.value),
-
-                // Câu hỏi phân ban ưu tiên
-                ...collectBanQuestions('priority'),
-
-                // Câu hỏi phân ban dự bị
-                ...collectBanQuestions('secondary'),
-
-                // Timestamp
-                timestamp: new Date(),
-                last_saved: new Date()
-            };
-
-            // Nếu chọn phỏng vấn thay đơn → lưu lịch phỏng vấn
-            if (applicationType === 'interview') {
-                if (typeof interview !== "undefined" && Array.isArray(interview)) {
-                    interview.forEach(q => {
-                        const checked = Array.from(document.querySelectorAll(`input[name="${q.id}[]"]:checked`))
-                            .map(cb => cb.value);
-                        if (checked.length > 0) {
-                            formObject[q.id] = checked;
-                        }
-                    });
-                }
-            }
-
-            return formObject;
         }
 
-        function collectGeneralQuestions() {
-            const data = {};
-            const container = document.getElementById('general-questions');
-            if (!container) return data;
-
-            const inputs = container.querySelectorAll('input, textarea, select');
+        // Câu hỏi chung
+        Object.keys(data).forEach(key => {
+            if (!key.startsWith('general_')) return;
+            const value = data[key];
+            const inputs = document.querySelectorAll(`[name="${key}"]`);
             inputs.forEach(input => {
-                const key = input.name || input.id;
-                if (!key) return;
-
                 if (input.type === 'checkbox') {
-                    if (!data[key]) data[key] = [];
-                    if (input.checked) data[key].push(input.value);
+                    if (Array.isArray(value) && value.includes(input.value)) input.checked = true;
                 } else if (input.type === 'radio') {
-                    if (input.checked) data[key] = input.value;
+                    if (value === input.value) input.checked = true;
                 } else {
-                    data[key] = input.value;
+                    input.value = value || '';
                 }
             });
+        });
 
-            return data;
-        }
+        updatePositionNames();
+        setTimeout(() => retryRestoreWithDelay(), 1000);
 
-        // Hàm thu thập câu hỏi theo phân ban
-        function collectBanQuestions(type) {
-            const prefix = `${type}_`;
-            const questionsData = {};
-            
-            const containerId = type === 'priority' ? 'ban-specific-questions' : 'secondary-ban-specific-questions';
-            const container = document.getElementById(containerId);
-            
-            if (!container) return questionsData;
-            
-            const inputs = container.querySelectorAll('input, select, textarea');
-            
-            inputs.forEach(input => {
-                // Bỏ qua các hidden required fields
-                if (input.name && input.name.startsWith(prefix) && !input.name.endsWith('_required')) {
-                    const key = input.name;
-                    
-                    if (input.type === 'checkbox') {
-                        // Xử lý checkbox
-                        if (!questionsData[key]) questionsData[key] = [];
-                        if (input.checked) {
-                            questionsData[key].push(input.value);
-                        }
-                    } else if (input.type === 'radio') {
-                        // Xử lý radio - chỉ lấy giá trị được chọn
-                        if (input.checked) {
-                            questionsData[key] = input.value;
-                        }
-                    } else {
-                        // Xử lý các input khác
-                        questionsData[key] = input.value;
-                    }
-                }
-            });
-            
-            return questionsData;
-        }
-        
-        // Hàm lưu dữ liệu tạm vào localStorage
-        function saveFormData() {
-            try {
-                const formData = collectFormData();
-                localStorage.setItem('enactus_form_data', JSON.stringify(formData));
-                console.log('Form data saved temporarily');
-            } catch (error) {
-                console.error('Error saving form data:', error);
+    } catch (error) {
+        console.warn('[Form] Lỗi khôi phục:', error);
+    }
+}
+
+function restoreBanQuestionsDirectly() {
+    const saved = localStorage.getItem('enactus_form_data');
+    if (!saved) return 0;
+    const data = JSON.parse(saved);
+    let count = 0;
+
+    Object.keys(data).forEach(key => {
+        if (!key.startsWith('priority_') && !key.startsWith('secondary_')) return;
+        const value = data[key];
+        const inputs = document.querySelectorAll(`[name="${key}"]`);
+        inputs.forEach(input => {
+            if (input.type === 'checkbox') {
+                if (Array.isArray(value) && value.includes(input.value)) { input.checked = true; count++; }
+            } else if (input.type === 'radio') {
+                if (value === input.value) { input.checked = true; count++; }
+            } else {
+                if (input.value !== value) { input.value = value || ''; if (value) count++; }
             }
+        });
+    });
+
+    return count;
+}
+
+function retryRestoreWithDelay(maxRetries = 8, delay = 500) {
+    let retryCount = 0;
+    const tryRestore = () => {
+        const restored = restoreBanQuestionsDirectly();
+        if (restored > 0 || retryCount >= maxRetries) return;
+        retryCount++;
+        setTimeout(tryRestore, delay);
+    };
+    tryRestore();
+}
+
+// ============================================================
+// GỬI FORM
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('recruitmentForm');
+    if (!form) return;
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        if (!document.getElementById('agree')?.checked) {
+            Swal.fire({ icon: 'warning', title: 'Chưa xác nhận', text: 'Vui lòng xác nhận rằng tất cả thông tin bạn cung cấp là chính xác.', confirmButtonText: 'OK' });
+            return;
         }
 
-        function formatDateToVN(dateString) {
-            if (!dateString) return "";
-            const date = new Date(dateString);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
+        const submitBtn = form.querySelector('.btn-submit');
+        const originalText = submitBtn?.innerHTML;
+        if (submitBtn) {
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
+            submitBtn.disabled = true;
         }
-        
-        // Hàm khôi phục dữ liệu từ localStorage - PHIÊN BẢN CẢI TIẾN
-        function loadFormData() {
-            try {
-                const savedData = localStorage.getItem('enactus_form_data');
-                if (savedData) {
-                    const formData = JSON.parse(savedData);
-                    
-                    console.log('📁 Đang khôi phục dữ liệu từ localStorage:', formData);
-                    
-                    // Khôi phục hình thức ứng tuyển
-                    if (formData.application_type) {
-                        selectApplicationType(formData.application_type);
-                    }
-                    
-                    // Khôi phục thông tin cá nhân
-                    if (formData.fullname) document.getElementById('fullname').value = formData.fullname;
-                    if (formData.birthdate) document.getElementById('birthdate').value = formData.birthdate;
-                    if (formData.gender) document.getElementById('gender').value = formData.gender;
-                    if (formData.email) document.getElementById('email').value = formData.email;
-                    if (formData.phone) document.getElementById('phone').value = formData.phone;
-                    if (formData.school) document.getElementById('school').value = formData.school;
-                    if (formData.major) document.getElementById('major').value = formData.major;
-                    if (formData.facebook) document.getElementById('facebook').value = formData.facebook;
-                    
-                    // Khôi phục vị trí ứng tuyển
-                    if (formData.priority_position) {
-                        document.getElementById('priority_position').value = formData.priority_position;
-                        updateSecondaryOptions();
-                        updateMDSubDepartments();
-                    }
-                    if (formData.secondary_position) document.getElementById('secondary_position').value = formData.secondary_position;
-                    
-                    // Khôi phục tiểu ban Truyền thông
-                    if (formData.md_sub_departments) {
-                        formData.md_sub_departments.forEach(value => {
-                            const checkbox = document.querySelector(`input[name="md_sub_departments[]"][value="${value}"]`);
-                            if (checkbox) checkbox.checked = true;
-                        });
-                    }
-                    
-                    if (formData.md_sub_departments_secondary) {
-                        formData.md_sub_departments_secondary.forEach(value => {
-                            const checkbox = document.querySelector(`input[name="md_sub_departments_secondary[]"][value="${value}"]`);
-                            if (checkbox) checkbox.checked = true;
-                        });
-                    }
-                    
-                    // Cập nhật tên phân ban và câu hỏi
-                    updatePositionNames();
 
-                    // KHÔI PHỤC CÂU HỎI CHUNG - CẢI TIẾN
-                    if (formData.general_questions) {
-                        Object.keys(formData.general_questions).forEach(key => {
-                            const value = formData.general_questions[key];
-                            const input = document.querySelector(`[name="${key}"]`);
-                            
-                            if (input) {
-                                if (input.type === 'checkbox') {
-                                    // Xử lý checkbox group
-                                    if (Array.isArray(value)) {
-                                        value.forEach(val => {
-                                            const cb = document.querySelector(`[name="${key}"][value="${val}"]`);
-                                            if (cb) cb.checked = true;
-                                        });
-                                    }
-                                } else if (input.type === 'radio') {
-                                    // Xử lý radio button
-                                    const radio = document.querySelector(`[name="${key}"][value="${value}"]`);
-                                    if (radio) radio.checked = true;
-                                } else {
-                                    // Input thường
-                                    input.value = value;
-                                }
-                            }
-                        });
+        try {
+            const formObject = collectFormData();
+
+            if (applicationType === 'interview') {
+                Object.keys(formObject).forEach(key => {
+                    if ((key.startsWith('priority_') || key.startsWith('secondary_')) &&
+                        key !== 'priority_position' && key !== 'secondary_position') {
+                        delete formObject[key];
                     }
-
-                    // KHÔI PHỤC CÂU HỎI PHÂN BAN - QUAN TRỌNG!
-                    setTimeout(() => {
-                        // Đảm bản câu hỏi đã được render trước khi khôi phục
-                        Object.keys(formData).forEach(key => {
-                            // Xử lý câu hỏi priority_
-                            if (key.startsWith("priority_")) {
-                                const value = formData[key];
-                                const inputs = document.querySelectorAll(`[name="${key}"]`);
-                                
-                                if (inputs.length > 0) {
-                                    inputs.forEach(input => {
-                                        if (input.type === 'checkbox') {
-                                            if (Array.isArray(value) && value.includes(input.value)) {
-                                                input.checked = true;
-                                            }
-                                        } else if (input.type === 'radio') {
-                                            if (value === input.value) {
-                                                input.checked = true;
-                                            }
-                                        } else {
-                                            input.value = value;
-                                        }
-                                    });
-                                }
-                            }
-                            
-                            // Xử lý câu hỏi secondary_
-                            if (key.startsWith("secondary_")) {
-                                const value = formData[key];
-                                const inputs = document.querySelectorAll(`[name="${key}"]`);
-                                
-                                if (inputs.length > 0) {
-                                    inputs.forEach(input => {
-                                        if (input.type === 'checkbox') {
-                                            if (Array.isArray(value) && value.includes(input.value)) {
-                                                input.checked = true;
-                                            }
-                                        } else if (input.type === 'radio') {
-                                            if (value === input.value) {
-                                                input.checked = true;
-                                            }
-                                        } else {
-                                            input.value = value;
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                        
-                        console.log('✅ Khôi phục dữ liệu thành công');
-                    }, 500); // Delay để đảm bảo câu hỏi đã render xong
-                }
-            } catch (error) {
-                console.error('❌ Lỗi khi khôi phục dữ liệu:', error);
-            }
-        }
-        
-        // Handle form submission
-        document.getElementById('recruitmentForm').addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            // Check if agreement is checked
-            if (!document.getElementById('agree').checked) {
-                alert('Vui lòng xác nhận rằng tất cả thông tin bạn cung cấp là chính xác.');
-                return;
+                });
             }
 
-            const form = document.getElementById('recruitmentForm');
+            formObject.all_departments = [
+                formObject.priority_position,
+                formObject.secondary_position
+            ].filter(p => p && p !== "None");
+
+            formObject.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+            delete formObject.timestamp; // Xóa ISO string, dùng serverTimestamp
+            formObject.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+
+            await db.collection('applications').add(formObject);
+
+            localStorage.removeItem('enactus_form_data');
+
             const successMessage = document.getElementById('successMessage');
             const redirectMsg = document.getElementById('redirectMsg');
 
-            // Show loading state
-            const submitBtn = form.querySelector('.btn-submit');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
-            submitBtn.disabled = true;
+            form.style.display = 'none';
+            if (successMessage) successMessage.style.display = 'block';
 
-            try {
-                // Lấy tất cả dữ liệu từ form
-                const formObject = collectFormData();
-
-                // Nếu là hình thức phỏng vấn, xóa dữ liệu section 3
-                if (applicationType === 'interview') {
-                    delete formObject.intro;
-
-                    Object.keys(formObject).forEach(key => {
-                        if ((key.startsWith('priority_') || key.startsWith('secondary_'))
-                            && key !== 'priority_position' && key !== 'secondary_position') {
-                            delete formObject[key];
-                        }
-                    });
-
-                    if (Array.isArray(formObject.md_sub_departments) && formObject.md_sub_departments.length === 0) {
-                        delete formObject.md_sub_departments;
-                    }
-                    if (Array.isArray(formObject.md_sub_departments_secondary) && formObject.md_sub_departments_secondary.length === 0) {
-                        delete formObject.md_sub_departments_secondary;
-                    }
-                }
-
-                // Thêm danh sách ban đã chọn
-                formObject.all_departments = [
-                    formObject.priority_position,
-                    formObject.secondary_position
-                ].filter(p => p && p !== "None");
-
-                // Save to Firebase
-                await db.collection('applications').add(formObject);
-
-                // ✅ Xóa dữ liệu tạm sau khi gửi thành công
-                localStorage.removeItem('enactus_form_data');
-
-                // ✅ Hiện thông báo thành công + redirect
-                form.style.display = 'none';
-                successMessage.style.display = 'block';
-
-                let countdown = 5;
+            let countdown = 5;
+            if (redirectMsg) {
                 redirectMsg.innerHTML = `Chuyển hướng sau <strong>${countdown}</strong>s...`;
                 const interval = setInterval(() => {
                     countdown--;
@@ -1203,701 +1365,93 @@
                         window.location.href = "/user/login.html";
                     }
                 }, 1000);
+            }
 
-                console.log('Application submitted successfully:', formObject);
-            } catch (error) {
-                console.error('Error submitting application:', error);
-                alert('Có lỗi xảy ra khi gửi đơn ứng tuyển. Vui lòng thử lại sau. Chi tiết lỗi: ' + error.message);
-
-                // Reset button state
+        } catch (error) {
+            console.error('[Form] Lỗi gửi đơn:', error);
+            Swal.fire({ icon: 'error', title: 'Có lỗi xảy ra', text: 'Không thể gửi đơn ứng tuyển. Vui lòng thử lại. Chi tiết: ' + error.message, confirmButtonText: 'OK' });
+            if (submitBtn) {
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
             }
-        });
-        
-        // Thêm sự kiện lưu dữ liệu khi người dùng thay đổi thông tin
-        document.querySelectorAll('input, select, textarea').forEach(element => {
-            element.addEventListener('input', saveFormData);
-            element.addEventListener('change', saveFormData);
-        });
-        
-        // Khi tick/un-tick tiểu ban trong MD thì render lại câu hỏi tương ứng
-        ['md_design','md_content','md_design_secondary','md_content_secondary'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.addEventListener('change', () => {
-                    // render lại cả hai vị trí ưu tiên/dự bị nếu cần
-                    renderBanQuestions(document.getElementById('priority_position').value, 'priority');
-                    renderBanQuestions(document.getElementById('secondary_position').value, 'secondary');
-                    saveFormData();
-                });
-            }
-        });
-
-        // Update position names when they change
-        document.getElementById('priority_position').addEventListener('change', updatePositionNames);
-        document.getElementById('secondary_position').addEventListener('change', updatePositionNames);
-        
-        // Initialize the form
-        updateProgressBar();
-        updateSecondaryOptions();
-        
-        // Khi submit thành công (sau khi lưu Firebase + xoá localStorage), thì ẩn form, hiện success, redirect
-        function showSuccessAndRedirect() {
-            const form = document.getElementById("recruitmentForm");
-            const successMessage = document.getElementById("successMessage");
-            const redirectMsg = document.getElementById("redirectMsg");
-
-            form.style.display = "none";
-            successMessage.style.display = "block";
-
-            let countdown = 5;
-            redirectMsg.textContent = `Chuyển hướng sau ${countdown}s...`;
-
-            const interval = setInterval(() => {
-                countdown--;
-                redirectMsg.textContent = `Chuyển hướng sau ${countdown}s...`;
-
-                if (countdown <= 0) {
-                    clearInterval(interval);
-                    window.location.href = "/user/login.html";
-                }
-            }, 1000);
         }
-        
-        // Add shake animation for error states
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-                20%, 40%, 60%, 80% { transform: translateX(5px); }
-            }
-        `;
-        document.head.appendChild(style);
-        
-        // Ghi đè alert bằng SweetAlert2
-        window.alert = function(message) {
-          Swal.fire({
-            icon: 'warning',
-            title: '⚠️ Cảnh báo',
-            text: message,
-            confirmButtonText: 'OK'
-        });
-        };
+    });
+});
 
-        // === CẢI THIỆN CHỨC NĂNG LƯU DỮ LIỆU ===
+// ============================================================
+// KHỞI ĐỘNG KHI DOM SẴN SÀNG
+// ============================================================
+document.addEventListener("DOMContentLoaded", async () => {
+    // Tải dữ liệu từ Firebase trước
+    await initFormData();
 
-        // Hàm lưu dữ liệu toàn diện
-        function saveFormDataComprehensive() {
-            try {
-                const formData = collectFormData();
-                localStorage.setItem('enactus_form_data', JSON.stringify(formData));
-                console.log('✅ Form data saved successfully');
-            } catch (error) {
-                console.error('❌ Error saving form data:', error);
-            }
+    // Kiểm tra availability
+    checkFormAvailability();
+    checkInterviewAvailability();
+
+    // Hiện thông báo
+    showNotification();
+
+    // Load intro
+    loadIntroFromMarkdown();
+
+    // Render câu hỏi chung
+    renderGeneralQuestions();
+
+    // Khởi tạo UI
+    updateSecondaryOptions();
+    updateProgressBar();
+
+    // Khôi phục dữ liệu tạm
+    loadFormData();
+
+    // Thiết lập auto-save
+    document.addEventListener('input', () => setTimeout(simpleSaveFormData, 300));
+    document.addEventListener('change', () => setTimeout(simpleSaveFormData, 300));
+    document.addEventListener('click', e => {
+        if (e.target.type === 'radio' || e.target.type === 'checkbox') {
+            setTimeout(simpleSaveFormData, 200);
         }
+    });
+    window.addEventListener('beforeunload', simpleSaveFormData);
+    setInterval(simpleSaveFormData, 30000);
 
-        // Lưu dữ liệu khi chuyển section
-        function enhancedNextSection(current) {
-            // Lưu dữ liệu trước khi chuyển section
-            saveFormDataComprehensive();
-            
-            // Gọi hàm nextSection gốc
-            nextSection(current);
-        }
-
-        // Lưu dữ liệu khi chuyển tab
-        function enhancedShowTab(tabName) {
-            // Lưu dữ liệu trước khi chuyển tab
-            saveFormDataComprehensive();
-            
-            // Gọi hàm showTab gốc
-            showTab(tabName);
-        }
-
-        // Lưu dữ liệu định kỳ (dự phòng)
-        let autoSaveInterval;
-        function startAutoSave() {
-            // Lưu mỗi 30 giây
-            autoSaveInterval = setInterval(saveFormDataComprehensive, 30000);
-        }
-
-        function stopAutoSave() {
-            if (autoSaveInterval) {
-                clearInterval(autoSaveInterval);
-            }
-        }
-
-        // Lưu dữ liệu khi rời trang
-        function setupBeforeUnload() {
-            window.addEventListener('beforeunload', function(e) {
-                saveFormDataComprehensive();
+    // Kiểm tra có dữ liệu cũ không
+    const savedData = localStorage.getItem('enactus_form_data');
+    if (savedData) {
+        setTimeout(() => {
+            Swal.fire({
+                icon: 'info',
+                title: 'Đã khôi phục dữ liệu',
+                text: 'Dữ liệu chưa hoàn thành từ phiên trước đã được khôi phục.',
+                timer: 3000,
+                showConfirmButton: false
             });
-        }
+        }, 500);
+    }
 
-        // Cải thiện hàm collectFormData để thu thập đầy đủ hơn
-        function enhancedCollectFormData() {
-            const formObject = {
-                application_type: applicationType,
-
-                // Thông tin cá nhân
-                fullname: document.getElementById('fullname')?.value || '',
-                birthdate: document.getElementById('birthdate')?.value || '',
-                gender: document.getElementById('gender')?.value || '',
-                email: document.getElementById('email')?.value || '',
-                phone: document.getElementById('phone')?.value || '',
-                school: document.getElementById('school')?.value || '',
-                major: document.getElementById('major')?.value || '',
-                facebook: document.getElementById('facebook')?.value || '',
-
-                // Vị trí ứng tuyển
-                priority_position: document.getElementById('priority_position')?.value || '',
-                secondary_position: document.getElementById('secondary_position')?.value || '',
-
-                // Câu hỏi chung (cải tiến)
-                ...enhancedCollectGeneralQuestions(),
-
-                // Tiểu ban truyền thông
-                md_sub_departments: Array.from(document.querySelectorAll('input[name="md_sub_departments[]"]:checked')).map(cb => cb.value),
-                md_sub_departments_secondary: Array.from(document.querySelectorAll('input[name="md_sub_departments_secondary[]"]:checked')).map(cb => cb.value),
-
-                // Câu hỏi phân ban
-                ...enhancedCollectBanQuestions('priority'),
-                ...enhancedCollectBanQuestions('secondary'),
-
-                // Timestamp
-                timestamp: new Date().toISOString(),
-                last_saved: new Date().toISOString()
-            };
-
-            // Lưu lịch phỏng vấn nếu có
-            if (applicationType === 'interview') {
-                if (typeof interview !== "undefined" && Array.isArray(interview)) {
-                    interview.forEach(q => {
-                        const checked = Array.from(document.querySelectorAll(`input[name="${q.id}[]"]:checked`))
-                            .map(cb => cb.value);
-                        formObject[q.id] = checked.length > 0 ? checked : [];
-                    });
-                }
-            }
-
-            return formObject;
-        }
-
-        // Cải thiện thu thập câu hỏi chung
-        function enhancedCollectGeneralQuestions() {
-            const data = {};
-            const container = document.getElementById('general-questions');
-            if (!container) return data;
-
-            // Lấy tất cả input elements
-            const inputs = container.querySelectorAll('input, textarea, select');
-            
-            inputs.forEach(input => {
-                const key = input.name || input.id;
-                if (!key) return;
-
-                if (input.type === 'checkbox') {
-                    // Xử lý checkbox group
-                    if (!data[key]) data[key] = [];
-                    if (input.checked) {
-                        data[key].push(input.value);
-                    }
-                } else if (input.type === 'radio') {
-                    // Xử lý radio buttons - chỉ lấy giá trị checked
-                    if (input.checked) {
-                        data[key] = input.value;
-                    }
-                } else {
-                    // Input thường, textarea, select
-                    data[key] = input.value;
-                }
-            });
-
-            return data;
-        }
-
-        // Cải thiện thu thập câu hỏi phân ban
-        function enhancedCollectBanQuestions(type) {
-            const prefix = `${type}_`;
-            const questionsData = {};
-            
-            const containerId = type === 'priority' ? 'ban-specific-questions' : 'secondary-ban-specific-questions';
-            const container = document.getElementById(containerId);
-            
-            if (!container) return questionsData;
-            
-            // Lấy tất cả các input trong container
-            const allInputs = container.querySelectorAll('input, select, textarea');
-            
-            allInputs.forEach(input => {
-                if (!input.name || !input.name.startsWith(prefix) || input.name.endsWith('_required')) {
-                    return;
-                }
-                
-                const key = input.name;
-                
-                if (input.type === 'checkbox') {
-                    if (!questionsData[key]) questionsData[key] = [];
-                    if (input.checked) {
-                        questionsData[key].push(input.value);
-                    }
-                } else if (input.type === 'radio') {
-                    if (input.checked) {
-                        questionsData[key] = input.value;
-                    }
-                } else {
-                    questionsData[key] = input.value;
-                }
-            });
-            
-            return questionsData;
-        }
-
-        // === GHI ĐÈ CÁC HÀM GỐC ===
-
-        // Lưu hàm gốc để gọi lại
-        const originalNextSection = nextSection;
-        const originalShowTab = showTab;
-        const originalCollectFormData = collectFormData;
-
-        // Ghi đè hàm nextSection
-        nextSection = function(current) {
-            saveFormDataComprehensive();
-            originalNextSection(current);
-        };
-
-        // Ghi đè hàm showTab
-        showTab = function(tabName) {
-            saveFormDataComprehensive();
-            originalShowTab(tabName);
-        };
-
-        // Ghi đè hàm collectFormData
-        collectFormData = enhancedCollectFormData;
-
-        // === KHỞI TẠO ===
-
-        // Thêm sự kiện lưu toàn diện
-        function setupEnhancedSaveListeners() {
-            // Lưu khi có bất kỳ thay đổi nào
-            document.querySelectorAll('input, select, textarea').forEach(element => {
-                element.addEventListener('input', saveFormDataComprehensive);
-                element.addEventListener('change', saveFormDataComprehensive);
-                element.addEventListener('blur', saveFormDataComprehensive);
-            });
-            
-            // Lưu khi click các nút (phòng trường hợp không có sự kiện input)
-            document.querySelectorAll('button').forEach(button => {
-                button.addEventListener('click', function() {
-                    setTimeout(saveFormDataComprehensive, 100);
-                });
-            });
-            
-            // Lưu khi thay đổi radio/checkbox (bổ sung thêm)
-            document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => {
-                input.addEventListener('click', saveFormDataComprehensive);
-            });
-        }
-
-        // Cập nhật DOMContentLoaded
-        document.addEventListener("DOMContentLoaded", () => {
-            // Các hàm khởi tạo ban đầu
-            loadIntroFromMarkdown();
-            renderGeneralQuestions();
-            updateSecondaryOptions();
-            
-            // Load dữ liệu tạm - QUAN TRỌNG: phải load trước khi render câu hỏi phân ban
-            loadFormData();
-            
-            // Khởi tạo chức năng lưu nâng cao
-            setupEnhancedSaveListeners();
-            setupBeforeUnload();
-            startAutoSave();
-            
-            // Hiển thị thông báo nếu có dữ liệu đã lưu
-            const savedData = localStorage.getItem('enactus_form_data');
-            if (savedData) {
-                console.log('📁 Đã tải dữ liệu đã lưu từ phiên trước');
-                
-                // Hiển thị thông báo cho người dùng
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Đã khôi phục dữ liệu',
-                    text: 'Dữ liệu chưa hoàn thành của bạn đã được khôi phục.',
-                    timer: 3000,
-                    showConfirmButton: false
-                });
-            }
-            
-            // Cập nhật position names nếu có
-            const prioritySelect = document.getElementById('priority_position');
-            if (prioritySelect.value) {
-                updatePositionNames();
-            }
-        });
-
-        // Hàm kiểm tra dữ liệu đã lưu
-        function checkSavedData() {
-            const saved = localStorage.getItem('enactus_form_data');
-            if (saved) {
-                const data = JSON.parse(saved);
-                console.log('🔍 Dữ liệu đang được lưu:', data);
-                
-                // Đếm số lượng câu hỏi đã lưu
-                const priorityQuestions = Object.keys(data).filter(key => key.startsWith('priority_')).length;
-                const secondaryQuestions = Object.keys(data).filter(key => key.startsWith('secondary_')).length;
-                const generalQuestions = data.general_questions ? Object.keys(data.general_questions).length : 0;
-                
-                console.log(`📊 Thống kê: ${generalQuestions} câu hỏi chung, ${priorityQuestions} câu hỏi NV1, ${secondaryQuestions} câu hỏi NV2`);
-            } else {
-                console.log('❌ Không có dữ liệu được lưu');
-            }
-        }
-
-        // === GIẢI PHÁP ĐƠN GIẢN - FIX LỖI KHÔI PHỤC CÂU HỎI PHÂN BAN ===
-
-        // 1. HÀM KHÔI PHỤC CÂU HỎI PHÂN BAN TRỰC TIẾP
-        function restoreBanQuestionsDirectly() {
-            const saved = localStorage.getItem('enactus_form_data');
-            if (!saved) return;
-            
-            const data = JSON.parse(saved);
-            console.log('🔄 Đang khôi phục câu hỏi phân ban trực tiếp...');
-            
-            let restoredCount = 0;
-            
-            // Khôi phục tất cả các field bắt đầu bằng priority_ và secondary_
-            Object.keys(data).forEach(key => {
-                if (key.startsWith('priority_') || key.startsWith('secondary_')) {
-                    const value = data[key];
-                    const inputs = document.querySelectorAll(`[name="${key}"]`);
-                    
-                    if (inputs.length > 0) {
-                        inputs.forEach(input => {
-                            if (input.type === 'checkbox') {
-                                if (Array.isArray(value) && value.includes(input.value)) {
-                                    input.checked = true;
-                                    restoredCount++;
-                                }
-                            } else if (input.type === 'radio') {
-                                if (value === input.value) {
-                                    input.checked = true;
-                                    restoredCount++;
-                                }
-                            } else {
-                                // Text, textarea, select
-                                if (input.value !== value) {
-                                    input.value = value || '';
-                                    if (value) restoredCount++;
-                                }
-                            }
-                        });
-                    }
-                }
-            });
-            
-            console.log(`✅ Đã khôi phục ${restoredCount} câu hỏi phân ban`);
-            return restoredCount;
-        }
-
-        // 2. HÀM RETRY NHIỀU LẦN
-        function retryRestoreWithDelay(maxRetries = 10, delay = 500) {
-            let retryCount = 0;
-            
-            const tryRestore = () => {
-                const restored = restoreBanQuestionsDirectly();
-                
-                if (restored > 0 || retryCount >= maxRetries) {
-                    console.log(`✅ Hoàn thành sau ${retryCount} lần thử`);
-                    return;
-                }
-                
-                retryCount++;
-                console.log(`🔄 Thử lại lần ${retryCount}...`);
-                setTimeout(tryRestore, delay);
-            };
-            
-            tryRestore();
-        }
-
-        // 3. GHI ĐÈ HÀM RENDER BAN QUESTIONS MỘT CÁCH AN TOÀN
-        if (typeof window._banQuestionsRestorePatched === 'undefined') {
-            window._banQuestionsRestorePatched = true;
-            
-            const originalRenderFunction = renderBanQuestions;
-            renderBanQuestions = function(banCode, type) {
-                originalRenderFunction(banCode, type);
-                
-                // Khôi phục dữ liệu sau khi render
-                setTimeout(() => {
-                    restoreBanQuestionsDirectly();
-                }, 100);
-            };
-        }
-
-        // 4. GHI ĐÈ HÀM SHOW TAB MỘT CÁCH AN TOÀN
-        if (typeof window._showTabPatched === 'undefined') {
-            window._showTabPatched = true;
-            
-            const originalShowTabFunction = showTab;
-            showTab = function(tabName) {
-                originalShowTabFunction(tabName);
-                
-                // Khôi phục dữ liệu khi chuyển tab
-                setTimeout(() => {
-                    restoreBanQuestionsDirectly();
-                }, 200);
-            };
-        }
-
-        // 5. GHI ĐÈ HÀM UPDATE POSITION NAMES
-        if (typeof window._updatePositionNamesPatched === 'undefined') {
-            window._updatePositionNamesPatched = true;
-            
-            const originalUpdateFunction = updatePositionNames;
-            updatePositionNames = function() {
-                originalUpdateFunction();
-                
-                // Khôi phục dữ liệu sau khi update position
-                setTimeout(() => {
-                    restoreBanQuestionsDirectly();
-                }, 300);
-            };
-        }
-
-        // 6. HÀM KHÔI PHỤC DỮ LIỆU HOÀN CHỈNH
-        function enhancedLoadFormData() {
-            try {
-                const saved = localStorage.getItem('enactus_form_data');
-                if (!saved) return;
-
-                const data = JSON.parse(saved);
-                console.log('📁 Đang khôi phục dữ liệu...');
-
-                // Khôi phục thông tin cơ bản
-                if (data.application_type) selectApplicationType(data.application_type);
-                if (data.fullname) document.getElementById('fullname').value = data.fullname;
-                if (data.birthdate) document.getElementById('birthdate').value = data.birthdate;
-                if (data.gender) document.getElementById('gender').value = data.gender;
-                if (data.email) document.getElementById('email').value = data.email;
-                if (data.phone) document.getElementById('phone').value = data.phone;
-                if (data.school) document.getElementById('school').value = data.school;
-                if (data.major) document.getElementById('major').value = data.major;
-                if (data.facebook) document.getElementById('facebook').value = data.facebook;
-                
-                if (data.priority_position) {
-                    document.getElementById('priority_position').value = data.priority_position;
-                    updateSecondaryOptions();
-                    updateMDSubDepartments();
-                }
-                if (data.secondary_position) document.getElementById('secondary_position').value = data.secondary_position;
-                
-                if (data.md_sub_departments) {
-                    data.md_sub_departments.forEach(value => {
-                        const cb = document.querySelector(`input[name="md_sub_departments[]"][value="${value}"]`);
-                        if (cb) cb.checked = true;
-                    });
-                }
-                if (data.md_sub_departments_secondary) {
-                    data.md_sub_departments_secondary.forEach(value => {
-                        const cb = document.querySelector(`input[name="md_sub_departments_secondary[]"][value="${value}"]`);
-                        if (cb) cb.checked = true;
-                    });
-                }
-
-                // Khôi phục câu hỏi chung
-                Object.keys(data).forEach(key => {
-                    if (key.startsWith('general_')) {
-                        const value = data[key];
-                        const inputs = document.querySelectorAll(`[name="${key}"]`);
-                        
-                        inputs.forEach(input => {
-                            if (input.type === 'checkbox') {
-                                if (Array.isArray(value) && value.includes(input.value)) {
-                                    input.checked = true;
-                                }
-                            } else if (input.type === 'radio') {
-                                if (value === input.value) {
-                                    input.checked = true;
-                                }
-                            } else {
-                                input.value = value || '';
-                            }
-                        });
-                    }
-                });
-
-                console.log('✅ Đã khôi phục thông tin cơ bản');
-
-                // Bắt đầu retry khôi phục câu hỏi phân ban
-                setTimeout(() => {
-                    retryRestoreWithDelay();
-                }, 1000);
-
-            } catch (error) {
-                console.error('❌ Lỗi khôi phục dữ liệu:', error);
-            }
-        }
-
-        // 7. HÀM LƯU DỮ LIỆU ĐƠN GIẢN
-        function simpleSaveFormData() {
-            try {
-                const formData = {
-                    application_type: applicationType,
-                    fullname: document.getElementById('fullname')?.value || '',
-                    birthdate: document.getElementById('birthdate')?.value || '',
-                    gender: document.getElementById('gender')?.value || '',
-                    email: document.getElementById('email')?.value || '',
-                    phone: document.getElementById('phone')?.value || '',
-                    school: document.getElementById('school')?.value || '',
-                    major: document.getElementById('major')?.value || '',
-                    facebook: document.getElementById('facebook')?.value || '',
-                    priority_position: document.getElementById('priority_position')?.value || '',
-                    secondary_position: document.getElementById('secondary_position')?.value || '',
-                    md_sub_departments: Array.from(document.querySelectorAll('input[name="md_sub_departments[]"]:checked')).map(cb => cb.value),
-                    md_sub_departments_secondary: Array.from(document.querySelectorAll('input[name="md_sub_departments_secondary[]"]:checked')).map(cb => cb.value),
-                    timestamp: new Date().toISOString()
-                };
-
-                // Thu thập câu hỏi chung
-                const generalContainer = document.getElementById('general-questions');
-                if (generalContainer) {
-                    generalContainer.querySelectorAll('input, textarea, select').forEach(input => {
-                        const name = input.name || input.id;
-                        if (!name) return;
-
-                        if (input.type === 'checkbox') {
-                            if (!formData[name]) formData[name] = [];
-                            if (input.checked) formData[name].push(input.value);
-                        } else if (input.type === 'radio') {
-                            if (input.checked) formData[name] = input.value;
-                        } else {
-                            formData[name] = input.value || '';
-                        }
-                    });
-                }
-
-                // Thu thập câu hỏi phân ban
-                ['priority', 'secondary'].forEach(type => {
-                    const containerId = type === 'priority' ? 'ban-specific-questions' : 'secondary-ban-specific-questions';
-                    const container = document.getElementById(containerId);
-                    
-                    if (container) {
-                        container.querySelectorAll('input, textarea, select').forEach(input => {
-                            const name = input.name;
-                            if (!name || !name.startsWith(type + '_')) return;
-
-                            if (input.type === 'checkbox') {
-                                if (!formData[name]) formData[name] = [];
-                                if (input.checked) formData[name].push(input.value);
-                            } else if (input.type === 'radio') {
-                                if (input.checked) formData[name] = input.value;
-                            } else {
-                                formData[name] = input.value || '';
-                            }
-                        });
-                    }
-                });
-
-                localStorage.setItem('enactus_form_data', JSON.stringify(formData));
-                console.log('💾 Đã lưu dữ liệu');
-
-            } catch (error) {
-                console.error('❌ Lỗi khi lưu dữ liệu:', error);
-            }
-        }
-
-        // 8. THIẾT LẬP AUTO-SAVE
-        function setupSimpleAutoSave() {
-            // Lưu khi thay đổi
-            document.addEventListener('input', function(e) {
-                setTimeout(simpleSaveFormData, 300);
-            });
-            
-            document.addEventListener('change', function(e) {
-                setTimeout(simpleSaveFormData, 300);
-            });
-            
-            // Lưu khi click radio/checkbox
-            document.addEventListener('click', function(e) {
-                if (e.target.type === 'radio' || e.target.type === 'checkbox') {
-                    setTimeout(simpleSaveFormData, 200);
-                }
-            });
-            
-            // Lưu khi rời trang
-            window.addEventListener('beforeunload', simpleSaveFormData);
-            
-            // Lưu định kỳ
-            setInterval(simpleSaveFormData, 30000);
-        }
-
-        // 9. GHI ĐÈ HÀM NEXT SECTION
-        if (typeof window._nextSectionPatched === 'undefined') {
-            window._nextSectionPatched = true;
-            
-            const originalNextSection = nextSection;
-            nextSection = function(current) {
+    // Gán sự kiện cho tiểu ban MD
+    ['md_design', 'md_content', 'md_design_secondary', 'md_content_secondary'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('change', () => {
+                renderBanQuestions(document.getElementById('priority_position')?.value, 'priority');
+                renderBanQuestions(document.getElementById('secondary_position')?.value, 'secondary');
                 simpleSaveFormData();
-                originalNextSection(current);
-            };
+            });
         }
+    });
 
-        // 10. KHỞI TẠO FORM
-        document.addEventListener("DOMContentLoaded", function() {
-            console.log('🚀 Khởi tạo form...');
-            
-            // Khởi tạo ban đầu
-            loadIntroFromMarkdown();
-            renderGeneralQuestions();
-            updateSecondaryOptions();
-            
-            // Khôi phục dữ liệu
-            enhancedLoadFormData();
-            
-            // Thiết lập auto-save
-            setupSimpleAutoSave();
-            
-            console.log('✅ Form đã sẵn sàng');
-            
-            // Retry cuối cùng sau 5 giây
-            setTimeout(() => {
-                console.log('⏰ Khôi phục lần cuối...');
-                restoreBanQuestionsDirectly();
-            }, 5000);
-        });
+    // Thêm shake animation CSS
+    const style = document.createElement('style');
+    style.textContent = `@keyframes shake { 0%,100%{transform:translateX(0)} 10%,30%,50%,70%,90%{transform:translateX(-5px)} 20%,40%,60%,80%{transform:translateX(5px)} }`;
+    document.head.appendChild(style);
 
-document.addEventListener("DOMContentLoaded", () => {
-  const now = new Date();
+    // Override alert
+    window.alert = function(message) {
+        Swal.fire({ icon: 'warning', title: 'Cảnh báo', text: message, confirmButtonText: 'OK' });
+    };
 
-  // Vòng đơn
-  const formStart = new Date("2026-03-01T00:00:00+07:00"); 
-  const formEnd   = new Date("2026-03-28T23:59:59+07:00"); 
-
-  let allowedType = null;
-
-  // Kiểm tra thời gian hiện tại có nằm trong khoảng không
-  if (now >= formStart && now <= formEnd) {
-    allowedType = "form"; // mở form
-  }
-
-  const formEl = document.getElementById("recruitmentForm");
-
-  if (!allowedType) {
-    // Ẩn form
-    formEl.style.display = "none";
-
-    // Thông báo
-    const msgBox = document.createElement("div");
-    msgBox.className =
-      "max-w-lg mx-auto mt-20 p-6 bg-white shadow-lg rounded-2xl text-center";
-    msgBox.innerHTML = `
-        <h2 class="text-xl font-semibold mb-2">❗Hiện đã kết thúc thời gian mở đơn</h2>
-        <p class="text-gray-600">Đơn đã đóng vào lúc <b>23h59 ngày 21/10/2025</b>. Vui lòng quay lại sau !</p>
-    `;
-    formEl.parentNode.insertBefore(msgBox, formEl);
-  }
+    // Retry khôi phục cuối
+    setTimeout(() => restoreBanQuestionsDirectly(), 5000);
 });
