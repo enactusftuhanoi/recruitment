@@ -2291,130 +2291,271 @@
         }
       }
 
-      // Load applications from Firestore
-      async function loadApplications() {
+// Load applications from Firestore
+async function loadApplications() {
+    try {
+        let snapshot;
         try {
-          let snapshot;
-          try {
             snapshot = await db
-              .collection("applications")
-              .orderBy("timestamp", "desc")
-              .get();
-          } catch (e) {
+                .collection("applications")
+                .orderBy("timestamp", "desc")
+                .get();
+        } catch (e) {
             console.warn(
-              "OrderBy failed (index?), falling back to unsorted fetch",
-              e
+                "OrderBy failed (index?), falling back to unsorted fetch",
+                e
             );
             snapshot = await db.collection("applications").get();
-          }
+        }
 
-          const allApps = [];
-          snapshot.forEach((doc) => {
+        const allApps = [];
+        snapshot.forEach((doc) => {
             const data = doc.data();
-            allApps.push({
-              id: doc.id,
-              ...data,
-              priority_status: data.priorityAccepted
+            
+            // === LẤY TRẠNG THÁI VÒNG 1 ===
+            const priorityStatus = data.priorityAccepted
                 ? "pass"
                 : data.priorityRejected
                 ? "not-pass"
-                : data.priority_status || null,
-              secondary_status: data.secondaryAccepted
+                : data.priority_status || null;
+                
+            const secondaryStatus = data.secondaryAccepted
                 ? "pass"
                 : data.secondaryRejected
                 ? "not-pass"
-                : data.secondary_status || null,
-              round2_priority_status:
-                data.round2_priority_status ||
+                : data.secondary_status || null;
+            
+            // === LẤY TRẠNG THÁI VÒNG 2 ===
+            let round2PriorityStatus = data.round2_priority_status ||
                 (data.round2 && data.round2.priority_status) ||
-                null,
-              round2_secondary_status:
-                data.round2_secondary_status ||
+                null;
+                
+            let round2SecondaryStatus = data.round2_secondary_status ||
                 (data.round2 && data.round2.secondary_status) ||
-                null,
-              round3_priority_status:
-                data.round3_priority_status ||
+                null;
+            
+            // === LẤY TRẠNG THÁI VÒNG 3 ===
+            let round3PriorityStatus = data.round3_priority_status ||
                 (data.round3 && data.round3.priority_status) ||
-                null,
-              round3_secondary_status:
-                data.round3_secondary_status ||
+                null;
+                
+            let round3SecondaryStatus = data.round3_secondary_status ||
                 (data.round3 && data.round3.secondary_status) ||
-                null,
-              round4_priority_status:
-                data.round4_priority_status ||
+                null;
+            
+            // === LẤY TRẠNG THÁI VÒNG 4 ===
+            let round4PriorityStatus = data.round4_priority_status ||
                 (data.round4 && data.round4.priority_status) ||
-                null,
-              round4_secondary_status:
-                data.round4_secondary_status ||
+                null;
+                
+            let round4SecondaryStatus = data.round4_secondary_status ||
                 (data.round4 && data.round4.secondary_status) ||
-                null,
-              current_round: data.current_round || "round1",
-            });
+                null;
+            
+            // === LẤY VÒNG HIỆN TẠI ===
+            const currentRound = data.current_round || "round1";
+            
+            // === LOGIC: NẾU BAN BỊ LOẠI Ở VÒNG TRƯỚC THÌ CÁC VÒNG SAU PHẢI LÀ NOT-PASS ===
+            
+            // VÒNG 2: Nếu không pass vòng 1 => round2 phải là not-pass
+            if (currentRound === "round2" || currentRound === "round3" || currentRound === "round4" || currentRound === "success") {
+                // Priority
+                if (priorityStatus !== "pass") {
+                    round2PriorityStatus = "not-pass";
+                } else if (round2PriorityStatus === null) {
+                    round2PriorityStatus = "pending";
+                }
+                
+                // Secondary
+                if (secondaryStatus !== "pass") {
+                    round2SecondaryStatus = "not-pass";
+                } else if (round2SecondaryStatus === null) {
+                    round2SecondaryStatus = "pending";
+                }
+            }
+            
+            // VÒNG 3: Nếu không pass vòng 2 => round3 phải là not-pass
+            if (currentRound === "round3" || currentRound === "round4" || currentRound === "success") {
+                // Priority
+                if (round2PriorityStatus !== "pass") {
+                    round3PriorityStatus = "not-pass";
+                } else if (round3PriorityStatus === null) {
+                    round3PriorityStatus = "pending";
+                }
+                
+                // Secondary
+                if (round2SecondaryStatus !== "pass") {
+                    round3SecondaryStatus = "not-pass";
+                } else if (round3SecondaryStatus === null) {
+                    round3SecondaryStatus = "pending";
+                }
+            }
+            
+            // VÒNG 4: Nếu không pass vòng 3 => round4 phải là not-pass
+            if (currentRound === "round4" || currentRound === "success") {
+                // Priority
+                if (round3PriorityStatus !== "pass") {
+                    round4PriorityStatus = "not-pass";
+                } else if (round4PriorityStatus === null) {
+                    round4PriorityStatus = "pending";
+                }
+                
+                // Secondary
+                if (round3SecondaryStatus !== "pass") {
+                    round4SecondaryStatus = "not-pass";
+                } else if (round4SecondaryStatus === null) {
+                    round4SecondaryStatus = "pending";
+                }
+            }
+            
+            // === TẠO OBJECT ỨNG VIÊN ===
+            const app = {
+                id: doc.id,
+                ...data,
+                // Trạng thái vòng 1
+                priority_status: priorityStatus,
+                secondary_status: secondaryStatus,
+                // Trạng thái vòng 2
+                round2_priority_status: round2PriorityStatus,
+                round2_secondary_status: round2SecondaryStatus,
+                // Trạng thái vòng 3
+                round3_priority_status: round3PriorityStatus,
+                round3_secondary_status: round3SecondaryStatus,
+                // Trạng thái vòng 4
+                round4_priority_status: round4PriorityStatus,
+                round4_secondary_status: round4SecondaryStatus,
+                // Vòng hiện tại
+                current_round: currentRound,
+            };
+            
+            allApps.push(app);
 
-            // === SỬA: Gửi email cho CẢ HAI loại ứng viên ===
+            // === GỬI EMAIL CHO ĐƠN MỚI ===
             const isNew = isApplicationNew(
-              data.timestamp || data.createdAt || data.submittedAt
+                data.timestamp || data.createdAt || data.submittedAt
             );
             const notNotified = !data.notification_sent;
 
-            // Điều kiện gửi email mở rộng - kiểm tra cả ứng viên form và phỏng vấn
             if (isNew && notNotified && data.fullname && data.email) {
-              console.log(
-                "🆕 Phát hiện đơn mới, gửi email...",
-                data.fullname,
-                doc.id,
-                "Loại:",
-                data.application_type || "form"
-              );
+                console.log(
+                    "🆕 Phát hiện đơn mới, gửi email...",
+                    data.fullname,
+                    doc.id,
+                    "Loại:",
+                    data.application_type || "form"
+                );
 
-              sendEmailNotification({
-                id: doc.id,
-                ...data,
-              }).then((success) => {
-                if (success) {
-                  console.log("✅ Đã xử lý gửi email cho:", data.fullname);
-                } else {
-                  console.log("❌ Gửi email thất bại cho:", data.fullname);
-                }
-              });
+                sendEmailNotification({
+                    id: doc.id,
+                    ...data,
+                }).then((success) => {
+                    if (success) {
+                        console.log("✅ Đã xử lý gửi email cho:", data.fullname);
+                    } else {
+                        console.log("❌ Gửi email thất bại cho:", data.fullname);
+                    }
+                });
             }
-          });
+        });
 
-          if (!snapshot.query || !snapshot.query.explicitOrderBy) {
+        if (!snapshot.query || !snapshot.query.explicitOrderBy) {
             allApps.sort((a, b) => {
-              const ta =
-                a.timestamp && a.timestamp.toMillis
-                  ? a.timestamp.toMillis()
-                  : a.timestamp || 0;
-              const tb =
-                b.timestamp && b.timestamp.toMillis
-                  ? b.timestamp.toMillis()
-                  : b.timestamp || 0;
-              return tb - ta;
+                const ta =
+                    a.timestamp && a.timestamp.toMillis
+                        ? a.timestamp.toMillis()
+                        : a.timestamp || 0;
+                const tb =
+                    b.timestamp && b.timestamp.toMillis
+                        ? b.timestamp.toMillis()
+                        : b.timestamp || 0;
+                return tb - ta;
             });
-          }
-
-          if (userRole === "admin") {
-            applications = allApps.filter(
-              (app) =>
-                app.priority_position === userDept ||
-                app.secondary_position === userDept ||
-                (Array.isArray(app.all_departments) &&
-                  app.all_departments.includes(userDept))
-            );
-          } else {
-            applications = allApps;
-          }
-
-          renderApplications();
-          updateStats();
-        } catch (error) {
-          console.error("Error loading applications:", error);
-          alert("Không thể tải danh sách ứng viên: " + error.message);
         }
-      }
 
-      // Thêm vào phần JavaScript, sau các hàm khác
+        // === LỌC THEO QUYỀN ADMIN ===
+        if (userRole === "admin") {
+            applications = allApps.filter(
+                (app) =>
+                    app.priority_position === userDept ||
+                    app.secondary_position === userDept ||
+                    (Array.isArray(app.all_departments) &&
+                        app.all_departments.includes(userDept))
+            );
+        } else {
+            applications = allApps;
+        }
+
+        // === RENDER UI ===
+        renderApplications();
+        updateStats();
+        
+    } catch (error) {
+        console.error("Error loading applications:", error);
+        alert("Không thể tải danh sách ứng viên: " + error.message);
+    }
+}
+
+// Hàm fix dữ liệu cũ - CHẠY 1 LẦN
+async function fixOldData() {
+    if (!confirm("⚠️ Hàm này sẽ fix dữ liệu các ban bị NOT-PASS. Bạn có chắc?")) return;
+    
+    try {
+        const snapshot = await db.collection("applications").get();
+        const batch = db.batch();
+        let fixedCount = 0;
+        
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            const updates = {};
+            let needUpdate = false;
+            
+            // Fix Vòng 2
+            if (data.priority_status !== "pass" && data.round2_priority_status === null) {
+                updates["round2_priority_status"] = "not-pass";
+                needUpdate = true;
+            }
+            if (data.secondary_status !== "pass" && data.round2_secondary_status === null) {
+                updates["round2_secondary_status"] = "not-pass";
+                needUpdate = true;
+            }
+            
+            // Fix Vòng 3
+            if (data.round2_priority_status !== "pass" && data.round3_priority_status === null) {
+                updates["round3_priority_status"] = "not-pass";
+                needUpdate = true;
+            }
+            if (data.round2_secondary_status !== "pass" && data.round3_secondary_status === null) {
+                updates["round3_secondary_status"] = "not-pass";
+                needUpdate = true;
+            }
+            
+            // Fix Vòng 4
+            if (data.round3_priority_status !== "pass" && data.round4_priority_status === null) {
+                updates["round4_priority_status"] = "not-pass";
+                needUpdate = true;
+            }
+            if (data.round3_secondary_status !== "pass" && data.round4_secondary_status === null) {
+                updates["round4_secondary_status"] = "not-pass";
+                needUpdate = true;
+            }
+            
+            if (needUpdate) {
+                batch.update(doc.ref, updates);
+                fixedCount++;
+            }
+        });
+        
+        await batch.commit();
+        alert(`✅ Đã fix ${fixedCount} ứng viên!`);
+        loadApplications();
+    } catch (error) {
+        console.error("Lỗi fix dữ liệu:", error);
+        alert("❌ Lỗi: " + error.message);
+    }
+}
+
+// Thêm vào console để chạy: fixOldData()
+window.fixOldData = fixOldData;
 
       // Hàm tìm và hiển thị ứng viên apply nhiều lần
       function findAndDisplayDuplicateApplications() {
@@ -5579,67 +5720,70 @@ function renderTeamPreview(teams) {
         });
       }
 
-      function filterRound3Applications() {
-        const departmentFilter =
-          document.getElementById("filter-department").value;
-        const statusFilter = document.getElementById("filter-status").value;
-        const searchText = document
-          .getElementById("search-input")
-          .value.toLowerCase();
+function filterRound3Applications() {
+    const departmentFilter = document.getElementById("filter-department").value;
+    const statusFilter = document.getElementById("filter-status").value;
+    const searchText = document.getElementById("search-input").value.toLowerCase();
 
-        return applications.filter((app) => {
-          // Điều kiện QUAN TRỌNG: phải ở vòng 3 VÀ có ít nhất 1 ban PASS vòng 2
-          if (app.current_round !== "round3") return false;
+    return applications.filter((app) => {
+        if (app.current_round !== "round3") return false;
 
-          const hasPassedRound2 =
+        // Lấy tất cả ban đã pass vòng 2
+        const hasPassedRound2 = 
             app.round2_priority_status === "pass" ||
             app.round2_secondary_status === "pass";
 
-          if (!hasPassedRound2) return false;
+        if (!hasPassedRound2) return false;
 
-          // Department filter - chỉ kiểm tra các ban đã PASS vòng 2
-          if (departmentFilter) {
-            const hasMatchingDept =
-              (app.round2_priority_status === "pass" &&
-                app.priority_position === departmentFilter) ||
-              (app.round2_secondary_status === "pass" &&
-                app.secondary_position === departmentFilter);
+        // Department filter - KIỂM TRA CẢ BAN PASS VÀ NOT-PASS
+        if (departmentFilter) {
+            const hasPriorityDept = app.priority_position === departmentFilter;
+            const hasSecondaryDept = app.secondary_position === departmentFilter;
+            if (!hasPriorityDept && !hasSecondaryDept) return false;
+        }
 
-            if (!hasMatchingDept) return false;
-          }
-
-          // Status filter - chỉ kiểm tra trạng thái round3 của các ban đã PASS vòng 2
-          if (statusFilter) {
+        // Status filter
+        if (statusFilter) {
             let hasMatchingStatus = false;
-
-            if (app.round2_priority_status === "pass") {
-              hasMatchingStatus =
-                hasMatchingStatus ||
-                app.round3_priority_status === statusFilter;
+            
+            // Kiểm tra ban priority
+            if (app.priority_position) {
+                let status;
+                // CHỈ LẤY TRẠNG THÁI VÒNG 3 NẾU PASS VÒNG 2
+                if (app.round2_priority_status === "pass") {
+                    status = app.round3_priority_status || "pending";
+                } else {
+                    // Nếu không pass vòng 2 (bị loại từ vòng 2 hoặc vòng 1)
+                    status = "not-pass";
+                }
+                if (status === statusFilter) hasMatchingStatus = true;
             }
-            if (app.round2_secondary_status === "pass") {
-              hasMatchingStatus =
-                hasMatchingStatus ||
-                app.round3_secondary_status === statusFilter;
+            
+            // Kiểm tra ban secondary
+            if (app.secondary_position && app.secondary_position !== "None") {
+                let status;
+                if (app.round2_secondary_status === "pass") {
+                    status = app.round3_secondary_status || "pending";
+                } else {
+                    status = "not-pass";
+                }
+                if (status === statusFilter) hasMatchingStatus = true;
             }
-
+            
             if (!hasMatchingStatus) return false;
-          }
+        }
 
-          // Search filter
-          if (
-            searchText &&
-            !(
-              (app.fullname || "").toLowerCase().includes(searchText) ||
-              (app.email || "").toLowerCase().includes(searchText) ||
-              (app.phone || "").toLowerCase().includes(searchText)
-            )
-          )
-            return false;
+        // Search filter
+        if (searchText) {
+            const matchFullname = (app.fullname || "").toLowerCase().includes(searchText);
+            const matchEmail = (app.email || "").toLowerCase().includes(searchText);
+            const matchPhone = (app.phone || "").toLowerCase().includes(searchText);
+            if (!matchFullname && !matchEmail && !matchPhone) return false;
+        }
 
-          return true;
-        });
-      }
+        return true;
+    });
+}
 
       function filterRound4Applications() {
         const departmentFilter =
@@ -5770,83 +5914,212 @@ function renderTeamPreview(teams) {
         return appTime > tenMinutesAgo;
       }
 
-      // Hàm gửi email thông báo
-      async function sendEmailNotification(application) {
-        if (emailSendingInProgress.has(application.id)) {
-          console.log(
-            "⏳ Email đang được gửi cho ứng viên này:",
-            application.fullname
-          );
-          return false;
-        }
+// Hàm gửi email thông báo - GỌI QUA WORKER CỦA MÀY
+async function sendEmailNotification(application) {
+    if (emailSendingInProgress.has(application.id)) {
+        console.log("⏳ Email đang được gửi...");
+        return false;
+    }
 
+    try {
+        console.log("📨 Đang gửi email thông báo...", application.fullname);
+
+        emailSendingInProgress.add(application.id);
+
+        // Lấy danh sách email từ account
+        let recipientEmails = [];
         try {
-          console.log("📨 Đang gửi email thông báo...", application.fullname);
-
-          emailSendingInProgress.add(application.id);
-
-          const applicationTime = application.timestamp?.toDate
-            ? application.timestamp.toDate()
-            : new Date(
-                application.timestamp ||
-                  application.createdAt ||
-                  application.submittedAt
-              );
-
-          const templateParams = {
-            applicant_name: application.fullname || "Ứng viên",
-            applicant_email: application.email || "Chưa cung cấp",
-            applicant_phone: application.phone || "Chưa cung cấp",
-            priority_department: getDepartmentName(
-              application.priority_position
-            ),
-            secondary_department: getDepartmentName(
-              application.secondary_position
-            ),
-            application_type:
-              application.application_type === "interview"
-                ? "Phỏng vấn thay đơn"
-                : "Điền form",
-            timestamp: applicationTime.toLocaleString("vi-VN"),
-            to_email: [
-              "recruitment.enactusftuhanoi@gmail.com",
-              "tuhm2567@gmail.com",
-            ],
-          };
-
-          const result = await emailjs.send(
-            "service_oxo8n38",
-            "template_1fwgrrk",
-            templateParams
-          );
-
-          console.log("✅ Email thông báo đã gửi thành công!", result);
-
-          // Đánh dấu đã gửi thông báo
-          if (application.id) {
-            await db.collection("applications").doc(application.id).update({
-              notification_sent: true,
-              notification_sent_at: new Date(),
+            const accountSnapshot = await db
+                .collection("account")
+                .where("canReceiveNotification", "==", true)
+                .get();
+            
+            accountSnapshot.forEach((doc) => {
+                const data = doc.data();
+                if (data.email) {
+                    recipientEmails.push(data.email);
+                }
             });
-            console.log(
-              "✅ Đã đánh dấu gửi thông báo cho:",
-              application.fullname
-            );
-          }
-
-          return true;
-        } catch (error) {
-          console.error("❌ Lỗi gửi email:", error);
-
-          if (error.text) {
-            console.error("Chi tiết lỗi EmailJS:", error.text);
-          }
-
-          return false;
-        } finally {
-          emailSendingInProgress.delete(application.id);
+        } catch (err) {
+            console.error("❌ Lỗi lấy danh sách email:", err);
+            recipientEmails = ["recruitment.enactusftuhanoi@gmail.com"];
         }
-      }
+
+        if (recipientEmails.length === 0) {
+            recipientEmails = ["recruitment.enactusftuhanoi@gmail.com"];
+        }
+
+        const applicationTime = application.timestamp?.toDate
+            ? application.timestamp.toDate()
+            : new Date(application.timestamp || application.createdAt || application.submittedAt);
+
+        // Tạo nội dung email
+        const emailHtml = buildEmailHtml(application, applicationTime);
+        const emailText = buildEmailText(application, applicationTime);
+
+        // === GỌI WORKER CỦA MÀY ===
+        const WORKER_URL = 'https://s.enactusftuhanoi.id.vn/admin/send-email';
+
+        // Lấy token auth từ session hoặc tạo Basic Auth
+        const username = sessionStorage.getItem("username") || "superadmin";
+        const password = sessionStorage.getItem("password") || "superadmin";
+        const auth = btoa(`${username}:${password}`);
+
+        // Gửi cho từng email
+        let successCount = 0;
+        for (const email of recipientEmails) {
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Basic ${auth}`
+                    },
+                    body: JSON.stringify({
+                        recipients: [{ email: email }],
+                        subject: `📋 Ứng viên mới: ${application.fullname || 'Ứng viên'} - Enactus FTU Hanoi`,
+                        body: `${emailText}\n\n---\nXem chi tiết: https://recruitment.enactusftuhanoi.com/dashboard.html`
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log(`✅ Email đã gửi thành công đến: ${email}`);
+                    successCount++;
+                } else {
+                    console.error(`❌ Lỗi gửi đến ${email}:`, result.error || result.log);
+                }
+            } catch (err) {
+                console.error(`❌ Lỗi gửi đến ${email}:`, err);
+            }
+        }
+
+        console.log(`✅ Đã gửi thành công ${successCount}/${recipientEmails.length} email`);
+
+        if (application.id && successCount > 0) {
+            await db.collection("applications").doc(application.id).update({
+                notification_sent: true,
+                notification_sent_at: new Date(),
+                notification_recipients: recipientEmails,
+            });
+        }
+
+        return successCount > 0;
+    } catch (error) {
+        console.error("❌ Lỗi gửi email:", error);
+        return false;
+    } finally {
+        emailSendingInProgress.delete(application.id);
+    }
+}
+
+// Hàm build HTML email (giữ nguyên)
+function buildEmailHtml(application, applicationTime) {
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+                .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+                .header { text-align: center; border-bottom: 3px solid #f8f3ce; padding-bottom: 20px; margin-bottom: 24px; }
+                .logo { font-size: 24px; font-weight: 800; color: #111827; }
+                .logo span { color: #f59e0b; }
+                h2 { color: #111827; margin-bottom: 16px; }
+                .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+                .info-item { background: #fafafa; padding: 12px 16px; border-radius: 8px; }
+                .info-label { font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; }
+                .info-value { font-size: 16px; font-weight: 600; color: #111827; margin-top: 4px; }
+                .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+                .badge-form { background: #dbeafe; color: #3b82f6; }
+                .badge-interview { background: #fef3c7; color: #f59e0b; }
+                .footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af; text-align: center; }
+                .btn { display: inline-block; background: #f8f3ce; color: #111827; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <div class="logo">📋 Enactus <span>FTU</span> Hanoi</div>
+                    <p style="color: #6b7280; margin-top: 4px;">🔔 Thông báo đơn ứng tuyển mới</p>
+                </div>
+
+                <h2>👋 Ứng viên mới vừa đăng ký!</h2>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Họ và tên</div>
+                        <div class="info-value">${application.fullname || 'Chưa có tên'}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">${application.email || 'Chưa cung cấp'}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Số điện thoại</div>
+                        <div class="info-value">${application.phone || 'Chưa cung cấp'}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Thời gian</div>
+                        <div class="info-value">${applicationTime.toLocaleString('vi-VN')}</div>
+                    </div>
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <div class="info-item" style="margin-bottom: 8px;">
+                        <div class="info-label">Nguyện vọng 1</div>
+                        <div class="info-value">${getDepartmentName(application.priority_position) || 'Chưa có'}</div>
+                    </div>
+                    ${application.secondary_position && application.secondary_position !== 'None' ? `
+                    <div class="info-item">
+                        <div class="info-label">Nguyện vọng 2</div>
+                        <div class="info-value">${getDepartmentName(application.secondary_position)}</div>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <div style="text-align: center; margin: 24px 0;">
+                    <span class="badge ${application.application_type === 'interview' ? 'badge-interview' : 'badge-form'}">
+                        ${application.application_type === 'interview' ? '🎤 Phỏng vấn thay đơn' : '📝 Điền form'}
+                    </span>
+                </div>
+
+                <div style="text-align: center;">
+                    <a href="https://recruitment.enactusftuhanoi.com/dashboard.html" class="btn">
+                        📊 Xem chi tiết trên Dashboard
+                    </a>
+                </div>
+
+                <div class="footer">
+                    <p>Email này được gửi tự động từ hệ thống Enactus FTU Hanoi Recruitment.</p>
+                    <p>Vui lòng không trả lời email này.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+}
+
+// Hàm build text email
+function buildEmailText(application, applicationTime) {
+    return `
+📋 Enactus FTU Hanoi - Thông báo đơn ứng tuyển mới
+
+👋 Ứng viên mới vừa đăng ký!
+
+Họ và tên: ${application.fullname || 'Chưa có tên'}
+Email: ${application.email || 'Chưa cung cấp'}
+SĐT: ${application.phone || 'Chưa cung cấp'}
+Nguyện vọng 1: ${getDepartmentName(application.priority_position) || 'Chưa có'}
+${application.secondary_position && application.secondary_position !== 'None' ? `Nguyện vọng 2: ${getDepartmentName(application.secondary_position)}` : ''}
+Loại đơn: ${application.application_type === 'interview' ? 'Phỏng vấn thay đơn' : 'Điền form'}
+Thời gian: ${applicationTime.toLocaleString('vi-VN')}
+
+Xem chi tiết: https://recruitment.enactusftuhanoi.com/dashboard.html
+    `;
+}
 
       // Render applications to the table
       function renderApplications() {
@@ -6049,139 +6322,256 @@ function renderTeamPreview(teams) {
         }, 1000);
       }
 
-      function renderRound2() {
-        const tbody = document.getElementById("round2-table-body");
-        tbody.innerHTML = "";
+function renderRound2() {
+    const tbody = document.getElementById("round2-table-body");
+    tbody.innerHTML = "";
 
-        const filteredApps = filterRound2Applications();
+    const filteredApps = filterRound2Applications();
 
-        filteredApps.forEach((app) => {
-          if (app.current_round !== "round2") return;
+    filteredApps.forEach((app) => {
+        if (app.current_round !== "round2") return;
 
-          // Lấy thông tin chung từ round2 (ưu tiên lấy từ priority nếu có)
-          const round2Data = app.round2 || {};
-          const commonData = round2Data.priority || round2Data.secondary || {};
+        // Lấy thông tin chung từ round2 (ưu tiên lấy từ priority nếu có)
+        const round2Data = app.round2 || {};
+        const commonData = round2Data.priority || round2Data.secondary || {};
 
-          const tr = document.createElement("tr");
-
-          // Thông tin chung chỉ hiển thị 1 lần (đã bỏ cột thành viên nhóm)
-          tr.innerHTML = `
-      <td>
-        <div class="applicant-info">
-          <div class="applicant-avatar">${
-            app.fullname ? app.fullname.charAt(0).toUpperCase() : "U"
-          }</div>
-          <div class="applicant-details">
-            <div class="applicant-name">${app.fullname}</div>
-            <div class="applicant-contact">${app.email}</div>
-          </div>
-        </div>
-      </td>
-      <td>
-        ${renderDepartment(app.priority_position, app.round2_priority_status)}
-        ${
-          app.secondary_position && app.secondary_position !== "None"
-            ? renderDepartment(
-                app.secondary_position,
-                app.round2_secondary_status
-              )
-            : ""
+        // Lấy tất cả ban (cả pass và not-pass ở vòng 1)
+        const allDepartments = [];
+        
+        // Ban priority
+        if (app.priority_position) {
+            let status = app.round2_priority_status || "pending";
+            // Nếu không pass vòng 1, hiển thị not-pass
+            if (app.priority_status !== "pass") {
+                status = "not-pass";
+            }
+            allDepartments.push({
+                type: "priority",
+                dept: app.priority_position,
+                status: status,
+                isPassedPrevRound: app.priority_status === "pass",
+                canEdit: canEditBan(app, "priority") && app.priority_status === "pass"
+            });
         }
-      </td>
-      <td><input class="app-input" value="${
-        commonData.time || ""
-      }" data-field="common.time"></td>
-      <td><input class="app-input" value="${
-        commonData.location || ""
-      }" data-field="common.location"></td>
-      <td>
-        <select class="app-select" data-field="common.method">
-          <option value="offline" ${
-            commonData.method === "offline" ? "selected" : ""
-          }>Offline</option>
-          <option value="online" ${
-            commonData.method === "online" ? "selected" : ""
-          }>Online</option>
-        </select>
-      </td>
-      <td><input class="app-input" value="${
-        commonData.note || ""
-      }" data-field="common.note"></td>
-      <td>
-        <!-- Phần trạng thái chia theo ban -->
-        <div id="status-section-${app.id}">
-          ${renderStatusSection(app)}
-        </div>
-      </td>
-      <td>
-        <button class="action-btn save-btn" data-id="${app.id}">Lưu</button>
-      </td>
-    `;
+        
+        // Ban secondary
+        if (app.secondary_position && app.secondary_position !== "None") {
+            let status = app.round2_secondary_status || "pending";
+            if (app.secondary_status !== "pass") {
+                status = "not-pass";
+            }
+            allDepartments.push({
+                type: "secondary",
+                dept: app.secondary_position,
+                status: status,
+                isPassedPrevRound: app.secondary_status === "pass",
+                canEdit: canEditBan(app, "secondary") && app.secondary_status === "pass"
+            });
+        }
 
-          tbody.appendChild(tr);
-        });
+        // Lọc theo admin - chỉ hiển thị ban của admin
+        if (userRole === "admin") {
+            const filteredDepts = allDepartments.filter(pos => pos.dept === userDept);
+            if (filteredDepts.length === 0) return;
+        }
 
-        // Event listeners cho nút lưu
-        tbody.querySelectorAll(".save-btn").forEach((btn) => {
-          btn.addEventListener("click", async (ev) => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>
+                <div class="applicant-info">
+                    <div class="applicant-avatar">${app.fullname ? app.fullname.charAt(0).toUpperCase() : "U"}</div>
+                    <div class="applicant-details">
+                        <div class="applicant-name">${app.fullname}</div>
+                        <div class="applicant-contact">${app.email}</div>
+                    </div>
+                </div>
+            </td>
+            <td>
+                ${allDepartments.map((pos) => {
+                    // Hiển thị ban NOT-PASS với style gạch ngang
+                    if (!pos.isPassedPrevRound || pos.status === "not-pass") {
+                        return `<span class="department-badge status-not-pass" style="text-decoration: line-through; display: inline-block; margin-bottom: 4px;">
+                            ${getDepartmentName(pos.dept)}
+                        </span>`;
+                    }
+                    return renderDepartment(pos.dept, pos.status);
+                }).join("")}
+            </td>
+            <td>
+                ${allDepartments.map((pos) => {
+                    // Nếu không pass vòng 1, không cho chỉnh sửa
+                    if (!pos.isPassedPrevRound) return '';
+                    return `<input class="app-input" value="${commonData.time || ""}" 
+                        data-field="common.time" style="margin-bottom: 4px; width: 100%;"
+                        ${!pos.canEdit ? "disabled" : ""}>`;
+                }).join("")}
+            </td>
+            <td>
+                ${allDepartments.map((pos) => {
+                    if (!pos.isPassedPrevRound) return '';
+                    return `<input class="app-input" value="${commonData.location || ""}" 
+                        data-field="common.location" style="margin-bottom: 4px; width: 100%;"
+                        ${!pos.canEdit ? "disabled" : ""}>`;
+                }).join("")}
+            </td>
+            <td>
+                ${allDepartments.map((pos) => {
+                    if (!pos.isPassedPrevRound) return '';
+                    return `<select class="app-select" data-field="common.method" 
+                            ${!pos.canEdit ? "disabled" : ""}
+                            style="margin-bottom: 4px; width: 100%;">
+                        <option value="offline" ${commonData.method === "offline" ? "selected" : ""}>Offline</option>
+                        <option value="online" ${commonData.method === "online" ? "selected" : ""}>Online</option>
+                    </select>`;
+                }).join("")}
+            </td>
+            <td>
+                ${allDepartments.map((pos) => {
+                    if (!pos.isPassedPrevRound) return '';
+                    return `<input class="app-input" value="${commonData.note || ""}" 
+                        data-field="common.note" style="margin-bottom: 4px; width: 100%;"
+                        ${!pos.canEdit ? "disabled" : ""}>`;
+                }).join("")}
+            </td>
+            <td>
+                <div id="status-section-${app.id}">
+                    ${renderRound2StatusSection(app)}
+                </div>
+            </td>
+            <td>
+                <button class="action-btn save-btn" data-id="${app.id}">Lưu</button>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+
+    // Event listeners cho nút lưu
+    tbody.querySelectorAll(".save-btn").forEach((btn) => {
+        btn.addEventListener("click", async (ev) => {
             const appId = btn.dataset.id;
             const row = btn.closest("tr");
             const app = applications.find((a) => a.id === appId);
 
             if (!app) {
-              alert("Ứng viên không tồn tại");
-              return;
+                alert("Ứng viên không tồn tại");
+                return;
             }
 
             const updates = {};
 
-            // Lưu thông tin chung
-            const commonInputs = row.querySelectorAll(
-              "[data-field^='common.']"
-            );
+            // Lưu thông tin chung - CHỈ LƯU CHO BAN ĐÃ PASS VÒNG 1
+            const commonInputs = row.querySelectorAll("[data-field^='common.']");
             commonInputs.forEach((input) => {
-              const field = input.dataset.field.replace("common.", "");
-
-              // Lưu vào cả 2 ban (priority và secondary) nếu có
-              if (
-                app.round2_priority_status &&
-                app.round2_priority_status !== "not-pass"
-              ) {
-                updates[`round2.priority.${field}`] = input.value;
-              }
-              if (
-                app.round2_secondary_status &&
-                app.round2_secondary_status !== "not-pass"
-              ) {
-                updates[`round2.secondary.${field}`] = input.value;
-              }
+                const field = input.dataset.field.replace("common.", "");
+                
+                // Kiểm tra xem ban priority có pass vòng 1 không
+                if (app.priority_status === "pass") {
+                    updates[`round2.priority.${field}`] = input.value;
+                }
+                // Kiểm tra xem ban secondary có pass vòng 1 không
+                if (app.secondary_status === "pass") {
+                    updates[`round2.secondary.${field}`] = input.value;
+                }
             });
 
             // Lưu trạng thái theo ban
-            const statusSection = document.getElementById(
-              `status-section-${appId}`
-            );
-            const statusSelects =
-              statusSection.querySelectorAll(".ban-status-select");
-
-            statusSelects.forEach((select) => {
-              const banType = select.dataset.banType;
-              const newStatus = select.value;
-
-              updates[`round2_${banType}_status`] = newStatus;
-            });
+            const statusSection = document.getElementById(`status-section-${appId}`);
+            if (statusSection) {
+                const statusSelects = statusSection.querySelectorAll(".ban-status-select");
+                statusSelects.forEach((select) => {
+                    const banType = select.dataset.banType;
+                    const newStatus = select.value;
+                    
+                    // CHỈ LƯU NẾU BAN ĐÓ PASS VÒNG 1
+                    const prevStatus = banType === "priority" ? app.priority_status : app.secondary_status;
+                    if (prevStatus === "pass" && canEditBan(app, banType)) {
+                        updates[`round2_${banType}_status`] = newStatus;
+                    }
+                });
+            }
 
             try {
-              await db.collection("applications").doc(appId).update(updates);
-              alert("✅ Đã lưu thông tin!");
-              refreshApplications();
+                await db.collection("applications").doc(appId).update(updates);
+                alert("✅ Đã lưu thông tin!");
+                refreshApplications();
             } catch (err) {
-              console.error(err);
-              alert("❌ Lưu thất bại: " + (err.message || err));
+                console.error(err);
+                alert("❌ Lưu thất bại: " + (err.message || err));
             }
-          });
         });
-      }
+    });
+}
+
+// Hàm render phần trạng thái vòng 2 chia theo ban
+function renderRound2StatusSection(app) {
+    let html = "";
+    const positions = [];
+
+    // Ban priority
+    if (app.priority_position) {
+        let status = app.round2_priority_status || "pending";
+        // Nếu không pass vòng 1, hiển thị not-pass
+        if (app.priority_status !== "pass") {
+            status = "not-pass";
+        }
+        positions.push({
+            type: "priority",
+            dept: app.priority_position,
+            status: status,
+            canEdit: canEditBan(app, "priority") && app.priority_status === "pass",
+            isPassedPrevRound: app.priority_status === "pass"
+        });
+    }
+
+    // Ban secondary
+    if (app.secondary_position && app.secondary_position !== "None") {
+        let status = app.round2_secondary_status || "pending";
+        if (app.secondary_status !== "pass") {
+            status = "not-pass";
+        }
+        positions.push({
+            type: "secondary",
+            dept: app.secondary_position,
+            status: status,
+            canEdit: canEditBan(app, "secondary") && app.secondary_status === "pass",
+            isPassedPrevRound: app.secondary_status === "pass"
+        });
+    }
+
+    positions.forEach((pos, index) => {
+        html += `
+            <div style="margin-bottom: ${index < positions.length - 1 ? "8px" : "0"};">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span style="font-size: 12px; color: var(--gray-600);">${getDepartmentName(pos.dept)}:</span>
+                    <span class="status-badge ${getStatusClass(pos.status)}" style="font-size: 11px;">
+                        ${getStatusText(pos.status)}
+                    </span>
+                    ${!pos.isPassedPrevRound ? '<span style="font-size: 10px; color: var(--error); margin-left: 4px;">(Đã loại từ vòng 1)</span>' : ''}
+                </div>
+                ${pos.isPassedPrevRound ? `
+                <select class="app-select ban-status-select" 
+                        data-ban-type="${pos.type}" 
+                        ${!pos.canEdit ? "disabled" : ""}
+                        style="width: 100%; font-size: 12px; padding: 4px 8px;">
+                    <option value="pending" ${pos.status === "pending" ? "selected" : ""}>Pending</option>
+                    <option value="pass" ${pos.status === "pass" ? "selected" : ""}>Pass</option>
+                    <option value="not-pass" ${pos.status === "not-pass" ? "selected" : ""}>Not pass</option>
+                </select>
+                ` : `
+                <span style="font-size: 11px; color: var(--gray-500);">Không thể chỉnh sửa (đã loại từ vòng 1)</span>
+                `}
+            </div>
+        `;
+    });
+
+    if (positions.length === 0) {
+        html = `<span style="font-size: 11px; color: var(--gray-500);">Không có ban ứng tuyển</span>`;
+    }
+
+    return html;
+}
 
       // Hàm render phần trạng thái chia theo ban
       function renderStatusSection(app) {
@@ -6363,19 +6753,15 @@ function renderRound3() {
         teams[teamName].members.push(app);
     });
 
-    // Sắp xếp teams theo thứ tự
+    // Sắp xếp teams
     const sortedTeams = Object.values(teams).sort((a, b) => {
-        // Team "Chưa có team" luôn ở cuối
         if (a.name === "Chưa có team") return 1;
         if (b.name === "Chưa có team") return -1;
-        
-        // Sắp xếp các team khác theo thứ tự alphabet
         return a.name.localeCompare(b.name);
     });
 
-    // Render theo team đã sắp xếp
     sortedTeams.forEach((team) => {
-        // Render team header row
+        // Team header
         const headerRow = document.createElement("tr");
         headerRow.style.backgroundColor = "var(--gray-50)";
         headerRow.innerHTML = `
@@ -6400,12 +6786,43 @@ function renderRound3() {
         `;
         tbody.appendChild(headerRow);
 
-        // Render members của team
+        // Members
         team.members.forEach((app, memberIndex) => {
-            const passedDepartments = [];
-            if (app.round2_priority_status === "pass") passedDepartments.push("priority");
-            if (app.round2_secondary_status === "pass") passedDepartments.push("secondary");
+            // Tạo danh sách tất cả ban (kể cả đã bị loại ở vòng trước)
+            const allDepartments = [];
+            
+            // Ban priority
+            if (app.priority_position) {
+                let status = app.round3_priority_status || "pending";
+                // Nếu chưa pass vòng 2 thì hiển thị not-pass (đã loại từ vòng trước)
+                if (app.round2_priority_status !== "pass") {
+                    status = "not-pass";
+                }
+                allDepartments.push({
+                    type: "priority",
+                    dept: app.priority_position,
+                    status: status,
+                    canEdit: canEditBan(app, "priority"),
+                    isPassedPrevRound: app.round2_priority_status === "pass"
+                });
+            }
+            
+            // Ban secondary
+            if (app.secondary_position && app.secondary_position !== "None") {
+                let status = app.round3_secondary_status || "pending";
+                if (app.round2_secondary_status !== "pass") {
+                    status = "not-pass";
+                }
+                allDepartments.push({
+                    type: "secondary",
+                    dept: app.secondary_position,
+                    status: status,
+                    canEdit: canEditBan(app, "secondary"),
+                    isPassedPrevRound: app.round2_secondary_status === "pass"
+                });
+            }
 
+            // Hiển thị thông tin
             const memberRow = document.createElement("tr");
             memberRow.innerHTML = `
                 <td style="padding-left: 32px; border-right: 2px solid var(--primary);">
@@ -6420,22 +6837,27 @@ function renderRound3() {
                     </div>
                 </td>
                 <td>
-                    ${passedDepartments.map((type) =>
-                        renderDepartment(
-                            type === "priority" ? app.priority_position : app.secondary_position,
-                            app[`round3_${type}_status`] || "pending"
-                        )
-                    ).join("")}
+                    ${allDepartments.map((pos) => {
+                        // Hiển thị ban NOT-PASS với style gạch ngang
+                        if (!pos.isPassedPrevRound || pos.status === "not-pass") {
+                            return `<span class="department-badge status-not-pass" style="text-decoration: line-through; display: inline-block; margin-bottom: 4px;">
+                                ${getDepartmentName(pos.dept)}
+                            </span>`;
+                        }
+                        return renderDepartment(pos.dept, pos.status);
+                    }).join("")}
                 </td>
                 <td>
-                    ${passedDepartments.map((type) =>
-                        `<input class="app-input" value="${app.round3?.[type]?.note || ""}" 
-                            data-field="${type}.note" data-id="${app.id}" 
-                            placeholder="Ghi chú" style="margin-bottom: 4px; width: 100%;">`
-                    ).join("")}
+                    ${allDepartments.map((pos) => {
+                        // Nếu không pass vòng trước, không cho chỉnh sửa
+                        if (!pos.isPassedPrevRound) return '';
+                        return `<input class="app-input" value="${app.round3?.[pos.type]?.note || ""}" 
+                            data-field="${pos.type}.note" data-id="${app.id}" 
+                            placeholder="Ghi chú" style="margin-bottom: 4px; width: 100%;"
+                            ${!pos.canEdit ? "disabled" : ""}>`;
+                    }).join("")}
                 </td>
                 <td>
-                    <!-- SỬA PHẦN NÀY: Thay bằng trạng thái giống vòng 2 -->
                     <div id="round3-status-section-${app.id}" style="min-width: 150px;">
                         ${renderRound3StatusSection(app)}
                     </div>
@@ -6450,16 +6872,14 @@ function renderRound3() {
             tbody.appendChild(memberRow);
         });
 
-        // Thêm một dòng trống giữa các team
+        // Spacer
         const spacerRow = document.createElement("tr");
         spacerRow.innerHTML = `<td colspan="7" style="height: 16px; background: transparent;"></td>`;
         tbody.appendChild(spacerRow);
     });
 
-    // Setup save handlers - CẦN SỬA LẠI PHẦN NÀY
     setupRound3SaveHandlers();
 }
-
 // Hàm render phần trạng thái vòng 3 chia theo ban (GIỐNG VÒNG 2)
 function renderRound3StatusSection(app) {
     let html = "";
@@ -6617,157 +7037,194 @@ function getTeamAdvisors(teamMembers) {
         return advisors;
       }
 
-      function renderRound4() {
-        const tbody = document.getElementById("round4-table-body");
-        tbody.innerHTML = "";
+function renderRound4() {
+    const tbody = document.getElementById("round4-table-body");
+    tbody.innerHTML = "";
 
-        const filteredApps = filterRound4Applications();
+    const filteredApps = filterRound4Applications();
 
-        filteredApps.forEach((app) => {
-          if (app.current_round !== "round4") return;
+    filteredApps.forEach((app) => {
+        if (app.current_round !== "round4") return;
 
-          // SỬA: Chỉ hiển thị ban đã pass vòng 3
-          const positions = [
-            {
-              type: "priority",
-              dept: app.priority_position,
-              prev: app.round3_priority_status,
-            },
-            {
-              type: "secondary",
-              dept: app.secondary_position,
-              prev: app.round3_secondary_status,
-            },
-          ].filter(
-            (pos) => pos.dept && pos.dept !== "null" && pos.prev === "pass"
-          ); // CHỈ GIỮ BAN PASS VÒNG 3
+        // Tạo danh sách tất cả ban (kể cả đã bị loại ở vòng trước)
+        const allDepartments = [];
+        
+        // Ban priority
+        if (app.priority_position) {
+            let status = app.round4_priority_status || "pending";
+            if (app.round3_priority_status !== "pass") {
+                status = "not-pass";
+            }
+            allDepartments.push({
+                type: "priority",
+                dept: app.priority_position,
+                status: status,
+                canEdit: canEditBan(app, "priority") && app.round3_priority_status === "pass",
+                isPassedPrevRound: app.round3_priority_status === "pass"
+            });
+        }
+        
+        // Ban secondary
+        if (app.secondary_position && app.secondary_position !== "None") {
+            let status = app.round4_secondary_status || "pending";
+            if (app.round3_secondary_status !== "pass") {
+                status = "not-pass";
+            }
+            allDepartments.push({
+                type: "secondary",
+                dept: app.secondary_position,
+                status: status,
+                canEdit: canEditBan(app, "secondary") && app.round3_secondary_status === "pass",
+                isPassedPrevRound: app.round3_secondary_status === "pass"
+            });
+        }
 
-          if (positions.length === 0) return;
+        // Lọc theo admin
+        if (userRole === "admin") {
+            const filteredDepts = allDepartments.filter(pos => pos.dept === userDept);
+            if (filteredDepts.length === 0) return;
+        }
 
-          positions.forEach((pos, idx) => {
-            if (userRole === "admin" && pos.dept !== userDept) return;
+        const tr = document.createElement("tr");
 
-            const status = app[`round4_${pos.type}_status`] || "pending";
-            const data = app.round4?.[pos.type] || {};
+        tr.innerHTML = `
+            <td>
+                <div style="font-weight: 500;">${app.fullname}</div>
+                <div style="font-size: 11px; color: var(--gray-500);">${app.email}</div>
+            </td>
+            <td>
+                ${allDepartments.map((pos) => {
+                    // Hiển thị ban NOT-PASS với style gạch ngang
+                    if (!pos.isPassedPrevRound || pos.status === "not-pass") {
+                        return `<span class="department-badge status-not-pass" style="text-decoration: line-through; display: inline-block; margin-bottom: 4px;">
+                            ${getDepartmentName(pos.dept)}
+                        </span>`;
+                    }
+                    return renderDepartment(pos.dept, pos.status);
+                }).join("")}
+            </td>
+            <td>
+                ${allDepartments.map((pos) => {
+                    if (!pos.isPassedPrevRound) return '';
+                    return `<input class="app-input" ${!pos.canEdit ? "disabled" : ""} 
+                        value="${app.round4?.[pos.type]?.time || ""}" 
+                        data-field="${pos.type}.time" style="margin-bottom: 4px; width: 100%;">`;
+                }).join("")}
+            </td>
+            <td>
+                ${allDepartments.map((pos) => {
+                    if (!pos.isPassedPrevRound) return '';
+                    return `<input class="app-input" ${!pos.canEdit ? "disabled" : ""} 
+                        value="${app.round4?.[pos.type]?.location || ""}" 
+                        data-field="${pos.type}.location" style="margin-bottom: 4px; width: 100%;">`;
+                }).join("")}
+            </td>
+            <td>
+                ${allDepartments.map((pos) => {
+                    if (!pos.isPassedPrevRound) return '';
+                    return `<input class="app-input" ${!pos.canEdit ? "disabled" : ""} 
+                        value="${app.round4?.[pos.type]?.interviewer || ""}" 
+                        data-field="${pos.type}.interviewer" style="margin-bottom: 4px; width: 100%;">`;
+                }).join("")}
+            </td>
+            <td>
+                ${allDepartments.map((pos) => {
+                    if (!pos.isPassedPrevRound) return '';
+                    return `<select class="app-select" ${!pos.canEdit ? "disabled" : ""} 
+                            data-field="${pos.type}.method" style="margin-bottom: 4px; width: 100%;">
+                        <option value="offline" ${app.round4?.[pos.type]?.method === "offline" ? "selected" : ""}>Offline</option>
+                        <option value="online" ${app.round4?.[pos.type]?.method === "online" ? "selected" : ""}>Online</option>
+                    </select>`;
+                }).join("")}
+            </td>
+            <td>
+                ${allDepartments.map((pos) => {
+                    if (!pos.isPassedPrevRound) return '';
+                    return `<input class="app-input" ${!pos.canEdit ? "disabled" : ""} 
+                        value="${app.round4?.[pos.type]?.note || ""}" 
+                        data-field="${pos.type}.note" style="margin-bottom: 4px; width: 100%;">`;
+                }).join("")}
+            </td>
+            <td>
+                ${allDepartments.map((pos) => {
+                    if (!pos.isPassedPrevRound) {
+                        return `<span class="status-badge status-not-pass" style="display: block; margin-bottom: 4px;">Not pass</span>`;
+                    }
+                    return `<span class="status-badge ${getStatusClass(pos.status)}" style="display: block; margin-bottom: 4px;">
+                        ${getStatusText(pos.status)}
+                    </span>
+                    <select class="app-select" ${!pos.canEdit ? "disabled" : ""} 
+                        data-field="${pos.type}.status" style="width: 100%; font-size: 12px; padding: 4px 8px;">
+                        <option value="pending" ${pos.status === "pending" ? "selected" : ""}>Pending</option>
+                        <option value="interviewed" ${pos.status === "interviewed" ? "selected" : ""}>Interviewed</option>
+                        <option value="pass" ${pos.status === "pass" ? "selected" : ""}>Pass</option>
+                        <option value="not-pass" ${pos.status === "not-pass" ? "selected" : ""}>Not pass</option>
+                    </select>`;
+                }).join("")}
+            </td>
+            <td>
+                <button class="action-btn save-btn" data-id="${app.id}">Lưu</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
 
-            const canEditThisBan = canEditBan(app, pos.type);
-            const rowClass = canEditThisBan ? "" : "row-disabled";
-
-            const tr = document.createElement("tr");
-            tr.className = rowClass;
-
-            if (idx === 0)
-              tr.innerHTML += `<td rowspan="${positions.length}">${app.fullname}</td>`;
-
-            // SỬA: Hiển thị badge giống vòng 2
-            tr.innerHTML += `
-                        <td>${renderDepartment(pos.dept, status)}</td>
-                        <td><input class="app-input" ${
-                          !canEditThisBan ? "disabled" : ""
-                        } value="${data.time || ""}" data-field="${
-              pos.type
-            }.time"></td>
-                        <td><input class="app-input" ${
-                          !canEditThisBan ? "disabled" : ""
-                        } value="${data.location || ""}" data-field="${
-              pos.type
-            }.location"></td>
-                        <td><input class="app-input" ${
-                          !canEditThisBan ? "disabled" : ""
-                        } value="${data.interviewer || ""}" data-field="${
-              pos.type
-            }.interviewer"></td>
-                        <td>
-                            <select class="app-select" ${
-                              !canEditThisBan ? "disabled" : ""
-                            } data-field="${pos.type}.method">
-                                <option value="offline" ${
-                                  data.method === "offline" ? "selected" : ""
-                                }>Offline</option>
-                                <option value="online" ${
-                                  data.method === "online" ? "selected" : ""
-                                }>Online</option>
-                            </select>
-                        </td>
-                        <td><input class="app-input" ${
-                          !canEditThisBan ? "disabled" : ""
-                        } value="${data.note || ""}" data-field="${
-              pos.type
-            }.note"></td>
-                        <td>
-                            <!-- HIỂN THỊ BADGE VÀ SELECT GIỐNG VÒNG 2 -->
-                            <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
-                                <span class="status-badge ${getStatusClass(
-                                  status
-                                )}" style="margin-bottom: 4px;">
-                                    ${getStatusText(status)}
-                                </span>
-                                <select class="app-select" ${
-                                  !canEditThisBan ? "disabled" : ""
-                                } data-field="${
-              pos.type
-            }.status" style="width: 100%; font-size: 12px; padding: 4px 8px;">
-                                    <option value="pending" ${
-                                      status === "pending" ? "selected" : ""
-                                    }>Pending</option>
-                                    <option value="interviewed" ${
-                                      status === "interviewed" ? "selected" : ""
-                                    }>Interviewed</option>
-                                    <option value="pass" ${
-                                      status === "pass" ? "selected" : ""
-                                    }>Pass</option>
-                                    <option value="not-pass" ${
-                                      status === "not-pass" ? "selected" : ""
-                                    }>Not pass</option>
-                                </select>
-                            </div>
-                        </td>
-                        <td><button class="action-btn save-btn" data-id="${
-                          app.id
-                        }" data-type="${pos.type}" ${
-              !canEditThisBan ? "disabled" : ""
-            }>Lưu</button></td>
-                    `;
-            tbody.appendChild(tr);
-          });
-        });
-
-        tbody.querySelectorAll(".save-btn").forEach((btn) => {
-          btn.addEventListener("click", async () => {
+    // ✅ SỬA: Event listeners cho save - VIẾT ĐẦY ĐỦ
+    tbody.querySelectorAll(".save-btn").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
             const id = btn.dataset.id;
-            const type = btn.dataset.type;
             const row = btn.closest("tr");
             const app = applications.find((a) => a.id === id);
+            
             if (!app) {
-              alert("Ứng viên không tồn tại");
-              return;
+                alert("Không tìm thấy ứng viên!");
+                return;
             }
 
-            // 🔒 Check quyền
-            if (!canEditBan(app, type)) {
-              alert("Bạn không có quyền chỉnh sửa ban này.");
-              return;
-            }
-
-            const inputs = row.querySelectorAll("[data-field]");
             const updates = {};
 
+            // Lấy tất cả input có data-field
+            const inputs = row.querySelectorAll("[data-field]");
             inputs.forEach((input) => {
-              const [banType, field] = input.dataset.field.split(".");
-              if (banType === type)
-                updates[`round4.${type}.${field}`] = input.value;
+                const field = input.dataset.field; // "priority.time", "secondary.status", v.v.
+                const [banType, fieldName] = field.split('.');
+                
+                // CHỈ LƯU NẾU BAN ĐÓ PASS VÒNG 3 VÀ CÓ QUYỀN CHỈNH SỬA
+                const prevStatus = banType === "priority" ? app.round3_priority_status : app.round3_secondary_status;
+                if (prevStatus === "pass" && canEditBan(app, banType)) {
+                    updates[`round4.${banType}.${fieldName}`] = input.value;
+                }
             });
 
-            const statusSelect = row.querySelector('[data-field$=".status"]');
-            if (statusSelect)
-              updates[`round4_${type}_status`] = statusSelect.value;
+            // Lưu trạng thái từ select (riêng biệt)
+            const statusSelects = row.querySelectorAll('select[data-field$=".status"]');
+            statusSelects.forEach((select) => {
+                const field = select.dataset.field;
+                const [banType, fieldName] = field.split('.');
+                const prevStatus = banType === "priority" ? app.round3_priority_status : app.round3_secondary_status;
+                
+                if (prevStatus === "pass" && canEditBan(app, banType)) {
+                    updates[`round4_${banType}_status`] = select.value;
+                }
+            });
 
-            await db.collection("applications").doc(id).update(updates);
-            alert(`✅ Đã lưu thay đổi vòng 4 (${type})`);
-            refreshApplications();
-          });
+            // Kiểm tra có gì để update không
+            if (Object.keys(updates).length === 0) {
+                alert("Không có thay đổi nào để lưu!");
+                return;
+            }
+
+            try {
+                await db.collection("applications").doc(id).update(updates);
+                alert("✅ Đã lưu thay đổi vòng 4 thành công!");
+                refreshApplications();
+            } catch (error) {
+                console.error("Lỗi khi lưu:", error);
+                alert("❌ Lưu thất bại: " + (error.message || error));
+            }
         });
-      }
+    });
+}
 
       function sortRound3Table() {
         const tbody = document.getElementById("round3-table-body");
@@ -8540,59 +8997,106 @@ document.getElementById('export-modal').innerHTML += `
           }
         });
 
-      document
-        .getElementById("update-round-btn")
-        ?.addEventListener("click", async () => {
-          const newRoundStr = prompt(
-            "Bạn muốn chuyển tất cả ứng viên pass sang vòng mấy? (vd: 2,3,4, success)"
-          );
-          if (!newRoundStr) return;
+document
+  .getElementById("update-round-btn")
+  ?.addEventListener("click", async () => {
+    // Create a custom input modal
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+    `;
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+      background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    `;
+    
+    modal.innerHTML = `
+      <h3 style="margin-bottom: 16px;">Cập nhật vòng</h3>
+      <p style="margin-bottom: 16px; color: var(--gray-600);">
+        Bạn muốn chuyển tất cả ứng viên pass sang vòng mấy?
+      </p>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+        <button class="action-btn" data-round="2" style="flex: 1;">Vòng 2</button>
+        <button class="action-btn" data-round="3" style="flex: 1;">Vòng 3</button>
+        <button class="action-btn" data-round="4" style="flex: 1;">Vòng 4</button>
+        <button class="action-btn" data-round="success" style="flex: 1;">Success</button>
+      </div>
+      <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <button class="action-btn" id="cancel-round-btn" style="background: var(--gray-200);">Hủy</button>
+      </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Handle button clicks
+    const buttons = modal.querySelectorAll('[data-round]');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const newRound = btn.getAttribute('data-round');
+        overlay.remove();
+        await processRoundUpdate(newRound);
+      });
+    });
+    
+    document.getElementById('cancel-round-btn')?.addEventListener('click', () => {
+      overlay.remove();
+    });
+    
+    // Click outside to close
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.remove();
+    });
+  });
 
-          let newRound = newRoundStr.toLowerCase();
-          if (["2", "3", "4"].includes(newRound)) {
-            newRound = parseInt(newRound);
-          } else if (newRound !== "success") {
-            alert("Chỉ hỗ trợ nhập 2, 3, 4 hoặc success.");
-            return;
-          }
+// Extract the update logic to a separate function
+async function processRoundUpdate(newRound) {
+    if (newRound === "success") {
+        // Keep as string
+    } else {
+        newRound = parseInt(newRound);
+    }
 
-          if (
-            !confirm(
-              `⚠️ Bạn có chắc muốn chuyển TẤT CẢ ứng viên đã pass sang vòng ${newRound}?`
-            )
-          )
-            return;
+    if (
+        !confirm(
+            `⚠️ Bạn có chắc muốn chuyển TẤT CẢ ứng viên đã pass sang vòng ${newRound}?`
+        )
+    ) return;
 
-          try {
-            const snapshot = await db.collection("applications").get();
-            const batch = db.batch();
-            let updatedCount = 0;
+    try {
+        const snapshot = await db.collection("applications").get();
+        const batch = db.batch();
+        let updatedCount = 0;
 
-            snapshot.forEach((doc) => {
-              const data = doc.data();
+        snapshot.forEach((doc) => {
+            const data = doc.data();
 
-              // Nếu đang là admin, chỉ thao tác những app thuộc dept họ
-              if (userRole === "admin") {
+            // Nếu đang là admin, chỉ thao tác những app thuộc dept họ
+            if (userRole === "admin") {
                 const belongs =
-                  data.priority_position === userDept ||
-                  data.secondary_position === userDept ||
-                  (Array.isArray(data.all_departments) &&
-                    data.all_departments.includes(userDept));
+                    data.priority_position === userDept ||
+                    data.secondary_position === userDept ||
+                    (Array.isArray(data.all_departments) &&
+                        data.all_departments.includes(userDept));
                 if (!belongs) return; // skip
-              }
+            }
 
-              const tempApp = {
+            const tempApp = {
                 ...data,
                 priority_status: data.priorityAccepted
-                  ? "pass"
-                  : data.priorityRejected
-                  ? "not-pass"
-                  : (data.round1 && data.round1.priority_status) || null,
+                    ? "pass"
+                    : data.priorityRejected
+                    ? "not-pass"
+                    : (data.round1 && data.round1.priority_status) || null,
                 secondary_status: data.secondaryAccepted
-                  ? "pass"
-                  : data.secondaryRejected
-                  ? "not-pass"
-                  : (data.round1 && data.round1.secondary_status) || null,
+                    ? "pass"
+                    : data.secondaryRejected
+                    ? "not-pass"
+                    : (data.round1 && data.round1.secondary_status) || null,
                 round2_priority_status: data.round2_priority_status || null,
                 round2_secondary_status: data.round2_secondary_status || null,
                 round3_priority_status: data.round3_priority_status || null,
@@ -8600,71 +9104,100 @@ document.getElementById('export-modal').innerHTML += `
                 round4_priority_status: data.round4_priority_status || null,
                 round4_secondary_status: data.round4_secondary_status || null,
                 current_round: data.current_round || "round1",
-              };
+            };
 
-              if (computeOverallStatus(tempApp) === "pass") {
+            if (computeOverallStatus(tempApp) === "pass") {
                 const updates = {};
 
                 if (newRound === 2) {
-                  updates["current_round"] = "round2";
-                  updates["status"] = "in-progress";
-                  if (tempApp.priority_status === "pass")
-                    updates["round2_priority_status"] = "pending";
-                  if (tempApp.secondary_status === "pass")
-                    updates["round2_secondary_status"] = "pending";
+                    updates["current_round"] = "round2";
+                    updates["status"] = "in-progress";
+                    
+                    // ✅ THÊM: SET NOT-PASS CHO CÁC BAN KHÔNG PASS VÒNG 1
+                    if (tempApp.priority_status === "pass") {
+                        updates["round2_priority_status"] = "pending";
+                    } else {
+                        updates["round2_priority_status"] = "not-pass";
+                    }
+                    
+                    if (tempApp.secondary_status === "pass") {
+                        updates["round2_secondary_status"] = "pending";
+                    } else {
+                        updates["round2_secondary_status"] = "not-pass";
+                    }
                 }
 
                 if (newRound === 3) {
-                  updates["current_round"] = "round3";
-                  updates["status"] = "in-progress";
-                  if (tempApp.round2_priority_status === "pass")
-                    updates["round3_priority_status"] = "pending";
-                  if (tempApp.round2_secondary_status === "pass")
-                    updates["round3_secondary_status"] = "pending";
+                    updates["current_round"] = "round3";
+                    updates["status"] = "in-progress";
+                    
+                    // ✅ THÊM: SET NOT-PASS CHO CÁC BAN KHÔNG PASS VÒNG 2
+                    if (tempApp.round2_priority_status === "pass") {
+                        updates["round3_priority_status"] = "pending";
+                    } else {
+                        updates["round3_priority_status"] = "not-pass";
+                    }
+                    
+                    if (tempApp.round2_secondary_status === "pass") {
+                        updates["round3_secondary_status"] = "pending";
+                    } else {
+                        updates["round3_secondary_status"] = "not-pass";
+                    }
                 }
 
                 if (newRound === 4) {
-                  updates["current_round"] = "round4";
-                  updates["status"] = "in-progress";
-                  if (tempApp.round3_priority_status === "pass")
-                    updates["round4_priority_status"] = "pending";
-                  if (tempApp.round3_secondary_status === "pass")
-                    updates["round4_secondary_status"] = "pending";
+                    updates["current_round"] = "round4";
+                    updates["status"] = "in-progress";
+                    
+                    // ✅ THÊM: SET NOT-PASS CHO CÁC BAN KHÔNG PASS VÒNG 3
+                    if (tempApp.round3_priority_status === "pass") {
+                        updates["round4_priority_status"] = "pending";
+                    } else {
+                        updates["round4_priority_status"] = "not-pass";
+                    }
+                    
+                    if (tempApp.round3_secondary_status === "pass") {
+                        updates["round4_secondary_status"] = "pending";
+                    } else {
+                        updates["round4_secondary_status"] = "not-pass";
+                    }
                 }
 
                 if (newRound === "success") {
-                  let finalDept = null;
-                  if (tempApp.round4_priority_status === "pass") {
-                    finalDept = data.priority_position;
-                  } else if (tempApp.round4_secondary_status === "pass") {
-                    finalDept = data.secondary_position;
-                  }
+                    let finalDept = null;
+                    
+                    // ✅ SỬA: CHỌN BAN CUỐI CÙNG PASS
+                    if (tempApp.round4_priority_status === "pass") {
+                        finalDept = data.priority_position;
+                    } else if (tempApp.round4_secondary_status === "pass") {
+                        finalDept = data.secondary_position;
+                    }
 
-                  if (finalDept) {
-                    updates["current_round"] = "success";
-                    updates["status"] = "success";
-                    updates["final_department"] = finalDept;
-                  }
+                    if (finalDept) {
+                        updates["current_round"] = "success";
+                        updates["status"] = "success";
+                        updates["final_department"] = finalDept;
+                    }
                 }
 
                 // chỉ update nếu có thay đổi hợp lệ
                 if (Object.keys(updates).length > 0) {
-                  batch.update(doc.ref, updates);
-                  updatedCount++;
+                    batch.update(doc.ref, updates);
+                    updatedCount++;
                 }
-              }
-            });
-
-            await batch.commit();
-            alert(
-              `✅ Đã cập nhật ${updatedCount} ứng viên pass sang vòng ${newRound}`
-            );
-            loadApplications();
-          } catch (error) {
-            console.error("Lỗi khi cập nhật vòng:", error);
-            alert("❌ Lỗi khi cập nhật vòng: " + error.message);
-          }
+            }
         });
+
+        await batch.commit();
+        alert(
+            `✅ Đã cập nhật ${updatedCount} ứng viên pass sang vòng ${newRound}`
+        );
+        loadApplications();
+    } catch (error) {
+        console.error("Lỗi khi cập nhật vòng:", error);
+        alert("❌ Lỗi khi cập nhật vòng: " + error.message);
+    }
+}
 
       document.getElementById("refresh-btn").addEventListener("click", () => {
         refreshApplications(); // THAY loadApplications() BẰNG refreshApplications()

@@ -352,7 +352,6 @@
     <div class="page-header">
         <div>
             <h1><i class="fas fa-shield-halved" style="color: var(--warning);"></i> Quản trị tài khoản</h1>
-            <p>Quản lý tài khoản admin, superadmin và member</p>
         </div>
         <div class="header-actions">
             <button class="btn btn-primary" onclick="showAddAccountForm()">
@@ -373,8 +372,9 @@
                         <th>Email</th>
                         <th>Role</th>
                         <th>Department</th>
+                        <th>Nhận thông báo</th>
                         <th>Note</th>
-                        <th style="width:100px;">Hành động</th>
+                        <th style="width:120px;">Hành động</th>
                     </tr>
                 </thead>
                 <tbody id="accounts-table-body">
@@ -433,6 +433,16 @@
                 </div>
 
                 <div class="form-group">
+                    <label class="form-label" style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                        <input type="checkbox" id="account-notification" checked>
+                        <span>Nhận thông báo đơn mới</span>
+                    </label>
+                    <div style="font-size:12px;color:var(--gray-500);margin-top:4px;margin-left:28px;">
+                        Khi bật, tài khoản này sẽ nhận email thông báo khi có ứng viên mới
+                    </div>
+                </div>
+
+                <div class="form-group">
                     <label class="form-label">Note</label>
                     <textarea class="form-textarea" id="account-note" placeholder="Ghi chú thêm..."></textarea>
                 </div>
@@ -454,7 +464,7 @@ async function loadAccounts() {
   const tbody = document.getElementById("accounts-table-body");
   tbody.innerHTML = `
     <tr>
-      <td colspan="6" style="text-align:center;padding:40px;color:var(--gray-400);">
+      <td colspan="7" style="text-align:center;padding:40px;color:var(--gray-400);">
         <i class="fas fa-spinner fa-spin" style="font-size:24px;display:block;margin-bottom:8px;"></i>
         Đang tải danh sách...
       </td>
@@ -466,7 +476,7 @@ async function loadAccounts() {
     if (snapshot.empty) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" style="text-align:center;padding:40px;color:var(--gray-400);">
+          <td colspan="7" style="text-align:center;padding:40px;color:var(--gray-400);">
             <i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:8px;"></i>
             Chưa có tài khoản nào
           </td>
@@ -486,11 +496,26 @@ async function loadAccounts() {
         member: 'badge-member'
       };
 
+      // Kiểm tra có được nhận thông báo không
+      const canReceiveNotification = data.canReceiveNotification !== false; // default true
+
       tr.innerHTML = `
         <td><strong>${doc.id}</strong></td>
         <td>${data.email}</td>
         <td><span class="badge ${roleBadge[data.role] || 'badge-member'}">${data.role}</span></td>
         <td>${data.department || '—'}</td>
+        <td>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+            <input type="checkbox" 
+                   class="notification-toggle" 
+                   data-id="${doc.id}"
+                   ${canReceiveNotification ? 'checked' : ''}
+                   onchange="toggleNotification('${doc.id}', this.checked)">
+            <span style="font-size:12px;color:var(--gray-500);">
+              ${canReceiveNotification ? 'Có' : 'Không'}
+            </span>
+          </label>
+        </td>
         <td>${data.note || '—'}</td>
         <td>
           <button class="btn btn-ghost btn-sm" onclick="editAccount('${doc.id}')" title="Sửa">
@@ -507,12 +532,34 @@ async function loadAccounts() {
     console.error("Lỗi load accounts:", err);
     tbody.innerHTML = `
       <tr>
-        <td colspan="6" style="text-align:center;padding:40px;color:var(--error);">
+        <td colspan="7" style="text-align:center;padding:40px;color:var(--error);">
           <i class="fas fa-exclamation-triangle" style="font-size:24px;display:block;margin-bottom:8px;"></i>
           Không thể tải danh sách tài khoản!
         </td>
       </tr>
     `;
+  }
+}
+
+// ===== Toggle nhận thông báo =====
+async function toggleNotification(id, checked) {
+  try {
+    await db.collection("account").doc(id).update({
+      canReceiveNotification: checked
+    });
+    
+    // Cập nhật label
+    const row = document.querySelector(`input[data-id="${id}"]`).closest('tr');
+    const label = row.querySelector('label span');
+    label.textContent = checked ? 'Có' : 'Không';
+    
+    console.log(`✅ Đã cập nhật nhận thông báo cho ${id}: ${checked}`);
+  } catch (err) {
+    console.error("Lỗi cập nhật nhận thông báo:", err);
+    alert("Không thể cập nhật!");
+    // Revert checkbox
+    const checkbox = document.querySelector(`input[data-id="${id}"]`);
+    checkbox.checked = !checked;
   }
 }
 
@@ -543,7 +590,8 @@ document.getElementById("account-form").addEventListener("submit", async (e) => 
     email: document.getElementById("account-email").value.trim(),
     role: document.getElementById("account-role").value,
     department: document.getElementById("account-department").value,
-    note: document.getElementById("account-note").value.trim()
+    note: document.getElementById("account-note").value.trim(),
+    canReceiveNotification: document.getElementById("account-notification").checked
   };
 
   try {
@@ -570,6 +618,7 @@ async function editAccount(id) {
     document.getElementById("account-role").value = data.role;
     document.getElementById("account-department").value = data.department || "";
     document.getElementById("account-note").value = data.note || "";
+    document.getElementById("account-notification").checked = data.canReceiveNotification !== false;
     document.getElementById("form-modal-title").textContent = "Chỉnh sửa tài khoản";
 
     document.getElementById("account-form-modal").classList.add("active");
