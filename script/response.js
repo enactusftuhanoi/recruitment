@@ -38,6 +38,12 @@ function autoOpenApplicationFromUrl() {
 
 // ==== HÀM LOAD INTERVIEW & QUESTIONS TỪ FIREBASE ====
 async function loadInterviewAndQuestions() {
+    // Guard: đảm bảo db đã init
+    if (typeof db === 'undefined' || db === null) {
+        console.error('[Response] db chưa được khởi tạo — kiểm tra config.js');
+        return;
+    }
+
     try {
         // Load interview settings
         const interviewDoc = await db.collection("system").doc("interview_settings").get();
@@ -57,24 +63,33 @@ async function loadInterviewAndQuestions() {
             const raw = questionsDoc.data().questions;
             generalQuestions = raw.general || [];
             banQuestions = {
-                "MD-Design": raw["MD-Design"] || [],
-                "MD-Content": raw["MD-Content"] || [],
-                HR: raw.HR || [],
-                ER: raw.ER || [],
-                PD: raw.PD || [],
+                "MD-Design": raw["MD-Design"] || raw["md-design"] || [],
+                "MD-Content": raw["MD-Content"] || raw["md-content"] || [],
+                HR: raw.HR || raw.hr || [],
+                ER: raw.ER || raw.er || [],
+                PD: raw.PD || raw.pd || [],
                 MD: {
-                    Design: raw["MD-Design"] || [],
-                    Content: raw["MD-Content"] || []
+                    Design: raw["MD-Design"] || raw["md-design"] || [],
+                    Content: raw["MD-Content"] || raw["md-content"] || []
                 }
             };
+        } else {
+            console.warn('[Response] Không tìm thấy form_questions trong Firebase');
         }
+
         console.log('[Response] Đã tải dữ liệu từ Firebase:', {
             generalQuestions: generalQuestions.length,
-            banQuestions: Object.keys(banQuestions),
+            banQuestions: {
+                'MD-Design': banQuestions['MD-Design']?.length,
+                'MD-Content': banQuestions['MD-Content']?.length,
+                HR: banQuestions.HR?.length,
+                ER: banQuestions.ER?.length,
+                PD: banQuestions.PD?.length,
+            },
             interviewSlots: interview.length
         });
     } catch (error) {
-        console.error('[Response] Lỗi tải dữ liệu:', error);
+        console.error('[Response] Lỗi tải dữ liệu câu hỏi:', error);
     }
 }
 
@@ -135,6 +150,834 @@ function buildInterviewFromSlots(slots) {
     });
 
     return [question];
+}
+
+// ============================================================
+// HIỂN THỊ THÔNG TIN ỨNG TUYỂN - THEO TẦNG
+// ============================================================
+
+function renderApplicationInfo(application, container) {
+    const section = document.createElement("div");
+    section.className = "detail-section";
+    
+    let html = `
+        <h3><i class="fas fa-briefcase"></i> Thông tin ứng tuyển</h3>
+        <div class="app-info-grid">
+            <!-- Dòng 1: Hình thức + Trạng thái tổng -->
+            <div class="app-info-row">
+                <div class="app-info-item">
+                    <span class="app-label">Hình thức ứng tuyển</span>
+                    <span class="app-value">${application.application_type === "form" ? "Điền đơn" : "Phỏng vấn"}</span>
+                </div>
+                <div class="app-info-item">
+                    <span class="app-label">Trạng thái tổng</span>
+                    <span class="status-indicator ${getStatusInfo(computeOverallStatus(application)).class}">
+                        ${getStatusInfo(computeOverallStatus(application)).text}
+                    </span>
+                </div>
+            </div>
+    `;
+    
+    // === BAN ƯU TIÊN ===
+    if (application.priority_position && application.priority_position !== "None") {
+        const priorityStatus = getDepartmentStatus(application, "priority");
+        const deptName = getDepartmentName(application.priority_position);
+        const subDisplay = application.priority_position === "MD" 
+            ? (application.md_sub_departments || []).join(", ") 
+            : "";
+        
+        html += `
+            <div class="app-info-divider"></div>
+            <div class="app-info-row">
+                <div class="app-info-item">
+                    <span class="app-label">Ban ưu tiên</span>
+                    <span class="app-value dept-name priority">
+                        <i class="fas fa-star" style="font-size:12px;color:#3b82f6;"></i>
+                        ${deptName} ${subDisplay ? `(${subDisplay})` : ''}
+                    </span>
+                </div>
+                <div class="app-info-item">
+                    <span class="app-label">Trạng thái</span>
+                    <span class="dept-status ${priorityStatus.class}">${priorityStatus.text}</span>
+                </div>
+                ${priorityStatus.reason ? `
+                    <div class="app-info-item full-width">
+                        <span class="app-label">Lý do</span>
+                        <span class="app-value reason">${priorityStatus.reason}</span>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    // === BAN DỰ BỊ ===
+    if (application.secondary_position && application.secondary_position !== "None") {
+        const secondaryStatus = getDepartmentStatus(application, "secondary");
+        const deptName = getDepartmentName(application.secondary_position);
+        const subDisplay = application.secondary_position === "MD" 
+            ? (application.md_sub_departments_secondary || []).join(", ") 
+            : "";
+        
+        html += `
+            <div class="app-info-divider"></div>
+            <div class="app-info-row">
+                <div class="app-info-item">
+                    <span class="app-label">Ban dự bị</span>
+                    <span class="app-value dept-name secondary">
+                        <i class="fas fa-clock" style="font-size:12px;color:#f59e0b;"></i>
+                        ${deptName} ${subDisplay ? `(${subDisplay})` : ''}
+                    </span>
+                </div>
+                <div class="app-info-item">
+                    <span class="app-label">Trạng thái</span>
+                    <span class="dept-status ${secondaryStatus.class}">${secondaryStatus.text}</span>
+                </div>
+                ${secondaryStatus.reason ? `
+                    <div class="app-info-item full-width">
+                        <span class="app-label">Lý do</span>
+                        <span class="app-value reason">${secondaryStatus.reason}</span>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    // === BAN ĐƯỢC CHẤP NHẬN ===
+    const accepted = getAcceptedDepartments(application);
+    html += `
+        <div class="app-info-divider"></div>
+        <div class="app-info-row">
+            <div class="app-info-item full-width">
+                <span class="app-label">Ban được chấp nhận</span>
+                <span class="app-value accepted">${accepted || "Chưa có"}</span>
+            </div>
+        </div>
+    `;
+    
+    // === GHI CHÚ CHUNG (nếu có) ===
+    if (application.note) {
+        html += `
+            <div class="app-info-divider"></div>
+            <div class="app-info-row">
+                <div class="app-info-item full-width">
+                    <span class="app-label">Ghi chú chung</span>
+                    <span class="app-value note">${application.note}</span>
+                </div>
+            </div>
+        `;
+    }
+    
+    html += `</div>`;
+    section.innerHTML = html;
+    container.appendChild(section);
+}
+
+// ============================================================
+// LẤY TRẠNG THÁI CỦA TỪNG BAN
+// ============================================================
+
+function getDepartmentStatus(application, type) {
+    const isPriority = type === "priority";
+    const accepted = isPriority ? application.priorityAccepted : application.secondaryAccepted;
+    const rejected = isPriority ? application.priorityRejected : application.secondaryRejected;
+    const reason = isPriority ? application.priorityRejectionReason : application.secondaryRejectionReason;
+    
+    if (accepted) {
+        return { text: "Đã chấp nhận", class: "status-passed", reason: null };
+    } else if (rejected) {
+        return { text: "Đã từ chối", class: "status-failed", reason: reason || "Không có lý do" };
+    }
+    return { text: "Chưa đánh giá", class: "status-pending", reason: null };
+}
+
+// ============================================================
+// KIỂM TRA QUYỀN XEM/ĐÁNH GIÁ BAN
+// ============================================================
+
+function canViewDepartment(application, deptType) {
+    if (!application) return false;
+    if (userRole === "superadmin") return true;
+    if (userRole === "admin") {
+        const deptCode = deptType === "priority" 
+            ? application.priority_position 
+            : application.secondary_position;
+        return deptCode === userDept;
+    }
+    return false;
+}
+
+function canViewAnyDepartment(application) {
+    if (!application) return false;
+    if (userRole === "superadmin") return true;
+    if (userRole === "admin") {
+        return application.priority_position === userDept || 
+               application.secondary_position === userDept;
+    }
+    return false;
+}
+
+// ============================================================
+// RENDER ĐÁNH GIÁ
+// ============================================================
+
+function renderEvaluationSection(application, container) {
+    if (!application) return;
+    
+    // Kiểm tra xem có ban nào để đánh giá không
+    const hasPriority = application.priority_position && application.priority_position !== "None";
+    const hasSecondary = application.secondary_position && application.secondary_position !== "None";
+    
+    if (!hasPriority && !hasSecondary) {
+        return; // Không có ban nào để đánh giá
+    }
+    
+    const section = document.createElement("div");
+    section.className = "detail-section evaluation-section";
+    
+    const title = document.createElement("h3");
+    title.innerHTML = `<i class="fas fa-gavel"></i> Đánh giá`;
+    section.appendChild(title);
+    
+    const grid = document.createElement("div");
+    grid.className = "evaluation-grid";
+    
+    // Lấy danh sách các ban cần đánh giá
+    const depts = [];
+    
+    if (hasPriority) {
+        depts.push({
+            type: "priority",
+            code: application.priority_position,
+            label: "Ưu tiên",
+            accepted: application.priorityAccepted || false,
+            rejected: application.priorityRejected || false,
+            notes: application.application_type === "form" 
+                ? (application.priority_notes || "") 
+                : (application.priority_interview_notes || ""),
+            by: application.application_type === "form" 
+                ? (application.priority_evaluated_by || "") 
+                : (application.priority_interview_evaluated_by || ""),
+            at: application.application_type === "form" 
+                ? (application.priority_evaluated_at || null) 
+                : (application.priority_interview_evaluated_at || null),
+            canAct: canActOnDepartment(application, "priority")
+        });
+    }
+    
+    if (hasSecondary) {
+        depts.push({
+            type: "secondary",
+            code: application.secondary_position,
+            label: "Dự bị",
+            accepted: application.secondaryAccepted || false,
+            rejected: application.secondaryRejected || false,
+            notes: application.application_type === "form" 
+                ? (application.secondary_notes || "") 
+                : (application.secondary_interview_notes || ""),
+            by: application.application_type === "form" 
+                ? (application.secondary_evaluated_by || "") 
+                : (application.secondary_interview_evaluated_by || ""),
+            at: application.application_type === "form" 
+                ? (application.secondary_evaluated_at || null) 
+                : (application.secondary_interview_evaluated_at || null),
+            canAct: canActOnDepartment(application, "secondary")
+        });
+    }
+    
+    // Render từng ban
+    depts.forEach((dept) => {
+        const box = document.createElement("div");
+        box.className = `eval-box ${dept.type}`;
+        
+        let statusText = "Chưa đánh giá";
+        let statusClass = "none";
+        let statusIcon = '<i class="fas fa-clock" style="font-size:12px;"></i>';
+        
+        if (dept.accepted) {
+            statusText = application.application_type === "form" ? "Đã chấp nhận" : "Pass";
+            statusClass = "passed";
+            statusIcon = '<i class="fas fa-check-circle" style="font-size:12px;"></i>';
+        } else if (dept.rejected) {
+            statusText = application.application_type === "form" ? "Đã từ chối" : "Fail";
+            statusClass = "failed";
+            statusIcon = '<i class="fas fa-times-circle" style="font-size:12px;"></i>';
+        }
+        
+        const deptName = getDepartmentName(dept.code);
+        const subDisplay = dept.code === "MD" ? getSubDeptDisplay(application, dept.type) : "";
+        
+        let actionsHTML = "";
+        
+        // Nếu có quyền đánh giá
+        if (dept.canAct) {
+            if (!dept.accepted && !dept.rejected) {
+                // Chưa đánh giá -> hiện nút đánh giá
+                if (application.application_type === "form") {
+                    actionsHTML = `
+                        <button class="btn-eval btn-pass" onclick="evalForm('${application.id}', '${dept.type}', 'pass')">
+                            <i class="fas fa-check" style="font-size:11px;"></i> Chấp nhận
+                        </button>
+                        <button class="btn-eval btn-fail" onclick="evalForm('${application.id}', '${dept.type}', 'fail')">
+                            <i class="fas fa-times" style="font-size:11px;"></i> Từ chối
+                        </button>
+                    `;
+                } else {
+                    actionsHTML = `
+                        <button class="btn-eval btn-pass" onclick="evalInterview('${application.id}', '${dept.type}', 'pass')">
+                            <i class="fas fa-check" style="font-size:11px;"></i> Pass
+                        </button>
+                        <button class="btn-eval btn-fail" onclick="evalInterview('${application.id}', '${dept.type}', 'fail')">
+                            <i class="fas fa-times" style="font-size:11px;"></i> Fail
+                        </button>
+                    `;
+                }
+            } else {
+                // Đã đánh giá -> hiện nút ghi chú + đặt lại
+                if (application.application_type === "form") {
+                    actionsHTML = `
+                        <button class="btn-eval btn-note" onclick="addFormNote('${application.id}', '${dept.type}')">
+                            <i class="fas fa-pen" style="font-size:11px;"></i> Ghi chú
+                        </button>
+                        <button class="btn-eval btn-reset" onclick="resetFormEval('${application.id}', '${dept.type}')">
+                            <i class="fas fa-undo" style="font-size:11px;"></i> Đặt lại
+                        </button>
+                    `;
+                } else {
+                    actionsHTML = `
+                        <button class="btn-eval btn-note" onclick="addInterviewNote('${application.id}', '${dept.type}')">
+                            <i class="fas fa-pen" style="font-size:11px;"></i> Ghi chú
+                        </button>
+                        <button class="btn-eval btn-reset" onclick="resetInterviewEval('${application.id}', '${dept.type}')">
+                            <i class="fas fa-undo" style="font-size:11px;"></i> Đặt lại
+                        </button>
+                    `;
+                }
+            }
+        }
+        
+        box.innerHTML = `
+            <div class="eval-row">
+                <div class="eval-dept">
+                    <i class="fas ${dept.type === 'priority' ? 'fa-star' : 'fa-clock'}" style="font-size:14px;color:${dept.type === 'priority' ? '#3b82f6' : '#f59e0b'};"></i>
+                    ${deptName}
+                    <span class="tag">${dept.label}</span>
+                    ${subDisplay ? `<span class="tag">${subDisplay}</span>` : ''}
+                    ${!dept.canAct ? `<span class="tag" style="background:#fee2e2;color:#991b1b;">Không có quyền</span>` : ''}
+                </div>
+                <span class="eval-badge ${statusClass}">${statusIcon} ${statusText}</span>
+            </div>
+            <div class="eval-meta">
+                <span><span class="label">Người đánh giá</span> ${dept.by || '—'}</span>
+                <span><span class="label">Thời gian</span> ${dept.at ? formatDateValue(dept.at) : '—'}</span>
+            </div>
+            ${dept.notes ? `<div class="eval-notes">${dept.notes}</div>` : ''}
+            ${actionsHTML ? `<div class="eval-actions">${actionsHTML}</div>` : ''}
+            ${dept.by ? `<div class="eval-by"><i class="fas fa-user-check" style="font-size:11px;"></i> Đánh giá bởi ${dept.by}</div>` : ''}
+        `;
+        
+        grid.appendChild(box);
+    });
+    
+    section.appendChild(grid);
+    container.appendChild(section);
+}
+
+// ============================================================
+// RENDER ĐÁNH GIÁ ĐƠN
+// ============================================================
+
+function renderFormEval(application, container) {
+    const depts = [];
+    
+    if (application.priority_position && application.priority_position !== "None") {
+        depts.push({
+            type: "priority",
+            code: application.priority_position,
+            label: "Ưu tiên",
+            accepted: application.priorityAccepted || false,
+            rejected: application.priorityRejected || false,
+            notes: application.priority_notes || "",
+            by: application.priority_evaluated_by || "",
+            at: application.priority_evaluated_at || null
+        });
+    }
+    
+    if (application.secondary_position && application.secondary_position !== "None") {
+        depts.push({
+            type: "secondary",
+            code: application.secondary_position,
+            label: "Dự bị",
+            accepted: application.secondaryAccepted || false,
+            rejected: application.secondaryRejected || false,
+            notes: application.secondary_notes || "",
+            by: application.secondary_evaluated_by || "",
+            at: application.secondary_evaluated_at || null
+        });
+    }
+    
+    if (depts.length === 0) {
+        container.innerHTML = `<p style="color: #94a3b8; font-size: 14px;">Chưa có ban ứng tuyển.</p>`;
+        return;
+    }
+    
+    depts.forEach((dept) => {
+        const box = document.createElement("div");
+        box.className = `eval-box ${dept.type}`;
+        
+        let statusText = "Chưa đánh giá";
+        let statusClass = "none";
+        let statusIcon = '<i class="fas fa-clock" style="font-size:12px;"></i>';
+        
+        if (dept.accepted) {
+            statusText = "Đã chấp nhận";
+            statusClass = "passed";
+            statusIcon = '<i class="fas fa-check-circle" style="font-size:12px;"></i>';
+        } else if (dept.rejected) {
+            statusText = "Đã từ chối";
+            statusClass = "failed";
+            statusIcon = '<i class="fas fa-times-circle" style="font-size:12px;"></i>';
+        }
+        
+        const deptName = getDepartmentName(dept.code);
+        const subDisplay = dept.code === "MD" ? getSubDeptDisplay(application, dept.type) : "";
+        
+        box.innerHTML = `
+            <div class="eval-row">
+                <div class="eval-dept">
+                    <i class="fas ${dept.type === 'priority' ? 'fa-star' : 'fa-clock'}" style="font-size:14px;color:${dept.type === 'priority' ? '#3b82f6' : '#f59e0b'};"></i>
+                    ${deptName}
+                    <span class="tag">${dept.label}</span>
+                    ${subDisplay ? `<span class="tag">${subDisplay}</span>` : ''}
+                </div>
+                <span class="eval-badge ${statusClass}">${statusIcon} ${statusText}</span>
+            </div>
+            <div class="eval-meta">
+                <span><span class="label">Người đánh giá</span> ${dept.by || '—'}</span>
+                <span><span class="label">Thời gian</span> ${dept.at ? formatDateValue(dept.at) : '—'}</span>
+            </div>
+            ${dept.notes ? `<div class="eval-notes">${dept.notes}</div>` : ''}
+            <div class="eval-actions">
+                ${!dept.accepted && !dept.rejected ? `
+                    <button class="btn-eval btn-pass" onclick="evalForm('${application.id}', '${dept.type}', 'pass')">
+                        <i class="fas fa-check" style="font-size:11px;"></i> Chấp nhận
+                    </button>
+                    <button class="btn-eval btn-fail" onclick="evalForm('${application.id}', '${dept.type}', 'fail')">
+                        <i class="fas fa-times" style="font-size:11px;"></i> Từ chối
+                    </button>
+                ` : `
+                    <button class="btn-eval btn-note" onclick="addFormNote('${application.id}', '${dept.type}')">
+                        <i class="fas fa-pen" style="font-size:11px;"></i> Ghi chú
+                    </button>
+                    <button class="btn-eval btn-reset" onclick="resetFormEval('${application.id}', '${dept.type}')">
+                        <i class="fas fa-undo" style="font-size:11px;"></i> Đặt lại
+                    </button>
+                `}
+            </div>
+            ${dept.by ? `<div class="eval-by"><i class="fas fa-user-check" style="font-size:11px;"></i> Đánh giá bởi ${dept.by}</div>` : ''}
+        `;
+        
+        container.appendChild(box);
+    });
+}
+
+// ============================================================
+// RENDER ĐÁNH GIÁ PHỎNG VẤN - CÓ NÚT RESET
+// ============================================================
+
+function renderInterviewEval(application, container) {
+    const depts = [];
+    
+    if (application.priority_position && application.priority_position !== "None") {
+        depts.push({
+            type: "priority",
+            code: application.priority_position,
+            label: "Ưu tiên",
+            accepted: application.priorityAccepted || false,
+            rejected: application.priorityRejected || false,
+            notes: application.priority_interview_notes || "",
+            by: application.priority_interview_evaluated_by || "",
+            at: application.priority_interview_evaluated_at || null
+        });
+    }
+    
+    if (application.secondary_position && application.secondary_position !== "None") {
+        depts.push({
+            type: "secondary",
+            code: application.secondary_position,
+            label: "Dự bị",
+            accepted: application.secondaryAccepted || false,
+            rejected: application.secondaryRejected || false,
+            notes: application.secondary_interview_notes || "",
+            by: application.secondary_interview_evaluated_by || "",
+            at: application.secondary_interview_evaluated_at || null
+        });
+    }
+    
+    if (depts.length === 0) {
+        container.innerHTML = `<p style="color: #94a3b8; font-size: 14px;">Chưa có ban ứng tuyển.</p>`;
+        return;
+    }
+    
+    depts.forEach((dept) => {
+        const box = document.createElement("div");
+        box.className = `eval-box ${dept.type}`;
+        
+        let statusText = "Chưa đánh giá";
+        let statusClass = "none";
+        let statusIcon = '<i class="fas fa-clock" style="font-size:12px;"></i>';
+        
+        if (dept.accepted) {
+            statusText = "Pass";
+            statusClass = "passed";
+            statusIcon = '<i class="fas fa-check-circle" style="font-size:12px;"></i>';
+        } else if (dept.rejected) {
+            statusText = "Fail";
+            statusClass = "failed";
+            statusIcon = '<i class="fas fa-times-circle" style="font-size:12px;"></i>';
+        }
+        
+        const deptName = getDepartmentName(dept.code);
+        
+        box.innerHTML = `
+            <div class="eval-row">
+                <div class="eval-dept">
+                    <i class="fas ${dept.type === 'priority' ? 'fa-star' : 'fa-clock'}" style="font-size:14px;color:${dept.type === 'priority' ? '#3b82f6' : '#f59e0b'};"></i>
+                    ${deptName}
+                    <span class="tag">${dept.label}</span>
+                </div>
+                <span class="eval-badge ${statusClass}">${statusIcon} ${statusText}</span>
+            </div>
+            <div class="eval-meta">
+                <span><span class="label">Người đánh giá</span> ${dept.by || '—'}</span>
+                <span><span class="label">Thời gian</span> ${dept.at ? formatDateValue(dept.at) : '—'}</span>
+            </div>
+            ${dept.notes ? `<div class="eval-notes">${dept.notes}</div>` : ''}
+            <div class="eval-actions">
+                ${!dept.accepted && !dept.rejected ? `
+                    <button class="btn-eval btn-pass" onclick="evalInterview('${application.id}', '${dept.type}', 'pass')">
+                        <i class="fas fa-check" style="font-size:11px;"></i> Pass
+                    </button>
+                    <button class="btn-eval btn-fail" onclick="evalInterview('${application.id}', '${dept.type}', 'fail')">
+                        <i class="fas fa-times" style="font-size:11px;"></i> Fail
+                    </button>
+                ` : `
+                    <button class="btn-eval btn-note" onclick="addInterviewNote('${application.id}', '${dept.type}')">
+                        <i class="fas fa-pen" style="font-size:11px;"></i> Ghi chú
+                    </button>
+                    <button class="btn-eval btn-reset" onclick="resetInterviewEval('${application.id}', '${dept.type}')">
+                        <i class="fas fa-undo" style="font-size:11px;"></i> Đặt lại
+                    </button>
+                `}
+            </div>
+            ${dept.by ? `<div class="eval-by"><i class="fas fa-user-check" style="font-size:11px;"></i> Đánh giá bởi ${dept.by}</div>` : ''}
+        `;
+        
+        container.appendChild(box);
+    });
+}
+
+// ============================================================
+// RESET ĐÁNH GIÁ PHỎNG VẤN
+// ============================================================
+
+async function resetInterviewEval(appId, deptType) {
+    const result = await Swal.fire({
+        title: "Đặt lại đánh giá phỏng vấn?",
+        text: "Thao tác này sẽ xóa kết quả Pass/Fail hiện tại.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Có, đặt lại",
+        cancelButtonText: "Hủy"
+    });
+    
+    if (!result.isConfirmed) return;
+    
+    try {
+        const prefix = deptType === "priority" ? "priority" : "secondary";
+        const update = {};
+        
+        // Reset trạng thái
+        update[`${prefix}Accepted`] = false;
+        update[`${prefix}Rejected`] = false;
+        
+        // Reset ghi chú và người đánh giá
+        update[`${prefix}_interview_notes`] = "";
+        update[`${prefix}_interview_evaluated_by`] = "";
+        update[`${prefix}_interview_evaluated_at`] = null;
+        
+        // Cập nhật lại trạng thái tổng
+        const app = applications.find(a => a.id === appId);
+        if (app) {
+            const status = computeInterviewOverallStatus({ ...app, ...update });
+            update.status = status.status;
+            update.interview_result = status.interviewResult;
+        }
+        
+        await db.collection("applications").doc(appId).update(update);
+        
+        Swal.fire("Thành công", "Đã đặt lại đánh giá phỏng vấn.", "success");
+        await loadApplications();
+        showApplicationDetail(appId);
+    } catch (e) {
+        Swal.fire("Lỗi", e.message, "error");
+    }
+}
+
+// ============================================================
+// HÀM XỬ LÝ
+// ============================================================
+
+function getSubDeptDisplay(application, type) {
+    if (type === "priority") {
+        return (application.md_sub_departments || []).join(", ");
+    }
+    return (application.md_sub_departments_secondary || []).join(", ");
+}
+
+// ============================================================
+// ĐÁNH GIÁ ĐƠN
+// ============================================================
+
+async function evalForm(appId, deptType, action) {
+    const app = applications.find(a => a.id === appId);
+    if (!app) return;
+    
+    const isP = deptType === "priority";
+    const deptName = getDepartmentName(isP ? app.priority_position : app.secondary_position);
+    
+    if (!canActOnDepartment(app, deptType)) {
+        Swal.fire("Lỗi", `Bạn không có quyền đánh giá ban ${deptName}.`, "error");
+        return;
+    }
+    
+    const actionText = action === "pass" ? "CHẤP NHẬN" : "TỪ CHỐI";
+    const result = await Swal.fire({
+        title: `Xác nhận ${actionText}`,
+        text: `Bạn có chắc muốn ${action === "pass" ? "chấp nhận" : "từ chối"} ứng viên này cho ban ${deptName}?`,
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: `Có, ${action === "pass" ? "chấp nhận" : "từ chối"}`,
+        cancelButtonText: "Hủy"
+    });
+    
+    if (!result.isConfirmed) return;
+    
+    let notes = "";
+    if (action === "fail") {
+        const { value } = await Swal.fire({
+            title: "Lý do từ chối",
+            input: "textarea",
+            inputPlaceholder: "Nhập lý do...",
+            showCancelButton: true,
+            confirmButtonText: "Xác nhận",
+            cancelButtonText: "Hủy"
+        });
+        if (value === undefined) return;
+        notes = value || "Không có lý do";
+    }
+    
+    try {
+        const prefix = isP ? "priority" : "secondary";
+        const update = {};
+        
+        if (action === "pass") {
+            update[`${prefix}Accepted`] = true;
+            update[`${prefix}Rejected`] = false;
+        } else {
+            update[`${prefix}Rejected`] = true;
+            update[`${prefix}Accepted`] = false;
+            // 🔥 QUAN TRỌNG: lưu lý do từ chối đúng field
+            update[`${prefix}RejectionReason`] = notes;
+        }
+        
+        update[`${prefix}_evaluated_by`] = window.currentUserFullname || "Unknown";
+        update[`${prefix}_evaluated_at`] = new Date();
+        update[`${prefix}_notes`] = notes;
+        update.status = computeOverallStatus({ ...app, ...update });
+        
+        await db.collection("applications").doc(appId).update(update);
+        
+        Swal.fire("Thành công", `Đã ${action === "pass" ? "chấp nhận" : "từ chối"} ứng viên cho ban ${deptName}.`, "success");
+        await loadApplications();
+        showApplicationDetail(appId);
+    } catch (e) {
+        Swal.fire("Lỗi", e.message, "error");
+    }
+}
+
+// ============================================================
+// ĐÁNH GIÁ PHỎNG VẤN
+// ============================================================
+
+async function evalInterview(appId, deptType, action) {
+    const app = applications.find(a => a.id === appId);
+    if (!app) return;
+    
+    const isP = deptType === "priority";
+    const deptName = getDepartmentName(isP ? app.priority_position : app.secondary_position);
+    
+    if (!canActOnDepartment(app, deptType)) {
+        Swal.fire("Lỗi", `Bạn không có quyền đánh giá ban ${deptName}.`, "error");
+        return;
+    }
+    
+    const { value: notes } = await Swal.fire({
+        title: `${action === "pass" ? "Pass" : "Fail"} - ${deptName}`,
+        input: "textarea",
+        inputLabel: "Ghi chú đánh giá",
+        inputPlaceholder: "Nhập đánh giá...",
+        showCancelButton: true,
+        confirmButtonText: "Xác nhận",
+        cancelButtonText: "Hủy"
+    });
+    
+    if (notes === undefined) return;
+    
+    try {
+        const prefix = isP ? "priority" : "secondary";
+        const update = {};
+        
+        if (action === "pass") {
+            update[`${prefix}Accepted`] = true;
+            update[`${prefix}Rejected`] = false;
+        } else {
+            update[`${prefix}Rejected`] = true;
+            update[`${prefix}Accepted`] = false;
+        }
+        
+        update[`${prefix}_interview_notes`] = notes || "";
+        update[`${prefix}_interview_evaluated_by`] = window.currentUserFullname || "Unknown";
+        update[`${prefix}_interview_evaluated_at`] = new Date();
+        
+        const status = computeInterviewOverallStatus({ ...app, ...update });
+        update.status = status.status;
+        update.interview_result = status.interviewResult;
+        
+        await db.collection("applications").doc(appId).update(update);
+        
+        Swal.fire("Thành công", `Đã ${action === "pass" ? "Pass" : "Fail"} ứng viên cho ban ${deptName}.`, "success");
+        await loadApplications();
+        showApplicationDetail(appId);
+    } catch (e) {
+        Swal.fire("Lỗi", e.message, "error");
+    }
+}
+
+// ============================================================
+// GHI CHÚ
+// ============================================================
+
+async function addFormNote(appId, deptType) {
+    const app = applications.find(a => a.id === appId);
+    if (!app) return;
+    
+    const isP = deptType === "priority";
+    const deptName = getDepartmentName(isP ? app.priority_position : app.secondary_position);
+    const current = isP ? (app.priority_notes || "") : (app.secondary_notes || "");
+    
+    const { value: notes } = await Swal.fire({
+        title: `Ghi chú - ${deptName}`,
+        input: "textarea",
+        inputValue: current,
+        inputPlaceholder: "Nhập ghi chú...",
+        showCancelButton: true,
+        confirmButtonText: "Lưu",
+        cancelButtonText: "Hủy"
+    });
+    
+    if (notes === undefined) return;
+    
+    try {
+        const prefix = isP ? "priority" : "secondary";
+        const update = {};
+        update[`${prefix}_notes`] = notes || "";
+        await db.collection("applications").doc(appId).update(update);
+        Swal.fire("Thành công", "Đã lưu ghi chú.", "success");
+        await loadApplications();
+        showApplicationDetail(appId);
+    } catch (e) {
+        Swal.fire("Lỗi", e.message, "error");
+    }
+}
+
+async function addInterviewNote(appId, deptType) {
+    const app = applications.find(a => a.id === appId);
+    if (!app) return;
+    
+    const isP = deptType === "priority";
+    const deptName = getDepartmentName(isP ? app.priority_position : app.secondary_position);
+    const current = isP ? (app.priority_interview_notes || "") : (app.secondary_interview_notes || "");
+    
+    const { value: notes } = await Swal.fire({
+        title: `Ghi chú phỏng vấn - ${deptName}`,
+        input: "textarea",
+        inputValue: current,
+        inputPlaceholder: "Nhập ghi chú...",
+        showCancelButton: true,
+        confirmButtonText: "Lưu",
+        cancelButtonText: "Hủy"
+    });
+    
+    if (notes === undefined) return;
+    
+    try {
+        const prefix = isP ? "priority" : "secondary";
+        const update = {};
+        update[`${prefix}_interview_notes`] = notes || "";
+        await db.collection("applications").doc(appId).update(update);
+        Swal.fire("Thành công", "Đã lưu ghi chú.", "success");
+        await loadApplications();
+        showApplicationDetail(appId);
+    } catch (e) {
+        Swal.fire("Lỗi", e.message, "error");
+    }
+}
+
+// ============================================================
+// RESET
+// ============================================================
+
+async function resetFormEval(appId, deptType) {
+    const result = await Swal.fire({
+        title: "Đặt lại đánh giá?",
+        text: "Thao tác này sẽ xóa kết quả đánh giá hiện tại.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Có, đặt lại",
+        cancelButtonText: "Hủy"
+    });
+    
+    if (!result.isConfirmed) return;
+    
+    try {
+        const prefix = deptType === "priority" ? "priority" : "secondary";
+        const update = {};
+        update[`${prefix}Accepted`] = false;
+        update[`${prefix}Rejected`] = false;
+        // 🔥 THÊM: xóa cả lý do từ chối khi reset
+        update[`${prefix}RejectionReason`] = "";
+        update[`${prefix}_notes`] = "";
+        update[`${prefix}_evaluated_by`] = "";
+        update[`${prefix}_evaluated_at`] = null;
+        await db.collection("applications").doc(appId).update(update);
+        Swal.fire("Thành công", "Đã đặt lại đánh giá.", "success");
+        await loadApplications();
+        showApplicationDetail(appId);
+    } catch (e) {
+        Swal.fire("Lỗi", e.message, "error");
+    }
+}
+
+// ============================================================
+// HÀM LẤY TÊN TIỂU BAN
+// ============================================================
+
+function getSubDepartmentDisplay(application, type) {
+    if (type === "priority") {
+        return (application.md_sub_departments || []).join(", ");
+    } else {
+        return (application.md_sub_departments_secondary || []).join(", ");
+    }
 }
 
 // CHÚ Ý: không gọi loadApplications trực tiếp khi load trang.
@@ -587,10 +1430,19 @@ function canActOnDepartment(application, departmentType) {
   return false;
 }
 
-// Hàm hiển thị chi tiết ứng viên
+// ============================================================
+// HIỂN THỊ CHI TIẾT ỨNG VIÊN - VERSION MỚI
+// ============================================================
+
 function showApplicationDetail(appId) {
   const application = applications.find((app) => app.id === appId);
   if (!application) return;
+
+  if (!canViewAnyDepartment(application) && userRole !== "superadmin") {
+    Swal.fire("Lỗi", "Bạn không có quyền xem ứng viên này.", "error");
+    hideDetailView();
+    return;
+  }
 
   currentApplicationId = appId;
 
@@ -600,566 +1452,579 @@ function showApplicationDetail(appId) {
   const detailSections = document.getElementById("detail-sections");
   detailSections.innerHTML = "";
 
-  // Thông tin cá nhân (luôn hiển thị)
-  const personalInfoSection = document.createElement("div");
-  personalInfoSection.className = "detail-section";
+  // ============================================================
+  // 1. THÔNG TIN CÁ NHÂN
+  // ============================================================
+  renderPersonalInfo(application, detailSections);
 
-  let personalInfoHTML = `
-        <h3><i class="fas fa-user"></i> Thông tin cá nhân</h3>
-        <div class="application-details">
-            <div class="detail-item">
-                <span class="detail-label">Họ và tên</span>
-                <span class="detail-value">${
-                  application.fullname || "Chưa cung cấp"
-                }</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Email</span>
-                <span class="detail-value">${
-                  application.email || "Chưa cung cấp"
-                }</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Số điện thoại</span>
-                <span class="detail-value">${
-                  application.phone || "Chưa cung cấp"
-                }</span>
-            </div>
-    `;
+  // ============================================================
+  // 2. THÔNG TIN ỨNG TUYỂN - THEO TẦNG
+  // ============================================================
+  renderApplicationInfo(application, detailSections);
 
-  // Thêm các trường thông tin cá nhân bổ sung (nếu có)
-  if (application.facebook) {
-    personalInfoHTML += `
-            <div class="detail-item">
-                <span class="detail-label">Facebook</span>
-                <span class="detail-value">
-                    <a href="${application.facebook}" target="_blank" class="facebook-badge">
-                        <i class="fab fa-facebook"></i>
-                        <span>Facebook</span>
-                    </a>
-                </span>
-            </div>
-        `;
-  }
-
-  if (application.birthdate) {
-    personalInfoHTML += `
-            <div class="detail-item">
-                <span class="detail-label">Ngày/tháng/năm sinh</span>
-                <span class="detail-value">${
-                  application.birthdate || "Chưa cung cấp"
-                }</span>
-            </div>
-        `;
-  }
-
-  if (application.gender) {
-    personalInfoHTML += `
-            <div class="detail-item">
-                <span class="detail-label">Giới tính</span>
-                <span class="detail-value">${
-                  application.gender || "Chưa cung cấp"
-                }</span>
-            </div>
-        `;
-  }
-
-  if (application.school) {
-    personalInfoHTML += `
-            <div class="detail-item">
-                <span class="detail-label">Trường</span>
-                <span class="detail-value">${
-                  application.school || "Chưa cung cấp"
-                }</span>
-            </div>
-        `;
-  }
-
-  if (application.major) {
-    personalInfoHTML += `
-            <div class="detail-item">
-                <span class="detail-label">Chuyên ngành</span>
-                <span class="detail-value">${
-                  application.major || "Chưa cung cấp"
-                }</span>
-            </div>
-        `;
-  }
-
-  personalInfoSection.innerHTML = personalInfoHTML;
-  detailSections.appendChild(personalInfoSection);
-  personalInfoHTML += `</div>`;
-
-  // Thông tin ứng tuyển
-  const applicationInfoSection = document.createElement("div");
-  applicationInfoSection.className = "detail-section";
-
-  // Thông tin ứng tuyển - CẬP NHẬT PHIÊN BẢN ĐẦY ĐỦ
-  let applicationInfoHTML = `
-        <h3><i class="fas fa-briefcase"></i> Thông tin ứng tuyển</h3>
-        <div class="application-details">
-            <div class="detail-item">
-                <span class="detail-label">Hình thức ứng tuyển</span>
-                <span class="detail-value">${
-                  application.application_type === "form"
-                    ? "Điền đơn"
-                    : "Phỏng vấn"
-                }</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Ban ưu tiên</span>
-                <span class="detail-value">${getDepartmentDisplayText(
-                  application,
-                  "priority"
-                )}</span>
-            </div>
-    `;
-
-  // Hiển thị ban dự bị nếu có
-  if (
-    application.secondary_position &&
-    application.secondary_position !== "None"
-  ) {
-    applicationInfoHTML += `
-            <div class="detail-item">
-                <span class="detail-label">Ban dự bị</span>
-                <span class="detail-value">${getDepartmentDisplayText(
-                  application,
-                  "secondary"
-                )}</span>
-            </div>
-        `;
-  }
-
-  // HIỂN THỊ TRẠNG THÁI CHO CẢ HAI HÌNH THỨC
-  applicationInfoHTML += `
-        <div class="detail-item">
-            <span class="detail-label">Trạng thái tổng</span>
-            <span class="detail-value">
-                <span class="status-indicator ${
-                  getStatusInfo(computeOverallStatus(application)).class
-                }">
-                    ${getStatusInfo(computeOverallStatus(application)).text}
-                </span>
-            </span>
-        </div>
-    `;
-
-  // Hiển thị trạng thái từng nguyện vọng nếu ứng viên có 2 nguyện vọng
-  if (
-    application.secondary_position &&
-    application.secondary_position !== "None"
-  ) {
-    const priorityStatus = application.priorityRejected
-      ? '<span style="color: var(--error);">Đã từ chối</span>'
-      : application.priorityAccepted
-      ? '<span style="color: var(--success);">Đã chấp nhận</span>'
-      : "Chưa đánh giá";
-
-    const secondaryStatus = application.secondaryRejected
-      ? '<span style="color: var(--error);">Đã từ chối</span>'
-      : application.secondaryAccepted
-      ? '<span style="color: var(--success);">Đã chấp nhận</span>'
-      : "Chưa đánh giá";
-
-    applicationInfoHTML += `
-            <div class="detail-item">
-                <span class="detail-label">Trạng thái nguyện vọng ưu tiên</span>
-                <span class="detail-value">${priorityStatus}</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Trạng thái nguyện vọng dự bị</span>
-                <span class="detail-value">${secondaryStatus}</span>
-            </div>
-        `;
-  }
-
-  // Xác định ban được chấp nhận
-  let acceptedText = getAcceptedDepartments(application) || "Không có";
-  applicationInfoHTML += `
-        <div class="detail-item">
-            <span class="detail-label">Ban được chấp nhận</span>
-            <span class="detail-value" style="color: var(--success); font-weight: bold;">
-                ${acceptedText}
-            </span>
-        </div>
-    `;
-
-  // Hiển thị lý do từ chối (nếu có)
-  if (application.rejectionReason) {
-    applicationInfoHTML += `
-            <div class="detail-item">
-                <span class="detail-label">Lý do từ chối</span>
-                <span class="detail-value" style="color: var(--error);">${application.rejectionReason}</span>
-            </div>
-        `;
-  }
-
-  // Hiển thị ghi chú (nếu có)
-  if (application.note) {
-    applicationInfoHTML += `
-            <div class="detail-item">
-                <span class="detail-label">Ghi chú</span>
-                <span class="detail-value">${application.note}</span>
-            </div>
-        `;
-  }
-
-  applicationInfoHTML += `</div>`;
-  applicationInfoSection.innerHTML = applicationInfoHTML;
-  detailSections.appendChild(applicationInfoSection);
-
-  // XỬ LÝ THEO HÌNH THỨC ỨNG TUYỂN
+  // ============================================================
+  // 3. XỬ LÝ THEO HÌNH THỨC ỨNG TUYỂN
+  // ============================================================
   if (application.application_type === "form") {
-    // HIỂN THỊ CÂU TRẢ LỜI CHO ỨNG VIÊN ĐIỀN ĐƠN
-    // Câu trả lời chung
-    const hasGeneralAnswers = generalQuestions.some(
-      (q) => application[`general_${q.id}`]
-    );
-    if (hasGeneralAnswers) {
-      const generalAnswersSection = document.createElement("div");
-      generalAnswersSection.className = "detail-section";
-      generalAnswersSection.innerHTML =
-        '<h3><i class="fas fa-comments"></i> Câu trả lời chung</h3>';
+    // ---- 3a. CÂU TRẢ LỜI CHUNG ----
+    renderGeneralAnswers(application, detailSections);
 
-      generalQuestions.forEach((q) => {
-        const answer = application[`general_${q.id}`] || "Chưa trả lời";
-        const questionItem = document.createElement("div");
-        questionItem.className = "question-item";
-
-        // render text câu hỏi
-        let html = `<div class="question-text">${q.question}</div>`;
-
-        // render media nếu có
-        if (q.media) {
-          if (q.media.type === "image") {
-            html += `<div class="question-media">
-                                    <img src="${q.media.url}" alt="${
-              q.media.alt || ""
-            }" class="question-img">
-                                </div>`;
-          } else if (q.media.type === "video") {
-            html += `<div class="question-media">
-                                    <video src="${q.media.url}" controls class="question-video"></video>
-                                </div>`;
-          }
-        }
-
-        // render câu trả lời
-        html += `<div class="answer-text">${answer}</div>`;
-
-        questionItem.innerHTML = html;
-        generalAnswersSection.appendChild(questionItem);
-      });
-
-      detailSections.appendChild(generalAnswersSection);
+    // ---- 3b. CÂU TRẢ LỜI BAN ƯU TIÊN (chỉ hiển thị nếu admin được xem ban đó) ----
+    if (application.priority_position && canViewDepartment(application, "priority")) {
+      renderBanAnswers(application, "priority", detailSections);
     }
 
-    // Câu trả lời theo ban ưu tiên
-    if (application.priority_position) {
-      const priorityAnswersSection = document.createElement("div");
-      priorityAnswersSection.className = "detail-section";
-
-      let priorityTitle = `<h3><i class="fas fa-star"></i> Câu trả lời cho ${getDepartmentName(
-        application.priority_position
-      )} (Ưu tiên)</h3>`;
-      if (application.priorityRejected) {
-        priorityTitle = `<h3><i class="fas fa-star" style="color: var(--error);"></i> Câu trả lời cho ${getDepartmentName(
-          application.priority_position
-        )} (Ưu tiên - Đã từ chối)</h3>`;
-      } else if (
-        application.acceptedDepartment === application.priority_position
-      ) {
-        priorityTitle = `<h3><i class="fas fa-star" style="color: var(--success);"></i> Câu trả lời cho ${getDepartmentName(
-          application.priority_position
-        )} (Ưu tiên - Đã chấp nhận)</h3>`;
-      }
-      priorityAnswersSection.innerHTML = priorityTitle;
-
-      renderBanSpecificAnswers(application, "priority", priorityAnswersSection);
-
-      // Nút hành động chỉ dành cho ứng viên điền đơn
-      if (canActOnDepartment(application, "priority")) {
-        const priorityActions = document.createElement("div");
-        priorityActions.className = "action-buttons";
-        priorityActions.innerHTML = `
-                    <button class="action-button btn-accept" onclick="acceptDepartment('priority')">
-                    <i class="fas fa-check"></i> Chấp nhận ban ưu tiên
-                    </button>
-                    <button class="action-button btn-reject" onclick="rejectDepartment('priority')">
-                    <i class="fas fa-times"></i> Từ chối ban ưu tiên
-                    </button>
-                `;
-        priorityAnswersSection.appendChild(priorityActions);
-      }
-
-      detailSections.appendChild(priorityAnswersSection);
+    // ---- 3c. CÂU TRẢ LỜI BAN DỰ BỊ (chỉ hiển thị nếu admin được xem ban đó) ----
+    if (application.secondary_position && application.secondary_position !== "None" && 
+        canViewDepartment(application, "secondary")) {
+      renderBanAnswers(application, "secondary", detailSections);
     }
 
-    // Câu trả lời theo ban dự bị
-    if (
-      application.secondary_position &&
-      application.secondary_position !== "None"
-    ) {
-      const secondaryAnswersSection = document.createElement("div");
-      secondaryAnswersSection.className = "detail-section";
-
-      let secondaryTitle = `<h3><i class="fas fa-clock"></i> Câu trả lời cho ${getDepartmentName(
-        application.secondary_position
-      )} (Dự bị)</h3>`;
-      if (application.acceptedDepartment === application.secondary_position) {
-        secondaryTitle = `<h3><i class="fas fa-clock" style="color: var(--success);"></i> Câu trả lời cho ${getDepartmentName(
-          application.secondary_position
-        )} (Dự bị - Đã chấp nhận)</h3>`;
-      } else if (application.secondaryRejected) {
-        secondaryTitle = `<h3><i class="fas fa-clock" style="color: var(--error);"></i> Câu trả lời cho ${getDepartmentName(
-          application.secondary_position
-        )} (Dự bị - Đã từ chối)</h3>`;
-      }
-      secondaryAnswersSection.innerHTML = secondaryTitle;
-
-      renderBanSpecificAnswers(
-        application,
-        "secondary",
-        secondaryAnswersSection
-      );
-
-      // Nút hành động chỉ dành cho ứng viên điền đơn
-      if (canActOnDepartment(application, "secondary")) {
-        const secondaryActions = document.createElement("div");
-        secondaryActions.className = "action-buttons";
-        secondaryActions.innerHTML = `
-                    <button class="action-button btn-accept" onclick="acceptDepartment('secondary')">
-                    <i class="fas fa-check"></i> Chấp nhận ban dự bị
-                    </button>
-                    <button class="action-button btn-reject" onclick="rejectDepartment('secondary')">
-                    <i class="fas fa-times"></i> Từ chối ban dự bị
-                    </button>
-                `;
-        secondaryAnswersSection.appendChild(secondaryActions);
-      }
-
-      detailSections.appendChild(secondaryAnswersSection);
-    }
   } else {
-    // HIỂN THỊ THÔNG TIN PHỎNG VẤN
-    const interviewInfoSection = document.createElement("div");
-    interviewInfoSection.className = "detail-section";
-
-    let interviewHTML = `
-        <h3><i class="fas fa-calendar-alt"></i> Thông tin phỏng vấn</h3>
-        <div class="application-details">
-            <div class="detail-item">
-                <span class="detail-label">Hình thức</span>
-                <span class="detail-value">Phỏng vấn trực tiếp</span>
-            </div>
-    `;
-
-    // HIỂN THỊ LỊCH PHỎNG VẤN ĐÃ CHỌN - Format: Thứ ngày + Ca
-    let hasInterviewData = false;
-    if (interview && interview.length > 0) {
-        interview.forEach((day) => {
-            const dayData = application[day.id];
-            if (dayData && Array.isArray(dayData) && dayData.length > 0) {
-                hasInterviewData = true;
-                // Format lại để hiển thị đẹp
-                let scheduleHTML = '<div style="display:flex;flex-direction:column;gap:4px;">';
-                dayData.forEach(slot => {
-                    // Slot đã có format "Ca 1 (08:00 - 09:30) - Thứ 5, 25/06/2026"
-                    scheduleHTML += `<div style="padding:4px 8px;background:var(--gray-100);border-radius:4px;font-size:13px;">${slot}</div>`;
-                });
-                scheduleHTML += '</div>';
-                
-                interviewHTML += `
-                    <div class="detail-item">
-                        <span class="detail-label">${day.question}</span>
-                        <span class="detail-value">${scheduleHTML}</span>
-                    </div>
-                `;
-            }
-        });
-    }
-
-    if (!hasInterviewData) {
-        interviewHTML += `
-            <div class="detail-item">
-                <span class="detail-label">Lịch đã chọn</span>
-                <span class="detail-value" style="color: var(--error);">Chưa chọn lịch phỏng vấn</span>
-            </div>
-        `;
-    }
-
-    interviewHTML += `</div>`;
-    interviewInfoSection.innerHTML = interviewHTML;
-    detailSections.appendChild(interviewInfoSection);
-
-    // HIỂN THỊ ĐÁNH GIÁ PHỎNG VẤN CHO CẢ 2 BAN NẾU CÓ
-    if (application.interview_notes || application.interview_result) {
-      const interviewEvaluationSection = document.createElement("div");
-      interviewEvaluationSection.className = "detail-section";
-
-      let evaluationHTML = `
-                <h3><i class="fas fa-clipboard-check"></i> Đánh giá phỏng vấn</h3>
-                <div class="application-details">
-            `;
-
-      if (application.interview_result) {
-        const resultText =
-          application.interview_result === "accepted"
-            ? '<span style="color: var(--success);">Đậu</span>'
-            : '<span style="color: var(--error);">Trượt</span>';
-
-        evaluationHTML += `
-                    <div class="detail-item">
-                        <span class="detail-label">Kết quả chung</span>
-                        <span class="detail-value">${resultText}</span>
-                    </div>
-                `;
-      }
-
-      // HIỂN THỊ ĐÁNH GIÁ THEO TỪNG BAN NẾU CÓ
-      if (application.priority_interview_notes) {
-        evaluationHTML += `
-                    <div class="detail-item">
-                        <span class="detail-label">Đánh giá ${getDepartmentName(
-                          application.priority_position
-                        )} (Ưu tiên)</span>
-                        <span class="detail-value">${
-                          application.priority_interview_notes
-                        }</span>
-                    </div>
-                `;
-      }
-
-      if (
-        application.secondary_interview_notes &&
-        application.secondary_position !== "None"
-      ) {
-        evaluationHTML += `
-                    <div class="detail-item">
-                        <span class="detail-label">Đánh giá ${getDepartmentName(
-                          application.secondary_position
-                        )} (Dự bị)</span>
-                        <span class="detail-value">${
-                          application.secondary_interview_notes
-                        }</span>
-                    </div>
-                `;
-      }
-
-      // HIỂN THỊ GHI CHÚ CHUNG NẾU CÓ
-      if (application.interview_notes) {
-        evaluationHTML += `
-                    <div class="detail-item">
-                        <span class="detail-label">Ghi chú chung</span>
-                        <span class="detail-value">${application.interview_notes}</span>
-                    </div>
-                `;
-      }
-
-      if (application.interview_evaluated_by) {
-        evaluationHTML += `
-                    <div class="detail-item">
-                        <span class="detail-label">Người đánh giá</span>
-                        <span class="detail-value">${application.interview_evaluated_by}</span>
-                    </div>
-                `;
-      }
-
-      if (application.interview_evaluated_at) {
-        const evalDate = application.interview_evaluated_at.toDate
-          ? application.interview_evaluated_at.toDate()
-          : new Date(application.interview_evaluated_at);
-
-        evaluationHTML += `
-                    <div class="detail-item">
-                        <span class="detail-label">Thời gian đánh giá</span>
-                        <span class="detail-value">${evalDate.toLocaleDateString(
-                          "vi-VN"
-                        )} ${evalDate.toLocaleTimeString("vi-VN")}</span>
-                    </div>
-                `;
-      }
-
-      evaluationHTML += `</div>`;
-      interviewEvaluationSection.innerHTML = evaluationHTML;
-      detailSections.appendChild(interviewEvaluationSection);
-    }
-
-    // THÊM NÚT ĐÁNH GIÁ PHỎNG VẤN CHO ADMIN - PHÂN THEO TỪNG BAN
-    if (
-      canActOnDepartment(application, "priority") ||
-      canActOnDepartment(application, "secondary")
-    ) {
-      const interviewActions = document.createElement("div");
-      interviewActions.className = "action-buttons";
-
-      let actionsHTML = "";
-
-      // Nút cho ban ưu tiên
-      if (canActOnDepartment(application, "priority")) {
-        const priorityStatus = application.priorityAccepted
-          ? '<span style="color: var(--success); margin-left: 8px;">(Đã đậu)</span>'
-          : application.priorityRejected
-          ? '<span style="color: var(--error); margin-left: 8px;">(Đã trượt)</span>'
-          : '<span style="color: var(--warning); margin-left: 8px;">(Chưa đánh giá)</span>';
-
-        actionsHTML += `
-                    <div style="margin-bottom: 10px;">
-                        <div style="font-weight: bold; margin-bottom: 5px;">${getDepartmentName(
-                          application.priority_position
-                        )} (Ưu tiên) ${priorityStatus}</div>
-                        <button class="action-button btn-accept" onclick="evaluateInterview('accepted', 'priority')">
-                            <i class="fas fa-check"></i> Đậu ban ưu tiên
-                        </button>
-                        <button class="action-button btn-reject" onclick="evaluateInterview('rejected', 'priority')">
-                            <i class="fas fa-times"></i> Trượt ban ưu tiên
-                        </button>
-                    </div>
-                `;
-      }
-
-      // Nút cho ban dự bị (nếu có)
-      if (
-        application.secondary_position &&
-        application.secondary_position !== "None" &&
-        canActOnDepartment(application, "secondary")
-      ) {
-        const secondaryStatus = application.secondaryAccepted
-          ? '<span style="color: var(--success); margin-left: 8px;">(Đã đậu)</span>'
-          : application.secondaryRejected
-          ? '<span style="color: var(--error); margin-left: 8px;">(Đã trượt)</span>'
-          : '<span style="color: var(--warning); margin-left: 8px;">(Chưa đánh giá)</span>';
-
-        actionsHTML += `
-                    <div style="margin-bottom: 10px;">
-                        <div style="font-weight: bold; margin-bottom: 5px;">${getDepartmentName(
-                          application.secondary_position
-                        )} (Dự bị) ${secondaryStatus}</div>
-                        <button class="action-button btn-accept" onclick="evaluateInterview('accepted', 'secondary')">
-                            <i class="fas fa-check"></i> Đậu ban dự bị
-                        </button>
-                        <button class="action-button btn-reject" onclick="evaluateInterview('rejected', 'secondary')">
-                            <i class="fas fa-times"></i> Trượt ban dự bị
-                        </button>
-                    </div>
-                `;
-      }
-
-      actionsHTML += `
-                <button class="action-button btn-notes" onclick="addInterviewNotes()" style="margin-top: 10px;">
-                    <i class="fas fa-edit"></i> Thêm ghi chú chung
-                </button>
-            `;
-
-      interviewActions.innerHTML = actionsHTML;
-      detailSections.appendChild(interviewActions);
-    }
+    // ---- HÌNH THỨC PHỎNG VẤN ----
+    renderInterviewInfo(application, detailSections);
   }
+
+  // ============================================================
+  // 4. ĐÁNH GIÁ THEO BAN (GỘP TẤT CẢ VÀO ĐÂY)
+  // ============================================================
+  renderEvaluationSection(application, detailSections);
 
   // Hiển thị view chi tiết
   document.getElementById("applications-list").style.display = "none";
   document.getElementById("application-detail").style.display = "block";
+}
+
+// ============================================================
+// RENDER THÔNG TIN CÁ NHÂN
+// ============================================================
+
+function renderPersonalInfo(application, container) {
+  const section = document.createElement("div");
+  section.className = "detail-section";
+  
+  let html = `
+    <h3><i class="fas fa-user"></i> Thông tin cá nhân</h3>
+    <div class="app-info-grid">
+      <div class="app-info-row">
+        <div class="app-info-item">
+          <span class="app-label">Họ và tên</span>
+          <span class="app-value">${application.fullname || "Chưa cung cấp"}</span>
+        </div>
+        <div class="app-info-item">
+          <span class="app-label">Email</span>
+          <span class="app-value">${application.email || "Chưa cung cấp"}</span>
+        </div>
+      </div>
+      <div class="app-info-row">
+        <div class="app-info-item">
+          <span class="app-label">Số điện thoại</span>
+          <span class="app-value">${application.phone || "Chưa cung cấp"}</span>
+        </div>
+        <div class="app-info-item">
+          <span class="app-label">Facebook</span>
+          <span class="app-value">${application.facebook ? `<a href="${application.facebook}" target="_blank" class="facebook-badge"><i class="fab fa-facebook"></i> Facebook</a>` : "Chưa cung cấp"}</span>
+        </div>
+      </div>
+      <div class="app-info-row">
+        <div class="app-info-item">
+          <span class="app-label">Ngày sinh</span>
+          <span class="app-value">${application.birthdate || "Chưa cung cấp"}</span>
+        </div>
+        <div class="app-info-item">
+          <span class="app-label">Giới tính</span>
+          <span class="app-value">${application.gender || "Chưa cung cấp"}</span>
+        </div>
+      </div>
+      <div class="app-info-row">
+        <div class="app-info-item">
+          <span class="app-label">Trường</span>
+          <span class="app-value">${application.school || "Chưa cung cấp"}</span>
+        </div>
+        <div class="app-info-item">
+          <span class="app-label">Chuyên ngành</span>
+          <span class="app-value">${application.major || "Chưa cung cấp"}</span>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  section.innerHTML = html;
+  container.appendChild(section);
+}
+
+// ============================================================
+// RENDER THÔNG TIN ỨNG TUYỂN - THEO TẦNG
+// ============================================================
+
+function renderApplicationInfo(application, container) {
+  const section = document.createElement("div");
+  section.className = "detail-section";
+  
+  let html = `
+    <h3><i class="fas fa-briefcase"></i> Thông tin ứng tuyển</h3>
+    <div class="app-info-grid">
+      <!-- Dòng 1: Hình thức + Trạng thái tổng -->
+      <div class="app-info-row">
+        <div class="app-info-item">
+          <span class="app-label">Hình thức ứng tuyển</span>
+          <span class="app-value">${application.application_type === "form" ? "Điền đơn" : "Phỏng vấn"}</span>
+        </div>
+        <div class="app-info-item">
+          <span class="app-label">Trạng thái tổng</span>
+          <span class="status-indicator ${getStatusInfo(computeOverallStatus(application)).class}">
+            ${getStatusInfo(computeOverallStatus(application)).text}
+          </span>
+        </div>
+      </div>
+  `;
+
+  // ---- BAN ƯU TIÊN ----
+  if (application.priority_position && application.priority_position !== "None") {
+    const priorityStatus = getDepartmentStatus(application, "priority");
+    const deptName = getDepartmentName(application.priority_position);
+    const subDisplay = application.priority_position === "MD" 
+      ? (application.md_sub_departments || []).join(", ") 
+      : "";
+    
+    html += `
+      <div class="app-info-divider"></div>
+      <div class="app-info-row">
+        <div class="app-info-item">
+          <span class="app-label">Ban ưu tiên</span>
+          <span class="app-value dept-name priority">
+            <i class="fas fa-star" style="font-size:12px;color:#3b82f6;"></i>
+            ${deptName} ${subDisplay ? `(${subDisplay})` : ''}
+          </span>
+        </div>
+        <div class="app-info-item">
+          <span class="app-label">Trạng thái</span>
+          <span class="dept-status ${priorityStatus.class}">${priorityStatus.text}</span>
+        </div>
+        ${priorityStatus.reason ? `
+          <div class="app-info-item full-width">
+            <span class="app-label">Lý do</span>
+            <span class="app-value reason">${priorityStatus.reason}</span>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  // ---- BAN DỰ BỊ ----
+  if (application.secondary_position && application.secondary_position !== "None") {
+    const secondaryStatus = getDepartmentStatus(application, "secondary");
+    const deptName = getDepartmentName(application.secondary_position);
+    const subDisplay = application.secondary_position === "MD" 
+      ? (application.md_sub_departments_secondary || []).join(", ") 
+      : "";
+    
+    html += `
+      <div class="app-info-divider"></div>
+      <div class="app-info-row">
+        <div class="app-info-item">
+          <span class="app-label">Ban dự bị</span>
+          <span class="app-value dept-name secondary">
+            <i class="fas fa-clock" style="font-size:12px;color:#f59e0b;"></i>
+            ${deptName} ${subDisplay ? `(${subDisplay})` : ''}
+          </span>
+        </div>
+        <div class="app-info-item">
+          <span class="app-label">Trạng thái</span>
+          <span class="dept-status ${secondaryStatus.class}">${secondaryStatus.text}</span>
+        </div>
+        ${secondaryStatus.reason ? `
+          <div class="app-info-item full-width">
+            <span class="app-label">Lý do</span>
+            <span class="app-value reason">${secondaryStatus.reason}</span>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  // ---- BAN ĐƯỢC CHẤP NHẬN ----
+  const accepted = getAcceptedDepartments(application);
+  html += `
+    <div class="app-info-divider"></div>
+    <div class="app-info-row">
+      <div class="app-info-item full-width">
+        <span class="app-label">Ban được chấp nhận</span>
+        <span class="app-value accepted">${accepted || "Chưa có"}</span>
+      </div>
+    </div>
+  `;
+
+  // ---- GHI CHÚ CHUNG (nếu có) ----
+  if (application.note) {
+    html += `
+      <div class="app-info-divider"></div>
+      <div class="app-info-row">
+        <div class="app-info-item full-width">
+          <span class="app-label">Ghi chú chung</span>
+          <span class="app-value note">${application.note}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  html += `</div>`;
+  section.innerHTML = html;
+  container.appendChild(section);
+}
+
+// ============================================================
+// LẤY TRẠNG THÁI CỦA TỪNG BAN
+// ============================================================
+
+function getDepartmentStatus(application, type) {
+    const isPriority = type === "priority";
+    const accepted = isPriority ? application.priorityAccepted : application.secondaryAccepted;
+    const rejected = isPriority ? application.priorityRejected : application.secondaryRejected;
+    
+    // 🔥 SỬA: đọc đúng field lý do từ chối
+    const reason = isPriority 
+        ? (application.priorityRejectionReason || application.priority_rejection_reason || "") 
+        : (application.secondaryRejectionReason || application.secondary_rejection_reason || "");
+    
+    if (accepted) {
+        return { text: "Đã chấp nhận", class: "status-passed", reason: null };
+    } else if (rejected) {
+        return { text: "Đã từ chối", class: "status-failed", reason: reason || "Không có lý do" };
+    }
+    return { text: "Chưa đánh giá", class: "status-pending", reason: null };
+}
+
+// ============================================================
+// KIỂM TRA QUYỀN XEM/ĐÁNH GIÁ BAN
+// ============================================================
+
+function canViewDepartment(application, deptType) {
+  if (!application) return false;
+  if (userRole === "superadmin") return true;
+  if (userRole === "admin") {
+    const deptCode = deptType === "priority" 
+      ? application.priority_position 
+      : application.secondary_position;
+    return deptCode === userDept;
+  }
+  return false;
+}
+
+function canViewAnyDepartment(application) {
+  if (!application) return false;
+  if (userRole === "superadmin") return true;
+  if (userRole === "admin") {
+    return application.priority_position === userDept || 
+           application.secondary_position === userDept;
+  }
+  return false;
+}
+
+// ============================================================
+// RENDER CÂU TRẢ LỜI CHUNG
+// ============================================================
+
+function renderGeneralAnswers(application, container) {
+  // Helper lấy câu trả lời
+  function resolveGeneralAnswer(app, question, index) {
+    const directKey = `general_${question.id}`;
+    if (app[directKey] !== undefined && app[directKey] !== null && app[directKey] !== "")
+      return app[directKey];
+
+    const systemKeys = new Set([
+      'general_questions', 'general_info', 'general_status',
+      'general_notes', 'general_comment'
+    ]);
+    const generalKeys = Object.keys(app)
+      .filter(k => k.startsWith('general_') && !systemKeys.has(k))
+      .sort();
+
+    if (generalKeys[index] !== undefined) {
+      return app[generalKeys[index]];
+    }
+    return undefined;
+  }
+
+  const generalKeys = Object.keys(application)
+    .filter(k => k.startsWith('general_') &&
+      !['general_questions','general_info','general_status','general_notes','general_comment'].includes(k));
+
+  const hasGeneralAnswers = generalQuestions.length > 0 && generalKeys.length > 0;
+
+  if (!hasGeneralAnswers) return;
+
+  const section = document.createElement("div");
+  section.className = "detail-section";
+  section.innerHTML = '<h3><i class="fas fa-comments"></i> Câu trả lời chung</h3>';
+
+  generalQuestions.forEach((q, idx) => {
+    const answer = resolveGeneralAnswer(application, q, idx);
+    const displayAnswer = (answer !== undefined && answer !== null && answer !== "")
+      ? answer : "Chưa trả lời";
+
+    const questionItem = document.createElement("div");
+    questionItem.className = "question-item";
+
+    let html = `<div class="question-text">${q.text || q.question || ""}</div>`;
+
+    if (q.media) {
+      if (q.media.type === "image") {
+        html += `<div class="question-media"><img src="${q.media.url}" alt="${q.media.alt || ""}" class="question-img"></div>`;
+      } else if (q.media.type === "video") {
+        html += `<div class="question-media"><video src="${q.media.url}" controls class="question-video"></video></div>`;
+      }
+    }
+
+    html += `<div class="answer-text">${formatAnswer(displayAnswer, q.type)}</div>`;
+    questionItem.innerHTML = html;
+    section.appendChild(questionItem);
+  });
+
+  container.appendChild(section);
+}
+
+// ============================================================
+// RENDER CÂU TRẢ LỜI THEO BAN
+// ============================================================
+
+function renderBanAnswers(application, type, container) {
+  const banCode = type === "priority" ? application.priority_position : application.secondary_position;
+  if (!banCode || banCode === "None") return;
+
+  const section = document.createElement("div");
+  section.className = "detail-section";
+
+  const deptName = getDepartmentName(banCode);
+  const label = type === "priority" ? "Ưu tiên" : "Dự bị";
+  
+  let title = `<h3><i class="fas ${type === 'priority' ? 'fa-star' : 'fa-clock'}"></i> Câu trả lời cho ${deptName} (${label})</h3>`;
+  
+  if (type === "priority" && application.priorityRejected) {
+    title = `<h3><i class="fas fa-star" style="color: #991b1b;"></i> Câu trả lời cho ${deptName} (${label} - Đã từ chối)</h3>`;
+  } else if (type === "priority" && application.priorityAccepted) {
+    title = `<h3><i class="fas fa-star" style="color: #166534;"></i> Câu trả lời cho ${deptName} (${label} - Đã chấp nhận)</h3>`;
+  } else if (type === "secondary" && application.secondaryRejected) {
+    title = `<h3><i class="fas fa-clock" style="color: #991b1b;"></i> Câu trả lời cho ${deptName} (${label} - Đã từ chối)</h3>`;
+  } else if (type === "secondary" && application.secondaryAccepted) {
+    title = `<h3><i class="fas fa-clock" style="color: #166534;"></i> Câu trả lời cho ${deptName} (${label} - Đã chấp nhận)</h3>`;
+  }
+  
+  section.innerHTML = title;
+  renderBanSpecificAnswers(application, type, section);
+  container.appendChild(section);
+}
+
+// ============================================================
+// RENDER NÚT HÀNH ĐỘNG CHO ĐƠN
+// ============================================================
+
+function renderFormActions(application, container) {
+  // Ban ưu tiên
+  if (application.priority_position && canActOnDepartment(application, "priority")) {
+    const section = document.createElement("div");
+    section.className = "detail-section";
+    section.innerHTML = `<h3><i class="fas fa-gavel"></i> Đánh giá ban ưu tiên</h3>`;
+    
+    const actions = document.createElement("div");
+    actions.className = "action-buttons";
+    actions.innerHTML = `
+      <button class="action-button btn-accept" onclick="acceptDepartment('priority')">
+        <i class="fas fa-check"></i> Chấp nhận
+      </button>
+      <button class="action-button btn-reject" onclick="rejectDepartment('priority')">
+        <i class="fas fa-times"></i> Từ chối
+      </button>
+      <button class="action-button btn-notes" onclick="addFormNote('${application.id}', 'priority')">
+        <i class="fas fa-pen"></i> Ghi chú
+      </button>
+    `;
+    section.appendChild(actions);
+    container.appendChild(section);
+  }
+
+  // Ban dự bị
+  if (application.secondary_position && application.secondary_position !== "None" && 
+      canActOnDepartment(application, "secondary")) {
+    const section = document.createElement("div");
+    section.className = "detail-section";
+    section.innerHTML = `<h3><i class="fas fa-gavel"></i> Đánh giá ban dự bị</h3>`;
+    
+    const actions = document.createElement("div");
+    actions.className = "action-buttons";
+    actions.innerHTML = `
+      <button class="action-button btn-accept" onclick="acceptDepartment('secondary')">
+        <i class="fas fa-check"></i> Chấp nhận
+      </button>
+      <button class="action-button btn-reject" onclick="rejectDepartment('secondary')">
+        <i class="fas fa-times"></i> Từ chối
+      </button>
+      <button class="action-button btn-notes" onclick="addFormNote('${application.id}', 'secondary')">
+        <i class="fas fa-pen"></i> Ghi chú
+      </button>
+    `;
+    section.appendChild(actions);
+    container.appendChild(section);
+  }
+}
+
+// ============================================================
+// RENDER THÔNG TIN PHỎNG VẤN
+// ============================================================
+
+function renderInterviewInfo(application, container) {
+  const section = document.createElement("div");
+  section.className = "detail-section";
+
+  let html = `
+    <h3><i class="fas fa-calendar-alt"></i> Thông tin phỏng vấn</h3>
+    <div class="app-info-grid">
+      <div class="app-info-row">
+        <div class="app-info-item">
+          <span class="app-label">Hình thức</span>
+          <span class="app-value">Phỏng vấn trực tiếp</span>
+        </div>
+      </div>
+  `;
+
+  // Lịch phỏng vấn đã chọn
+  let hasInterviewData = false;
+  if (interview && interview.length > 0) {
+    interview.forEach((day) => {
+      const dayData = application[day.id];
+      if (dayData && Array.isArray(dayData) && dayData.length > 0) {
+        hasInterviewData = true;
+        let scheduleHTML = '<div style="display:flex;flex-direction:column;gap:4px;margin-top:4px;">';
+        dayData.forEach(slot => {
+          scheduleHTML += `<div style="padding:4px 10px;background:#f8fafc;border-radius:4px;font-size:13px;border-left:3px solid #3b82f6;">${slot}</div>`;
+        });
+        scheduleHTML += '</div>';
+        
+        html += `
+          <div class="app-info-row">
+            <div class="app-info-item full-width">
+              <span class="app-label">${day.question}</span>
+              <span class="app-value">${scheduleHTML}</span>
+            </div>
+          </div>
+        `;
+      }
+    });
+  }
+
+  if (!hasInterviewData) {
+    html += `
+      <div class="app-info-row">
+        <div class="app-info-item">
+          <span class="app-label">Lịch đã chọn</span>
+          <span class="app-value" style="color: #991b1b;">Chưa chọn lịch phỏng vấn</span>
+        </div>
+      </div>
+    `;
+  }
+
+  html += `</div>`;
+  section.innerHTML = html;
+  container.appendChild(section);
+}
+
+// ============================================================
+// RENDER NÚT HÀNH ĐỘNG CHO PHỎNG VẤN
+// ============================================================
+
+function renderInterviewActions(application, container) {
+  // Ban ưu tiên
+  if (application.priority_position && canActOnDepartment(application, "priority")) {
+    const section = document.createElement("div");
+    section.className = "detail-section";
+    
+    const isAccepted = application.priorityAccepted;
+    const isRejected = application.priorityRejected;
+    let statusText = "Chưa đánh giá";
+    let statusColor = "#92400e";
+    if (isAccepted) { statusText = "Pass"; statusColor = "#166534"; }
+    else if (isRejected) { statusText = "Fail"; statusColor = "#991b1b"; }
+    
+    section.innerHTML = `
+      <h3><i class="fas fa-gavel"></i> Đánh giá phỏng vấn - ${getDepartmentName(application.priority_position)} (Ưu tiên)</h3>
+      <div style="margin-bottom:12px;font-size:14px;color:${statusColor};font-weight:500;">
+        Trạng thái: ${statusText}
+      </div>
+    `;
+    
+    const actions = document.createElement("div");
+    actions.className = "action-buttons";
+    
+    if (!isAccepted && !isRejected) {
+      actions.innerHTML = `
+        <button class="action-button btn-accept" onclick="evalInterview('${application.id}', 'priority', 'pass')">
+          <i class="fas fa-check"></i> Pass
+        </button>
+        <button class="action-button btn-reject" onclick="evalInterview('${application.id}', 'priority', 'fail')">
+          <i class="fas fa-times"></i> Fail
+        </button>
+      `;
+    } else {
+      actions.innerHTML = `
+        <button class="action-button btn-notes" onclick="addInterviewNote('${application.id}', 'priority')">
+          <i class="fas fa-pen"></i> Ghi chú
+        </button>
+        <button class="action-button btn-reset" onclick="resetInterviewEval('${application.id}', 'priority')">
+          <i class="fas fa-undo"></i> Đặt lại
+        </button>
+      `;
+    }
+    
+    section.appendChild(actions);
+    container.appendChild(section);
+  }
+
+  // Ban dự bị
+  if (application.secondary_position && application.secondary_position !== "None" && 
+      canActOnDepartment(application, "secondary")) {
+    const section = document.createElement("div");
+    section.className = "detail-section";
+    
+    const isAccepted = application.secondaryAccepted;
+    const isRejected = application.secondaryRejected;
+    let statusText = "Chưa đánh giá";
+    let statusColor = "#92400e";
+    if (isAccepted) { statusText = "Pass"; statusColor = "#166534"; }
+    else if (isRejected) { statusText = "Fail"; statusColor = "#991b1b"; }
+    
+    section.innerHTML = `
+      <h3><i class="fas fa-gavel"></i> Đánh giá phỏng vấn - ${getDepartmentName(application.secondary_position)} (Dự bị)</h3>
+      <div style="margin-bottom:12px;font-size:14px;color:${statusColor};font-weight:500;">
+        Trạng thái: ${statusText}
+      </div>
+    `;
+    
+    const actions = document.createElement("div");
+    actions.className = "action-buttons";
+    
+    if (!isAccepted && !isRejected) {
+      actions.innerHTML = `
+        <button class="action-button btn-accept" onclick="evalInterview('${application.id}', 'secondary', 'pass')">
+          <i class="fas fa-check"></i> Pass
+        </button>
+        <button class="action-button btn-reject" onclick="evalInterview('${application.id}', 'secondary', 'fail')">
+          <i class="fas fa-times"></i> Fail
+        </button>
+      `;
+    } else {
+      actions.innerHTML = `
+        <button class="action-button btn-notes" onclick="addInterviewNote('${application.id}', 'secondary')">
+          <i class="fas fa-pen"></i> Ghi chú
+        </button>
+        <button class="action-button btn-reset" onclick="resetInterviewEval('${application.id}', 'secondary')">
+          <i class="fas fa-undo"></i> Đặt lại
+        </button>
+      `;
+    }
+    
+    section.appendChild(actions);
+    container.appendChild(section);
+  }
 }
 
 // Thêm ghi chú phỏng vấn
@@ -1284,10 +2149,10 @@ async function evaluateInterview(result, departmentType = null) {
   const { value: notes } = await Swal.fire({
     title:
       result === "accepted"
-        ? `Đậu phỏng vấn - ${getDepartmentName(
+        ? `Pass phỏng vấn - ${getDepartmentName(
             application[targetDepartment + "_position"]
           )}`
-        : `Trượt phỏng vấn - ${getDepartmentName(
+        : `Fail phỏng vấn - ${getDepartmentName(
             application[targetDepartment + "_position"]
           )}`,
     input: "textarea",
@@ -1476,29 +2341,68 @@ function renderBanSpecificAnswers(application, type, container) {
       : application.secondary_position;
   if (!banCode || banCode === "None") return;
 
+  // ── Helper resolve answer với index fallback ──────────────────────────────
+  function resolveByIndex(app, prefix, question, index, banCodeArg, subArg) {
+    // 1. Thử id trực tiếp
+    const direct = getAnswer(app, prefix, question.id, subArg);
+    if (direct !== undefined && direct !== null && direct !== "") return direct;
+
+    // 2. Collect keys liên quan theo prefix + ban
+    const banLower  = (banCodeArg || "").toLowerCase();
+    const subLower  = (subArg || "").toLowerCase();
+    const systemSuf = new Set([
+      `${prefix}_status`, `${prefix}_position`,
+      `${prefix}_interview_notes`, `${prefix}_accepted`, `${prefix}_rejected`
+    ]);
+    const knownBans = ["hr", "er", "pd", "md", "design", "content"];
+
+    const candidates = Object.keys(app)
+      .filter(k => {
+        if (!k.startsWith(prefix + "_")) return false;
+        if (systemSuf.has(k)) return false;
+        const kl = k.toLowerCase();
+        const hasKnownBan = knownBans.some(
+          b => kl.includes(`_${b}_`) || kl.endsWith(`_${b}`)
+        );
+        if (hasKnownBan) {
+          // key cũ kiểu priority_hr_qs1 → chỉ giữ nếu khớp ban/sub
+          return kl.includes(`_${banLower}`) || (subLower && kl.includes(`_${subLower}`));
+        }
+        // key random (không chứa tên ban) → giữ lại
+        return true;
+      })
+      .sort();
+
+    return candidates[index] !== undefined ? app[candidates[index]] : undefined;
+  }
+  // ──────────────────────────────────────────────────────────────────────────
+
   if (banCode === "MD") {
     const subDepartments =
       type === "priority"
         ? application.md_sub_departments || []
         : application.md_sub_departments_secondary || [];
 
+    if (!banQuestions["MD"]) {
+        console.warn('[Response] banQuestions["MD"] chưa được load');
+        return;
+    }
+
     subDepartments.forEach((sub) => {
       const questions = banQuestions["MD"][sub] || [];
-      questions.forEach((q) => {
-        const answer =
-          getAnswer(application, type, q.id, sub) || "Chưa trả lời";
+      questions.forEach((q, idx) => {
+        const raw = resolveByIndex(application, type, q, idx, "MD", sub);
+        const answer = (raw !== undefined && raw !== null && raw !== "")
+          ? raw : "Chưa trả lời";
         const questionItem = document.createElement("div");
         questionItem.className = "question-item";
-        let html = `<div class="question-text">${q.question}</div>`;
+        let html = `<div class="question-text">${q.text || q.question || ""}</div>`;
         if (q.media && q.media.type === "image") {
           html += `<div class="question-media"><img src="${q.media.url}" alt="${
             q.media.alt || ""
           }"></div>`;
         }
-        html += `<div class="answer-text">${formatAnswer(
-          answer,
-          q.type
-        )}</div>`;
+        html += `<div class="answer-text">${formatAnswer(answer, q.type)}</div>`;
         questionItem.innerHTML = html;
         container.appendChild(questionItem);
       });
@@ -1507,12 +2411,14 @@ function renderBanSpecificAnswers(application, type, container) {
   }
 
   const questions = banQuestions[banCode] || [];
-  questions.forEach((q) => {
-    const answer = getAnswer(application, type, q.id) || "Chưa trả lời";
+  questions.forEach((q, idx) => {
+    const raw = resolveByIndex(application, type, q, idx, banCode, null);
+    const answer = (raw !== undefined && raw !== null && raw !== "")
+      ? raw : "Chưa trả lời";
     const questionItem = document.createElement("div");
     questionItem.className = "question-item";
     questionItem.innerHTML = `
-            <div class="question-text">${q.question}</div>
+            <div class="question-text">${q.text || q.question || ""}</div>
             <div class="answer-text">${formatAnswer(answer, q.type)}</div>
         `;
     container.appendChild(questionItem);
@@ -1678,39 +2584,38 @@ function getDepartmentName(code) {
 }
 
 function computeOverallStatus(app) {
-  if (!app) return "new";
-
-  // 1. ACCEPTED: Nếu có ít nhất 1 ban được chấp nhận
-  if (app.priorityAccepted || app.secondaryAccepted) {
-    return "accepted";
-  }
-
-  // 2. REJECTED: Nếu tất cả ban đều bị từ chối
-  const hasPriority = app.priority_position && app.priority_position !== "None";
-  const hasSecondary = app.secondary_position && app.secondary_position !== "None";
-  
-  if (hasPriority && hasSecondary) {
-    if (app.priorityRejected && app.secondaryRejected) {
-      return "rejected";
-    }
-  } else if (hasPriority && app.priorityRejected) {
-    return "rejected";
-  } else if (hasSecondary && app.secondaryRejected) {
-    return "rejected";
-  }
-
-  // 3. REVIEWED: Nếu đã có đánh giá từ admin
-  const hasEvaluation = 
-    app.priorityRejected || app.secondaryRejected ||
-    app.priorityAccepted || app.secondaryAccepted ||
-    app.status === "reviewed";
+    if (!app) return "new";
     
-  if (hasEvaluation) {
-    return "reviewed";
-  }
-
-  // 4. NEW: Mặc định
-  return "new";
+    // Kiểm tra trạng thái từng ban
+    const priorityStatus = app.priorityAccepted ? "accepted" : (app.priorityRejected ? "rejected" : null);
+    const secondaryStatus = app.secondaryAccepted ? "accepted" : (app.secondaryRejected ? "rejected" : null);
+    
+    // Nếu có ít nhất 1 ban được chấp nhận
+    if (priorityStatus === "accepted" || secondaryStatus === "accepted") {
+        return "accepted";
+    }
+    
+    // Nếu cả 2 ban đều bị từ chối (hoặc 1 ban nếu chỉ có 1)
+    const hasPriority = app.priority_position && app.priority_position !== "None";
+    const hasSecondary = app.secondary_position && app.secondary_position !== "None";
+    
+    if (hasPriority && hasSecondary) {
+        if (priorityStatus === "rejected" && secondaryStatus === "rejected") {
+            return "rejected";
+        }
+    } else if (hasPriority && priorityStatus === "rejected") {
+        return "rejected";
+    } else if (hasSecondary && secondaryStatus === "rejected") {
+        return "rejected";
+    }
+    
+    // Nếu đã có đánh giá (chấp nhận hoặc từ chối ít nhất 1 ban)
+    if (priorityStatus === "accepted" || priorityStatus === "rejected" || 
+        secondaryStatus === "accepted" || secondaryStatus === "rejected") {
+        return "reviewed";
+    }
+    
+    return "new";
 }
 
 // Hiển thị modal export
@@ -1956,6 +2861,7 @@ function getAnswer(app, prefix, qid, sub) {
 
   return undefined;
 }
+
 function renderVoteResults(container, counts, title = "Kết quả vote") {
   const entries = Object.entries(counts);
   if (!entries || entries.length === 0) {
@@ -2114,182 +3020,105 @@ function formatAnswer(answer, type) {
 
 /* Render ban-specific answers in detail view using getAnswer */
 function renderBanSpecificAnswers(application, type, container) {
-  const banCode =
-    type === "priority"
-      ? application.priority_position
-      : application.secondary_position;
+  const banCode = type === "priority" ? application.priority_position : application.secondary_position;
   if (!banCode || banCode === "None") return;
 
-  // For MD sub-departments
+  // ── Helper lấy câu trả lời theo nhiều cách ──
+  function getAnswerFlexible(app, prefix, questionId, questionText, sub) {
+    // 1. Thử theo id
+    const directKey = `${prefix}_${questionId}`;
+    if (app[directKey] !== undefined && app[directKey] !== null && app[directKey] !== "") {
+      return app[directKey];
+    }
+
+    // 2. Thử theo prefix + questionText (cho MD)
+    const prefixLower = prefix.toLowerCase();
+    const keys = Object.keys(app || {});
+    
+    // Tìm key bắt đầu bằng prefix_ và chứa từ khóa trong questionText
+    const textTokens = questionText.toLowerCase().split(' ').filter(w => w.length > 3);
+    for (const k of keys) {
+      const kLower = k.toLowerCase();
+      if (!kLower.startsWith(prefixLower + "_")) continue;
+      
+      // Nếu có sub (Design/Content) thì ưu tiên key chứa sub
+      if (sub) {
+        const subLower = sub.toLowerCase();
+        if (!kLower.includes(subLower)) continue;
+      }
+      
+      // Kiểm tra nếu key chứa token của câu hỏi
+      let matched = true;
+      for (const token of textTokens) {
+        if (!kLower.includes(token)) {
+          matched = false;
+          break;
+        }
+      }
+      if (matched && app[k] !== undefined && app[k] !== null && app[k] !== "") {
+        return app[k];
+      }
+    }
+
+    // 3. Fallback: lấy key đầu tiên matching prefix + sub
+    for (const k of keys) {
+      const kLower = k.toLowerCase();
+      if (!kLower.startsWith(prefixLower + "_")) continue;
+      if (sub && !kLower.includes(sub.toLowerCase())) continue;
+      if (app[k] !== undefined && app[k] !== null && app[k] !== "") {
+        return app[k];
+      }
+    }
+
+    return undefined;
+  }
+
+  // ──────────────────────────────────────────────
+
   if (banCode === "MD") {
-    const subs =
-      type === "priority"
-        ? application.md_sub_departments || []
-        : application.md_sub_departments_secondary || [];
-    subs.forEach((sub) => {
-      // first attempt: extract vote data from the application doc for this sub
-      const counts = extractVoteCounts(application, type, sub);
-      if (Object.keys(counts).length > 0) {
-        const section = document.createElement("div");
-        section.className = "detail-section";
-        section.innerHTML = `<h3><i class="fas fa-star"></i> Kết quả vote cho ${getDepartmentName(
-          banCode
-        )} - ${sub}</h3>`;
-        renderVoteResults(section, counts, `Kết quả vote ${sub}`);
-        container.appendChild(section);
-        return; // go next sub
-      }
+    const subDepartments = type === "priority" 
+      ? application.md_sub_departments || [] 
+      : application.md_sub_departments_secondary || [];
 
-      // fallback: if no vote data stored in doc, try fetching from Firestore 'interview_votes' collection
-      if (application.id) {
-        // asynchronous fetch, then render if found
-        db.collection("interview_votes")
-          .doc(application.id)
-          .get()
-          .then((doc) => {
-            if (doc.exists) {
-              const data = doc.data();
-              // try sub-key first
-              const subData =
-                data[sub] ||
-                data[`${type}_${sub}`] ||
-                data[`${sub}_votes`] ||
-                data["votes"] ||
-                data;
-              const countsFromDoc = extractVoteCounts({ tmp: subData }, "tmp");
-              if (Object.keys(countsFromDoc).length > 0) {
-                const section = document.createElement("div");
-                section.className = "detail-section";
-                section.innerHTML = `<h3><i class="fas fa-star"></i> Kết quả vote cho ${getDepartmentName(
-                  banCode
-                )} - ${sub}</h3>`;
-                renderVoteResults(
-                  section,
-                  countsFromDoc,
-                  `Kết quả vote ${sub}`
-                );
-                container.appendChild(section);
-              }
-            }
-          })
-          .catch((err) =>
-            console.warn("Không lấy được vote từ interview_votes:", err)
-          );
-      }
+    if (!banQuestions["MD"]) {
+      console.warn('[Response] banQuestions["MD"] chưa được load');
+      return;
+    }
 
-      // If still no votes => render questions as before
-      const qList = (banQuestions["MD"] && banQuestions["MD"][sub]) || [];
-      qList.forEach((q) => {
-        const val = getAnswer(application, type, q.id, sub);
-        const answer =
-          val === undefined || val === null
-            ? "Chưa trả lời"
-            : formatAnswer(val, q.type);
-        const item = document.createElement("div");
-        item.className = "question-item";
-        let html = `<div class="question-text">${q.question}</div>`;
-        if (q.media && q.media.type === "image")
-          html += `<div class="question-media"><img src="${q.media.url}" alt="${
-            q.media.alt || ""
-          }"></div>`;
-        html += `<div class="answer-text">${answer}</div>`;
-        item.innerHTML = html;
-        container.appendChild(item);
+    subDepartments.forEach((sub) => {
+      const questions = banQuestions["MD"][sub] || [];
+      questions.forEach((q) => {
+        // Lấy câu trả lời với fallback
+        const raw = getAnswerFlexible(application, type, q.id, q.text || q.question || '', sub);
+        const answer = (raw !== undefined && raw !== null && raw !== "") ? raw : "Chưa trả lời";
+        
+        const questionItem = document.createElement("div");
+        questionItem.className = "question-item";
+        let html = `<div class="question-text">${q.text || q.question || ""}</div>`;
+        if (q.media && q.media.type === "image") {
+          html += `<div class="question-media"><img src="${q.media.url}" alt="${q.media.alt || ""}"></div>`;
+        }
+        html += `<div class="answer-text">${formatAnswer(answer, q.type)}</div>`;
+        questionItem.innerHTML = html;
+        container.appendChild(questionItem);
       });
     });
     return;
   }
 
-  // Non-MD departments
-  // 1) Try to extract votes stored in the application doc for this department/type
-  const counts = extractVoteCounts(application, type);
-  if (Object.keys(counts).length > 0) {
-    const section = document.createElement("div");
-    section.className = "detail-section";
-    section.innerHTML = `<h3><i class="fas fa-chart-pie"></i> Kết quả vote cho ${getDepartmentName(
-      banCode
-    )}</h3>`;
-    renderVoteResults(
-      section,
-      counts,
-      `Kết quả vote ${getDepartmentName(banCode)}`
-    );
-    container.appendChild(section);
-    return;
-  }
-
-  // 2) Fallback: try Firestore collection interview_votes doc with id = application.id
-  if (application.id) {
-    db.collection("interview_votes")
-      .doc(application.id)
-      .get()
-      .then((doc) => {
-        if (doc.exists) {
-          const data = doc.data();
-          // prefer type-specific key (priority/secondary) or dept code
-          const candidate =
-            data[type] || data[banCode] || data["votes"] || data;
-          const countsFromDoc = extractVoteCounts({ tmp: candidate }, "tmp");
-          if (Object.keys(countsFromDoc).length > 0) {
-            const section = document.createElement("div");
-            section.className = "detail-section";
-            section.innerHTML = `<h3><i class="fas fa-chart-pie"></i> Kết quả vote cho ${getDepartmentName(
-              banCode
-            )}</h3>`;
-            renderVoteResults(
-              section,
-              countsFromDoc,
-              `Kết quả vote ${getDepartmentName(banCode)}`
-            );
-            container.appendChild(section);
-            return;
-          }
-        }
-        // if no votes found in external doc => fall back to rendering questions as before
-        const qList = banQuestions[banCode] || [];
-        qList.forEach((q) => {
-          const val = getAnswer(application, type, q.id);
-          const answer =
-            val === undefined || val === null
-              ? "Chưa trả lời"
-              : formatAnswer(val, q.type);
-          const item = document.createElement("div");
-          item.className = "question-item";
-          item.innerHTML = `<div class="question-text">${q.question}</div><div class="answer-text">${answer}</div>`;
-          container.appendChild(item);
-        });
-      })
-      .catch((err) => {
-        console.warn("Không lấy được interview_votes doc:", err);
-        // render questions if fetch fails
-        const qList = banQuestions[banCode] || [];
-        qList.forEach((q) => {
-          const val = getAnswer(application, type, q.id);
-          const answer =
-            val === undefined || val === null
-              ? "Chưa trả lời"
-              : formatAnswer(val, q.type);
-          const item = document.createElement("div");
-          item.className = "question-item";
-          item.innerHTML = `<div class="question-text">${q.question}</div><div class="answer-text">${answer}</div>`;
-          container.appendChild(item);
-        });
-      });
-    return;
-  }
-
-  // 3) If we got here (no app.id, no votes) => render questions as before
-  const qList = banQuestions[banCode] || [];
-  qList.forEach((q) => {
-    const val = getAnswer(application, type, q.id);
-    const answer =
-      val === undefined || val === null
-        ? "Chưa trả lời"
-        : formatAnswer(val, q.type);
-    const item = document.createElement("div");
-    item.className = "question-item";
-    item.innerHTML = `<div class="question-text">${q.question}</div><div class="answer-text">${answer}</div>`;
-    container.appendChild(item);
+  // Các ban khác (HR, ER, PD)
+  const questions = banQuestions[banCode] || [];
+  questions.forEach((q) => {
+    const raw = getAnswerFlexible(application, type, q.id, q.text || q.question || '', null);
+    const answer = (raw !== undefined && raw !== null && raw !== "") ? raw : "Chưa trả lời";
+    
+    const questionItem = document.createElement("div");
+    questionItem.className = "question-item";
+    questionItem.innerHTML = `
+      <div class="question-text">${q.text || q.question || ""}</div>
+      <div class="answer-text">${formatAnswer(answer, q.type)}</div>
+    `;
+    container.appendChild(questionItem);
   });
 }
 
