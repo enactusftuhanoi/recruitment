@@ -3367,6 +3367,71 @@ function removeSlot(index, dateKey) {
     );
 }
 
+function addSlotToDate(dateKey) {
+    if (!interviewSettings.slots) interviewSettings.slots = [];
+    
+    // Tìm tất cả ca trong ngày này
+    const slotsInDay = interviewSettings.slots.filter(slot => {
+        if (slot.dateTime) {
+            try {
+                const d = new Date(slot.dateTime);
+                if (!isNaN(d.getTime())) {
+                    const weekdays = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+                    const dayOfWeek = weekdays[d.getDay()];
+                    const day = String(d.getDate()).padStart(2, '0');
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const year = d.getFullYear();
+                    const key = `${dayOfWeek}, ${day}/${month}/${year}`;
+                    return key === dateKey;
+                }
+            } catch(e) {}
+        }
+        return false;
+    });
+    
+    // Tạo ca mới với thời gian mặc định
+    const lastSlot = slotsInDay[slotsInDay.length - 1];
+    let startHour = 14;
+    let startMinute = 0;
+    
+    if (lastSlot && lastSlot.startTime) {
+        const parts = lastSlot.startTime.split(':');
+        if (parts.length === 2) {
+            startHour = parseInt(parts[0]) + 1;
+            startMinute = parseInt(parts[1]);
+            if (startHour >= 18) {
+                showToast("Đã đủ số ca trong ngày (tối đa đến 18:00)", "error");
+                return;
+            }
+        }
+    }
+    
+    const startTime = `${String(startHour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}`;
+    const endHour = startHour + 1;
+    const endTime = `${String(endHour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}`;
+    const caNum = slotsInDay.length + 1;
+    
+    // Lấy date từ dateKey
+    const dateParts = dateKey.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+    let dateTime = '';
+    if (dateParts) {
+        const day = dateParts[1];
+        const month = dateParts[2];
+        const year = dateParts[3];
+        dateTime = `${year}-${month}-${day}`;
+    }
+    
+    interviewSettings.slots.push({
+        dateTime: dateTime,
+        startTime: startTime,
+        endTime: endTime,
+        label: `Ca ${caNum} (${startTime} - ${endTime}) - ${dateKey}`
+    });
+    
+    renderInterviewSlots();
+    showToast(`Đã thêm ca ${caNum} vào ${dateKey}`, "success");
+}
+
 async function saveInterviewSlots() {
     try {
         await db.collection("system").doc("interview_settings").set({
