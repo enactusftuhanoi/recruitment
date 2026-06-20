@@ -2099,6 +2099,12 @@
             chip.onclick = function() { filterBan(this); };
             filterBar.appendChild(chip);
         });
+        
+        // Reset active về "Tất cả"
+        const allChip = filterBar.querySelector('.filter-chip[data-ban="all"]');
+        if (allChip) {
+            allChip.classList.add('active');
+        }
     }
 
     // ========================
@@ -2412,12 +2418,22 @@
     // ========================
     // MODAL
     // ========================
+    // Sửa lại hàm openModal
     function openModal(id) {
-        document.getElementById(id).classList.add("open");
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.classList.add("open");
+            modal.style.display = "flex"; // Thêm dòng này
+        }
     }
 
+    // Sửa lại hàm closeModal  
     function closeModal(id) {
-        document.getElementById(id).classList.remove("open");
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.classList.remove("open");
+            modal.style.display = "none"; // Thêm dòng này
+        }
     }
 
     // Close on overlay click
@@ -2695,6 +2711,7 @@
             ul.appendChild(buildQuestionItem(q, i + 1, cat));
         });
         container.appendChild(ul);
+        
     }
 
     function buildEmptyState(msg) {
@@ -2705,44 +2722,6 @@
             </svg>
             <p>${msg}</p>
         </div>`;
-    }
-
-    function buildQuestionItem(q, index, category) {
-        const div = document.createElement("div");
-        div.className = "question-item";
-        div.dataset.id = q.id;
-        div.dataset.cat = category;
-
-        const requiredBadge = q.required
-            ? `<span class="badge badge-red"><svg viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="3"/></svg>Bắt buộc</span>`
-            : "";
-
-        div.innerHTML = `
-            <div class="question-order">${index}</div>
-            <div class="question-main">
-                <div class="question-text-display">${escHtml(q.text || "")}</div>
-                <div class="question-meta">
-                    <span class="badge ${CAT_BADGE_CLASS[category] || "badge-gray"}">${CAT_LABELS[category] || category}</span>
-                    <span class="badge badge-gray">${TYPE_LABELS[q.type] || q.type}</span>
-                    ${requiredBadge}
-                    ${q.options && q.options.length ? `<span class="badge badge-gray">${q.options.length} lựa chọn</span>` : ""}
-                </div>
-            </div>
-            <div class="question-actions">
-                <button class="btn btn-ghost btn-icon" title="Chỉnh sửa" onclick="openEditQuestion('${q.id}', '${category}')">
-                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M11.5 2.5l2 2-8 8H3.5v-2l8-8z"/>
-                        <path d="M10 4l2 2"/>
-                    </svg>
-                </button>
-                <button class="btn btn-danger btn-icon" title="Xóa" onclick="deleteQuestion('${q.id}', '${category}')">
-                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M2 4h12M5.5 4V2.5h5V4M6.5 7.5v5M9.5 7.5v5M3.5 4l.5 9.5h8l.5-9.5"/>
-                    </svg>
-                </button>
-            </div>
-        `;
-        return div;
     }
 
     // ========================
