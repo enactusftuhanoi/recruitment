@@ -1431,13 +1431,9 @@
                 </button>
             </div>
 
-            <div class="filter-bar">
+            <div class="filter-bar" id="filter-bar">
                 <button class="filter-chip active" data-ban="all" onclick="filterBan(this)">Tất cả</button>
-                <button class="filter-chip" data-ban="MD-Design" onclick="filterBan(this)">MD - Design</button>
-                <button class="filter-chip" data-ban="MD-Content" onclick="filterBan(this)">MD - Content</button>
-                <button class="filter-chip" data-ban="HR" onclick="filterBan(this)">Nhân sự (HR)</button>
-                <button class="filter-chip" data-ban="ER" onclick="filterBan(this)">Đối ngoại (ER)</button>
-                <button class="filter-chip" data-ban="PD" onclick="filterBan(this)">Dự án (PD)</button>
+                <!-- Các chip sẽ được render bằng JavaScript dựa trên quyền -->
             </div>
 
             <div class="card">
@@ -1689,8 +1685,8 @@
                 <div class="card-body">
                     <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--gray-100);">
                         <div>
-                            <div style="font-size:13.5px;font-weight:700;color:var(--gray-800);margin-bottom:4px;">Đặt lại câu hỏi về mặc định</div>
-                            <div style="font-size:12.5px;color:var(--gray-500);">Toàn bộ câu hỏi sẽ được thay thế bằng bộ câu hỏi mặc định. Dữ liệu hiện tại bị mất.</div>
+                            <div style="font-size:13.5px;font-weight:700;color:var(--gray-800);margin-bottom:4px;">Xóa toàn bộ câu hỏi</div>
+                            <div style="font-size:12.5px;color:var(--gray-500);">Toàn bộ câu hỏi sẽ được xóa. Dữ liệu không thể khôi phục.</div>
                         </div>
                         <button class="btn btn-danger btn-sm" onclick="confirmResetQuestions()" style="margin-left:16px;flex-shrink:0;">
                             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -1843,10 +1839,13 @@
 <script src="/script/config.js"></script>
 <script>
     // ========================
-    // AUTH CHECK
+    // AUTH CHECK - PHÂN QUYỀN
     // ========================
     const userEmail = sessionStorage.getItem("email");
     const userRole  = sessionStorage.getItem("role");
+    const userDept  = sessionStorage.getItem("department"); // Lưu ban của admin
+    
+    // Chỉ SuperAdmin và Admin mới được vào
     if (!userEmail || !["superadmin", "admin"].includes(userRole)) {
         window.location.href = "/admin/login.html";
     }
@@ -1869,6 +1868,490 @@
     let currentBanFilter = "all";
     let editingQuestionId = null;
     let addingToCategory = "general";
+    
+    // 🔥 ADMIN DEPARTMENT - Lấy từ session
+    const adminDept = userRole === "admin" ? userDept : null;
+    // Map department code sang tên hiển thị
+    const deptMap = {
+        "MD-Design": "MD - Design",
+        "MD-Content": "MD - Content",
+        "HR": "Nhân sự (HR)",
+        "ER": "Đối ngoại (ER)",
+        "PD": "Dự án (PD)"
+    };
+    // Map ngược: tên hiển thị -> code
+    const deptReverseMap = {
+        "MD - Design": "MD-Design",
+        "MD - Content": "MD-Content",
+        "Nhân sự (HR)": "HR",
+        "Đối ngoại (ER)": "ER",
+        "Dự án (PD)": "PD"
+    };
+    
+    // Admin được quản lý ban nào?
+    const adminManagedDepts = userRole === "admin" ? [adminDept] : ["MD-Design", "MD-Content", "HR", "ER", "PD"];
+    // Admin có quyền với câu hỏi chung không? CÓ
+    const canManageGeneral = true;
+
+    // ========================
+    // CHECK ADMIN PERMISSION
+    // ========================
+    function canManageCategory(category) {
+        if (userRole === "superadmin") return true;
+        if (userRole === "admin") {
+            // Admin được quản lý câu hỏi chung
+            if (category === "general") return true;
+            // Admin được quản lý ban của mình
+            return adminManagedDepts.includes(category);
+        }
+        return false;
+    }
+
+    function canViewCategory(category) {
+        if (userRole === "superadmin") return true;
+        if (userRole === "admin") {
+            // Admin xem được câu hỏi chung
+            if (category === "general") return true;
+            // Admin xem được ban của mình
+            return adminManagedDepts.includes(category);
+        }
+        return false;
+    }
+
+    // ========================
+    // INIT
+    // ========================
+    auth.onAuthStateChanged(async user => {
+        if (!user) { window.location.href = "/admin/login.html"; return; }
+        currentUser = user;
+        await Promise.all([
+            loadQuestions(),
+            loadFormSettings(),
+            loadInterviewSettings(),
+            loadNotifySettings(),
+            loadIntroSettings()
+        ]);
+        
+        // 🔥 Áp dụng phân quyền cho UI (GỌI SAU KHI LOAD XONG)
+        applyPermissionUI();
+        
+        renderOverview();
+        renderGeneralQuestions();
+        renderBanQuestions();
+        populateSettingsUI();
+        populateIntroUI();
+    });
+
+    // ========================
+    // ÁP DỤNG PHÂN QUYỀN UI
+    // ========================
+
+    function applyPermissionUI() {
+        // Hiển thị badge phân quyền trên header
+        const topbarTitle = document.querySelector('.topbar-title');
+        if (topbarTitle) {
+            if (userRole === "superadmin") {
+                topbarTitle.textContent = "Quản lý Form (SuperAdmin)";
+            } else {
+                const deptName = deptMap[adminDept] || adminDept;
+                topbarTitle.textContent = `Quản lý Form (Admin - ${deptName})`;
+            }
+        }
+
+        // 🔥 NẾU LÀ ADMIN: ẨN CÁC TAB KHÔNG CÓ QUYỀN
+        if (userRole === "admin") {
+            // Ẩn các mục Cài đặt
+            const settingsItems = document.querySelectorAll('.sidebar-item[onclick*="settings-"]');
+            settingsItems.forEach(item => {
+                item.style.display = 'none';
+            });
+
+            // Ẩn Khu vực nguy hiểm
+            const dangerItems = document.querySelectorAll('.sidebar-item[onclick*="danger-zone"]');
+            dangerItems.forEach(item => {
+                item.style.display = 'none';
+            });
+
+            // Ẩn luôn cả section label "Cài đặt" và "Nguy hiểm" nếu trống
+            const sectionLabels = document.querySelectorAll('.sidebar-section-label');
+            sectionLabels.forEach(label => {
+                const labelText = label.textContent.trim();
+                if (labelText === "Cài đặt" || labelText === "Nguy hiểm") {
+                    // Kiểm tra xem có item nào hiển thị trong section này không
+                    let hasVisibleItem = false;
+                    let nextElement = label.nextElementSibling;
+                    while (nextElement && !nextElement.classList.contains('sidebar-section-label')) {
+                        if (nextElement.style.display !== 'none' && nextElement.tagName === 'BUTTON') {
+                            hasVisibleItem = true;
+                            break;
+                        }
+                        nextElement = nextElement.nextElementSibling;
+                    }
+                    if (!hasVisibleItem) {
+                        label.style.display = 'none';
+                    }
+                }
+            });
+        }
+    }
+
+    // ========================
+    // RENDER QUESTIONS - PHÂN QUYỀN
+    // ========================
+    function renderGeneralQuestions() {
+        const container = document.getElementById("general-question-list");
+        if (!container) return;
+        const list = questionData.general || [];
+        container.innerHTML = "";
+
+        if (!list.length) {
+            container.innerHTML = buildEmptyState("Chưa có câu hỏi chung nào. Thêm câu hỏi để bắt đầu.");
+            return;
+        }
+
+        const ul = document.createElement("div");
+        ul.className = "question-list";
+        list.forEach((q, i) => {
+            // Admin luôn được xem và sửa câu hỏi chung
+            ul.appendChild(buildQuestionItem(q, i + 1, "general", true));
+        });
+        container.appendChild(ul);
+    }
+
+    function renderBanQuestions() {
+        const container = document.getElementById("ban-question-list");
+        if (!container) return;
+        container.innerHTML = "";
+
+        // Admin chỉ thấy ban của mình + câu hỏi chung
+        let categories = [];
+        if (userRole === "superadmin") {
+            categories = ["MD-Design", "MD-Content", "HR", "ER", "PD"];
+        } else if (userRole === "admin") {
+            // Chỉ hiển thị ban của admin
+            categories = adminManagedDepts;
+        }
+        
+        let items = [];
+
+        categories.forEach(cat => {
+            if (currentBanFilter !== "all" && currentBanFilter !== cat) return;
+            // Kiểm tra quyền xem
+            if (!canViewCategory(cat)) return;
+            
+            (questionData[cat] || []).forEach((q, i) => {
+                items.push({ q, cat, i });
+            });
+        });
+
+        if (!items.length) {
+            const deptName = deptMap[adminDept] || adminDept;
+            container.innerHTML = buildEmptyState(`Không có câu hỏi nào cho ban ${deptName}.`);
+            return;
+        }
+
+        const ul = document.createElement("div");
+        ul.className = "question-list";
+        items.forEach(({ q, cat, i }) => {
+            const canEdit = canManageCategory(cat);
+            ul.appendChild(buildQuestionItem(q, i + 1, cat, canEdit));
+        });
+        container.appendChild(ul);
+        
+        // Cập nhật filter bar: chỉ hiển thị ban admin được quản lý
+        updateFilterBar();
+    }
+
+    function updateFilterBar() {
+        const filterBar = document.getElementById('filter-bar');
+        if (!filterBar) return;
+        
+        // Xóa các chip cũ (giữ lại chip "Tất cả")
+        const chips = filterBar.querySelectorAll('.filter-chip');
+        chips.forEach(chip => {
+            if (chip.dataset.ban !== "all") {
+                chip.remove();
+            }
+        });
+        
+        // Lấy danh sách ban admin được quản lý
+        const categories = userRole === "superadmin" 
+            ? ["MD-Design", "MD-Content", "HR", "ER", "PD"]
+            : adminManagedDepts;
+            
+        // Thêm chip cho từng ban
+        categories.forEach(cat => {
+            const chip = document.createElement('button');
+            chip.className = 'filter-chip';
+            chip.dataset.ban = cat;
+            chip.textContent = deptMap[cat] || cat;
+            chip.onclick = function() { filterBan(this); };
+            filterBar.appendChild(chip);
+        });
+    }
+
+    // ========================
+    // BUILD QUESTION ITEM - CÓ PHÂN QUYỀN
+    // ========================
+    function buildQuestionItem(q, index, category, canEdit = true) {
+        const div = document.createElement("div");
+        div.className = "question-item";
+        div.dataset.id = q.id;
+        div.dataset.cat = category;
+
+        const requiredBadge = q.required
+            ? `<span class="badge badge-red"><svg viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="3"/></svg>Bắt buộc</span>`
+            : "";
+
+        // Nếu không có quyền sửa -> ẩn nút action
+        const actionsHtml = canEdit ? `
+            <div class="question-actions">
+                <button class="btn btn-ghost btn-icon" title="Chỉnh sửa" onclick="openEditQuestion('${q.id}', '${category}')">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M11.5 2.5l2 2-8 8H3.5v-2l8-8z"/>
+                        <path d="M10 4l2 2"/>
+                    </svg>
+                </button>
+                <button class="btn btn-danger btn-icon" title="Xóa" onclick="deleteQuestion('${q.id}', '${category}')">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M2 4h12M5.5 4V2.5h5V4M6.5 7.5v5M9.5 7.5v5M3.5 4l.5 9.5h8l.5-9.5"/>
+                    </svg>
+                </button>
+            </div>
+        ` : `
+            <div class="question-actions">
+                <span class="badge badge-gray" style="font-size:11px;">Chỉ xem</span>
+            </div>
+        `;
+
+        div.innerHTML = `
+            <div class="question-order">${index}</div>
+            <div class="question-main">
+                <div class="question-text-display">${escHtml(q.text || "")}</div>
+                <div class="question-meta">
+                    <span class="badge ${CAT_BADGE_CLASS[category] || "badge-gray"}">${CAT_LABELS[category] || category}</span>
+                    <span class="badge badge-gray">${TYPE_LABELS[q.type] || q.type}</span>
+                    ${requiredBadge}
+                    ${q.options && q.options.length ? `<span class="badge badge-gray">${q.options.length} lựa chọn</span>` : ""}
+                </div>
+            </div>
+            ${actionsHtml}
+        `;
+        return div;
+    }
+
+    // ========================
+    // ADD / EDIT QUESTION - PHÂN QUYỀN
+    // ========================
+    function openAddQuestion(category) {
+        // Kiểm tra quyền thêm câu hỏi
+        let targetCategory = category === "ban" ? "MD-Design" : "general";
+        
+        // Nếu là admin và category là "ban", set mặc định là ban của admin
+        if (userRole === "admin" && category === "ban") {
+            targetCategory = adminDept;
+        }
+        
+        // Kiểm tra quyền
+        if (!canManageCategory(targetCategory)) {
+            showToast("Bạn không có quyền thêm câu hỏi cho ban này", "error");
+            return;
+        }
+
+        editingQuestionId = null;
+        addingToCategory = targetCategory;
+
+        document.getElementById("modal-question-title").textContent = "Thêm câu hỏi mới";
+        document.getElementById("q-editing-id").value = "";
+        document.getElementById("q-category").value = targetCategory;
+        document.getElementById("q-type").value = "textarea";
+        document.getElementById("q-text").value = "";
+        document.getElementById("q-placeholder").value = "";
+        document.getElementById("q-required").value = "true";
+        document.getElementById("options-list").innerHTML = "";
+
+        // Nếu là admin, disable category selector
+        const categorySelect = document.getElementById("q-category");
+        if (userRole === "admin") {
+            categorySelect.disabled = true;
+            // Chỉ hiển thị các ban admin được quản lý
+            const options = categorySelect.querySelectorAll('option');
+            options.forEach(opt => {
+                const val = opt.value;
+                if (val === "general" || adminManagedDepts.includes(val)) {
+                    opt.style.display = '';
+                } else {
+                    opt.style.display = 'none';
+                }
+            });
+        } else {
+            categorySelect.disabled = false;
+        }
+
+        onTypeChange();
+        openModal("modal-question");
+    }
+
+    function openEditQuestion(qId, category) {
+        // Kiểm tra quyền sửa
+        if (!canManageCategory(category)) {
+            showToast("Bạn không có quyền sửa câu hỏi này", "error");
+            return;
+        }
+
+        const list = questionData[category] || [];
+        const q = list.find(x => x.id === qId);
+        if (!q) return;
+
+        editingQuestionId = qId;
+        addingToCategory = category;
+
+        document.getElementById("modal-question-title").textContent = "Chỉnh sửa câu hỏi";
+        document.getElementById("q-editing-id").value = qId;
+        document.getElementById("q-category").value = category;
+        document.getElementById("q-type").value = q.type || "textarea";
+        document.getElementById("q-text").value = q.text || "";
+        document.getElementById("q-placeholder").value = q.placeholder || "";
+        document.getElementById("q-required").value = q.required ? "true" : "false";
+
+        document.getElementById("options-list").innerHTML = "";
+        (q.options || []).forEach(opt => addOptionRow(opt));
+
+        if (q.type === "scale") {
+            document.getElementById("q-scale-min").value = q.min || 1;
+            document.getElementById("q-scale-max").value = q.max || 5;
+        }
+
+        // Nếu là admin, disable category selector
+        const categorySelect = document.getElementById("q-category");
+        if (userRole === "admin") {
+            categorySelect.disabled = true;
+        } else {
+            categorySelect.disabled = false;
+        }
+
+        onTypeChange();
+        openModal("modal-question");
+    }
+
+    // ========================
+    // DELETE QUESTION - PHÂN QUYỀN
+    // ========================
+    async function deleteQuestion(qId, category) {
+        // Kiểm tra quyền xóa
+        if (!canManageCategory(category)) {
+            showToast("Bạn không có quyền xóa câu hỏi này", "error");
+            return;
+        }
+
+        showConfirm("Xóa câu hỏi", "Bạn có chắc chắn muốn xóa câu hỏi này không? Thao tác không thể hoàn tác.", async () => {
+            questionData[category] = (questionData[category] || []).filter(q => q.id !== qId);
+            try {
+                await saveQuestions();
+                showToast("Đã xóa câu hỏi", "success");
+                renderGeneralQuestions();
+                renderBanQuestions();
+                renderOverview();
+            } catch (e) {
+                showToast("Có lỗi xảy ra: " + e.message, "error");
+            }
+        });
+    }
+
+    // ========================
+    // ON CATEGORY CHANGE - PHÂN QUYỀN
+    // ========================
+    function onCategoryChange() {
+        const val = document.getElementById("q-category").value;
+        if (userRole === "admin") {
+            // Admin chỉ được chọn general hoặc ban của mình
+            if (val !== "general" && !adminManagedDepts.includes(val)) {
+                document.getElementById("q-category").value = adminDept;
+            }
+        }
+        addingToCategory = document.getElementById("q-category").value;
+    }
+
+    // ========================
+    // SAVE QUESTION - PHÂN QUYỀN
+    // ========================
+    async function saveQuestion() {
+        const text = document.getElementById("q-text").value.trim();
+        if (!text) { showToast("Vui lòng nhập nội dung câu hỏi", "error"); return; }
+
+        let category = document.getElementById("q-category").value;
+        
+        // Kiểm tra quyền lần cuối
+        if (!canManageCategory(category)) {
+            showToast("Bạn không có quyền thêm/sửa câu hỏi cho ban này", "error");
+            return;
+        }
+
+        const type = document.getElementById("q-type").value;
+        const required = document.getElementById("q-required").value === "true";
+        const placeholder = document.getElementById("q-placeholder").value.trim();
+
+        const q = {
+            id: editingQuestionId || genId(),
+            text,
+            type,
+            required
+        };
+
+        if (placeholder) q.placeholder = placeholder;
+
+        if (["radio", "checkbox", "dropdown"].includes(type)) {
+            const opts = Array.from(document.querySelectorAll("#options-list .option-row input"))
+                .map(i => i.value.trim()).filter(Boolean);
+            if (!opts.length) { showToast("Vui lòng thêm ít nhất một lựa chọn", "error"); return; }
+            q.options = opts;
+        }
+
+        if (type === "scale") {
+            q.min = parseInt(document.getElementById("q-scale-min").value) || 1;
+            q.max = parseInt(document.getElementById("q-scale-max").value) || 5;
+        }
+
+        if (!questionData[category]) questionData[category] = [];
+
+        if (editingQuestionId) {
+            // Remove from old category if changed
+            Object.keys(questionData).forEach(cat => {
+                questionData[cat] = questionData[cat].filter(x => x.id !== editingQuestionId);
+            });
+        }
+
+        questionData[category] = questionData[category] || [];
+        questionData[category].push(q);
+
+        try {
+            await saveQuestions();
+            showToast(editingQuestionId ? "Đã cập nhật câu hỏi" : "Đã thêm câu hỏi mới", "success");
+            closeModal("modal-question");
+            renderGeneralQuestions();
+            renderBanQuestions();
+            renderOverview();
+        } catch (e) {
+            showToast("Có lỗi xảy ra: " + e.message, "error");
+        }
+    }
+
+    // ========================
+    // FILTER BAN - PHÂN QUYỀN
+    // ========================
+    function filterBan(btn) {
+        const ban = btn.dataset.ban;
+        // Kiểm tra quyền xem
+        if (ban !== "all" && !canViewCategory(ban)) {
+            showToast("Bạn không có quyền xem câu hỏi của ban này", "error");
+            return;
+        }
+        
+        document.querySelectorAll(".filter-chip").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentBanFilter = ban;
+        renderBanQuestions();
+    }
 
     // ========================
     // INIT
@@ -1891,14 +2374,27 @@
     });
 
     // ========================
-    // TAB SWITCHING
+    // TAB SWITCHING - PHÂN QUYỀN
     // ========================
     function switchTab(tabId, btn) {
+        // 🔥 KIỂM TRA QUYỀN TRUY CẬP TAB
+        if (userRole === "admin") {
+            const restrictedTabs = [
+                'settings-form', 
+                'settings-interview', 
+                'settings-notify', 
+                'danger-zone'
+            ];
+            if (restrictedTabs.includes(tabId)) {
+                showToast("Bạn không có quyền truy cập khu vực này", "error");
+                return;
+            }
+        }
+
         document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
         document.querySelectorAll(".sidebar-item").forEach(b => b.classList.remove("active"));
         document.getElementById("tab-" + tabId).classList.add("active");
         if (btn) btn.classList.add("active");
-        // Re-populate intro UI mỗi lần switch vào tab để đảm bảo data hiển thị
         if (tabId === "intro") populateIntroUI();
     }
 
@@ -1971,12 +2467,10 @@
                     PD: raw.PD || raw.pd || []
                 };
             } else {
-                questionData = getDefaultQuestions();
                 await saveQuestions();
             }
         } catch (e) {
             console.error("Lỗi tải câu hỏi:", e);
-            questionData = getDefaultQuestions();
         }
     }
 
@@ -2934,17 +3428,24 @@ async function saveInterviewSlots() {
     // ========================
     function confirmResetQuestions() {
         showConfirm(
-            "Đặt lại câu hỏi về mặc định",
-            "Toàn bộ câu hỏi hiện tại sẽ bị xóa và thay thế bằng bộ câu hỏi mặc định. Dữ liệu không thể khôi phục.",
+            "Xóa toàn bộ câu hỏi",
+            "Toàn bộ câu hỏi hiện tại sẽ bị xóa. Dữ liệu không thể khôi phục.",
             async () => {
-                questionData = getDefaultQuestions();
                 try {
-                    await saveQuestions();
-                    showToast("Đã đặt lại câu hỏi về mặc định", "success");
+                    // Reset tất cả categories về mảng rỗng
+                    Object.keys(questionData).forEach(key => {
+                        questionData[key] = [];
+                    });
+                    
+                    await saveQuestions(); // saveQuestions sẽ lưu questionData hiện tại
+                    
+                    showToast("Đã xóa toàn bộ câu hỏi", "success");
                     renderGeneralQuestions();
                     renderBanQuestions();
                     renderOverview();
-                } catch (e) { showToast("Lỗi: " + e.message, "error"); }
+                } catch (e) { 
+                    showToast("Lỗi: " + e.message, "error"); 
+                }
             }
         );
     }

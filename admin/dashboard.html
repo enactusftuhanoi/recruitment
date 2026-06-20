@@ -3291,23 +3291,32 @@ function validateManualTeams(teams) {
 
 // Tìm ứng viên theo tên
 function findCandidateByName(name) {
-  // Chuẩn hóa tên để so sánh (bỏ dấu, chuyển chữ hoa)
-  const normalize = (str) => {
-    return str
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .trim();
-  };
-  
-  const normalizedSearch = normalize(name);
-  
-  // CHỈ CẦN TÌM TRONG TOÀN BỘ ỨNG VIÊN
-  return applications.find(candidate => {
-    if (!candidate.fullname) return false;
-    const normalizedCandidate = normalize(candidate.fullname);
-    return normalizedCandidate === normalizedSearch;
-  });
+    const normalize = (str) => {
+        return str.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim();
+    };
+    
+    const normalizedSearch = normalize(name);
+    
+    // Tìm chính xác
+    let found = applications.find(candidate => {
+        if (!candidate.fullname) return false;
+        return normalize(candidate.fullname) === normalizedSearch;
+    });
+    
+    if (found) return found;
+    
+    // Fallback: tìm gần đúng (chứa từ khóa)
+    const nameParts = normalizedSearch.split(' ');
+    return applications.find(candidate => {
+        if (!candidate.fullname) return false;
+        const normalizedCandidate = normalize(candidate.fullname);
+        return nameParts.some(part => 
+            part.length > 2 && normalizedCandidate.includes(part)
+        );
+    });
 }
 
 // Biến toàn cục để lưu loại export
@@ -5178,159 +5187,158 @@ function exportManualTeams() {
       }
 
       // Render preview team
-      // Render preview team - SỬA LẠI ĐỂ HIỂN THỊ SUPPORTER
-function renderTeamPreview(teams) {
-  const container = document.getElementById("teams-container");
-  container.innerHTML = "";
+      function renderTeamPreview(teams) {
+        const container = document.getElementById("teams-container");
+        container.innerHTML = "";
 
-  teams.forEach((team) => {
-    const teamDiv = document.createElement("div");
-    teamDiv.className = "team-preview-card";
-    teamDiv.style.cssText = `
-      background: var(--white);
-      border-radius: var(--border-radius);
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: var(--shadow);
-    `;
-
-    // Thêm input cho supporter và advisors
-    let advisorSupporterHTML = `
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-        <div>
-          <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Advisor 1:</label>
-          <input type="text" class="app-input" id="advisor1-${team.id}" 
-              value="${team.advisor1 || ""}" 
-              placeholder="Tên advisor 1"
-              style="width: 100%; margin-bottom: 8px;">
-        </div>
-        <div>
-          <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Advisor 2:</label>
-          <input type="text" class="app-input" id="advisor2-${team.id}" 
-              value="${team.advisor2 || ""}" 
-              placeholder="Tên advisor 2"
-              style="width: 100%; margin-bottom: 8px;">
-        </div>
-      </div>
-      <div style="margin-bottom: 12px;">
-        <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Supporter:</label>
-        <input type="text" class="app-input" id="supporter-${team.id}" 
-            value="${team.supporter || ""}" 
-            placeholder="Nhập tên supporter (cách nhau bằng dấu ,)" 
-            style="width: 100%; margin-bottom: 8px;">
-        <small style="color: var(--gray-500); font-size: 10px;">VD: Võ Hà Vy - PD, Đặng Vũ Quỳnh Trang - HR</small>
-      </div>
-    `;
-
-    let membersHTML = "";
-    team.members.forEach((member, index) => {
-      // 🛠️ SỬA: CHỈ hiển thị các ban đã PASS cả vòng 1 và vòng 2
-      let departmentBadges = "";
-      let validPassedDepartments = [];
-
-      // Kiểm tra ban priority
-      if (
-        member.originalCandidate &&
-        member.originalCandidate.priority_status === "pass" &&
-        member.originalCandidate.round2_priority_status === "pass"
-      ) {
-        validPassedDepartments.push({
-          department: member.originalCandidate.priority_position,
-          type: "priority",
-        });
-      }
-
-      // Kiểm tra ban secondary
-      if (
-        member.originalCandidate &&
-        member.originalCandidate.secondary_status === "pass" &&
-        member.originalCandidate.round2_secondary_status === "pass"
-      ) {
-        validPassedDepartments.push({
-          department: member.originalCandidate.secondary_position,
-          type: "secondary",
-        });
-      }
-
-      // Render badges chỉ cho các ban hợp lệ
-      validPassedDepartments.forEach((dept) => {
-        departmentBadges += `
-              <span class="department-badge status-pass" style="margin-left: 4px;">
-                  ${getDepartmentName(dept.department)}
-              </span>
+        teams.forEach((team) => {
+          const teamDiv = document.createElement("div");
+          teamDiv.className = "team-preview-card";
+          teamDiv.style.cssText = `
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
           `;
-      });
 
-      // 🛠️ SỬA: Hiển thị icon nếu ứng viên có 2 ban hợp lệ
-      const twoDeptIcon =
-        validPassedDepartments.length === 2
-          ? '<i class="fas fa-layer-group" style="margin-left: 8px; color: var(--warning);" title="Ứng viên pass 2 ban"></i>'
-          : "";
-
-      membersHTML += `
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--gray-200);">
-              <div style="flex: 1;">
-                  <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                      <strong>${index + 1}. ${member.name}</strong>
-                      ${departmentBadges}
-                      ${twoDeptIcon}
-                  </div>
-                  <div style="font-size: 12px; color: var(--gray-500);">${
-                    member.email
-                  }</div>
-                  ${
-                    validPassedDepartments.length === 0
-                      ? '<div style="font-size: 11px; color: var(--error); margin-top: 2px;">⚠️ Không có ban hợp lệ</div>'
-                      : ""
-                  }
+          // Thêm input cho supporter và advisors
+          let advisorSupporterHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Advisor 1:</label>
+                <input type="text" class="app-input" id="advisor1-${team.id}" 
+                    value="${team.advisor1 || ""}" 
+                    placeholder="Tên advisor 1"
+                    style="width: 100%; margin-bottom: 8px;">
               </div>
-          </div>
-      `;
-    });
+              <div>
+                <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Advisor 2:</label>
+                <input type="text" class="app-input" id="advisor2-${team.id}" 
+                    value="${team.advisor2 || ""}" 
+                    placeholder="Tên advisor 2"
+                    style="width: 100%; margin-bottom: 8px;">
+              </div>
+            </div>
+            <div style="margin-bottom: 12px;">
+              <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px;">Supporter:</label>
+              <input type="text" class="app-input" id="supporter-${team.id}" 
+                  value="${team.supporter || ""}" 
+                  placeholder="Nhập tên supporter (cách nhau bằng dấu ,)" 
+                  style="width: 100%; margin-bottom: 8px;">
+              <small style="color: var(--gray-500); font-size: 10px;">VD: Võ Hà Vy - PD, Đặng Vũ Quỳnh Trang - HR</small>
+            </div>
+          `;
 
-    // 🛠️ SỬA: Cập nhật thống kê department chỉ cho các ban hợp lệ
-    const validDepartmentCounts = { MD: 0, HR: 0, PD: 0, ER: 0 };
-    team.members.forEach((member) => {
-      if (member.originalCandidate) {
-        if (
-          member.originalCandidate.priority_status === "pass" &&
-          member.originalCandidate.round2_priority_status === "pass"
-        ) {
-          validDepartmentCounts[
-            member.originalCandidate.priority_position
-          ]++;
-        }
-        if (
-          member.originalCandidate.secondary_status === "pass" &&
-          member.originalCandidate.round2_secondary_status === "pass"
-        ) {
-          validDepartmentCounts[
-            member.originalCandidate.secondary_position
-          ]++;
-        }
+          let membersHTML = "";
+          team.members.forEach((member, index) => {
+            // 🛠️ SỬA: CHỈ hiển thị các ban đã PASS cả vòng 1 và vòng 2
+            let departmentBadges = "";
+            let validPassedDepartments = [];
+
+            // Kiểm tra ban priority
+            if (
+              member.originalCandidate &&
+              member.originalCandidate.priority_status === "pass" &&
+              member.originalCandidate.round2_priority_status === "pass"
+            ) {
+              validPassedDepartments.push({
+                department: member.originalCandidate.priority_position,
+                type: "priority",
+              });
+            }
+
+            // Kiểm tra ban secondary
+            if (
+              member.originalCandidate &&
+              member.originalCandidate.secondary_status === "pass" &&
+              member.originalCandidate.round2_secondary_status === "pass"
+            ) {
+              validPassedDepartments.push({
+                department: member.originalCandidate.secondary_position,
+                type: "secondary",
+              });
+            }
+
+            // Render badges chỉ cho các ban hợp lệ
+            validPassedDepartments.forEach((dept) => {
+              departmentBadges += `
+                    <span class="department-badge status-pass" style="margin-left: 4px;">
+                        ${getDepartmentName(dept.department)}
+                    </span>
+                `;
+            });
+
+            // 🛠️ SỬA: Hiển thị icon nếu ứng viên có 2 ban hợp lệ
+            const twoDeptIcon =
+              validPassedDepartments.length === 2
+                ? '<i class="fas fa-layer-group" style="margin-left: 8px; color: var(--warning);" title="Ứng viên pass 2 ban"></i>'
+                : "";
+
+            membersHTML += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--gray-200);">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                            <strong>${index + 1}. ${member.name}</strong>
+                            ${departmentBadges}
+                            ${twoDeptIcon}
+                        </div>
+                        <div style="font-size: 12px; color: var(--gray-500);">${
+                          member.email
+                        }</div>
+                        ${
+                          validPassedDepartments.length === 0
+                            ? '<div style="font-size: 11px; color: var(--error); margin-top: 2px;">⚠️ Không có ban hợp lệ</div>'
+                            : ""
+                        }
+                    </div>
+                </div>
+            `;
+          });
+
+          // 🛠️ SỬA: Cập nhật thống kê department chỉ cho các ban hợp lệ
+          const validDepartmentCounts = { MD: 0, HR: 0, PD: 0, ER: 0 };
+          team.members.forEach((member) => {
+            if (member.originalCandidate) {
+              if (
+                member.originalCandidate.priority_status === "pass" &&
+                member.originalCandidate.round2_priority_status === "pass"
+              ) {
+                validDepartmentCounts[
+                  member.originalCandidate.priority_position
+                ]++;
+              }
+              if (
+                member.originalCandidate.secondary_status === "pass" &&
+                member.originalCandidate.round2_secondary_status === "pass"
+              ) {
+                validDepartmentCounts[
+                  member.originalCandidate.secondary_position
+                ]++;
+              }
+            }
+          });
+
+          teamDiv.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h4 style="margin: 0;">${team.name}</h4>
+                <div>
+                    <span style="margin-right: 12px;">Tổng: ${team.members.length}</span>
+                    <span style="margin-right: 8px; color: var(--info);">MD: ${validDepartmentCounts.MD}</span>
+                    <span style="margin-right: 8px; color: var(--success);">HR: ${validDepartmentCounts.HR}</span>
+                    <span style="margin-right: 8px; color: var(--warning);">PD: ${validDepartmentCounts.PD}</span>
+                    <span style="color: var(--error);">ER: ${validDepartmentCounts.ER}</span>
+                </div>
+            </div>
+            ${advisorSupporterHTML}
+            <div style="max-height: 300px; overflow-y: auto;">
+                ${membersHTML}
+            </div>
+          `;
+
+          container.appendChild(teamDiv);
+        });
       }
-    });
-
-    teamDiv.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h4 style="margin: 0;">${team.name}</h4>
-          <div>
-              <span style="margin-right: 12px;">Tổng: ${team.members.length}</span>
-              <span style="margin-right: 8px; color: var(--info);">MD: ${validDepartmentCounts.MD}</span>
-              <span style="margin-right: 8px; color: var(--success);">HR: ${validDepartmentCounts.HR}</span>
-              <span style="margin-right: 8px; color: var(--warning);">PD: ${validDepartmentCounts.PD}</span>
-              <span style="color: var(--error);">ER: ${validDepartmentCounts.ER}</span>
-          </div>
-      </div>
-      ${advisorSupporterHTML}
-      <div style="max-height: 300px; overflow-y: auto;">
-          ${membersHTML}
-      </div>
-    `;
-
-    container.appendChild(teamDiv);
-  });
-}
 
       // Export danh sách team
       document
@@ -5345,67 +5353,57 @@ function renderTeamPreview(teams) {
         });
 
       // Xác nhận chia team
-      // Xác nhận chia team
-      document
-        .getElementById("confirm-teams-btn")
-        .addEventListener("click", async () => {
-          if (temporaryTeams.length === 0) {
-            alert("Chưa có team nào để xác nhận!");
-            return;
-          }
+      document.getElementById("confirm-teams-btn").addEventListener("click", async () => {
+        if (temporaryTeams.length === 0) {
+          alert("Chưa có team nào để xác nhận!");
+          return;
+        }
 
-          if (
-            !confirm(
-              "Xác nhận chia team này? Dữ liệu sẽ được lưu vào hệ thống."
-            )
-          ) {
-            return;
-          }
+        if (!confirm("Xác nhận chia team này? Dữ liệu sẽ được lưu vào hệ thống.")) {
+          return;
+        }
 
-          try {
-            // Lưu thông tin team vào Firestore
-            const batch = db.batch();
+        try {
+          const batch = db.batch();
 
-            temporaryTeams.forEach((team) => {
-              // Lấy supporter từ input
-              const supporterInput = document.getElementById(
-                `supporter-${team.id}`
-              );
-              const supporter = supporterInput ? supporterInput.value : "";
+          temporaryTeams.forEach((team) => {
+            // 🔥 LẤY ADVISOR TỪ INPUT
+            const advisor1Input = document.getElementById(`advisor1-${team.id}`);
+            const advisor2Input = document.getElementById(`advisor2-${team.id}`);
+            const supporterInput = document.getElementById(`supporter-${team.id}`);
+            
+            const advisor1 = advisor1Input ? advisor1Input.value.trim() : "";
+            const advisor2 = advisor2Input ? advisor2Input.value.trim() : "";
+            const supporter = supporterInput ? supporterInput.value.trim() : "";
 
-              team.members.forEach(async (member, index) => {
-                const appRef = db.collection("applications").doc(member.id);
+            team.members.forEach(async (member) => {
+              const appRef = db.collection("applications").doc(member.id);
+              
+              const updates = {
+                "round3.team": team.name,
+                "round3.teamId": team.id,
+                "round3.teamOrder": team.members.indexOf(member) + 1,
+              };
 
-                // Cập nhật thông tin team cho ứng viên
-                const updates = {
-                  "round3.team": team.name,
-                  "round3.teamId": team.id,
-                  "round3.teamOrder": index + 1,
-                };
+              // 🔥 THÊM ADVISOR VÀO UPDATE
+              if (advisor1) updates["round3.advisor1"] = advisor1;
+              if (advisor2) updates["round3.advisor2"] = advisor2;
+              if (supporter) updates["round3.supporter"] = supporter;
 
-                // Thêm supporter nếu có
-                if (supporter) {
-                  updates["round3.supporter"] = supporter;
-                }
-
-                batch.update(appRef, updates);
-              });
+              batch.update(appRef, updates);
             });
+          });
 
-            await batch.commit();
-            alert("✅ Đã lưu thông tin team thành công!");
-            document.getElementById("team-modal").style.display = "none";
-
-            // Cập nhật ngay lập tức thay vì reload toàn bộ
-            await updateApplicationsWithTeamInfo(temporaryTeams);
-
-            // Render lại bảng vòng 3
-            renderRound3();
-          } catch (error) {
-            console.error("Lỗi khi lưu team:", error);
-            alert("❌ Lỗi khi lưu team: " + error.message);
-          }
-        });
+          await batch.commit();
+          alert("✅ Đã lưu thông tin team thành công!");
+          document.getElementById("team-modal").style.display = "none";
+          await refreshApplications();
+          renderRound3();
+        } catch (error) {
+          console.error("Lỗi khi lưu team:", error);
+          alert("❌ Lỗi khi lưu team: " + error.message);
+        }
+      });
 
       // Hàm helper để lấy danh sách ban hợp lệ của ứng viên
       function getValidDepartments(candidate) {
@@ -6663,7 +6661,7 @@ function renderRound3() {
     });
 
     sortedTeams.forEach((team) => {
-        // Team header
+        // Team header - SỬA LẠI HIỂN THỊ ADVISOR
         const headerRow = document.createElement("tr");
         headerRow.style.backgroundColor = "var(--gray-50)";
         headerRow.innerHTML = `
@@ -6674,11 +6672,14 @@ function renderRound3() {
                 <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: center;">
                     <div>
                         <strong style="font-size: 12px; color: var(--gray-600);">Advisor:</strong>
-                        <div style="font-size: 13px;">${team.advisor1 || "Chưa có"} ${team.advisor2 ? ', ' + team.advisor2 : ''}</div>
+                        <div style="font-size: 13px;">
+                            ${team.advisor1 ? team.advisor1 : "Chưa có"} 
+                            ${team.advisor2 ? ', ' + team.advisor2 : ""}
+                        </div>
                     </div>
                     <div>
                         <strong style="font-size: 12px; color: var(--gray-600);">Supporter:</strong>
-                        <div style="font-size: 13px;">${team.supporter || "Chưa có"}</div>
+                        <div style="font-size: 13px;">${team.supporter ? team.supporter : "Chưa có"}</div>
                     </div>
                     <div style="text-align: right;">
                         <span style="font-size: 12px; color: var(--gray-500);">${team.members.length} thành viên</span>
@@ -6740,7 +6741,6 @@ function renderRound3() {
                 </td>
                 <td>
                     ${allDepartments.map((pos) => {
-                        // Hiển thị ban NOT-PASS với style gạch ngang
                         if (!pos.isPassedPrevRound || pos.status === "not-pass") {
                             return `<span class="department-badge status-not-pass" style="text-decoration: line-through; display: inline-block; margin-bottom: 4px;">
                                 ${getDepartmentName(pos.dept)}
@@ -6751,7 +6751,6 @@ function renderRound3() {
                 </td>
                 <td>
                     ${allDepartments.map((pos) => {
-                        // Nếu không pass vòng trước, không cho chỉnh sửa
                         if (!pos.isPassedPrevRound) return '';
                         return `<input class="app-input" value="${app.round3?.[pos.type]?.note || ""}" 
                             data-field="${pos.type}.note" data-id="${app.id}" 
@@ -6782,6 +6781,7 @@ function renderRound3() {
 
     setupRound3SaveHandlers();
 }
+
 // Hàm render phần trạng thái vòng 3 chia theo ban (GIỐNG VÒNG 2)
 function renderRound3StatusSection(app) {
     let html = "";
@@ -6840,7 +6840,6 @@ function renderRound3StatusSection(app) {
     return html;
 }
 
-// Sửa lại hàm setupRound3SaveHandlers để xử lý trạng thái mới
 function setupRound3SaveHandlers() {
     const tbody = document.getElementById("round3-table-body");
     
@@ -6857,7 +6856,7 @@ function setupRound3SaveHandlers() {
             // Lưu ghi chú theo từng ban
             const noteInputs = row.querySelectorAll('input[data-field$=".note"]');
             noteInputs.forEach((input) => {
-                const field = input.dataset.field; // "priority.note" hoặc "secondary.note"
+                const field = input.dataset.field;
                 const [banType, fieldName] = field.split('.');
                 
                 if (canEditBan(app, banType)) {
@@ -6865,7 +6864,7 @@ function setupRound3SaveHandlers() {
                 }
             });
 
-            // THÊM: Lưu trạng thái theo ban (GIỐNG VÒNG 2)
+            // Lưu trạng thái theo ban
             const statusSection = document.getElementById(`round3-status-section-${appId}`);
             if (statusSection) {
                 const statusSelects = statusSection.querySelectorAll(".ban-status-select");
@@ -6877,6 +6876,33 @@ function setupRound3SaveHandlers() {
                         updates[`round3_${banType}_status`] = newStatus;
                     }
                 });
+            }
+
+            // 🔥 THÊM: Lưu Advisor và Supporter (lấy từ header row)
+            const headerRow = row.previousElementSibling;
+            if (headerRow && headerRow.style.backgroundColor === "var(--gray-50)") {
+                // Lấy advisor và supporter từ header
+                const advisorDiv = headerRow.querySelector('div div:first-child div:last-child');
+                const supporterDiv = headerRow.querySelector('div div:nth-child(2) div:last-child');
+                
+                if (advisorDiv) {
+                    const advisorText = advisorDiv.textContent.trim();
+                    // Tách advisor1 và advisor2
+                    const advisors = advisorText.split(',').map(a => a.trim());
+                    if (advisors[0] && advisors[0] !== "Chưa có") {
+                        updates["round3.advisor1"] = advisors[0];
+                    }
+                    if (advisors[1] && advisors[1] !== "Chưa có") {
+                        updates["round3.advisor2"] = advisors[1];
+                    }
+                }
+                
+                if (supporterDiv) {
+                    const supporterText = supporterDiv.textContent.trim();
+                    if (supporterText && supporterText !== "Chưa có") {
+                        updates["round3.supporter"] = supporterText;
+                    }
+                }
             }
 
             try {
@@ -7805,115 +7831,209 @@ function renderRound4() {
         }
       }
 
-      // Hàm render lịch sử vòng
-      function renderRoundHistory(application) {
-        const rounds = [
-          { name: "Vòng 1: Đơn", status: computeRound1Status(application) },
-          {
-            name: "Vòng 2: Phỏng vấn nhóm",
-            status: computeRound2Status(application),
-          },
-          {
-            name: "Vòng 3: Teamwork",
-            status: computeRound3Status(application),
-          },
-          {
-            name: "Vòng 4: Phỏng vấn cá nhân",
-            status: computeRound4Status(application),
-          },
-          {
-            name: "Thành viên chính thức",
-            status:
-              application.current_round === "success" ? "success" : "pending",
-          },
+    function renderRoundHistory(application) {
+        // Định nghĩa các vòng
+        const roundConfigs = [
+            { 
+                name: "Vòng 1: Đơn", 
+                key: "round1",
+                getStatus: (app) => {
+                    const p = app.priority_status || "pending";
+                    const s = app.secondary_status || "pending";
+                    return { priority: p, secondary: s };
+                }
+            },
+            { 
+                name: "Vòng 2: Phỏng vấn nhóm", 
+                key: "round2",
+                getStatus: (app) => {
+                    const p = app.round2_priority_status || "pending";
+                    const s = app.round2_secondary_status || "pending";
+                    return { priority: p, secondary: s };
+                }
+            },
+            { 
+                name: "Vòng 3: Teamwork", 
+                key: "round3",
+                getStatus: (app) => {
+                    const p = app.round3_priority_status || "pending";
+                    const s = app.round3_secondary_status || "pending";
+                    return { priority: p, secondary: s };
+                }
+            },
+            { 
+                name: "Vòng 4: Phỏng vấn cá nhân", 
+                key: "round4",
+                getStatus: (app) => {
+                    const p = app.round4_priority_status || "pending";
+                    const s = app.round4_secondary_status || "pending";
+                    return { priority: p, secondary: s };
+                }
+            },
+            { 
+                name: "Thành viên chính thức", 
+                key: "success",
+                getStatus: (app) => {
+                    if (app.current_round === "success") {
+                        return { 
+                            priority: "success", 
+                            secondary: null,
+                            finalDept: app.final_department 
+                        };
+                    }
+                    return { priority: null, secondary: null };
+                }
+            }
         ];
 
         let html = `
-    <h3 style="margin-bottom: 20px; color: var(--gray-800);">
-      <i class="fas fa-history" style="margin-right: 8px;"></i>
-      Lịch sử các vòng tuyển dụng
-    </h3>
-    
-    <div style="display: flex; flex-direction: column; gap: 12px;">
-  `;
+            <h3 style="margin-bottom: 20px; color: var(--gray-800);">
+                <i class="fas fa-history" style="margin-right: 8px;"></i>
+                Lịch sử các vòng tuyển dụng
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+        `;
 
-        rounds.forEach((round, index) => {
-          const isCurrent =
-            application.current_round === `round${index + 1}` ||
-            (application.current_round === "success" && index === 4);
+        roundConfigs.forEach((config, index) => {
+            const status = config.getStatus(application);
+            const isCurrent = application.current_round === config.key || 
+                            (application.current_round === "success" && config.key === "success");
+            
+            // Xác định trạng thái tổng của vòng
+            let overallStatus = "pending";
+            if (status.priority === "success" || status.secondary === "success") {
+                overallStatus = "success";
+            } else if (status.priority === "pass" || status.secondary === "pass") {
+                overallStatus = "pass";
+            } else if (status.priority === "not-pass" && status.secondary === "not-pass") {
+                overallStatus = "not-pass";
+            } else if (status.priority === "not-pass" || status.secondary === "not-pass") {
+                overallStatus = "reviewed";
+            }
 
-          html += `
-      <div class="round-history-item ${isCurrent ? "current" : ""}">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div class="round-number ${
-            round.status !== "pending" ? "completed" : ""
-          }">
-            ${index + 1}
-          </div>
-          <div style="flex: 1;">
-            <div style="font-weight: 500; margin-bottom: 4px;">${
-              round.name
-            }</div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span class="status-badge ${getStatusClass(round.status)}">
-                ${getStatusText(round.status)}
-              </span>
-              ${isCurrent ? '<span class="current-badge">Hiện tại</span>' : ""}
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
+            // Xây dựng badge cho từng ban
+            let badgesHtml = "";
+            const depts = [];
+            
+            // Ban priority
+            if (application.priority_position) {
+                const deptStatus = status.priority || "pending";
+                const deptName = getDepartmentName(application.priority_position);
+                depts.push({ name: deptName, status: deptStatus, type: "priority" });
+            }
+            
+            // Ban secondary
+            if (application.secondary_position && application.secondary_position !== "None") {
+                const deptStatus = status.secondary || "pending";
+                const deptName = getDepartmentName(application.secondary_position);
+                depts.push({ name: deptName, status: deptStatus, type: "secondary" });
+            }
+
+            badgesHtml = depts.map(dept => {
+                let statusClass = "";
+                let statusText = "";
+                
+                switch(dept.status) {
+                    case "pass":
+                    case "success":
+                        statusClass = "status-pass";
+                        statusText = dept.status === "success" ? "✅" : "Pass";
+                        break;
+                    case "not-pass":
+                        statusClass = "status-not-pass";
+                        statusText = "Not pass";
+                        break;
+                    case "pending":
+                        statusClass = "status-pending";
+                        statusText = "Pending";
+                        break;
+                    default:
+                        statusClass = "status-pending";
+                        statusText = dept.status || "Pending";
+                }
+                
+                // Nếu là success và có final department
+                if (dept.status === "success" && dept.type === "priority" && status.finalDept) {
+                    statusText = `🎯 ${getDepartmentName(status.finalDept)}`;
+                }
+                
+                return `<span class="status-badge ${statusClass}" style="margin-right: 4px; font-size: 11px;">
+                    ${dept.name}
+                </span>`;
+            }).join("");
+
+            html += `
+                <div class="round-history-item ${isCurrent ? "current" : ""}" 
+                    style="padding: 16px; background: var(--white); border: 1px solid var(--gray-200); 
+                            border-radius: 8px; transition: all 0.3s ease;
+                            ${isCurrent ? 'border-color: var(--info); background: var(--info-light);' : ''}">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div class="round-number ${overallStatus !== "pending" ? "completed" : ""}"
+                            style="width: 32px; height: 32px; border-radius: 50%; 
+                                    background: ${overallStatus === "pass" || overallStatus === "success" ? 'var(--success)' : 
+                                              overallStatus === "not-pass" ? 'var(--error)' : 'var(--gray-200)'};
+                                    display: flex; align-items: center; justify-content: center; 
+                                    font-weight: 600; color: ${overallStatus !== "pending" ? 'white' : 'var(--gray-600)'};">
+                            ${index + 1}
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <div style="font-weight: 500; margin-bottom: 4px;">${config.name}</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
+                                ${badgesHtml || '<span style="color: var(--gray-400); font-size: 13px;">Chưa có thông tin</span>'}
+                                ${isCurrent ? '<span class="current-badge" style="background: var(--info); color: white; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 500; margin-left: 4px;">Hiện tại</span>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
         });
 
         html += `</div>`;
 
-        // Thêm CSS
+        // CSS cho round history
         html += `
-    <style>
-      .round-history-item {
-        padding: 16px;
-        background: var(--white);
-        border: 1px solid var(--gray-200);
-        border-radius: 8px;
-        transition: all 0.3s ease;
-      }
-      
-      .round-history-item.current {
-        border-color: var(--info);
-        background: var(--info-light);
-      }
-      
-      .round-number {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: var(--gray-200);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        color: var(--gray-600);
-      }
-      
-      .round-number.completed {
-        background: var(--success);
-        color: var(--white);
-      }
-      
-      .current-badge {
-        background: var(--info);
-        color: var(--white);
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 500;
-      }
-    </style>
-  `;
+            <style>
+                .round-history-item {
+                    transition: all 0.3s ease;
+                }
+                .round-history-item:hover {
+                    transform: translateX(4px);
+                    box-shadow: var(--shadow-sm);
+                }
+                .round-history-item.current {
+                    border-color: var(--info) !important;
+                    background: var(--info-light) !important;
+                }
+                .round-number.completed {
+                    background: var(--success) !important;
+                    color: white !important;
+                }
+                .round-number.not-pass {
+                    background: var(--error) !important;
+                    color: white !important;
+                }
+                .status-badge.status-pass {
+                    background: var(--success-light);
+                    color: var(--success);
+                }
+                .status-badge.status-not-pass {
+                    background: var(--error-light);
+                    color: var(--error);
+                    text-decoration: line-through;
+                }
+                .status-badge.status-pending {
+                    background: var(--warning-light);
+                    color: var(--warning);
+                }
+                .status-badge.status-success {
+                    background: var(--primary);
+                    color: var(--gray-800);
+                }
+            </style>
+        `;
 
         return html;
-      }
+    }
 
       // Hàm thiết lập tabs
       function setupApplicationTabs() {
@@ -8979,12 +9099,19 @@ async function processRoundUpdate(newRound) {
 
             // Nếu đang là admin, chỉ thao tác những app thuộc dept họ
             if (userRole === "admin") {
-                const belongs =
-                    data.priority_position === userDept ||
-                    data.secondary_position === userDept ||
-                    (Array.isArray(data.all_departments) &&
-                        data.all_departments.includes(userDept));
-                if (!belongs) return; // skip
+                // Kiểm tra admin có quyền với ban priority không
+                const canEditPriority = data.priority_position === userDept || 
+                                      (Array.isArray(data.all_departments) && data.all_departments.includes(userDept));
+                // Kiểm tra admin có quyền với ban secondary không
+                const canEditSecondary = data.secondary_position === userDept || 
+                                        (Array.isArray(data.all_departments) && data.all_departments.includes(userDept));
+                
+                // Nếu không có quyền với ban nào thì skip
+                if (!canEditPriority && !canEditSecondary) return;
+                
+                // Lưu lại quyền để dùng sau
+                tempApp._canEditPriority = canEditPriority;
+                tempApp._canEditSecondary = canEditSecondary;
             }
 
             const tempApp = {
