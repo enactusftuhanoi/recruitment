@@ -3040,8 +3040,20 @@ function renderInterviewSlots() {
         groupedSlots[dateKey].push({ ...slot, index });
     });
 
+    // Sắp xếp các ngày theo thứ tự thời gian
+    const sortedDateKeys = Object.keys(groupedSlots).sort((a, b) => {
+        const parseDate = (key) => {
+            const match = key.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+            if (match) {
+                return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
+            }
+            return new Date(0);
+        };
+        return parseDate(a) - parseDate(b);
+    });
+
     // Render từng ngày
-    Object.keys(groupedSlots).forEach(dateKey => {
+    sortedDateKeys.forEach(dateKey => {
         const dateGroup = document.createElement('div');
         dateGroup.style.cssText = 'margin-bottom:16px;border:1px solid var(--gray-200);border-radius:8px;overflow:hidden;';
         
@@ -3075,7 +3087,7 @@ function renderInterviewSlots() {
         const slotsContainer = document.createElement('div');
         slotsContainer.style.cssText = 'padding:10px 14px;background:var(--white);';
         
-        // Sắp xếp ca theo thứ tự trong ngày
+        // Sắp xếp ca theo thời gian trong ngày
         const sortedSlots = groupedSlots[dateKey].sort((a, b) => {
             if (a.startTime && b.startTime) {
                 return a.startTime.localeCompare(b.startTime);
@@ -3101,7 +3113,7 @@ function renderInterviewSlots() {
                 timeDisplay = `${slot.startTime} - ${slot.endTime}`;
             }
             
-            // Ca số trong ngày (bắt đầu từ 1)
+            // 🔥 QUAN TRỌNG: Đánh số ca trong ngày từ 1
             const caNum = idx + 1;
             
             row.innerHTML = `
@@ -3175,6 +3187,13 @@ function addNewDate() {
     const year = lastDate.getFullYear();
     const dateDisplay = `${dayOfWeek}, ${day}/${month}/${year}`;
     
+    // Tìm số ca hiện có trong ngày này
+    const existingSlotsInDay = interviewSettings.slots.filter(slot => {
+        if (slot.dateTime === dateStr) return true;
+        return false;
+    });
+    const startCaNumber = existingSlotsInDay.length + 1;
+    
     // Tạo 3 ca mặc định, mỗi ca 1 tiếng, cách nhau 15 phút
     const timeSlots = [
         { start: '08:00', end: '09:00' },
@@ -3183,7 +3202,7 @@ function addNewDate() {
     ];
     
     timeSlots.forEach((time, idx) => {
-        const caNum = idx + 1;
+        const caNum = startCaNumber + idx;
         interviewSettings.slots.push({
             dateTime: dateStr,
             startTime: time.start,
@@ -3241,7 +3260,7 @@ function updateSlot(index, field, value, dateKey) {
                         const year = d.getFullYear();
                         const dateDisplay = `${dayOfWeek}, ${day}/${month}/${year}`;
                         
-                        // Tính số ca trong ngày
+                        // Tính số ca trong ngày và vị trí của slot này
                         const slotsInDay = interviewSettings.slots.filter(s => {
                             if (s.dateTime) {
                                 try {
@@ -3259,7 +3278,15 @@ function updateSlot(index, field, value, dateKey) {
                             return false;
                         });
                         
-                        const caNum = slotsInDay.findIndex(s => s === slot) + 1;
+                        // Sắp xếp theo giờ để tìm vị trí đúng
+                        const sortedSlots = [...slotsInDay].sort((a, b) => {
+                            if (a.startTime && b.startTime) {
+                                return a.startTime.localeCompare(b.startTime);
+                            }
+                            return 0;
+                        });
+                        
+                        const caNum = sortedSlots.findIndex(s => s === slot) + 1;
                         slot.label = `Ca ${caNum} (${slot.startTime} - ${slot.endTime}) - ${dateDisplay}`;
                     }
                 } catch(e) {}
@@ -3278,40 +3305,31 @@ function removeSlot(index, dateKey) {
             
             // Cập nhật lại label cho các ca cùng ngày
             if (dateKey) {
-                interviewSettings.slots.forEach((slot, idx) => {
-                    if (slot.dateTime && slot.startTime && slot.endTime) {
-                        try {
-                            const d = new Date(slot.dateTime);
-                            if (!isNaN(d.getTime())) {
-                                const weekdays = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-                                const dayOfWeek = weekdays[d.getDay()];
-                                const day = String(d.getDate()).padStart(2, '0');
-                                const month = String(d.getMonth() + 1).padStart(2, '0');
-                                const year = d.getFullYear();
-                                const currentDateKey = `${dayOfWeek}, ${day}/${month}/${year}`;
-                                if (currentDateKey === dateKey) {
-                                    // Đếm lại số ca trong ngày
-                                    const slotsInDay = interviewSettings.slots.filter(s => {
-                                        if (s.dateTime) {
-                                            try {
-                                                const d2 = new Date(s.dateTime);
-                                                if (!isNaN(d2.getTime())) {
-                                                    const weekdays2 = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-                                                    const dayOfWeek2 = weekdays2[d2.getDay()];
-                                                    const day2 = String(d2.getDate()).padStart(2, '0');
-                                                    const month2 = String(d2.getMonth() + 1).padStart(2, '0');
-                                                    const year2 = d2.getFullYear();
-                                                    return `${dayOfWeek2}, ${day2}/${month2}/${year2}` === currentDateKey;
-                                                }
-                                            } catch(e) {}
-                                        }
-                                        return false;
-                                    });
-                                    const caNum = slotsInDay.findIndex(s => s === slot) + 1;
-                                    slot.label = `Ca ${caNum} (${slot.startTime} - ${slot.endTime}) - ${currentDateKey}`;
-                                }
-                            }
-                        } catch(e) {}
+                // Lấy date từ dateKey
+                const dateParts = dateKey.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                let dateStr = '';
+                if (dateParts) {
+                    const day = dateParts[1];
+                    const month = dateParts[2];
+                    const year = dateParts[3];
+                    dateStr = `${year}-${month}-${day}`;
+                }
+                
+                // Lấy tất cả slot trong ngày này
+                const slotsInDay = interviewSettings.slots.filter(s => s.dateTime === dateStr);
+                // Sắp xếp theo giờ
+                const sortedSlots = [...slotsInDay].sort((a, b) => {
+                    if (a.startTime && b.startTime) {
+                        return a.startTime.localeCompare(b.startTime);
+                    }
+                    return 0;
+                });
+                
+                // Cập nhật label cho từng slot
+                sortedSlots.forEach((slot, idx) => {
+                    const caNum = idx + 1;
+                    if (slot.startTime && slot.endTime) {
+                        slot.label = `Ca ${caNum} (${slot.startTime} - ${slot.endTime}) - ${dateKey}`;
                     }
                 });
             }

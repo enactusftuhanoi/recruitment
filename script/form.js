@@ -132,28 +132,13 @@ function buildInterviewFromSlots(slots) {
         return [];
     }
 
-    // Tạo options từ slots
+    // Tạo options từ slots - KHÔNG ĐÁNH SỐ TOÀN CỤC
     const options = [];
     
-    slots.forEach((slot, index) => {
-        let displayLabel = '';
-        
-        // Lấy thông tin từ slot
-        const caNumber = index + 1;
-        let timeRange = '';
-        let dateInfo = '';
-        
-        // Lấy giờ
-        if (slot.startTime && slot.endTime) {
-            timeRange = `${slot.startTime} - ${slot.endTime}`;
-        } else if (slot.label) {
-            const timeMatch = slot.label.match(/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/);
-            if (timeMatch) {
-                timeRange = `${timeMatch[1]} - ${timeMatch[2]}`;
-            }
-        }
-        
-        // Lấy ngày
+    // Nhóm theo ngày trước
+    const groupedByDate = {};
+    slots.forEach((slot) => {
+        let dateKey = '';
         if (slot.dateTime) {
             try {
                 const date = new Date(slot.dateTime);
@@ -163,23 +148,57 @@ function buildInterviewFromSlots(slots) {
                     const day = String(date.getDate()).padStart(2, '0');
                     const month = String(date.getMonth() + 1).padStart(2, '0');
                     const year = date.getFullYear();
-                    dateInfo = `${dayOfWeek}, ${day}/${month}/${year}`;
+                    dateKey = `${dayOfWeek}, ${day}/${month}/${year}`;
                 }
             } catch(e) {}
         }
-        
-        // Ghép thành label
-        if (timeRange && dateInfo) {
-            displayLabel = `Ca ${caNumber} (${timeRange}) - ${dateInfo}`;
-        } else if (timeRange) {
-            displayLabel = `Ca ${caNumber} (${timeRange})`;
-        } else if (dateInfo) {
-            displayLabel = `Ca ${caNumber} - ${dateInfo}`;
-        } else {
-            displayLabel = slot.label || `Ca ${caNumber}`;
+        if (!groupedByDate[dateKey]) {
+            groupedByDate[dateKey] = [];
         }
+        groupedByDate[dateKey].push(slot);
+    });
+
+    // Xử lý từng ngày, đánh số ca trong ngày từ 1
+    Object.keys(groupedByDate).forEach(dateKey => {
+        const slotsInDay = groupedByDate[dateKey];
+        // Sắp xếp theo giờ
+        slotsInDay.sort((a, b) => {
+            if (a.startTime && b.startTime) {
+                return a.startTime.localeCompare(b.startTime);
+            }
+            return 0;
+        });
         
-        options.push(displayLabel);
+        slotsInDay.forEach((slot, idx) => {
+            const caNumber = idx + 1; // ✅ Đánh số trong ngày
+            
+            let timeRange = '';
+            let dateInfo = dateKey;
+            
+            // Lấy giờ
+            if (slot.startTime && slot.endTime) {
+                timeRange = `${slot.startTime} - ${slot.endTime}`;
+            } else if (slot.label) {
+                const timeMatch = slot.label.match(/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/);
+                if (timeMatch) {
+                    timeRange = `${timeMatch[1]} - ${timeMatch[2]}`;
+                }
+            }
+            
+            // Ghép thành label
+            let displayLabel = '';
+            if (timeRange && dateInfo) {
+                displayLabel = `Ca ${caNumber} (${timeRange}) - ${dateInfo}`;
+            } else if (timeRange) {
+                displayLabel = `Ca ${caNumber} (${timeRange})`;
+            } else if (dateInfo) {
+                displayLabel = `Ca ${caNumber} - ${dateInfo}`;
+            } else {
+                displayLabel = slot.label || `Ca ${caNumber}`;
+            }
+            
+            options.push(displayLabel);
+        });
     });
 
     // Tạo câu hỏi duy nhất
@@ -434,6 +453,30 @@ function updateProgressBar() {
     if (activeEl) activeEl.className = 'step active';
 }
 
+function restoreInterviewSchedule() {
+    const saved = localStorage.getItem('enactus_form_data');
+    if (!saved) return;
+    try {
+        const data = JSON.parse(saved);
+        if (data.interview_schedule && Array.isArray(data.interview_schedule)) {
+            document.querySelectorAll('#interview-schedule input[type="checkbox"]').forEach(cb => {
+                if (data.interview_schedule.includes(cb.value)) {
+                    cb.checked = true;
+                    // Kích hoạt hiệu ứng
+                    const item = cb.closest('.checkbox-item');
+                    if (item) {
+                        item.style.background = '#FEF3C7';
+                        item.style.borderColor = '#F59E0B';
+                    }
+                }
+            });
+            updateInterviewSelectionCount();
+        }
+    } catch (e) {
+        console.warn('[Form] Lỗi khôi phục lịch phỏng vấn:', e);
+    }
+}
+
 // ============================================================
 // HIỂN THỊ SECTION
 // ============================================================
@@ -458,8 +501,15 @@ function showSection(sectionNumber) {
         currentSection = sectionNumber;
         updateProgressBar();
 
-        if (sectionNumber === 4) generateSummary();
+        if (sectionNumber === 4) {
+            generateSummary();
+            // LƯU DỮ LIỆU TRƯỚC KHI HIỂN THỊ SUMMARY
+            simpleSaveFormData();
+        }
         if (sectionNumber === 3) {
+            // KHÔI PHỤC DỮ LIỆU TỪ LOCALSTORAGE
+            restoreBanQuestionsDirectly();
+            
             if (applicationType === 'interview') {
                 const tabContainer = document.querySelector('.tab-container');
                 if (tabContainer) tabContainer.style.display = 'none';
@@ -469,6 +519,8 @@ function showSection(sectionNumber) {
                 setTimeout(() => {
                     setupInterviewCheckboxListeners();
                     updateInterviewSelectionCount();
+                    // KHÔI PHỤC LỊCH PHỎNG VẤN ĐÃ CHỌN
+                    restoreInterviewSchedule();
                 }, 100);
             } else {
                 const tabContainer = document.querySelector('.tab-container');
@@ -476,6 +528,10 @@ function showSection(sectionNumber) {
                 const interviewSchedule = document.getElementById('interview-schedule');
                 if (interviewSchedule) interviewSchedule.style.display = 'none';
                 updatePositionNames();
+                // KHÔI PHỤC CÂU HỎI BAN
+                setTimeout(() => {
+                    restoreBanQuestionsDirectly();
+                }, 200);
             }
         }
     }
@@ -543,9 +599,7 @@ function renderInterviewSchedule() {
     // Nhóm các ca theo ngày
     const groupedSlots = {};
     allOptions.forEach(opt => {
-        // Parse label để lấy ngày
         let dateKey = 'Khác';
-        // Tìm kiếm pattern: "Thứ 5, 25/06/2026" hoặc "25/06/2026"
         const dateMatch = opt.match(/(Thứ\s*\d+,\s*\d{2}\/\d{2}\/\d{4})|(\d{2}\/\d{2}\/\d{4})/);
         if (dateMatch) {
             dateKey = dateMatch[0];
@@ -556,8 +610,20 @@ function renderInterviewSchedule() {
         groupedSlots[dateKey].push(opt);
     });
 
+    // Sắp xếp các ngày theo thứ tự thời gian
+    const sortedDateKeys = Object.keys(groupedSlots).sort((a, b) => {
+        const parseDate = (key) => {
+            const match = key.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+            if (match) {
+                return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
+            }
+            return new Date(0);
+        };
+        return parseDate(a) - parseDate(b);
+    });
+
     // Tạo div cho từng ngày
-    Object.keys(groupedSlots).forEach(dateKey => {
+    sortedDateKeys.forEach(dateKey => {
         const dateDiv = document.createElement('div');
         dateDiv.style.cssText = `
             margin-bottom: 16px;
@@ -585,14 +651,25 @@ function renderInterviewSchedule() {
                 <path d="M5.5 1.5v2M10.5 1.5v2M1.5 7h13"/>
             </svg>
             ${dateKey}
+            <span style="font-weight:400;font-size:12px;color:var(--gray-500);">(${groupedSlots[dateKey].length} ca)</span>
         `;
         dateDiv.appendChild(header);
         
-        // Danh sách ca trong ngày
+        // Danh sách ca trong ngày - SẮP XẾP THEO GIỜ
         const slotsContainer = document.createElement('div');
         slotsContainer.style.cssText = 'padding:10px 14px;background:white;';
         
-        groupedSlots[dateKey].forEach((opt, idx) => {
+        // Sắp xếp các ca trong ngày theo thời gian
+        const sortedSlots = groupedSlots[dateKey].sort((a, b) => {
+            const getTime = (str) => {
+                const match = str.match(/\((\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})\)/);
+                if (match) return match[1];
+                return '';
+            };
+            return getTime(a).localeCompare(getTime(b));
+        });
+        
+        sortedSlots.forEach((opt, idx) => {
             const item = document.createElement('div');
             item.className = 'checkbox-item';
             item.style.cssText = `
@@ -606,21 +683,33 @@ function renderInterviewSchedule() {
                 cursor: pointer;
                 transition: all 0.2s;
             `;
-            if (idx === groupedSlots[dateKey].length - 1) {
+            if (idx === sortedSlots.length - 1) {
                 item.style.marginBottom = '0';
             }
+            
+            // SỐ THỨ TỰ CA TRONG NGÀY (bắt đầu từ 1)
+            const caNumber = idx + 1;
             
             // Tạo ID duy nhất
             const optionId = `interview_${dateKey.replace(/[^a-zA-Z0-9]/g, '_')}_${idx}`;
             
-            // Chỉ lấy phần thời gian (VD: "Ca 1 (08:00 - 09:30)")
+            // LẤY THỜI GIAN TỪ LABEL (bỏ phần "Ca X")
             let displayText = opt;
-            // Bỏ phần ngày tháng nếu có
-            const cleanOpt = opt.replace(/\s*[-–]\s*(Thứ\s*\d+,\s*\d{2}\/\d{2}\/\d{4}|\d{2}\/\d{2}\/\d{4})/, '').trim();
+            // Bỏ "Ca X (XX:XX - XX:XX)" -> chỉ lấy thời gian
+            const timeMatch = opt.match(/\((\d{2}:\d{2}\s*-\s*\d{2}:\d{2})\)/);
+            if (timeMatch) {
+                displayText = timeMatch[1]; // Chỉ lấy "08:00 - 09:00"
+            } else {
+                // Nếu không match, bỏ phần ngày tháng
+                displayText = opt.replace(/\s*[-–]\s*(Thứ\s*\d+,\s*\d{2}\/\d{2}\/\d{4}|\d{2}\/\d{2}\/\d{4})/, '').trim();
+            }
             
             item.innerHTML = `
                 <input type="checkbox" id="${optionId}" name="interview_schedule[]" value="${opt}" style="margin-right:10px;width:18px;height:18px;flex-shrink:0;">
-                <label for="${optionId}" style="cursor:pointer;font-weight:500;color:#374151;font-size:13.5px;flex:1;">${cleanOpt}</label>
+                <label for="${optionId}" style="cursor:pointer;font-weight:500;color:#374151;font-size:13.5px;flex:1;">
+                    <span style="display:inline-block;min-width:50px;font-weight:600;color:var(--gray-600);">Ca ${caNumber}</span>
+                    ${displayText}
+                </label>
             `;
             
             // Hover effect
@@ -653,6 +742,26 @@ function renderInterviewSchedule() {
         dateDiv.appendChild(slotsContainer);
         container.appendChild(dateDiv);
     });
+
+    // KHÔI PHỤC DỮ LIỆU ĐÃ CHỌN TỪ LOCALSTORAGE
+    const saved = localStorage.getItem('enactus_form_data');
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            if (data.interview_schedule && Array.isArray(data.interview_schedule)) {
+                document.querySelectorAll('#interview-schedule input[type="checkbox"]').forEach(cb => {
+                    if (data.interview_schedule.includes(cb.value)) {
+                        cb.checked = true;
+                        const item = cb.closest('.checkbox-item');
+                        if (item) {
+                            item.style.background = '#FEF3C7';
+                            item.style.borderColor = '#F59E0B';
+                        }
+                    }
+                });
+            }
+        } catch(e) {}
+    }
 
     updateInterviewSelectionCount();
 }
@@ -757,6 +866,23 @@ function renderBanQuestions(banCode, type) {
         return;
     }
 
+    // LƯU DỮ LIỆU HIỆN TẠI TRƯỚC KHI XÓA
+    const currentData = {};
+    questionsContainer.querySelectorAll('input, textarea, select').forEach(el => {
+        const name = el.name || el.id;
+        if (!name) return;
+        if (el.type === 'checkbox') {
+            if (el.checked) {
+                if (!currentData[name]) currentData[name] = [];
+                currentData[name].push(el.value);
+            }
+        } else if (el.type === 'radio') {
+            if (el.checked) currentData[name] = el.value;
+        } else {
+            currentData[name] = el.value;
+        }
+    });
+
     if (banCode === 'MD') {
         const subIds = {
             priority: ['md_design', 'md_content'],
@@ -783,21 +909,41 @@ function renderBanQuestions(banCode, type) {
             const questions = (banQuestions.MD && banQuestions.MD[sub]) || banQuestions[`MD-${sub}`] || [];
             questions.forEach(q => {
                 const prefixedId = `${type}_${sub.toLowerCase()}_${q.id}`;
-                questionsContainer.appendChild(buildQuestionDiv(q, prefixedId));
+                const questionDiv = buildQuestionDiv(q, prefixedId);
+                questionsContainer.appendChild(questionDiv);
             });
         });
-        return;
+    } else {
+        const questions = banQuestions[banCode] || [];
+        if (!questions.length) {
+            questionsContainer.innerHTML = '<p class="no-questions">Không có câu hỏi cụ thể cho ban này.</p>';
+            return;
+        }
+
+        questions.forEach(q => {
+            const prefixedId = `${type}_${q.id}`;
+            const questionDiv = buildQuestionDiv(q, prefixedId);
+            questionsContainer.appendChild(questionDiv);
+        });
     }
 
-    const questions = banQuestions[banCode] || [];
-    if (!questions.length) {
-        questionsContainer.innerHTML = '<p class="no-questions">Không có câu hỏi cụ thể cho ban này.</p>';
-        return;
-    }
-
-    questions.forEach(q => {
-        const prefixedId = `${type}_${q.id}`;
-        questionsContainer.appendChild(buildQuestionDiv(q, prefixedId));
+    // KHÔI PHỤC DỮ LIỆU ĐÃ LƯU
+    questionsContainer.querySelectorAll('input, textarea, select').forEach(el => {
+        const name = el.name || el.id;
+        if (!name) return;
+        if (currentData[name] !== undefined) {
+            if (el.type === 'checkbox') {
+                if (Array.isArray(currentData[name]) && currentData[name].includes(el.value)) {
+                    el.checked = true;
+                }
+            } else if (el.type === 'radio') {
+                if (el.value === currentData[name]) {
+                    el.checked = true;
+                }
+            } else {
+                el.value = currentData[name] || '';
+            }
+        }
     });
 
     // Gán sự kiện lưu tạm
@@ -805,6 +951,205 @@ function renderBanQuestions(banCode, type) {
         el.addEventListener('input', simpleSaveFormData);
         el.addEventListener('change', simpleSaveFormData);
     });
+
+    // LƯU SAU KHI RENDER XONG
+    setTimeout(simpleSaveFormData, 100);
+}
+
+// ============================================================
+// KIỂM TRA CÂU HỎI BẮT BUỘC TRONG TẤT CẢ CÁC TAB
+// ============================================================
+function validateAllQuestions() {
+    // Nếu chọn phỏng vấn thay đơn, chỉ kiểm tra lịch phỏng vấn
+    if (applicationType === 'interview') {
+        // Kiểm tra lịch phỏng vấn
+        const checkedBoxes = document.querySelectorAll('#interview-schedule input[type="checkbox"]:checked');
+        if (checkedBoxes.length < 3) {
+            showSection(3);
+            Swal.fire({
+                icon: 'warning',
+                title: 'Chưa đủ lịch phỏng vấn',
+                html: `Bạn đã chọn <strong>${checkedBoxes.length}</strong> ca. Vui lòng chọn ít nhất <strong>3 ca phỏng vấn</strong> trước khi gửi.`,
+                confirmButtonColor: '#3085d6'
+            });
+            return false;
+        }
+        return true;
+    }
+
+    // Kiểm tra câu hỏi chung (tab general) - CHỈ KHI CHỌN ĐIỀN ĐƠN
+    const generalContainer = document.getElementById('tab-general');
+    if (generalContainer) {
+        const requiredInputs = generalContainer.querySelectorAll('input[required], select[required], textarea[required]');
+        for (let input of requiredInputs) {
+            if (input.type === 'radio' || input.type === 'checkbox') {
+                const name = input.name;
+                const checked = generalContainer.querySelectorAll(`input[name="${name}"]:checked`).length > 0;
+                if (!checked) {
+                    showTab('general');
+                    const group = input.closest('.radio-group, .checkbox-group');
+                    if (group) {
+                        group.style.border = '2px solid #EF4444';
+                        group.style.padding = '10px';
+                        group.style.borderRadius = '8px';
+                        group.style.background = '#FEF2F2';
+                    }
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Vui lòng trả lời câu hỏi',
+                        text: 'Bạn cần trả lời tất cả câu hỏi bắt buộc trong phần "Câu hỏi chung"',
+                        confirmButtonColor: '#3085d6'
+                    });
+                    return false;
+                }
+            } else if (!input.value.trim()) {
+                showTab('general');
+                input.focus();
+                input.style.borderColor = '#EF4444';
+                input.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Vui lòng trả lời câu hỏi',
+                    text: 'Bạn cần trả lời tất cả câu hỏi bắt buộc trong phần "Câu hỏi chung"',
+                    confirmButtonColor: '#3085d6'
+                });
+                return false;
+            }
+            input.style.borderColor = '';
+            input.style.boxShadow = '';
+            const group = input.closest('.radio-group, .checkbox-group');
+            if (group) {
+                group.style.border = '';
+                group.style.padding = '';
+                group.style.borderRadius = '';
+                group.style.background = '';
+            }
+        }
+    }
+
+    // Kiểm tra câu hỏi ban ưu tiên (tab priority) - CHỈ KHI CHỌN ĐIỀN ĐƠN
+    const priorityContainer = document.getElementById('tab-priority');
+    if (priorityContainer) {
+        const requiredInputs = priorityContainer.querySelectorAll('input[required], select[required], textarea[required]');
+        for (let input of requiredInputs) {
+            if (input.type === 'radio' || input.type === 'checkbox') {
+                const name = input.name;
+                const checked = priorityContainer.querySelectorAll(`input[name="${name}"]:checked`).length > 0;
+                if (!checked) {
+                    showTab('priority');
+                    const group = input.closest('.radio-group, .checkbox-group');
+                    if (group) {
+                        group.style.border = '2px solid #EF4444';
+                        group.style.padding = '10px';
+                        group.style.borderRadius = '8px';
+                        group.style.background = '#FEF2F2';
+                    }
+                    const banName = document.getElementById('ban-name')?.textContent || 'Nguyện vọng 1';
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Vui lòng trả lời câu hỏi',
+                        text: `Bạn cần trả lời tất cả câu hỏi bắt buộc của ban ${banName}`,
+                        confirmButtonColor: '#3085d6'
+                    });
+                    return false;
+                }
+            } else if (!input.value.trim()) {
+                showTab('priority');
+                input.focus();
+                input.style.borderColor = '#EF4444';
+                input.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
+                const banName = document.getElementById('ban-name')?.textContent || 'Nguyện vọng 1';
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Vui lòng trả lời câu hỏi',
+                    text: `Bạn cần trả lời tất cả câu hỏi bắt buộc của ban ${banName}`,
+                    confirmButtonColor: '#3085d6'
+                });
+                return false;
+            }
+            input.style.borderColor = '';
+            input.style.boxShadow = '';
+            const group = input.closest('.radio-group, .checkbox-group');
+            if (group) {
+                group.style.border = '';
+                group.style.padding = '';
+                group.style.borderRadius = '';
+                group.style.background = '';
+            }
+        }
+    }
+
+    // Kiểm tra câu hỏi ban thứ 2 (tab secondary) - CHỈ KHI CHỌN ĐIỀN ĐƠN
+    const secondaryTabBtn = document.getElementById('secondary-tab-btn');
+    if (secondaryTabBtn && secondaryTabBtn.style.display !== 'none') {
+        const secondaryContainer = document.getElementById('tab-secondary');
+        if (secondaryContainer) {
+            const requiredInputs = secondaryContainer.querySelectorAll('input[required], select[required], textarea[required]');
+            for (let input of requiredInputs) {
+                if (input.type === 'radio' || input.type === 'checkbox') {
+                    const name = input.name;
+                    const checked = secondaryContainer.querySelectorAll(`input[name="${name}"]:checked`).length > 0;
+                    if (!checked) {
+                        showTab('secondary');
+                        const group = input.closest('.radio-group, .checkbox-group');
+                        if (group) {
+                            group.style.border = '2px solid #EF4444';
+                            group.style.padding = '10px';
+                            group.style.borderRadius = '8px';
+                            group.style.background = '#FEF2F2';
+                        }
+                        const banName = document.getElementById('secondary-ban-name')?.textContent || 'Nguyện vọng 2';
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Vui lòng trả lời câu hỏi',
+                            text: `Bạn cần trả lời tất cả câu hỏi bắt buộc của ban ${banName}`,
+                            confirmButtonColor: '#3085d6'
+                        });
+                        return false;
+                    }
+                } else if (!input.value.trim()) {
+                    showTab('secondary');
+                    input.focus();
+                    input.style.borderColor = '#EF4444';
+                    input.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
+                    const banName = document.getElementById('secondary-ban-name')?.textContent || 'Nguyện vọng 2';
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Vui lòng trả lời câu hỏi',
+                        text: `Bạn cần trả lời tất cả câu hỏi bắt buộc của ban ${banName}`,
+                        confirmButtonColor: '#3085d6'
+                    });
+                    return false;
+                }
+                input.style.borderColor = '';
+                input.style.boxShadow = '';
+                const group = input.closest('.radio-group, .checkbox-group');
+                if (group) {
+                    group.style.border = '';
+                    group.style.padding = '';
+                    group.style.borderRadius = '';
+                    group.style.background = '';
+                }
+            }
+        }
+    }
+
+    // Kiểm tra lịch phỏng vấn (chỉ khi chọn phỏng vấn)
+    if (applicationType === 'interview') {
+        const checkedBoxes = document.querySelectorAll('#interview-schedule input[type="checkbox"]:checked');
+        if (checkedBoxes.length < 3) {
+            showSection(3);
+            Swal.fire({
+                icon: 'warning',
+                title: 'Chưa đủ lịch phỏng vấn',
+                html: `Bạn đã chọn <strong>${checkedBoxes.length}</strong> ca. Vui lòng chọn ít nhất <strong>3 ca phỏng vấn</strong> trước khi gửi.`,
+                confirmButtonColor: '#3085d6'
+            });
+            return false;
+        }
+    }
+
+    return true;
 }
 
 // ============================================================
@@ -822,6 +1167,7 @@ function buildQuestionDiv(q, prefixedId) {
         labelHtml = questionText;
     }
 
+    // THÊM required vào label
     let html = `<label for="${prefixedId}" ${q.required ? 'class="required"' : ''}>${labelHtml}</label>`;
 
     if (q.media) {
@@ -832,12 +1178,14 @@ function buildQuestionDiv(q, prefixedId) {
 
     switch (q.type) {
         case 'textarea':
+            // THÊM required vào textarea
             html += `<textarea id="${prefixedId}" name="${prefixedId}" rows="3" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}></textarea>`;
             break;
         case 'checkbox':
             html += `<div class="checkbox-group" id="${prefixedId}_group">`;
             (q.options || []).forEach((option, idx) => {
                 const optionId = `${prefixedId}_${idx}`;
+                // THÊM required cho checkbox (chỉ checkbox đầu tiên để group có required)
                 const req = (q.required && idx === 0) ? 'required' : '';
                 html += `<div class="checkbox-item"><input type="checkbox" id="${optionId}" name="${prefixedId}[]" value="${option}" ${req}><label for="${optionId}">${option}</label></div>`;
             });
@@ -1055,6 +1403,11 @@ function nextSection(current) {
     }
 
     if (current === 3) {
+        // KIỂM TRA TẤT CẢ CÂU HỎI BẮT BUỘC
+        if (!validateAllQuestions()) {
+            return;
+        }
+
         if (applicationType === 'interview') {
             const checkedBoxes = document.querySelectorAll('#interview-schedule input[type="checkbox"]:checked');
             if (checkedBoxes.length < 3) {
@@ -1160,6 +1513,24 @@ function generateSummary() {
         summaryHTML += `<p><strong>Tiểu ban Truyền thông (NV2):</strong> ${mdSubDepartmentsSecondary.join(', ')}</p>`;
     }
 
+    // THÊM HIỂN THỊ CA PHỎNG VẤN ĐÃ CHỌN
+    if (applicationType === 'interview') {
+        const checkedBoxes = document.querySelectorAll('#interview-schedule input[type="checkbox"]:checked');
+        if (checkedBoxes.length > 0) {
+            const selectedSlots = Array.from(checkedBoxes).map(cb => cb.value);
+            summaryHTML += `<p><strong>Ca phỏng vấn đã chọn (${selectedSlots.length} ca):</strong></p>`;
+            summaryHTML += `<ul style="margin:8px 0 0 20px;padding-left:10px;">`;
+            selectedSlots.forEach(slot => {
+                // Lấy số ca từ label (VD: "Ca 1 (08:00 - 09:00) - Thứ 6, 19/06/2026")
+                // Hoặc lấy trực tiếp label đã có sẵn
+                summaryHTML += `<li style="font-size:13px;color:var(--gray-700);">${slot}</li>`;
+            });
+            summaryHTML += `</ul>`;
+        } else {
+            summaryHTML += `<p><strong>Ca phỏng vấn:</strong> <span style="color:var(--red-500);">Chưa chọn ca nào</span></p>`;
+        }
+    }
+
     summaryDiv.innerHTML = summaryHTML;
 }
 
@@ -1193,49 +1564,52 @@ function collectFormData() {
         timestamp: new Date().toISOString()
     };
 
-    // Câu hỏi chung
-    const generalContainer = document.getElementById('general-questions');
-    if (generalContainer) {
-        generalContainer.querySelectorAll('input, textarea, select').forEach(input => {
-            const name = input.name || input.id;
-            if (!name) return;
-            if (input.type === 'checkbox') {
-                if (!formData[name]) formData[name] = [];
-                if (input.checked) formData[name].push(input.value);
-            } else if (input.type === 'radio') {
-                if (input.checked) formData[name] = input.value;
-            } else {
-                formData[name] = input.value || '';
-            }
+    // CHỈ THU THẬP CÂU HỎI CHUNG + BAN KHI CHỌN ĐIỀN ĐƠN
+    if (applicationType === 'form') {
+        // Câu hỏi chung
+        const generalContainer = document.getElementById('general-questions');
+        if (generalContainer) {
+            generalContainer.querySelectorAll('input, textarea, select').forEach(input => {
+                const name = input.name || input.id;
+                if (!name) return;
+                if (input.type === 'checkbox') {
+                    if (!formData[name]) formData[name] = [];
+                    if (input.checked) formData[name].push(input.value);
+                } else if (input.type === 'radio') {
+                    if (input.checked) formData[name] = input.value;
+                } else {
+                    formData[name] = input.value || '';
+                }
+            });
+        }
+
+        // Câu hỏi phân ban - LƯU TẤT CẢ
+        ['priority', 'secondary'].forEach(type => {
+            const containerId = type === 'priority' ? 'ban-specific-questions' : 'secondary-ban-specific-questions';
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            container.querySelectorAll('input, textarea, select').forEach(input => {
+                const name = input.name;
+                if (!name || !name.startsWith(type + '_')) return;
+                if (input.type === 'checkbox') {
+                    if (!formData[name]) formData[name] = [];
+                    if (input.checked) formData[name].push(input.value);
+                } else if (input.type === 'radio') {
+                    if (input.checked) formData[name] = input.value;
+                } else {
+                    formData[name] = input.value || '';
+                }
+            });
         });
     }
 
-    // Câu hỏi phân ban
-    ['priority', 'secondary'].forEach(type => {
-        const containerId = type === 'priority' ? 'ban-specific-questions' : 'secondary-ban-specific-questions';
-        const container = document.getElementById(containerId);
-        if (!container) return;
-
-        container.querySelectorAll('input, textarea, select').forEach(input => {
-            const name = input.name;
-            if (!name || !name.startsWith(type + '_')) return;
-            if (input.type === 'checkbox') {
-                if (!formData[name]) formData[name] = [];
-                if (input.checked) formData[name].push(input.value);
-            } else if (input.type === 'radio') {
-                if (input.checked) formData[name] = input.value;
-            } else {
-                formData[name] = input.value || '';
-            }
-        });
-    });
-
-    // Lịch phỏng vấn
+    // Lịch phỏng vấn (chỉ khi chọn phỏng vấn)
     if (applicationType === 'interview' && interview.length > 0) {
-        interview.forEach(q => {
-            const checked = Array.from(document.querySelectorAll(`input[name="${q.id}[]"]:checked`)).map(cb => cb.value);
-            if (checked.length > 0) formData[q.id] = checked;
-        });
+        const checkedBoxes = document.querySelectorAll('#interview-schedule input[type="checkbox"]:checked');
+        if (checkedBoxes.length > 0) {
+            formData.interview_schedule = Array.from(checkedBoxes).map(cb => cb.value);
+        }
     }
 
     return formData;
@@ -1277,7 +1651,9 @@ function loadFormData() {
             updateSecondaryOptions();
             updateMDSubDepartments();
         }
-        if (data.secondary_position) document.getElementById('secondary_position').value = data.secondary_position;
+        if (data.secondary_position) {
+            document.getElementById('secondary_position').value = data.secondary_position;
+        }
 
         if (data.md_sub_departments) {
             data.md_sub_departments.forEach(value => {
@@ -1308,8 +1684,25 @@ function loadFormData() {
             });
         });
 
+        // KHÔI PHỤC CÂU HỎI BAN
         updatePositionNames();
-        setTimeout(() => retryRestoreWithDelay(), 1000);
+        setTimeout(() => {
+            restoreBanQuestionsDirectly();
+            // Khôi phục lịch phỏng vấn
+            if (data.interview_schedule) {
+                document.querySelectorAll('#interview-schedule input[type="checkbox"]').forEach(cb => {
+                    if (data.interview_schedule.includes(cb.value)) {
+                        cb.checked = true;
+                        const item = cb.closest('.checkbox-item');
+                        if (item) {
+                            item.style.background = '#FEF3C7';
+                            item.style.borderColor = '#F59E0B';
+                        }
+                    }
+                });
+                updateInterviewSelectionCount();
+            }
+        }, 500);
 
     } catch (error) {
         console.warn('[Form] Lỗi khôi phục:', error);
@@ -1360,6 +1753,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
+
+        // KIỂM TRA TẤT CẢ CÂU HỎI BẮT BUỘC TRƯỚC KHI GỬI
+        if (!validateAllQuestions()) {
+            return;
+        }
 
         if (!document.getElementById('agree')?.checked) {
             Swal.fire({ icon: 'warning', title: 'Chưa xác nhận', text: 'Vui lòng xác nhận rằng tất cả thông tin bạn cung cấp là chính xác.', confirmButtonText: 'OK' });
