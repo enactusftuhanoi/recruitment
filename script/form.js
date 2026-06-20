@@ -600,7 +600,7 @@ function renderInterviewSchedule() {
     const groupedSlots = {};
     allOptions.forEach(opt => {
         let dateKey = 'Khác';
-        const dateMatch = opt.match(/(Thứ\s*\d+,\s*\d{2}\/\d{2}\/\d{4})|(\d{2}\/\d{2}\/\d{4})/);
+        const dateMatch = opt.match(/((?:Thứ\s*\d+|Chủ\s*nhật),\s*\d{2}\/\d{2}\/\d{4})|(\d{2}\/\d{2}\/\d{4})/);
         if (dateMatch) {
             dateKey = dateMatch[0];
         }
@@ -866,19 +866,29 @@ function renderBanQuestions(banCode, type) {
         return;
     }
 
-    // LƯU DỮ LIỆU HIỆN TẠI TRƯỚC KHI XÓA
-    const currentData = {};
+    // LƯU DỮ LIỆU HIỆN TẠI TRƯỚC KHI XÓA — merge với localStorage để không mất dữ liệu khi tab chưa render
+    let currentData = {};
+    try {
+        const saved = localStorage.getItem('enactus_form_data');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            Object.keys(parsed).forEach(k => {
+                if (k.startsWith(type + '_')) currentData[k] = parsed[k];
+            });
+        }
+    } catch(e) {}
+    // Override bằng giá trị DOM hiện tại (nếu đang hiển thị)
     questionsContainer.querySelectorAll('input, textarea, select').forEach(el => {
         const name = el.name || el.id;
         if (!name) return;
         if (el.type === 'checkbox') {
             if (el.checked) {
                 if (!currentData[name]) currentData[name] = [];
-                currentData[name].push(el.value);
+                if (!currentData[name].includes(el.value)) currentData[name].push(el.value);
             }
         } else if (el.type === 'radio') {
             if (el.checked) currentData[name] = el.value;
-        } else {
+        } else if (el.value) {
             currentData[name] = el.value;
         }
     });
@@ -909,7 +919,7 @@ function renderBanQuestions(banCode, type) {
             const questions = (banQuestions.MD && banQuestions.MD[sub]) || banQuestions[`MD-${sub}`] || [];
             questions.forEach(q => {
                 const prefixedId = `${type}_${sub.toLowerCase()}_${q.id}`;
-                const questionDiv = buildQuestionDiv(q, prefixedId);
+                const questionDiv = buildQuestionDiv(q, prefixedId, type === 'secondary');
                 questionsContainer.appendChild(questionDiv);
             });
         });
@@ -922,7 +932,7 @@ function renderBanQuestions(banCode, type) {
 
         questions.forEach(q => {
             const prefixedId = `${type}_${q.id}`;
-            const questionDiv = buildQuestionDiv(q, prefixedId);
+            const questionDiv = buildQuestionDiv(q, prefixedId, type === 'secondary');
             questionsContainer.appendChild(questionDiv);
         });
     }
@@ -1155,7 +1165,7 @@ function validateAllQuestions() {
 // ============================================================
 // XÂY DỰNG INPUT THEO LOẠI CÂU HỎI
 // ============================================================
-function buildQuestionDiv(q, prefixedId) {
+function buildQuestionDiv(q, prefixedId, isSecondary = false) {
     const questionDiv = document.createElement('div');
     questionDiv.className = 'form-group question-item';
 
@@ -1167,8 +1177,9 @@ function buildQuestionDiv(q, prefixedId) {
         labelHtml = questionText;
     }
 
-    // THÊM required vào label
-    let html = `<label for="${prefixedId}" ${q.required ? 'class="required"' : ''}>${labelHtml}</label>`;
+    // NV2 không bắt buộc — bỏ dấu * và thuộc tính required
+    const effectiveRequired = isSecondary ? false : q.required;
+    let html = `<label for="${prefixedId}" ${effectiveRequired ? 'class="required"' : ''}>${labelHtml}</label>`;
 
     if (q.media) {
         if (q.media.type === 'image') {
@@ -1178,15 +1189,13 @@ function buildQuestionDiv(q, prefixedId) {
 
     switch (q.type) {
         case 'textarea':
-            // THÊM required vào textarea
-            html += `<textarea id="${prefixedId}" name="${prefixedId}" rows="3" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}></textarea>`;
+            html += `<textarea id="${prefixedId}" name="${prefixedId}" rows="3" placeholder="${q.placeholder || ''}" ${effectiveRequired ? 'required' : ''}></textarea>`;
             break;
         case 'checkbox':
             html += `<div class="checkbox-group" id="${prefixedId}_group">`;
             (q.options || []).forEach((option, idx) => {
                 const optionId = `${prefixedId}_${idx}`;
-                // THÊM required cho checkbox (chỉ checkbox đầu tiên để group có required)
-                const req = (q.required && idx === 0) ? 'required' : '';
+                const req = (effectiveRequired && idx === 0) ? 'required' : '';
                 html += `<div class="checkbox-item"><input type="checkbox" id="${optionId}" name="${prefixedId}[]" value="${option}" ${req}><label for="${optionId}">${option}</label></div>`;
             });
             html += `</div>`;
@@ -1195,26 +1204,28 @@ function buildQuestionDiv(q, prefixedId) {
             html += `<div class="radio-group" id="${prefixedId}_group">`;
             (q.options || []).forEach((option, idx) => {
                 const optionId = `${prefixedId}_${idx}`;
-                const req = (q.required && idx === 0) ? 'required' : '';
+                const req = (effectiveRequired && idx === 0) ? 'required' : '';
                 html += `<div class="radio-item"><input type="radio" id="${optionId}" name="${prefixedId}" value="${option}" ${req}><label for="${optionId}">${option}</label></div>`;
             });
             html += `</div>`;
             break;
         case 'dropdown':
-            html += `<select id="${prefixedId}" name="${prefixedId}" ${q.required ? 'required' : ''}><option value="">-- Chọn --</option>`;
+            // NV2: không có option rỗng (không bắt buộc chọn)
+            html += `<select id="${prefixedId}" name="${prefixedId}" ${effectiveRequired ? 'required' : ''}>`;
+            if (!isSecondary) html += `<option value="">-- Chọn --</option>`;
             (q.options || []).forEach(opt => { html += `<option value="${opt}">${opt}</option>`; });
             html += `</select>`;
             break;
         case 'scale':
             const mid = Math.round(((q.min || 1) + (q.max || 5)) / 2);
             html += `<div class="scale-container">
-                <input type="range" id="${prefixedId}" name="${prefixedId}" min="${q.min || 1}" max="${q.max || 5}" value="${mid}" ${q.required ? 'required' : ''}>
+                <input type="range" id="${prefixedId}" name="${prefixedId}" min="${q.min || 1}" max="${q.max || 5}" value="${mid}" ${effectiveRequired ? 'required' : ''}>
                 <div class="scale-labels"><span>${q.min || 1}</span><span>${q.max || 5}</span></div>
                 <output for="${prefixedId}" id="${prefixedId}_value">${mid}</output>
             </div>`;
             break;
         default:
-            html += `<input type="text" id="${prefixedId}" name="${prefixedId}" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''}>`;
+            html += `<input type="text" id="${prefixedId}" name="${prefixedId}" placeholder="${q.placeholder || ''}" ${effectiveRequired ? 'required' : ''}>`;
     }
 
     questionDiv.innerHTML = html;
@@ -1253,8 +1264,7 @@ function buildInputElement(q, id, name) {
         }
         case 'text':
         case 'email':
-        case 'tel':
-        case 'date': {
+        case 'tel': {
             const inp = document.createElement('input');
             inp.type = q.type;
             inp.id = id;
@@ -1262,6 +1272,31 @@ function buildInputElement(q, id, name) {
             if (q.placeholder) inp.placeholder = q.placeholder;
             if (q.required) inp.required = true;
             inp.addEventListener('input', simpleSaveFormData);
+            return inp;
+        }
+        case 'date': {
+            // Dùng text input thay vì input[type=date] để người dùng nhập dd/mm/yyyy
+            const inp = document.createElement('input');
+            inp.type = 'text';
+            inp.id = id;
+            inp.name = name;
+            inp.placeholder = 'dd/mm/yyyy';
+            inp.maxLength = 10;
+            inp.autocomplete = 'off';
+            if (q.required) inp.required = true;
+            // Auto-mask: tự chèn dấu / sau ngày và tháng
+            inp.addEventListener('input', function(e) {
+                let v = e.target.value.replace(/\D/g, '');
+                if (v.length > 8) v = v.slice(0, 8);
+                if (v.length >= 5) v = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
+                else if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
+                e.target.value = v;
+                simpleSaveFormData();
+            });
+            inp.addEventListener('blur', function(e) {
+                validateDateInput(e.target);
+                simpleSaveFormData();
+            });
             return inp;
         }
         case 'radio': {
@@ -1534,13 +1569,36 @@ function generateSummary() {
     summaryDiv.innerHTML = summaryHTML;
 }
 
+function validateDateInput(inp) {
+    const v = inp.value.trim();
+    if (!v) return true; // empty, required sẽ bắt
+    const m = v.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!m) {
+        inp.style.borderColor = '#EF4444';
+        inp.title = 'Định dạng không hợp lệ, vui lòng nhập dd/mm/yyyy';
+        return false;
+    }
+    const day = parseInt(m[1]), month = parseInt(m[2]), year = parseInt(m[3]);
+    const date = new Date(year, month - 1, day);
+    if (date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day
+        || year < 1900 || year > new Date().getFullYear()) {
+        inp.style.borderColor = '#EF4444';
+        inp.title = 'Ngày không hợp lệ';
+        return false;
+    }
+    inp.style.borderColor = '';
+    inp.title = '';
+    return true;
+}
+
 function formatDateToVN(dateString) {
     if (!dateString) return "";
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    // Đã là dd/mm/yyyy (người dùng nhập trực tiếp) — trả về luôn
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return dateString;
+    // Legacy: yyyy-mm-dd từ input[type=date] cũ
+    const isoMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) return `${isoMatch[3]}/${isoMatch[2]}/${isoMatch[1]}`;
+    return dateString;
 }
 
 // ============================================================
@@ -1550,7 +1608,7 @@ function collectFormData() {
     const formData = {
         application_type: applicationType,
         fullname: document.getElementById('fullname')?.value || '',
-        birthdate: document.getElementById('birthdate')?.value || '',
+        birthdate: formatDateToVN(document.getElementById('birthdate')?.value || ''),
         gender: document.getElementById('gender')?.value || '',
         email: document.getElementById('email')?.value || '',
         phone: document.getElementById('phone')?.value || '',
@@ -1864,6 +1922,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.addEventListener('beforeunload', simpleSaveFormData);
     setInterval(simpleSaveFormData, 30000);
 
+    // Mask nhập ngày sinh
+    const birthdateInput = document.getElementById('birthdate');
+    if (birthdateInput) {
+        birthdateInput.addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g, '');
+            if (v.length > 8) v = v.slice(0, 8);
+            if (v.length >= 5) v = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
+            else if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
+            e.target.value = v;
+        });
+        birthdateInput.addEventListener('blur', function(e) {
+            const v = e.target.value.trim();
+            if (!v) return;
+            const m = v.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+            if (!m) {
+                e.target.style.borderColor = '#EF4444';
+                e.target.title = 'Vui lòng nhập đúng định dạng dd/mm/yyyy';
+            } else {
+                e.target.style.borderColor = '';
+                e.target.title = '';
+            }
+        });
+    }
+
     // Kiểm tra có dữ liệu cũ không
     const savedData = localStorage.getItem('enactus_form_data');
     if (savedData) {
@@ -1894,6 +1976,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     const style = document.createElement('style');
     style.textContent = `@keyframes shake { 0%,100%{transform:translateX(0)} 10%,30%,50%,70%,90%{transform:translateX(-5px)} 20%,40%,60%,80%{transform:translateX(5px)} }`;
     document.head.appendChild(style);
+
+    // Chặn Enter nhảy trang — chỉ cho phép Enter trong textarea (xuống dòng)
+    document.getElementById('recruitmentForm')?.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+        }
+    });
 
     // Override alert
     window.alert = function(message) {

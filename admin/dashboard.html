@@ -3114,16 +3114,18 @@ function generateManualTeamForms() {
 
 // Xóa team thủ công
 function removeManualTeam(teamNumber) {
-  const teamCard = document.querySelector(`#manual-teams-container .manual-team-card:nth-child(${teamNumber})`);
+  // Tìm đúng card theo id của textarea bên trong (ổn định hơn nth-child)
+  const textarea = document.getElementById(`manual-team-${teamNumber}-members`);
+  const teamCard = textarea ? textarea.closest('.manual-team-card') : null;
   if (teamCard) {
     teamCard.remove();
     
     // Cập nhật lại số thứ tự các team
     const remainingTeams = document.querySelectorAll('#manual-teams-container .manual-team-card');
     remainingTeams.forEach((card, index) => {
-      const teamNumber = index + 1;
+      const newTeamNumber = index + 1;
       const header = card.querySelector('.manual-team-name');
-      header.textContent = `Team ${teamNumber}`;
+      header.textContent = `Team ${newTeamNumber}`;
       
       // Cập nhật ID của các input
       const membersTextarea = card.querySelector('textarea');
@@ -3131,10 +3133,10 @@ function removeManualTeam(teamNumber) {
       const advisor2Input = card.querySelector('input[id$="-advisor2"]');
       const supporterInput = card.querySelector('input[id$="-supporter"]');
       
-      if (membersTextarea) membersTextarea.id = `manual-team-${teamNumber}-members`;
-      if (advisor1Input) advisor1Input.id = `manual-team-${teamNumber}-advisor1`;
-      if (advisor2Input) advisor2Input.id = `manual-team-${teamNumber}-advisor2`;
-      if (supporterInput) supporterInput.id = `manual-team-${teamNumber}-supporter`;
+      if (membersTextarea) membersTextarea.id = `manual-team-${newTeamNumber}-members`;
+      if (advisor1Input) advisor1Input.id = `manual-team-${newTeamNumber}-advisor1`;
+      if (advisor2Input) advisor2Input.id = `manual-team-${newTeamNumber}-advisor2`;
+      if (supporterInput) supporterInput.id = `manual-team-${newTeamNumber}-supporter`;
     });
     
     const validationDiv = document.getElementById('manual-team-validation');
@@ -8989,8 +8991,9 @@ document.getElementById('export-modal').innerHTML += `
 
             snapshot.forEach((doc) => {
               const data = doc.data();
+              const del = firebase.firestore.FieldValue.delete();
 
-              // Giữ lại thông tin cá nhân, answers
+              // Giữ lại thông tin cá nhân, answers; xóa hẳn các field vòng cũ
               const newData = {
                 fullname: data.fullname || null,
                 email: data.email || null,
@@ -9005,9 +9008,29 @@ document.getElementById('export-modal').innerHTML += `
                 // Reset toàn bộ dữ liệu vòng
                 current_round: "round1",
                 status: "new",
+
+                // Xóa hẳn các field round để tránh dữ liệu cũ lẫn
+                priority_status: del,
+                secondary_status: del,
+                priorityAccepted: del,
+                priorityRejected: del,
+                secondaryAccepted: del,
+                secondaryRejected: del,
+                round1: del,
+                round2: del,
+                round2_priority_status: del,
+                round2_secondary_status: del,
+                round3: del,
+                round3_priority_status: del,
+                round3_secondary_status: del,
+                round4: del,
+                round4_priority_status: del,
+                round4_secondary_status: del,
+                final_department: del,
               };
 
-              batch.set(doc.ref, newData, { merge: true });
+              // Dùng update thay vì set+merge để delete field hoạt động đúng
+              batch.update(doc.ref, newData);
             });
 
             await batch.commit();
@@ -9097,23 +9120,7 @@ async function processRoundUpdate(newRound) {
         snapshot.forEach((doc) => {
             const data = doc.data();
 
-            // Nếu đang là admin, chỉ thao tác những app thuộc dept họ
-            if (userRole === "admin") {
-                // Kiểm tra admin có quyền với ban priority không
-                const canEditPriority = data.priority_position === userDept || 
-                                      (Array.isArray(data.all_departments) && data.all_departments.includes(userDept));
-                // Kiểm tra admin có quyền với ban secondary không
-                const canEditSecondary = data.secondary_position === userDept || 
-                                        (Array.isArray(data.all_departments) && data.all_departments.includes(userDept));
-                
-                // Nếu không có quyền với ban nào thì skip
-                if (!canEditPriority && !canEditSecondary) return;
-                
-                // Lưu lại quyền để dùng sau
-                tempApp._canEditPriority = canEditPriority;
-                tempApp._canEditSecondary = canEditSecondary;
-            }
-
+            // Khai báo tempApp TRƯỚC khi dùng
             const tempApp = {
                 ...data,
                 priority_status: data.priorityAccepted
@@ -9133,26 +9140,42 @@ async function processRoundUpdate(newRound) {
                 round4_priority_status: data.round4_priority_status || null,
                 round4_secondary_status: data.round4_secondary_status || null,
                 current_round: data.current_round || "round1",
+                _canEditPriority: true,
+                _canEditSecondary: true,
             };
+
+            // Nếu đang là admin, chỉ thao tác những app thuộc dept họ
+            if (userRole === "admin") {
+                // Kiểm tra admin có quyền với ban priority không
+                const canEditPriority = data.priority_position === userDept || 
+                                      (Array.isArray(data.all_departments) && data.all_departments.includes(userDept));
+                // Kiểm tra admin có quyền với ban secondary không
+                const canEditSecondary = data.secondary_position === userDept || 
+                                        (Array.isArray(data.all_departments) && data.all_departments.includes(userDept));
+                
+                // Nếu không có quyền với ban nào thì skip
+                if (!canEditPriority && !canEditSecondary) return;
+                
+                // Lưu lại quyền để dùng sau (đúng thứ tự, sau khi tempApp đã tồn tại)
+                tempApp._canEditPriority = canEditPriority;
+                tempApp._canEditSecondary = canEditSecondary;
+            }
 
             if (computeOverallStatus(tempApp) === "pass") {
                 const updates = {};
+                const canEditPriority = tempApp._canEditPriority;
+                const canEditSecondary = tempApp._canEditSecondary;
 
                 if (newRound === 2) {
                     updates["current_round"] = "round2";
                     updates["status"] = "in-progress";
                     
-                    // ✅ THÊM: SET NOT-PASS CHO CÁC BAN KHÔNG PASS VÒNG 1
-                    if (tempApp.priority_status === "pass") {
-                        updates["round2_priority_status"] = "pending";
-                    } else {
-                        updates["round2_priority_status"] = "not-pass";
+                    // SET NOT-PASS CHO CÁC BAN KHÔNG PASS VÒNG 1 (theo quyền admin)
+                    if (canEditPriority) {
+                        updates["round2_priority_status"] = tempApp.priority_status === "pass" ? "pending" : "not-pass";
                     }
-                    
-                    if (tempApp.secondary_status === "pass") {
-                        updates["round2_secondary_status"] = "pending";
-                    } else {
-                        updates["round2_secondary_status"] = "not-pass";
+                    if (canEditSecondary) {
+                        updates["round2_secondary_status"] = tempApp.secondary_status === "pass" ? "pending" : "not-pass";
                     }
                 }
 
@@ -9160,17 +9183,12 @@ async function processRoundUpdate(newRound) {
                     updates["current_round"] = "round3";
                     updates["status"] = "in-progress";
                     
-                    // ✅ THÊM: SET NOT-PASS CHO CÁC BAN KHÔNG PASS VÒNG 2
-                    if (tempApp.round2_priority_status === "pass") {
-                        updates["round3_priority_status"] = "pending";
-                    } else {
-                        updates["round3_priority_status"] = "not-pass";
+                    // SET NOT-PASS CHO CÁC BAN KHÔNG PASS VÒNG 2
+                    if (canEditPriority) {
+                        updates["round3_priority_status"] = tempApp.round2_priority_status === "pass" ? "pending" : "not-pass";
                     }
-                    
-                    if (tempApp.round2_secondary_status === "pass") {
-                        updates["round3_secondary_status"] = "pending";
-                    } else {
-                        updates["round3_secondary_status"] = "not-pass";
+                    if (canEditSecondary) {
+                        updates["round3_secondary_status"] = tempApp.round2_secondary_status === "pass" ? "pending" : "not-pass";
                     }
                 }
 
@@ -9178,27 +9196,30 @@ async function processRoundUpdate(newRound) {
                     updates["current_round"] = "round4";
                     updates["status"] = "in-progress";
                     
-                    // ✅ THÊM: SET NOT-PASS CHO CÁC BAN KHÔNG PASS VÒNG 3
-                    if (tempApp.round3_priority_status === "pass") {
-                        updates["round4_priority_status"] = "pending";
-                    } else {
-                        updates["round4_priority_status"] = "not-pass";
+                    // SET NOT-PASS CHO CÁC BAN KHÔNG PASS VÒNG 3
+                    if (canEditPriority) {
+                        updates["round4_priority_status"] = tempApp.round3_priority_status === "pass" ? "pending" : "not-pass";
                     }
-                    
-                    if (tempApp.round3_secondary_status === "pass") {
-                        updates["round4_secondary_status"] = "pending";
-                    } else {
-                        updates["round4_secondary_status"] = "not-pass";
+                    if (canEditSecondary) {
+                        updates["round4_secondary_status"] = tempApp.round3_secondary_status === "pass" ? "pending" : "not-pass";
                     }
                 }
 
                 if (newRound === "success") {
                     let finalDept = null;
                     
-                    // ✅ SỬA: CHỌN BAN CUỐI CÙNG PASS
-                    if (tempApp.round4_priority_status === "pass") {
+                    // Chọn ban cuối cùng pass (ưu tiên round4, fallback về round3 nếu skip)
+                    if (canEditPriority && tempApp.round4_priority_status === "pass") {
                         finalDept = data.priority_position;
-                    } else if (tempApp.round4_secondary_status === "pass") {
+                    } else if (canEditSecondary && tempApp.round4_secondary_status === "pass") {
+                        finalDept = data.secondary_position;
+                    } else if (canEditPriority && tempApp.round3_priority_status === "pass") {
+                        finalDept = data.priority_position;
+                    } else if (canEditSecondary && tempApp.round3_secondary_status === "pass") {
+                        finalDept = data.secondary_position;
+                    } else if (canEditPriority && tempApp.priority_status === "pass") {
+                        finalDept = data.priority_position;
+                    } else if (canEditSecondary && tempApp.secondary_status === "pass") {
                         finalDept = data.secondary_position;
                     }
 
@@ -9246,19 +9267,8 @@ async function processRoundUpdate(newRound) {
           document.getElementById("export-modal").style.display = "none";
         });
 
-      // Filter event listeners
-      document
-        .getElementById("filter-department")
-        .addEventListener("change", renderApplications);
-      document
-        .getElementById("filter-round")
-        .addEventListener("change", renderApplications);
-      document
-        .getElementById("filter-status")
-        .addEventListener("change", renderApplications);
-      document
-        .getElementById("search-input")
-        .addEventListener("input", renderApplications);
+      // Filter event listeners - chỉ dùng applyFiltersToCurrentTab (xem bên dưới)
+      // (các listener renderApplications cũ đã được gộp vào applyFiltersToCurrentTab)
 
       // Tab switching - sửa lại
       document.querySelectorAll(".nav-item").forEach((item) => {
@@ -9304,12 +9314,7 @@ async function processRoundUpdate(newRound) {
         });
       });
 
-      // Thêm vào cuối phần event listeners
-      document
-        .getElementById("archive-apps-btn")
-        .addEventListener("click", openArchiveModal);
-
-      // Khởi tạo tabs khi modal được mở
+      // Archive button - gộp thành 1 listener duy nhất
       document
         .getElementById("archive-apps-btn")
         .addEventListener("click", () => {
