@@ -1286,7 +1286,7 @@ function buildCalGrid() {
 
   const activePerson = getActivePerson();
   const selectedSet  = new Set(activePerson ? (activePerson.availableSlots || []) : []);
-  const locked       = activePerson ? !canTick() : false;
+  const locked       = activePerson ? !canTickPerson(activePerson) : false;
 
   // For candidate: show which slots have PIC available (same dept)
   let picSlotSet = new Set();
@@ -1343,7 +1343,7 @@ function buildCalGrid() {
 function toggleSlot(slotId) {
   const p = getActivePerson();
   if (!p) { toast('Chọn người trước!', 'err'); return; }
-  if (!canTick()) { toast('Bạn không có quyền tick lịch', 'err'); return; }
+  if (!canTickPerson(p)) { toast('Bạn không có quyền tick lịch', 'err'); return; }
 
   const slots = p.availableSlots || (p.availableSlots = []);
   const idx   = slots.indexOf(slotId);
