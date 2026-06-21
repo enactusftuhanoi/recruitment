@@ -1243,7 +1243,7 @@
                     frag.appendChild(row);
                 });
                 
-                const typeRow = createDetailRow('Hình thức', applicationData.application_type === 'interview' ? 'Phỏng vấn thay đơn' : (applicationData.application_type || 'Điền đơn'));
+                const typeRow = createDetailRow('Hình thức', applicationData.application_type === 'interview' ? 'Phỏng vấn thay đơn' : (applicationData.application_type === 'form' ? 'Điền đơn' : 'Điền đơn'));
                 frag.appendChild(typeRow);
                 
                 let ts = 'Không xác định';

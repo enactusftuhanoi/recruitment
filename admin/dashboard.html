@@ -2192,6 +2192,9 @@
       let userDept = sessionStorage.getItem("department") || null;
       let applications = [];
       let currentApplicationId = null;
+      // 🔧 FIX: Lưu advisor1/advisor2/supporter theo team (đọc từ dữ liệu Firestore
+      // trong bộ nhớ, không scrape DOM) để setupRound3SaveHandlers dùng khi Lưu.
+      let round3TeamsIndex = {};
       let emailSendingInProgress = new Set(); // Theo dõi các email đang được gửi
 
       // Khởi tạo EmailJS (đã có trong code)
@@ -6636,24 +6639,49 @@ function renderRound3() {
 
     const filteredApps = filterRound3Applications();
 
-    // Nhóm ứng viên theo team
+    // 🔧 FIX: Tính advisor1/advisor2/supporter từ TOÀN BỘ applications (không chỉ
+    // phần đang hiển thị sau filter). Trước đây dữ liệu này chỉ lấy từ "thành viên
+    // đầu tiên" của team trong filteredApps — nếu filter ẩn thành viên đó đi, hoặc
+    // dữ liệu giữa các thành viên cùng team bị lệch nhau, header sẽ hiển thị/lưu
+    // sai supporter. Giờ quét toàn bộ, lấy giá trị KHÔNG RỖNG đầu tiên tìm được,
+    // và lưu kèm memberIds để khi Lưu có thể đồng bộ cho cả team.
+    const teamMeta = {};
+    applications.forEach((app) => {
+        if (app.current_round !== "round3") return;
+        const teamName = app.round3?.team || "Chưa có team";
+        if (!teamMeta[teamName]) {
+            teamMeta[teamName] = { advisor1: "", advisor2: "", supporter: "", memberIds: [] };
+        }
+        const meta = teamMeta[teamName];
+        if (!meta.advisor1 && app.round3?.advisor1) meta.advisor1 = app.round3.advisor1;
+        if (!meta.advisor2 && app.round3?.advisor2) meta.advisor2 = app.round3.advisor2;
+        if (!meta.supporter && app.round3?.supporter) meta.supporter = app.round3.supporter;
+        meta.memberIds.push(app.id);
+    });
+
+    // Nhóm ứng viên theo team (chỉ những app đang hiển thị sau filter)
     const teams = {};
     
     filteredApps.forEach((app) => {
         const teamName = app.round3?.team || "Chưa có team";
         
         if (!teams[teamName]) {
+            const meta = teamMeta[teamName] || { advisor1: "", advisor2: "", supporter: "", memberIds: [] };
             teams[teamName] = {
                 name: teamName,
-                advisor1: app.round3?.advisor1 || "",
-                advisor2: app.round3?.advisor2 || "",
-                supporter: app.round3?.supporter || "",
+                advisor1: meta.advisor1,
+                advisor2: meta.advisor2,
+                supporter: meta.supporter,
+                memberIds: meta.memberIds, // toàn bộ thành viên team, kể cả bị filter ẩn
                 members: []
             };
         }
         
         teams[teamName].members.push(app);
     });
+
+    // 🔧 FIX: Lưu lại để setupRound3SaveHandlers dùng trực tiếp, không phải đọc từ DOM
+    round3TeamsIndex = teams;
 
     // Sắp xếp teams
     const sortedTeams = Object.values(teams).sort((a, b) => {
@@ -6729,6 +6757,7 @@ function renderRound3() {
 
             // Hiển thị thông tin
             const memberRow = document.createElement("tr");
+            memberRow.setAttribute("data-team", team.name);
             memberRow.innerHTML = `
                 <td style="padding-left: 32px; border-right: 2px solid var(--primary);">
                     <div style="display: flex; align-items: center; gap: 8px;">
@@ -6888,35 +6917,36 @@ function setupRound3SaveHandlers() {
                 });
             }
 
-            // 🔥 THÊM: Lưu Advisor và Supporter (lấy từ header row)
-            const headerRow = row.previousElementSibling;
-            if (headerRow && headerRow.style.backgroundColor === "var(--gray-50)") {
-                // Lấy advisor và supporter từ header
-                const advisorDiv = headerRow.querySelector('div div:first-child div:last-child');
-                const supporterDiv = headerRow.querySelector('div div:nth-child(2) div:last-child');
-                
-                if (advisorDiv) {
-                    const advisorText = advisorDiv.textContent.trim();
-                    // Tách advisor1 và advisor2
-                    const advisors = advisorText.split(',').map(a => a.trim());
-                    if (advisors[0] && advisors[0] !== "Chưa có") {
-                        updates["round3.advisor1"] = advisors[0];
-                    }
-                    if (advisors[1] && advisors[1] !== "Chưa có") {
-                        updates["round3.advisor2"] = advisors[1];
-                    }
-                }
-                
-                if (supporterDiv) {
-                    const supporterText = supporterDiv.textContent.trim();
-                    if (supporterText && supporterText !== "Chưa có") {
-                        updates["round3.supporter"] = supporterText;
-                    }
-                }
+            // 🔧 FIX: Đồng bộ Advisor/Supporter cho TOÀN BỘ thành viên trong team.
+            // Lấy dữ liệu từ round3TeamsIndex (đã build sẵn lúc render, đọc thẳng
+            // từ Firestore trong bộ nhớ) thay vì "đọc trộm" text trong header row —
+            // cách cũ chỉ đúng khi dòng vừa Lưu là thành viên đầu tiên của team,
+            // còn các thành viên khác bị bỏ qua hoặc bị ghi đè bằng dữ liệu cũ/sai,
+            // gây ra hiện tượng Supporter tự đổi dù chỉ bấm Lưu trạng thái.
+            const teamName = row.getAttribute("data-team");
+            const teamMeta = teamName ? round3TeamsIndex[teamName] : null;
+            const teamUpdates = {};
+            if (teamMeta) {
+                if (teamMeta.advisor1) teamUpdates["round3.advisor1"] = teamMeta.advisor1;
+                if (teamMeta.advisor2) teamUpdates["round3.advisor2"] = teamMeta.advisor2;
+                if (teamMeta.supporter) teamUpdates["round3.supporter"] = teamMeta.supporter;
             }
+            Object.assign(updates, teamUpdates);
 
             try {
-                await db.collection("applications").doc(appId).update(updates);
+                const batch = db.batch();
+                batch.update(db.collection("applications").doc(appId), updates);
+
+                // Đồng bộ advisor/supporter sang các thành viên còn lại trong team
+                // (không đụng tới note/status của họ).
+                if (teamMeta && teamMeta.memberIds && Object.keys(teamUpdates).length) {
+                    teamMeta.memberIds.forEach((memberId) => {
+                        if (memberId === appId) return; // đã gộp ở trên rồi
+                        batch.update(db.collection("applications").doc(memberId), teamUpdates);
+                    });
+                }
+
+                await batch.commit();
                 alert("✅ Đã lưu thông tin vòng 3!");
                 refreshApplications();
             } catch (err) {
