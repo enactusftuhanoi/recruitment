@@ -124,6 +124,21 @@
     .spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--ink);border-radius:50%;animation:spin .6s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
 
+    /* ROSTER TABLE (Tab Lịch Vote) */
+    .roster-table{width:100%;border-collapse:collapse;font-size:13px}
+    .roster-table th{text-align:left;padding:9px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-60);border-bottom:1.5px solid var(--border);white-space:nowrap}
+    .roster-table td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+    .roster-table tr:last-child td{border-bottom:none}
+    .badge-pill{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+    .status-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+    .status-pill.done{background:var(--success-bg);color:#065F46}
+    .status-pill.pending{background:var(--ink-10);color:var(--ink-60)}
+    .roster-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+    .roster-summary-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-align:center}
+    .roster-summary-item .num{font-size:20px;font-weight:800;line-height:1}
+    .roster-summary-item .lbl{font-size:11px;color:var(--ink-60);margin-top:3px}
+    .roster-table-wrap{overflow-x:auto}
+
     /* TOAST */
     .toast-wrap{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9999}
     .toast{background:var(--ink);color:var(--white);padding:12px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;animation:slideIn .25s ease}
@@ -212,96 +227,97 @@
       <i class="fas fa-circle-info"></i> Đang tải trạng thái...
     </div>
 
-    <!-- SUPERADMIN: 2-TAB PANEL -->
-    <div class="card" id="superadmin-alumni-panel" style="display:none;margin-bottom:18px">
-      <h3 style="margin-bottom:0"><i class="fas fa-shield-halved"></i> Quản lý — SuperAdmin</h3>
-
-      <!-- TAB NAV -->
-      <div class="sa-tabs" style="margin-top:14px">
-        <button class="sa-tab active" onclick="switchSATab('schedule', this)">
-          <i class="fas fa-calendar-days"></i> Lịch Vote
-        </button>
-        <button class="sa-tab" onclick="switchSATab('settings', this)">
-          <i class="fas fa-gear"></i> Cài đặt
-        </button>
-      </div>
-
-      <!-- TAB: LỊCH VOTE -->
-      <div class="sa-tab-panel active" id="sa-panel-schedule">
-        <p class="page-sub" style="margin-bottom:14px">Danh sách lịch rảnh đã được ghi nhận (Member, Admin, Alumni) cho kỳ phỏng vấn này.</p>
-        <div id="sa-vote-list">
-          <div style="text-align:center;padding:24px;color:var(--ink-30);font-size:13px"><i class="fas fa-spinner fa-spin" style="display:block;font-size:20px;margin-bottom:8px"></i> Đang tải...</div>
-        </div>
-      </div>
-
-      <!-- TAB: CÀI ĐẶT -->
-      <div class="sa-tab-panel" id="sa-panel-settings">
-
-        <!-- Alumni public form toggle -->
-        <div style="margin-bottom:18px">
-          <div style="font-size:12px;font-weight:700;color:var(--ink-60);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">Form công khai cho Alumni</div>
-          <div class="ctrl-row">
-            <div class="ctrl-row-label">
-              <i class="fas fa-user-graduate"></i>
-              <div>
-                <div>Form Alumni (không cần đăng nhập)</div>
-                <div class="ctrl-desc">Mở link công khai để Alumni tự tick lịch</div>
-              </div>
-            </div>
-            <div class="toggle-row-sm">
-              <button class="toggle-opt-sm active" id="alumni-off-btn" onclick="setAlumniOpen(false)">Tắt</button>
-              <button class="toggle-opt-sm" id="alumni-on-btn" onclick="setAlumniOpen(true)">Bật</button>
-            </div>
-          </div>
-          <div class="link-box" id="alumni-link-box" style="display:none">
-            <code id="alumni-link-text"></code>
-            <button class="btn btn-ghost btn-sm" onclick="copyAlumniLink()"><i class="fas fa-copy"></i> Copy</button>
-          </div>
-        </div>
-
-        <!-- Open vote / interview for Member + Admin -->
-        <div>
-          <div style="font-size:12px;font-weight:700;color:var(--ink-60);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">Mở vote & interview cho thành viên</div>
-
-          <div class="ctrl-row">
-            <div class="ctrl-row-label">
-              <i class="fas fa-check-to-slot"></i>
-              <div>
-                <div>Mở Vote lịch</div>
-                <div class="ctrl-desc">Member & Admin có thể tick lịch rảnh trên trang Vote</div>
-              </div>
-            </div>
-            <div class="toggle-row-sm">
-              <button class="toggle-opt-sm active" id="member-vote-off-btn" onclick="setMemberVoteOpen(false)">Tắt</button>
-              <button class="toggle-opt-sm" id="member-vote-on-btn" onclick="setMemberVoteOpen(true)">Bật</button>
-            </div>
-          </div>
-
-          <div class="ctrl-row">
-            <div class="ctrl-row-label">
-              <i class="fas fa-people-arrows"></i>
-              <div>
-                <div>Mở Interview</div>
-                <div class="ctrl-desc">Hiện trang sắp xếp lịch phỏng vấn với Member & Admin</div>
-              </div>
-            </div>
-            <div class="toggle-row-sm">
-              <button class="toggle-opt-sm active" id="member-interview-off-btn" onclick="setMemberInterviewOpen(false)">Tắt</button>
-              <button class="toggle-opt-sm" id="member-interview-on-btn" onclick="setMemberInterviewOpen(true)">Bật</button>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- /sa-panel-settings -->
+    <!-- MAIN TAB NAV (3 tabs: Vote lịch rảnh ai cũng thấy, Lịch Vote + Cài đặt chỉ SuperAdmin thấy) -->
+    <div class="sa-tabs" id="main-tabs" style="margin-bottom:18px">
+      <button class="sa-tab active" id="main-tab-btn-vote" onclick="switchMainTab('vote', this)">
+        <i class="fas fa-check-to-slot"></i> Vote lịch rảnh
+      </button>
+      <button class="sa-tab" id="main-tab-btn-schedule" onclick="switchMainTab('schedule', this)" style="display:none">
+        <i class="fas fa-calendar-days"></i> Lịch Vote
+      </button>
+      <button class="sa-tab" id="main-tab-btn-settings" onclick="switchMainTab('settings', this)" style="display:none">
+        <i class="fas fa-gear"></i> Cài đặt
+      </button>
     </div>
 
-    <div class="card">
+    <!-- TAB: VOTE LỊCH RẢNH (form chọn slot — mọi role) -->
+    <div class="sa-tab-panel active card" id="main-panel-vote">
       <div id="slots-by-day"><!-- built by JS --></div>
+      <button class="btn btn-dark btn-full" style="margin-top:16px" onclick="saveVote()" id="save-btn">
+        <i class="fas fa-check"></i> Lưu lịch rảnh
+      </button>
     </div>
 
-    <button class="btn btn-dark btn-full" style="margin-top:16px" onclick="saveVote()" id="save-btn">
-      <i class="fas fa-check"></i> Lưu lịch rảnh
-    </button>
+    <!-- TAB: LỊCH VOTE (SuperAdmin) — bảng tổng hợp toàn bộ account -->
+    <div class="sa-tab-panel card" id="main-panel-schedule" style="display:none">
+      <h3 style="margin-bottom:14px"><i class="fas fa-shield-halved"></i> Quản lý — SuperAdmin</h3>
+      <p class="page-sub" style="margin-bottom:14px">Danh sách toàn bộ tài khoản (Super/Admin/Member) và Alumni đã vote — trạng thái lịch rảnh cho kỳ phỏng vấn này.</p>
+      <div id="sa-vote-list">
+        <div style="text-align:center;padding:24px;color:var(--ink-30);font-size:13px"><i class="fas fa-spinner fa-spin" style="display:block;font-size:20px;margin-bottom:8px"></i> Đang tải...</div>
+      </div>
+    </div>
+
+    <!-- TAB: CÀI ĐẶT (SuperAdmin) -->
+    <div class="sa-tab-panel card" id="main-panel-settings" style="display:none">
+      <h3 style="margin-bottom:14px"><i class="fas fa-shield-halved"></i> Quản lý — SuperAdmin</h3>
+
+      <!-- Alumni public form toggle -->
+      <div style="margin-bottom:18px">
+        <div style="font-size:12px;font-weight:700;color:var(--ink-60);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">Form công khai cho Alumni</div>
+        <div class="ctrl-row">
+          <div class="ctrl-row-label">
+            <i class="fas fa-user-graduate"></i>
+            <div>
+              <div>Form Alumni (không cần đăng nhập)</div>
+              <div class="ctrl-desc">Mở link công khai để Alumni tự tick lịch</div>
+            </div>
+          </div>
+          <div class="toggle-row-sm">
+            <button class="toggle-opt-sm active" id="alumni-off-btn" onclick="setAlumniOpen(false)">Tắt</button>
+            <button class="toggle-opt-sm" id="alumni-on-btn" onclick="setAlumniOpen(true)">Bật</button>
+          </div>
+        </div>
+        <div class="link-box" id="alumni-link-box" style="display:none">
+          <code id="alumni-link-text"></code>
+          <button class="btn btn-ghost btn-sm" onclick="copyAlumniLink()"><i class="fas fa-copy"></i> Copy</button>
+        </div>
+      </div>
+
+      <!-- Open vote / interview for Member + Admin -->
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--ink-60);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">Mở vote & interview cho thành viên</div>
+
+        <div class="ctrl-row">
+          <div class="ctrl-row-label">
+            <i class="fas fa-check-to-slot"></i>
+            <div>
+              <div>Mở Vote lịch</div>
+              <div class="ctrl-desc">Member & Admin có thể tick lịch rảnh trên trang Vote</div>
+            </div>
+          </div>
+          <div class="toggle-row-sm">
+            <button class="toggle-opt-sm active" id="member-vote-off-btn" onclick="setMemberVoteOpen(false)">Tắt</button>
+            <button class="toggle-opt-sm" id="member-vote-on-btn" onclick="setMemberVoteOpen(true)">Bật</button>
+          </div>
+        </div>
+
+        <div class="ctrl-row">
+          <div class="ctrl-row-label">
+            <i class="fas fa-people-arrows"></i>
+            <div>
+              <div>Mở Interview</div>
+              <div class="ctrl-desc">Hiện trang sắp xếp lịch phỏng vấn với Member & Admin</div>
+            </div>
+          </div>
+          <div class="toggle-row-sm">
+            <button class="toggle-opt-sm active" id="member-interview-off-btn" onclick="setMemberInterviewOpen(false)">Tắt</button>
+            <button class="toggle-opt-sm" id="member-interview-on-btn" onclick="setMemberInterviewOpen(true)">Bật</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main-panel-settings -->
+
   </div>
 
 </div>
@@ -502,12 +518,14 @@ async function finishStaffSetup() {
     `Xin chào ${V.user.name}${V.user.department ? ' · ' + (DEPT_NAMES[V.user.department]||V.user.department) : ''} — chọn tất cả khung giờ bạn có thể tham gia phỏng vấn.`;
 
   if (V.isSuperAdmin) {
-    document.getElementById('superadmin-alumni-panel').style.display = 'block';
+    document.getElementById('main-tab-btn-schedule').style.display = 'inline-block';
+    document.getElementById('main-tab-btn-settings').style.display = 'inline-block';
     setAlumniToggleUI(V.alumniOpen);
     setMemberVoteToggleUI(V.memberVoteOpen);
     setMemberInterviewToggleUI(V.memberInterviewOpen);
-    loadSAVoteList();
   }
+  // Mặc định mở tab "Vote lịch rảnh" trước cho mọi role (kể cả SuperAdmin)
+  switchMainTab('vote', document.getElementById('main-tab-btn-vote'));
 
   await loadExistingVote();
   renderSlotChips();
@@ -556,6 +574,7 @@ function startGuestVoting() {
   document.getElementById('guest-intake').style.display = 'none';
   document.getElementById('vote-sub').textContent =
     `Xin chào ${name} — chọn tất cả khung giờ bạn có thể tham gia phỏng vấn.`;
+  switchMainTab('vote', document.getElementById('main-tab-btn-vote'));
   renderSlotChips();
   document.getElementById('vote-content').style.display = 'block';
 }
@@ -677,101 +696,129 @@ function copyAlumniLink() {
 }
 
 // ══════════════════════════════════════════════════
-//  SUPERADMIN: TAB SWITCHING
+//  MAIN TAB SWITCHING (Lịch Vote / Cài đặt / Vote lịch rảnh)
 // ══════════════════════════════════════════════════
-function switchSATab(tab, el) {
-  document.querySelectorAll('.sa-tab').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.sa-tab-panel').forEach(p => p.classList.remove('active'));
+function switchMainTab(tab, el) {
+  document.querySelectorAll('#main-tabs .sa-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sa-tab-panel').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
   el.classList.add('active');
-  document.getElementById('sa-panel-' + tab).classList.add('active');
+  const panel = document.getElementById('main-panel-' + tab);
+  panel.classList.add('active');
+  panel.style.display = 'block';
   if (tab === 'schedule') loadSAVoteList();
 }
 
 // ══════════════════════════════════════════════════
-//  SUPERADMIN: LOAD VOTE LIST (Tab Lịch Vote)
+//  SUPERADMIN: LOAD ROSTER TABLE (Tab Lịch Vote)
+//  Hiển thị TOÀN BỘ account (Super/Admin/Member) + Alumni đã vote
 // ══════════════════════════════════════════════════
 async function loadSAVoteList() {
   const el = document.getElementById('sa-vote-list');
   if (!el || !window.db) return;
   el.innerHTML = `<div style="text-align:center;padding:28px 0;color:var(--ink-30)"><i class="fas fa-spinner fa-spin" style="font-size:22px;display:block;margin-bottom:8px"></i><span style="font-size:13px">Đang tải...</span></div>`;
   try {
-    const snap = await window.db.collection('interview_votes').get();
-    if (snap.empty) {
-      el.innerHTML = `<div style="text-align:center;padding:32px 0;color:var(--ink-30)"><i class="fas fa-inbox" style="font-size:28px;display:block;margin-bottom:10px"></i><div style="font-size:13px;font-weight:600">Chưa có ai ghi nhận lịch rảnh</div></div>`;
-      return;
-    }
+    const [accountSnap, voteSnap] = await Promise.all([
+      window.db.collection('account').get(),
+      window.db.collection('interview_votes').get(),
+    ]);
+
+    // Map vote theo tên (đã sanitize) để join nhanh — đồng thời gom luôn Alumni
+    const votesByKey = {};
+    voteSnap.docs.forEach(doc => { votesByKey[doc.id] = doc.data(); });
 
     const DEPT_COLORS = { MD:'#3B82F6', HR:'#10B981', PD:'#F59E0B', ER:'#8B5CF6' };
     const DEPT_BG     = { MD:'#EFF6FF', HR:'#ECFDF5', PD:'#FFFBEB', ER:'#F5F3FF' };
     const DEPT_LABELS = { MD:'Truyền thông', HR:'Nhân sự', PD:'Dự án', ER:'Đối ngoại' };
+    const ROLE_COLORS = { superadmin:'#EF4444', admin:'#F59E0B', member:'#3B82F6', alumni:'#10B981' };
+    const ROLE_BG     = { superadmin:'#FEF2F2', admin:'#FFFBEB', member:'#EFF6FF', alumni:'#ECFDF5' };
+    const ROLE_LABELS = { superadmin:'SuperAdmin', admin:'Admin', member:'Member', alumni:'Alumni' };
 
-    // Sort: nhiều ca nhất lên đầu
-    const docs = snap.docs.sort((a, b) =>
-      (b.data().availableSlots||[]).length - (a.data().availableSlots||[]).length
-    );
-
-    const total = docs.length;
-    const totalSlots = docs.reduce((s, d) => s + (d.data().availableSlots||[]).length, 0);
-    const avgSlots = total ? (totalSlots / total).toFixed(1) : 0;
-
-    // Summary bar
-    let html = `
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-align:center">
-          <div style="font-size:20px;font-weight:800;line-height:1">${total}</div>
-          <div style="font-size:11px;color:var(--ink-60);margin-top:3px">Người đã vote</div>
-        </div>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-align:center">
-          <div style="font-size:20px;font-weight:800;line-height:1">${totalSlots}</div>
-          <div style="font-size:11px;color:var(--ink-60);margin-top:3px">Tổng ca đã tick</div>
-        </div>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-align:center">
-          <div style="font-size:20px;font-weight:800;line-height:1">${avgSlots}</div>
-          <div style="font-size:11px;color:var(--ink-60);margin-top:3px">Ca TB / người</div>
-        </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px">`;
-
-    docs.forEach(doc => {
+    // 1) Toàn bộ tài khoản Super/Admin/Member từ collection 'account'
+    const rows = accountSnap.docs.map(doc => {
       const d = doc.data();
-      const dept = (d.department || d.dept || '').toUpperCase();
-      const slotCount = (d.availableSlots || []).length;
-      const isAlumni = d.source === 'alumni';
-      const srcColor = isAlumni ? '#3B82F6' : '#10B981';
-      const srcBg    = isAlumni ? '#EFF6FF' : '#ECFDF5';
-      const srcLabel = isAlumni ? 'Alumni' : 'Member/Admin';
-      const srcIcon  = isAlumni ? 'fa-user-graduate' : 'fa-user-tie';
-      const deptColor = DEPT_COLORS[dept] || 'var(--ink-60)';
-      const deptBg    = DEPT_BG[dept]    || 'var(--ink-10)';
-      const deptLabel = DEPT_LABELS[dept] || dept || '—';
-      const barPct = Math.min(100, slotCount ? (slotCount / Math.max(1, V.slots.length)) * 100 : 0);
-
-      html += `
-        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--white)">
-          <div style="width:36px;height:36px;border-radius:50%;background:${deptBg};color:${deptColor};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">${(d.name||'?').charAt(0).toUpperCase()}</div>
-          <div style="flex:1;min-width:0">
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-              <span style="font-weight:700;font-size:13px">${d.name || '—'}</span>
-              <span style="background:${deptBg};color:${deptColor};padding:1px 7px;border-radius:12px;font-size:10px;font-weight:700">${deptLabel}</span>
-              <span style="background:${srcBg};color:${srcColor};padding:1px 7px;border-radius:12px;font-size:10px;font-weight:700"><i class="fas ${srcIcon}" style="font-size:9px"></i> ${srcLabel}</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;font-size:11px;color:var(--ink-60)">
-              ${d.phone ? `<span><i class="fas fa-phone" style="font-size:9px;margin-right:3px"></i>${d.phone}</span>` : ''}
-              ${d.email ? `<span><i class="fas fa-envelope" style="font-size:9px;margin-right:3px"></i>${d.email}</span>` : ''}
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;margin-top:5px">
-              <div style="flex:1;height:4px;background:var(--border);border-radius:4px;overflow:hidden">
-                <div style="height:100%;width:${barPct}%;background:${slotCount>0?'var(--yellow-mid)':'var(--border)'};border-radius:4px;transition:.3s"></div>
-              </div>
-              <span style="font-size:11px;font-weight:700;color:${slotCount>0?'var(--ink)':'var(--ink-30)'};white-space:nowrap">${slotCount} ca</span>
-            </div>
-          </div>
-        </div>`;
+      const name = doc.id;
+      const role = (d.role || '').toLowerCase() || 'member';
+      const dept = (d.department || '').toUpperCase();
+      const voteKey = sanitizeKey(name);
+      const vote = votesByKey[voteKey];
+      const slotCount = vote ? (vote.availableSlots || []).length : null; // null = chưa vote
+      return { name, role, dept, slotCount, hasVoted: !!vote };
     });
 
-    html += `</div>
-      <div style="text-align:right;font-size:11px;color:var(--ink-30);margin-top:8px;display:flex;align-items:center;justify-content:flex-end;gap:8px">
-        <span>${total} người · Cập nhật ${new Date().toLocaleTimeString('vi-VN')}</span>
+    // 2) Alumni — chỉ thêm những ai ĐÃ vote (Alumni không có trong 'account')
+    voteSnap.docs.forEach(doc => {
+      const d = doc.data();
+      if (d.source !== 'alumni') return;
+      rows.push({
+        name: d.name || doc.id,
+        role: 'alumni',
+        dept: (d.department || d.dept || '').toUpperCase(),
+        slotCount: (d.availableSlots || []).length,
+        hasVoted: true,
+      });
+    });
+
+    if (!rows.length) {
+      el.innerHTML = `<div style="text-align:center;padding:32px 0;color:var(--ink-30)"><i class="fas fa-inbox" style="font-size:28px;display:block;margin-bottom:10px"></i><div style="font-size:13px;font-weight:600">Chưa có tài khoản nào</div></div>`;
+      return;
+    }
+
+    // Sort: chưa vote lên trước (để SA dễ nhắc), rồi theo tên
+    rows.sort((a, b) => {
+      if (a.hasVoted !== b.hasVoted) return a.hasVoted ? 1 : -1;
+      return (a.name||'').localeCompare(b.name||'', 'vi');
+    });
+
+    const total = rows.length;
+    const doneCount = rows.filter(r => r.hasVoted).length;
+    const pendingCount = total - doneCount;
+
+    let html = `
+      <div class="roster-summary">
+        <div class="roster-summary-item"><div class="num">${total}</div><div class="lbl">Tổng tài khoản</div></div>
+        <div class="roster-summary-item"><div class="num">${doneCount}</div><div class="lbl">Đã vote</div></div>
+        <div class="roster-summary-item"><div class="num">${pendingCount}</div><div class="lbl">Chưa vote</div></div>
+      </div>
+      <div class="roster-table-wrap">
+        <table class="roster-table">
+          <thead>
+            <tr>
+              <th>Họ tên</th>
+              <th>Vai trò</th>
+              <th>Ban</th>
+              <th>Số ca</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+    rows.forEach(r => {
+      const roleColor = ROLE_COLORS[r.role] || 'var(--ink-60)';
+      const roleBg    = ROLE_BG[r.role]    || 'var(--ink-10)';
+      const roleLabelTxt = ROLE_LABELS[r.role] || r.role || '—';
+      const deptColor = DEPT_COLORS[r.dept] || 'var(--ink-60)';
+      const deptBg    = DEPT_BG[r.dept]    || 'var(--ink-10)';
+      const deptLabelTxt = DEPT_LABELS[r.dept] || r.dept || '—';
+      const slotTxt = r.hasVoted ? `${r.slotCount} ca` : '—';
+
+      html += `
+            <tr>
+              <td style="font-weight:700">${r.name || '—'}</td>
+              <td><span class="badge-pill" style="background:${roleBg};color:${roleColor}">${roleLabelTxt}</span></td>
+              <td>${r.dept ? `<span class="badge-pill" style="background:${deptBg};color:${deptColor}">${deptLabelTxt}</span>` : '—'}</td>
+              <td>${slotTxt}</td>
+              <td>${r.hasVoted
+                ? `<span class="status-pill done"><i class="fas fa-circle-check"></i> Done</span>`
+                : `<span class="status-pill pending"><i class="fas fa-circle"></i> Not yet</span>`}</td>
+            </tr>`;
+    });
+
+    html += `
+          </tbody>
+        </table>
+      </div>
+      <div style="text-align:right;font-size:11px;color:var(--ink-30);margin-top:10px;display:flex;align-items:center;justify-content:flex-end;gap:8px">
+        <span>${total} tài khoản · Cập nhật ${new Date().toLocaleTimeString('vi-VN')}</span>
         <button onclick="loadSAVoteList()" style="background:none;border:none;cursor:pointer;color:var(--ink-60);font-size:11px;padding:2px 6px;border-radius:4px;font-family:inherit" title="Làm mới"><i class="fas fa-rotate-right"></i> Làm mới</button>
       </div>`;
 

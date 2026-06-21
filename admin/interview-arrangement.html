@@ -282,7 +282,7 @@
             <i class="fas fa-user"></i> Ứng viên
           </button>
           <button class="tab-btn" id="mode-i" onclick="setMode('interviewer')">
-            <i class="fas fa-user-tie"></i> PIC
+            <i class="fas fa-user-tie"></i> Nhân sự
           </button>
         </div>
       </div>
@@ -409,7 +409,7 @@
     <!-- INFO BOX -->
     <div class="info-box" id="info-box">
       <i class="fas fa-circle-info"></i>
-      <div>Ca phỏng vấn được <b>đồng bộ tự động từ Calendar</b> (ngày + khung giờ ứng viên đã vote). SuperAdmin/Admin (HR) bấm vào từng ca để điền <b>hình thức / địa điểm / ghi chú</b>. Chọn <b>ứng viên</b> hoặc <b>PIC</b> từ sidebar trái, sau đó click vào ô để đánh dấu ca rảnh. Ứng viên apply 2 ban sẽ được phỏng vấn 2 lần.</div>
+      <div>Ca phỏng vấn được <b>đồng bộ tự động từ Calendar</b> (ngày + khung giờ ứng viên đã vote). SuperAdmin/Admin (HR) bấm vào từng ca để điền <b>hình thức / địa điểm / ghi chú</b>. Chọn <b>ứng viên</b> hoặc <b>Nhân sự</b> từ sidebar trái, sau đó click vào ô để đánh dấu ca rảnh. Ứng viên apply 2 ban sẽ được phỏng vấn 2 lần.</div>
     </div>
 
     <!-- CALENDAR CARD -->
@@ -422,7 +422,7 @@
         <div class="cal-legend">
           <div class="leg-item"><div class="leg-dot" style="background:var(--ink-10);border-color:var(--border)"></div> Trống</div>
           <div class="leg-item"><div class="leg-dot" style="background:var(--yellow);border-color:var(--yellow-mid)"></div> Đã tick</div>
-          <div class="leg-item"><div class="leg-dot" style="background:#EFF6FF;border-color:#BFDBFE"></div> PIC sẵn</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#EFF6FF;border-color:#BFDBFE"></div> Nhân sự sẵn</div>
         </div>
       </div>
       <div class="cal-scroll">
@@ -458,7 +458,7 @@
       <div class="stats-grid" style="margin-bottom:20px">
         <div class="stat-card"><div class="stat-val" id="s-slots">0</div><div class="stat-label">Ca đã dùng</div></div>
         <div class="stat-card"><div class="stat-val" id="s-cands">0</div><div class="stat-label">Lượt phỏng vấn</div></div>
-        <div class="stat-card"><div class="stat-val" id="s-ivs">0</div><div class="stat-label">PIC tham gia</div></div>
+        <div class="stat-card"><div class="stat-val" id="s-ivs">0</div><div class="stat-label">Nhân sự tham gia</div></div>
         <div class="stat-card"><div class="stat-val" id="s-unmatched">0</div><div class="stat-label" style="color:var(--error)">Chưa ghép được</div></div>
       </div>
 
@@ -677,7 +677,7 @@ const S = {
 // ══════════════════════════════════════════════════
 function canCRUD()    { return S.role === 'superadmin' || S.role === 'admin-hr'; }
 function canView()    { return S.role !== null; }
-function canTick()    { return canCRUD(); } // only SuperAdmin / Admin-HR may tick availability for candidates/PIC
+function canTick()    { return canCRUD(); } // only SuperAdmin / Admin-HR may tick availability for candidates/Nhân sự; admin-other can't tick at all (because their scope is hard to define: they can edit some slots and some people, but not necessarily the same ones)      
 function canManageSlots() { return canCRUD(); }
 function canPublish() { return S.role === 'superadmin'; } // only SuperAdmin may publish (and revoke a publish)
 function canEditRow(row) {
@@ -687,8 +687,8 @@ function canEditRow(row) {
   if (S.role === 'admin-other' && S.userDept && row && row.candidateDept === S.userDept) return true;
   return false;
 }
-// Admin của ban khác: được thêm / sửa / xoá / tick lịch cho PIC thuộc đúng ban mình
-// (không đụng được PIC ban khác, và không quản lý ứng viên).
+// Admin của ban khác: được thêm / sửa / xoá / tick lịch cho Nhân sự thuộc đúng ban mình
+// (không đụng được Nhân sự ban khác, và không quản lý ứng viên).
 function canManageInterviewer(iv) {
   if (canCRUD()) return true;
   if (S.role === 'admin-other' && S.userDept) {
@@ -717,7 +717,7 @@ function applyRoleUI() {
   const subEl = document.getElementById('main-sub');
   if (subEl) {
     if (S.role === 'admin-other') {
-      subEl.innerHTML = `Chế độ chỉ xem. Bạn có thể thêm/sửa <b>PIC của ban ${DEPT_NAMES[S.userDept]||S.userDept||'—'}</b>, và sửa <b>ca phỏng vấn của ban ${DEPT_NAMES[S.userDept]||S.userDept||'—'}</b> ở bảng "Kết quả sắp xếp" bên dưới.`;
+      subEl.innerHTML = `Chế độ chỉ xem. Bạn có thể thêm/sửa <b>nhân sự của ban ${DEPT_NAMES[S.userDept]||S.userDept||'—'}</b>, và sửa <b>ca phỏng vấn của ban ${DEPT_NAMES[S.userDept]||S.userDept||'—'}</b> ở bảng "Kết quả sắp xếp" bên dưới.`;
     } else {
       subEl.textContent = 'Tick lịch trực tiếp cho từng người, sau đó bấm sắp xếp';
     }
@@ -727,7 +727,7 @@ function applyRoleUI() {
   document.getElementById('import-section').style.display = canCRUD() ? 'block' : 'none';
 
   // Thêm người thủ công: SuperAdmin/Admin-HR luôn thấy; Admin ban khác chỉ thấy khi
-  // đang ở tab PIC (vì họ chỉ được thêm PIC của ban mình, không được thêm ứng viên).
+  // đang ở tab Nhân sự (vì họ chỉ được thêm Nhân sự của ban mình, không được thêm ứng viên).
   updateAddPersonVisibility();
 
   // Slot config (mode/location/note) + resync: only SuperAdmin + Admin HR
@@ -1119,7 +1119,7 @@ async function savePICToFirestore(iv) {
     const idx = S.interviewers.findIndex(i => i.name === iv.name);
     if (idx !== -1) S.interviewers[idx].fromManual = true;
   } catch(e) {
-    toast('Lưu PIC thất bại: ' + e.message, 'err');
+    toast('Lưu nhân sự thất bại: ' + e.message, 'err');
   }
 }
 
@@ -1131,7 +1131,7 @@ async function savePICSlots(iv) {
       availableSlots: iv.availableSlots || [],
     });
   } catch(e) {
-    console.warn('Không lưu được slot PIC:', e);
+    console.warn('Không lưu được slot nhân sự:', e);
   }
 }
 
@@ -1141,7 +1141,7 @@ async function deletePICFromFirestore(name) {
     const key = sanitizePICKey(name);
     await window.db.collection('interview_pics').doc(key).delete();
   } catch(e) {
-    console.warn('Không xoá được PIC:', e);
+    console.warn('Không xoá được nhân sự:', e);
   }
 }
 
@@ -1243,7 +1243,7 @@ function setMode(mode) {
   const sf = document.getElementById('secondary-dept-wrap');
   if (sf) sf.style.display = mode === 'candidate' ? 'block' : 'none';
 
-  document.getElementById('list-title').textContent = mode === 'candidate' ? 'Danh sách ứng viên' : 'Danh sách PIC';
+  document.getElementById('list-title').textContent = mode === 'candidate' ? 'Danh sách ứng viên' : 'Danh sách nhân sự';
   updateAddPersonVisibility();
   renderPersonList();
   updateCalTitle();
@@ -1251,7 +1251,7 @@ function setMode(mode) {
 }
 
 // Thêm người thủ công: SuperAdmin/Admin-HR thấy ở cả 2 tab; Admin ban khác chỉ
-// thấy ở tab PIC (và khi mở form, dropdown ban sẽ bị khoá về đúng ban của họ — xem toggleAddForm()).
+// thấy ở tab Nhân sự (và khi mở form, dropdown ban sẽ bị khoá về đúng ban của họ — xem toggleAddForm()).
 function updateAddPersonVisibility() {
   const el = document.getElementById('add-person-section');
   if (!el) return;
@@ -1315,7 +1315,7 @@ function updateCalTitle() {
   }
   const dept  = p.dept || p.department || '';
   const dept2 = p.dept2 || '';
-  const role  = S.mode === 'candidate' ? 'Ứng viên' : 'PIC';
+  const role  = S.mode === 'candidate' ? 'Ứng viên' : 'Nhân sự';
   titleEl.textContent = `${p.name} — ${DEPT_NAMES[dept]||dept}${dept2?' · '+DEPT_NAMES[dept2]:''}`;
   subEl.textContent   = `${role} · ${p.availableSlots ? p.availableSlots.length : 0} ca đã tick · Click ô để thay đổi`;
 }
@@ -1559,7 +1559,7 @@ function downloadTemplate() {
 function clearAll() {
   if (!canCRUD()) { toast('Bạn không có quyền xoá', 'err'); return; }
   if (!S.candidates.length && !S.interviewers.length) { toast('Không có gì để xoá','warn'); return; }
-  showConfirm('Xoá toàn bộ người?', 'Tất cả ứng viên và PIC sẽ bị xoá.', () => {
+  showConfirm('Xoá toàn bộ người?', 'Tất cả ứng viên và nhân sự sẽ bị xoá.', () => {
     S.candidates = []; S.interviewers = []; S.activePerson = null; S.schedule = []; S.lastUnmatched = [];
     document.getElementById('results-section').style.display = 'none';
     renderPersonList(); updateCalTitle(); buildCalGrid();
@@ -1573,7 +1573,7 @@ function clearAll() {
 function runArrangement() {
   if (!canCRUD()) { toast('Bạn không có quyền thực hiện thao tác này', 'err'); return; }
   if (!S.candidates.length)  { toast('Chưa có ứng viên!', 'err'); return; }
-  if (!S.interviewers.length){ toast('Chưa có PIC nào!', 'err'); return; }
+  if (!S.interviewers.length){ toast('Chưa có nhân sự nào!', 'err'); return; }
 
   const btn = document.getElementById('run-btn');
   btn.innerHTML = '<span class="mini-spin"></span> Đang sắp xếp...';
@@ -1625,7 +1625,7 @@ function arrangeInterviews() {
   sorted.forEach(candidate => {
     const dept  = candidate.dept || candidate.department || '';
     const ivList = ivByDept[dept] || [];
-    if (!ivList.length) { unmatched.push({ name:candidate.name, dept, reason:'Không có PIC cho ban này' }); return; }
+    if (!ivList.length) { unmatched.push({ name:candidate.name, dept, reason:'Không có nhân sự cho ban này' }); return; }
     if (!candidate.availableSlots || !candidate.availableSlots.length) {
       unmatched.push({ name:candidate.name, dept, reason:'Chưa tick ca nào' }); return;
     }
@@ -1647,7 +1647,7 @@ function arrangeInterviews() {
       }
     });
 
-    if (!bestSlot) { unmatched.push({ name:candidate.name, dept, reason:'Không tìm được ca chung với PIC' }); return; }
+    if (!bestSlot) { unmatched.push({ name:candidate.name, dept, reason:'Không tìm được ca chung với nhân sự' }); return; }
 
     // Pick top 2 IVs with fewest sessions
     const pickedIVs = bestIVs.sort((a,b) => (ivCount[a.name]||0)-(ivCount[b.name]||0)).slice(0,2);
