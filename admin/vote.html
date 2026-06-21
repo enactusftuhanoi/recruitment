@@ -230,10 +230,10 @@
     <!-- MAIN TAB NAV (3 tabs: Vote lịch rảnh ai cũng thấy, Lịch Vote + Cài đặt chỉ SuperAdmin thấy) -->
     <div class="sa-tabs" id="main-tabs" style="margin-bottom:18px">
       <button class="sa-tab active" id="main-tab-btn-vote" onclick="switchMainTab('vote', this)">
-        <i class="fas fa-check-to-slot"></i> Vote lịch rảnh
+        <i class="fas fa-check-to-slot"></i> Vote lịch
       </button>
       <button class="sa-tab" id="main-tab-btn-schedule" onclick="switchMainTab('schedule', this)" style="display:none">
-        <i class="fas fa-calendar-days"></i> Lịch Vote
+        <i class="fas fa-calendar-days"></i> Thống kê
       </button>
       <button class="sa-tab" id="main-tab-btn-settings" onclick="switchMainTab('settings', this)" style="display:none">
         <i class="fas fa-gear"></i> Cài đặt
@@ -250,8 +250,8 @@
 
     <!-- TAB: LỊCH VOTE (SuperAdmin) — bảng tổng hợp toàn bộ account -->
     <div class="sa-tab-panel card" id="main-panel-schedule" style="display:none">
-      <h3 style="margin-bottom:14px"><i class="fas fa-shield-halved"></i> Quản lý — SuperAdmin</h3>
-      <p class="page-sub" style="margin-bottom:14px">Danh sách toàn bộ tài khoản (Super/Admin/Member) và Alumni đã vote — trạng thái lịch rảnh cho kỳ phỏng vấn này.</p>
+      <h3 style="margin-bottom:14px"><i class="fas fa-shield-halved"></i> Thống kê dữ liệu</h3>
+      <p class="page-sub" style="margin-bottom:14px">Danh sách toàn bộ tài khoản (SuperAdmin/Admin/Member) và Alumni đã vote — trạng thái lịch rảnh cho kỳ phỏng vấn này.</p>
       <div id="sa-vote-list">
         <div style="text-align:center;padding:24px;color:var(--ink-30);font-size:13px"><i class="fas fa-spinner fa-spin" style="display:block;font-size:20px;margin-bottom:8px"></i> Đang tải...</div>
       </div>
@@ -788,11 +788,12 @@ async function loadSAVoteList() {
               <th>Ban</th>
               <th>Số ca</th>
               <th>Trạng thái</th>
+              <th>Hành động</th>
             </tr>
           </thead>
           <tbody>`;
 
-    rows.forEach(r => {
+    rows.forEach((r, i) => {
       const roleColor = ROLE_COLORS[r.role] || 'var(--ink-60)';
       const roleBg    = ROLE_BG[r.role]    || 'var(--ink-10)';
       const roleLabelTxt = ROLE_LABELS[r.role] || r.role || '—';
@@ -800,9 +801,10 @@ async function loadSAVoteList() {
       const deptBg    = DEPT_BG[r.dept]    || 'var(--ink-10)';
       const deptLabelTxt = DEPT_LABELS[r.dept] || r.dept || '—';
       const slotTxt = r.hasVoted ? `${r.slotCount} ca` : '—';
+      const rowId = `roster-row-${i}`;
 
       html += `
-            <tr>
+            <tr id="${rowId}">
               <td style="font-weight:700">${r.name || '—'}</td>
               <td><span class="badge-pill" style="background:${roleBg};color:${roleColor}">${roleLabelTxt}</span></td>
               <td>${r.dept ? `<span class="badge-pill" style="background:${deptBg};color:${deptColor}">${deptLabelTxt}</span>` : '—'}</td>
@@ -810,6 +812,9 @@ async function loadSAVoteList() {
               <td>${r.hasVoted
                 ? `<span class="status-pill done"><i class="fas fa-circle-check"></i> Done</span>`
                 : `<span class="status-pill pending"><i class="fas fa-circle"></i> Not yet</span>`}</td>
+              <td>${r.hasVoted
+                ? `<button class="btn btn-ghost btn-sm" onclick="deleteInterviewerVote('${rowId}')" title="Xóa dữ liệu vote"><i class="fas fa-trash"></i></button>`
+                : ''}</td>
             </tr>`;
     });
 
@@ -823,8 +828,34 @@ async function loadSAVoteList() {
       </div>`;
 
     el.innerHTML = html;
+    // Lưu lại danh sách hàng hiện tại để nút xóa tra cứu đúng tên + key vote
+    window._rosterRows = rows;
   } catch(e) {
     el.innerHTML = `<div style="color:var(--error);font-size:12px;padding:12px;background:var(--error-bg);border-radius:var(--radius-sm)"><i class="fas fa-circle-xmark"></i> Lỗi tải dữ liệu: ${e.message}</div>`;
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  SUPERADMIN: XÓA DỮ LIỆU VOTE CỦA 1 INTERVIEWER
+//  (Chỉ xóa interview_votes — KHÔNG đụng đến account)
+// ══════════════════════════════════════════════════
+async function deleteInterviewerVote(rowId) {
+  const idx = parseInt(rowId.split('-').pop(), 10);
+  const row = (window._rosterRows || [])[idx];
+  if (!row) return;
+
+  const isAlumni = row.role === 'alumni';
+  const confirmMsg = isAlumni
+    ? `Xóa dữ liệu vote của "${row.name}"?\n\nVì đây là Alumni (không có tài khoản hệ thống), người này sẽ biến mất hoàn toàn khỏi danh sách sau khi xóa.`
+    : `Xóa dữ liệu vote của "${row.name}"?\n\nTài khoản vẫn giữ nguyên, chỉ lịch rảnh đã tick sẽ bị xóa — trạng thái trở về "Not yet".`;
+  if (!confirm(confirmMsg)) return;
+
+  try {
+    await window.db.collection('interview_votes').doc(sanitizeKey(row.name)).delete();
+    toast(`Đã xóa dữ liệu vote của ${row.name}`, 'ok');
+    loadSAVoteList();
+  } catch(e) {
+    toast('Lỗi khi xóa: ' + e.message, 'err');
   }
 }
 
