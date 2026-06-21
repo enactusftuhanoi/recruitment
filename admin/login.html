@@ -340,6 +340,103 @@
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
       transition: box-shadow 0.3s ease;
     }
+
+    /* Member choice popup */
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .popup-overlay.show {
+      display: flex;
+    }
+
+    .popup-card {
+      width: 100%;
+      max-width: 360px;
+      background: var(--white);
+      border-radius: 20px;
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .popup-title {
+      font-family: 'Clash Display', 'Plus Jakarta Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+
+    .popup-sub {
+      font-size: 14px;
+      color: var(--gray-700);
+      margin-bottom: 24px;
+    }
+
+    .popup-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .popup-vote-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .popup-btn {
+      background: var(--yellow);
+      color: var(--gray-900);
+      border: none;
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .popup-btn:hover {
+      background: var(--yellow-light);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    }
+
+    .popup-btn.disabled {
+      background: var(--gray-100);
+      color: var(--gray-600);
+      cursor: not-allowed;
+      pointer-events: none;
+      box-shadow: none;
+    }
+
+    .popup-btn.disabled:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    .popup-note {
+      font-size: 12px;
+      color: var(--gray-600);
+      margin: 0;
+    }
   </style>
 </head>
 <body>
@@ -370,6 +467,28 @@
       <p>© 2026 Enactus FTU Hanoi. All Rights Reserved.</p>
     </div>
   </div>
+
+  <!-- Member choice popup: hiện sau khi Member login xong, cho chọn Xem đơn hoặc Vote lịch -->
+  <div class="popup-overlay" id="memberChoiceOverlay">
+    <div class="popup-card">
+      <h2 class="popup-title">Chào, <span id="popupUserName"></span>!</h2>
+      <p class="popup-sub">Bạn muốn vào đâu?</p>
+      <div class="popup-actions">
+        <button class="popup-btn" id="popupResponseBtn">
+          <i class="fas fa-file-lines"></i>
+          <span>Xem đơn</span>
+        </button>
+        <div class="popup-vote-wrap">
+          <button class="popup-btn" id="popupVoteBtn">
+            <i class="fas fa-check-to-slot"></i>
+            <span>Vote lịch</span>
+          </button>
+          <p class="popup-note" id="popupVoteNote" style="display:none">SuperAdmin chưa mở Vote lịch cho Member.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -394,6 +513,45 @@
     }
     return null;
   }
+
+  // ──────────────────────────────────────────────────────────
+  // Popup chọn "Xem đơn" / "Vote lịch" cho Member.
+  // Trước khi hiện, check field memberVoteOpen trong
+  // system/interview_schedule (cùng doc mà vote.html dùng) —
+  // nếu SuperAdmin chưa mở thì nút Vote lịch bị xám, không bấm được.
+  // ──────────────────────────────────────────────────────────
+  async function showMemberChoicePopup(name) {
+    document.getElementById('popupUserName').textContent = name || '';
+
+    const voteBtn = document.getElementById('popupVoteBtn');
+    const voteNote = document.getElementById('popupVoteNote');
+    let voteOpen = false;
+    try {
+      const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
+      voteOpen = !!(scheduleDoc.exists && scheduleDoc.data().memberVoteOpen);
+    } catch (e) {
+      voteOpen = false;
+    }
+
+    if (voteOpen) {
+      voteBtn.classList.remove('disabled');
+      voteNote.style.display = 'none';
+    } else {
+      voteBtn.classList.add('disabled');
+      voteNote.style.display = 'block';
+    }
+
+    document.getElementById('memberChoiceOverlay').classList.add('show');
+  }
+
+  document.getElementById('popupResponseBtn').addEventListener('click', () => {
+    window.location.href = 'response.html';
+  });
+
+  document.getElementById('popupVoteBtn').addEventListener('click', function () {
+    if (this.classList.contains('disabled')) return;
+    window.location.href = 'vote.html';
+  });
 
   // Login button
   document.getElementById('loginBtn').addEventListener('click', () => {
@@ -426,9 +584,17 @@
             sessionStorage.setItem("department", accountData.department || "");
 
             // Điều hướng theo role — quay về trang người dùng muốn vào lúc đầu
-            // (nếu có lưu lại), nếu không thì dùng trang mặc định theo role.
+            // (nếu có lưu lại, vd bị 1 trang khác đá về login vì chưa đăng nhập).
+            // Member: nếu không có redirect cụ thể nào đang chờ, hiện popup cho
+            // chọn Xem đơn hay Vote lịch (thay vì luôn nhảy thẳng response.html).
             if (accountData.role === "member") {
-              window.location.href = consumeSafeRedirect() || "response.html";
+              const redirectTarget = consumeSafeRedirect();
+              if (redirectTarget) {
+                window.location.href = redirectTarget;
+              } else {
+                const displayName = accountData.fullname || user.displayName || '';
+                await showMemberChoicePopup(displayName);
+              }
             } else if (accountData.role === "admin" || accountData.role === "superadmin") {
               window.location.href = consumeSafeRedirect() || "dashboard.html";
             } else {
