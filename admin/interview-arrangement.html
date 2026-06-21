@@ -319,6 +319,16 @@
               </select>
             </div>
           </div>
+          <div class="form-row mt-6">
+            <div>
+              <label class="fl">Số điện thoại</label>
+              <input class="fi" id="add-phone" type="tel" placeholder="0901234567" />
+            </div>
+            <div>
+              <label class="fl">Email</label>
+              <input class="fi" id="add-email" type="email" placeholder="email@example.com" />
+            </div>
+          </div>
           <div id="secondary-dept-wrap" class="mt-6" style="display:none">
             <label class="fl">Ban phụ (nếu apply 2 ban)</label>
             <select class="fs" id="add-dept2">
@@ -774,6 +784,19 @@ function goToLogin() {
   window.location.href = 'login.html';
 }
 
+// Hiện màn hình "chưa mở" thay vì redirect — dùng khi feature bị SuperAdmin tắt
+function showAccessClosed(title, desc) {
+  document.getElementById('page-loading').classList.add('hidden');
+  const appBody = document.getElementById('app-body');
+  if (appBody) {
+    appBody.innerHTML = `<div class="access-denied" style="grid-column:1/-1">
+      <i class="fas fa-lock"></i>
+      <h2>${title}</h2>
+      <p>${desc}</p>
+    </div>`;
+  }
+}
+
 // Single source of truth for "who is this and what can they do" — always
 // re-checked against Firestore's `account` collection (sessionStorage alone
 // can be stale or tampered with, so it is never trusted on its own here).
@@ -822,6 +845,15 @@ function resolveAuthAndRole() {
           S.role = 'superadmin';
         } else if (role === 'admin') {
           S.role = (dept === 'HR') ? 'admin-hr' : 'admin-other';
+
+          // Kiểm tra SuperAdmin có mở Interview cho Admin không
+          const schedDoc = await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).get();
+          const schedData = schedDoc.exists ? schedDoc.data() : null;
+          if (!schedData || !schedData.memberInterviewOpen) {
+            showAccessClosed('Interview chưa được mở', 'SuperAdmin chưa mở trang sắp xếp lịch phỏng vấn cho Admin. Vui lòng liên hệ SuperAdmin.');
+            resolve(false);
+            return;
+          }
         } else if (role === 'member') {
           window.location.href = 'vote.html';
           return;
@@ -1022,25 +1054,94 @@ async function resetSlotMeta() {
 async function loadInterviewersFromFirestore() {
   if (!window.db) return;
   try {
-    // Load members who have vote slots (pic_votes or interview_votes collection)
+    // 1. Load PIC được vote bởi Member/Admin/Alumni từ interview_votes
     const snap = await window.db.collection('interview_votes').get();
-    if (snap.empty) return;
     snap.forEach(doc => {
       const d = doc.data();
-      const existing = S.interviewers.find(iv => iv.email === d.email);
+      const existing = S.interviewers.find(iv => iv.name === d.name || (d.email && iv.email === d.email));
       if (!existing && d.name) {
         S.interviewers.push({
           name: d.name || d.fullname || d.email || '',
           email: d.email || '',
+          phone: d.phone || '',
           department: normalizeDept(d.department || d.dept || ''),
           availableSlots: mapCalendarSlotsToIds(d.availableSlots || d.slots || []),
           fromFirestore: true,
+          fromManual: false,
         });
       }
     });
+
+    // 2. Load PIC thêm thủ công từ interview_pics
+    const picsSnap = await window.db.collection('interview_pics').get();
+    picsSnap.forEach(doc => {
+      const d = doc.data();
+      const existing = S.interviewers.find(iv => iv.name === d.name);
+      if (!existing && d.name) {
+        S.interviewers.push({
+          name: d.name,
+          email: d.email || '',
+          phone: d.phone || '',
+          department: normalizeDept(d.department || ''),
+          availableSlots: mapCalendarSlotsToIds(d.availableSlots || []),
+          fromFirestore: true,
+          fromManual: true,
+        });
+      }
+    });
+
     renderPersonList();
   } catch(e) {
-    console.warn('Could not load interview_votes:', e);
+    console.warn('Could not load interviewers:', e);
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  PIC FIRESTORE PERSISTENCE (interview_pics collection)
+//  Chỉ lưu PIC thêm thủ công — PIC từ interview_votes do Vote page quản lý
+// ══════════════════════════════════════════════════
+function sanitizePICKey(name) { return String(name).replace(/[^\w\u00C0-\u024F\u1E00-\u1EFF]/g, '_').toLowerCase().substring(0, 80); }
+
+async function savePICToFirestore(iv) {
+  if (!window.db) return;
+  try {
+    const key = sanitizePICKey(iv.name);
+    await window.db.collection('interview_pics').doc(key).set({
+      name: iv.name,
+      email: iv.email || '',
+      phone: iv.phone || '',
+      department: iv.department || '',
+      availableSlots: iv.availableSlots || [],
+      addedBy: S.userEmail || '',
+      addedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    // Mark as fromManual so xoá sau này mới trigger deletePICFromFirestore
+    const idx = S.interviewers.findIndex(i => i.name === iv.name);
+    if (idx !== -1) S.interviewers[idx].fromManual = true;
+  } catch(e) {
+    toast('Lưu PIC thất bại: ' + e.message, 'err');
+  }
+}
+
+async function savePICSlots(iv) {
+  if (!window.db || !iv.fromManual) return;
+  try {
+    const key = sanitizePICKey(iv.name);
+    await window.db.collection('interview_pics').doc(key).update({
+      availableSlots: iv.availableSlots || [],
+    });
+  } catch(e) {
+    console.warn('Không lưu được slot PIC:', e);
+  }
+}
+
+async function deletePICFromFirestore(name) {
+  if (!window.db) return;
+  try {
+    const key = sanitizePICKey(name);
+    await window.db.collection('interview_pics').doc(key).delete();
+  } catch(e) {
+    console.warn('Không xoá được PIC:', e);
   }
 }
 
@@ -1242,16 +1343,25 @@ function addPerson() {
   // Admin ban khác chỉ được thêm PIC của đúng ban mình — ép cứng dept, không tin dropdown.
   const dept  = (S.role === 'admin-other' && S.mode === 'interviewer') ? S.userDept : document.getElementById('add-dept').value;
   const dept2 = S.mode === 'candidate' ? document.getElementById('add-dept2').value : '';
+  const phone = (document.getElementById('add-phone').value || '').trim();
+  const email = (document.getElementById('add-email').value || '').trim();
   if (!name) { toast('Nhập tên trước!', 'err'); return; }
 
-  const person = { name, email: '', dept, dept2: dept2 || '', availableSlots: [], fromCalendar: false };
-  if (S.mode === 'candidate') S.candidates.push(person);
-  else S.interviewers.push({ name, email: '', department: dept, availableSlots: [] });
+  const person = { name, email, phone, dept, dept2: dept2 || '', availableSlots: [], fromCalendar: false };
+  if (S.mode === 'candidate') {
+    S.candidates.push(person);
+  } else {
+    const iv = { name, email, phone, department: dept, availableSlots: [] };
+    S.interviewers.push(iv);
+    savePICToFirestore(iv); // auto-save PIC khi thêm thủ công
+  }
 
   const list = getList();
   S.activePerson = { type: S.mode, index: list.length - 1 };
 
-  document.getElementById('add-name').value = '';
+  document.getElementById('add-name').value  = '';
+  document.getElementById('add-phone').value = '';
+  document.getElementById('add-email').value = '';
   document.getElementById('add-form').classList.remove('open');
   renderPersonList();
   updateCalTitle();
@@ -1268,6 +1378,12 @@ function removePerson(i) {
   const name = target.name;
   list.splice(i, 1);
   if (S.activePerson && S.activePerson.type === S.mode && S.activePerson.index === i) S.activePerson = null;
+
+  // Xoá PIC khỏi Firestore nếu được thêm thủ công (manual) — không xoá PIC từ interview_votes (do Vote page quản lý)
+  if (S.mode === 'interviewer' && target.fromManual) {
+    deletePICFromFirestore(target.name);
+  }
+
   renderPersonList();
   updateCalTitle();
   buildCalGrid();
@@ -1349,6 +1465,11 @@ function toggleSlot(slotId) {
   const idx   = slots.indexOf(slotId);
   if (idx === -1) slots.push(slotId);
   else slots.splice(idx, 1);
+
+  // Auto-save slot cho PIC thêm thủ công (fromManual) vào interview_pics
+  if (S.mode === 'interviewer' && p.fromManual) {
+    savePICSlots(p);
+  }
 
   buildCalGrid();
   renderPersonList();

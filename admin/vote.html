@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vote| Enactus FTU Hanoi</title>
+  <title>Vote | Enactus FTU Hanoi</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <!-- Firebase SDK -->
@@ -96,6 +96,22 @@
 
     .info-box{background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:#1E40AF;display:flex;align-items:flex-start;gap:8px;margin-bottom:14px}
 
+    /* SUPERADMIN TAB NAV */
+    .sa-tabs{display:flex;gap:0;border-bottom:1.5px solid var(--border);margin-bottom:18px}
+    .sa-tab{padding:8px 18px;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink-60);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:var(--t)}
+    .sa-tab.active{color:var(--ink);border-bottom-color:var(--ink)}
+    .sa-tab-panel{display:none}
+    .sa-tab-panel.active{display:block}
+
+    /* OPEN/CLOSE CONTROL ROWS */
+    .ctrl-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);margin-bottom:10px}
+    .ctrl-row-label{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+    .ctrl-row-label i{font-size:14px;color:var(--ink-60)}
+    .ctrl-row-label .ctrl-desc{font-size:11px;font-weight:400;color:var(--ink-60);margin-top:1px}
+    .toggle-row-sm{display:flex;background:var(--ink-10);border-radius:var(--radius-sm);padding:2px;gap:2px}
+    .toggle-opt-sm{padding:5px 12px;border:none;background:transparent;border-radius:5px;font-family:inherit;font-size:11px;font-weight:700;color:var(--ink-60);cursor:pointer;transition:var(--t)}
+    .toggle-opt-sm.active{background:var(--white);color:var(--ink);box-shadow:var(--shadow-sm)}
+
     /* EMPTY / CLOSED STATES */
     .center-state{text-align:center;padding:50px 20px}
     .center-state i{font-size:34px;color:var(--ink-30);margin-bottom:14px;display:block}
@@ -156,16 +172,20 @@
   <div class="card center-state" id="guest-closed" style="display:none">
     <i class="fas fa-lock"></i>
     <h2>Form hiện đang đóng</h2>
-    <p>Ban tổ chức chưa mở đăng ký lịch PIC cho Alumni vào lúc này. Vui lòng liên hệ BTC Enactus FTU Hanoi để biết thêm chi tiết.</p>
+    <p>Ban tổ chức chưa mở đăng ký lịch phỏng vấn cho Alumni vào lúc này. Vui lòng liên hệ BTC Enactus FTU Hanoi để biết thêm chi tiết.</p>
   </div>
 
   <!-- GUEST INTAKE -->
   <div class="card" id="guest-intake" style="display:none">
-    <h2>Đăng ký làm PIC khách mời (Alumni)</h2>
-    <p class="page-sub" style="margin-bottom:18px">Cảm ơn bạn đã đồng ý hỗ trợ phỏng vấn! Điền thông tin bên dưới rồi chọn lịch rảnh nhé.</p>
+    <h2>Đăng ký tham gia phỏng vấn (Dành cho Alumni)</h2>
+    <p class="page-sub" style="margin-bottom:18px">Cảm ơn anh/chị đã đồng ý hỗ trợ phỏng vấn! Điền thông tin bên dưới rồi chọn lịch rảnh nhé.</p>
     <div class="form-group">
       <label class="fl">Họ và tên *</label>
       <input class="fi" id="guest-name" placeholder="Nguyễn Văn A" />
+    </div>
+    <div class="form-group">
+      <label class="fl">Số điện thoại *</label>
+      <input class="fi" id="guest-phone" type="tel" placeholder="0901234567" />
     </div>
     <div class="form-group">
       <label class="fl">Email (để BTC liên hệ xác nhận)</label>
@@ -192,18 +212,87 @@
       <i class="fas fa-circle-info"></i> Đang tải trạng thái...
     </div>
 
-    <!-- SUPERADMIN: ALUMNI FORM CONTROL -->
+    <!-- SUPERADMIN: 2-TAB PANEL -->
     <div class="card" id="superadmin-alumni-panel" style="display:none;margin-bottom:18px">
-      <h3><i class="fas fa-user-graduate"></i> Form công khai cho Alumni</h3>
-      <p class="page-sub" style="margin-bottom:12px">Bật để mở link công khai (không cần đăng nhập) cho Alumni tự tick lịch rảnh tham gia phỏng vấn.</p>
-      <div class="toggle-row">
-        <button class="toggle-opt active" id="alumni-off-btn" onclick="setAlumniOpen(false)">Tắt</button>
-        <button class="toggle-opt" id="alumni-on-btn" onclick="setAlumniOpen(true)">Bật</button>
+      <h3 style="margin-bottom:0"><i class="fas fa-shield-halved"></i> Quản lý — SuperAdmin</h3>
+
+      <!-- TAB NAV -->
+      <div class="sa-tabs" style="margin-top:14px">
+        <button class="sa-tab active" onclick="switchSATab('schedule', this)">
+          <i class="fas fa-calendar-days"></i> Lịch Vote
+        </button>
+        <button class="sa-tab" onclick="switchSATab('settings', this)">
+          <i class="fas fa-gear"></i> Cài đặt
+        </button>
       </div>
-      <div class="link-box" id="alumni-link-box" style="display:none">
-        <code id="alumni-link-text"></code>
-        <button class="btn btn-ghost btn-sm" onclick="copyAlumniLink()"><i class="fas fa-copy"></i> Copy</button>
+
+      <!-- TAB: LỊCH VOTE -->
+      <div class="sa-tab-panel active" id="sa-panel-schedule">
+        <p class="page-sub" style="margin-bottom:14px">Danh sách lịch rảnh đã được ghi nhận (Member, Admin, Alumni) cho kỳ phỏng vấn này.</p>
+        <div id="sa-vote-list">
+          <div style="text-align:center;padding:24px;color:var(--ink-30);font-size:13px"><i class="fas fa-spinner fa-spin" style="display:block;font-size:20px;margin-bottom:8px"></i> Đang tải...</div>
+        </div>
       </div>
+
+      <!-- TAB: CÀI ĐẶT -->
+      <div class="sa-tab-panel" id="sa-panel-settings">
+
+        <!-- Alumni public form toggle -->
+        <div style="margin-bottom:18px">
+          <div style="font-size:12px;font-weight:700;color:var(--ink-60);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">Form công khai cho Alumni</div>
+          <div class="ctrl-row">
+            <div class="ctrl-row-label">
+              <i class="fas fa-user-graduate"></i>
+              <div>
+                <div>Form Alumni (không cần đăng nhập)</div>
+                <div class="ctrl-desc">Mở link công khai để Alumni tự tick lịch</div>
+              </div>
+            </div>
+            <div class="toggle-row-sm">
+              <button class="toggle-opt-sm active" id="alumni-off-btn" onclick="setAlumniOpen(false)">Tắt</button>
+              <button class="toggle-opt-sm" id="alumni-on-btn" onclick="setAlumniOpen(true)">Bật</button>
+            </div>
+          </div>
+          <div class="link-box" id="alumni-link-box" style="display:none">
+            <code id="alumni-link-text"></code>
+            <button class="btn btn-ghost btn-sm" onclick="copyAlumniLink()"><i class="fas fa-copy"></i> Copy</button>
+          </div>
+        </div>
+
+        <!-- Open vote / interview for Member + Admin -->
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--ink-60);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">Mở vote & interview cho thành viên</div>
+
+          <div class="ctrl-row">
+            <div class="ctrl-row-label">
+              <i class="fas fa-check-to-slot"></i>
+              <div>
+                <div>Mở Vote lịch</div>
+                <div class="ctrl-desc">Member & Admin có thể tick lịch rảnh trên trang Vote</div>
+              </div>
+            </div>
+            <div class="toggle-row-sm">
+              <button class="toggle-opt-sm active" id="member-vote-off-btn" onclick="setMemberVoteOpen(false)">Tắt</button>
+              <button class="toggle-opt-sm" id="member-vote-on-btn" onclick="setMemberVoteOpen(true)">Bật</button>
+            </div>
+          </div>
+
+          <div class="ctrl-row">
+            <div class="ctrl-row-label">
+              <i class="fas fa-people-arrows"></i>
+              <div>
+                <div>Mở Interview</div>
+                <div class="ctrl-desc">Hiện trang sắp xếp lịch phỏng vấn với Member & Admin</div>
+              </div>
+            </div>
+            <div class="toggle-row-sm">
+              <button class="toggle-opt-sm active" id="member-interview-off-btn" onclick="setMemberInterviewOpen(false)">Tắt</button>
+              <button class="toggle-opt-sm" id="member-interview-on-btn" onclick="setMemberInterviewOpen(true)">Bật</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /sa-panel-settings -->
     </div>
 
     <div class="card">
@@ -233,10 +322,12 @@ const SCHEDULE_DOC_PATH = ['system', 'interview_schedule'];
 // ══════════════════════════════════════════════════
 const V = {
   mode: 'staff',           // 'staff' | 'guest'
-  user: { name:'', email:'', department:'', role:'', photoURL:'' },
+  user: { name:'', phone:'', email:'', department:'', role:'', photoURL:'' },
   slots: [],                // [{id, day, date, time, mode}]
   selected: new Set(),      // slot ids ticked
   alumniOpen: false,
+  memberVoteOpen: false,
+  memberInterviewOpen: false,
   isSuperAdmin: false,
 };
 
@@ -310,6 +401,8 @@ async function loadSlots() {
     const doc = await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).get();
     const data = doc.exists ? doc.data() : null;
     V.alumniOpen = !!(data && data.alumniVoteOpen);
+    V.memberVoteOpen = !!(data && data.memberVoteOpen);
+    V.memberInterviewOpen = !!(data && data.memberInterviewOpen);
     const days = (data && data.schedule) || [];
     const slotMeta = (data && data.slotMeta) || {};
     const slots = [];
@@ -387,12 +480,33 @@ async function finishStaffSetup() {
   document.getElementById('role-badge').textContent = roleLabel(V.user.role, V.user.department);
   document.getElementById('hdr-user-name').textContent = V.user.name || V.user.email || '—';
   setAvatar(V.user.name, V.user.email, V.user.photoURL);
+
+  // ── GATE: Nếu SuperAdmin tắt "Mở Vote" thì Member/Admin thấy màn hình đóng ──
+  if (!V.isSuperAdmin && !V.memberVoteOpen) {
+    document.getElementById('vote-sub').textContent = '';
+    document.getElementById('vote-content').style.display = 'none';
+    // Hiện màn hình closed giống guest-closed
+    let closedEl = document.getElementById('member-vote-closed');
+    if (!closedEl) {
+      closedEl = document.createElement('div');
+      closedEl.id = 'member-vote-closed';
+      closedEl.className = 'card center-state';
+      closedEl.innerHTML = `<i class="fas fa-lock"></i><h2>Vote lịch chưa mở</h2><p>SuperAdmin chưa mở đăng ký lịch Vote. Vui lòng liên hệ BTC Enactus FTU Hanoi để biết thêm.</p>`;
+      document.querySelector('.wrap').appendChild(closedEl);
+    }
+    closedEl.style.display = 'block';
+    return;
+  }
+
   document.getElementById('vote-sub').textContent =
     `Xin chào ${V.user.name}${V.user.department ? ' · ' + (DEPT_NAMES[V.user.department]||V.user.department) : ''} — chọn tất cả khung giờ bạn có thể tham gia phỏng vấn.`;
 
   if (V.isSuperAdmin) {
     document.getElementById('superadmin-alumni-panel').style.display = 'block';
     setAlumniToggleUI(V.alumniOpen);
+    setMemberVoteToggleUI(V.memberVoteOpen);
+    setMemberInterviewToggleUI(V.memberInterviewOpen);
+    loadSAVoteList();
   }
 
   await loadExistingVote();
@@ -428,9 +542,12 @@ function initGuestMode() {
 function startGuestVoting() {
   const name = document.getElementById('guest-name').value.trim();
   if (!name) { toast('Nhập họ tên trước đã nhé', 'err'); return; }
+  const phone = document.getElementById('guest-phone').value.trim();
+  if (!phone) { toast('Nhập số điện thoại để BTC liên hệ nhé', 'err'); return; }
 
   V.user = {
     name,
+    phone,
     email: document.getElementById('guest-email').value.trim(),
     department: document.getElementById('guest-dept').value,
     role: 'alumni',
@@ -503,6 +620,7 @@ async function saveVote() {
 
   const payload = {
     name: V.user.name,
+    phone: V.user.phone || '',
     email: V.user.email || '',
     department: V.user.department || '',
     role: V.user.role || '',
@@ -556,6 +674,149 @@ function copyAlumniLink() {
     () => toast('Đã copy link!', 'ok'),
     () => toast('Không copy được, hãy copy thủ công', 'err')
   );
+}
+
+// ══════════════════════════════════════════════════
+//  SUPERADMIN: TAB SWITCHING
+// ══════════════════════════════════════════════════
+function switchSATab(tab, el) {
+  document.querySelectorAll('.sa-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sa-tab-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('sa-panel-' + tab).classList.add('active');
+  if (tab === 'schedule') loadSAVoteList();
+}
+
+// ══════════════════════════════════════════════════
+//  SUPERADMIN: LOAD VOTE LIST (Tab Lịch Vote)
+// ══════════════════════════════════════════════════
+async function loadSAVoteList() {
+  const el = document.getElementById('sa-vote-list');
+  if (!el || !window.db) return;
+  el.innerHTML = `<div style="text-align:center;padding:28px 0;color:var(--ink-30)"><i class="fas fa-spinner fa-spin" style="font-size:22px;display:block;margin-bottom:8px"></i><span style="font-size:13px">Đang tải...</span></div>`;
+  try {
+    const snap = await window.db.collection('interview_votes').get();
+    if (snap.empty) {
+      el.innerHTML = `<div style="text-align:center;padding:32px 0;color:var(--ink-30)"><i class="fas fa-inbox" style="font-size:28px;display:block;margin-bottom:10px"></i><div style="font-size:13px;font-weight:600">Chưa có ai ghi nhận lịch rảnh</div></div>`;
+      return;
+    }
+
+    const DEPT_COLORS = { MD:'#3B82F6', HR:'#10B981', PD:'#F59E0B', ER:'#8B5CF6' };
+    const DEPT_BG     = { MD:'#EFF6FF', HR:'#ECFDF5', PD:'#FFFBEB', ER:'#F5F3FF' };
+    const DEPT_LABELS = { MD:'Truyền thông', HR:'Nhân sự', PD:'Dự án', ER:'Đối ngoại' };
+
+    // Sort: nhiều ca nhất lên đầu
+    const docs = snap.docs.sort((a, b) =>
+      (b.data().availableSlots||[]).length - (a.data().availableSlots||[]).length
+    );
+
+    const total = docs.length;
+    const totalSlots = docs.reduce((s, d) => s + (d.data().availableSlots||[]).length, 0);
+    const avgSlots = total ? (totalSlots / total).toFixed(1) : 0;
+
+    // Summary bar
+    let html = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-align:center">
+          <div style="font-size:20px;font-weight:800;line-height:1">${total}</div>
+          <div style="font-size:11px;color:var(--ink-60);margin-top:3px">Người đã vote</div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-align:center">
+          <div style="font-size:20px;font-weight:800;line-height:1">${totalSlots}</div>
+          <div style="font-size:11px;color:var(--ink-60);margin-top:3px">Tổng ca đã tick</div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-align:center">
+          <div style="font-size:20px;font-weight:800;line-height:1">${avgSlots}</div>
+          <div style="font-size:11px;color:var(--ink-60);margin-top:3px">Ca TB / người</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">`;
+
+    docs.forEach(doc => {
+      const d = doc.data();
+      const dept = (d.department || d.dept || '').toUpperCase();
+      const slotCount = (d.availableSlots || []).length;
+      const isAlumni = d.source === 'alumni';
+      const srcColor = isAlumni ? '#3B82F6' : '#10B981';
+      const srcBg    = isAlumni ? '#EFF6FF' : '#ECFDF5';
+      const srcLabel = isAlumni ? 'Alumni' : 'Member/Admin';
+      const srcIcon  = isAlumni ? 'fa-user-graduate' : 'fa-user-tie';
+      const deptColor = DEPT_COLORS[dept] || 'var(--ink-60)';
+      const deptBg    = DEPT_BG[dept]    || 'var(--ink-10)';
+      const deptLabel = DEPT_LABELS[dept] || dept || '—';
+      const barPct = Math.min(100, slotCount ? (slotCount / Math.max(1, V.slots.length)) * 100 : 0);
+
+      html += `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--white)">
+          <div style="width:36px;height:36px;border-radius:50%;background:${deptBg};color:${deptColor};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">${(d.name||'?').charAt(0).toUpperCase()}</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
+              <span style="font-weight:700;font-size:13px">${d.name || '—'}</span>
+              <span style="background:${deptBg};color:${deptColor};padding:1px 7px;border-radius:12px;font-size:10px;font-weight:700">${deptLabel}</span>
+              <span style="background:${srcBg};color:${srcColor};padding:1px 7px;border-radius:12px;font-size:10px;font-weight:700"><i class="fas ${srcIcon}" style="font-size:9px"></i> ${srcLabel}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:11px;color:var(--ink-60)">
+              ${d.phone ? `<span><i class="fas fa-phone" style="font-size:9px;margin-right:3px"></i>${d.phone}</span>` : ''}
+              ${d.email ? `<span><i class="fas fa-envelope" style="font-size:9px;margin-right:3px"></i>${d.email}</span>` : ''}
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:5px">
+              <div style="flex:1;height:4px;background:var(--border);border-radius:4px;overflow:hidden">
+                <div style="height:100%;width:${barPct}%;background:${slotCount>0?'var(--yellow-mid)':'var(--border)'};border-radius:4px;transition:.3s"></div>
+              </div>
+              <span style="font-size:11px;font-weight:700;color:${slotCount>0?'var(--ink)':'var(--ink-30)'};white-space:nowrap">${slotCount} ca</span>
+            </div>
+          </div>
+        </div>`;
+    });
+
+    html += `</div>
+      <div style="text-align:right;font-size:11px;color:var(--ink-30);margin-top:8px;display:flex;align-items:center;justify-content:flex-end;gap:8px">
+        <span>${total} người · Cập nhật ${new Date().toLocaleTimeString('vi-VN')}</span>
+        <button onclick="loadSAVoteList()" style="background:none;border:none;cursor:pointer;color:var(--ink-60);font-size:11px;padding:2px 6px;border-radius:4px;font-family:inherit" title="Làm mới"><i class="fas fa-rotate-right"></i> Làm mới</button>
+      </div>`;
+
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = `<div style="color:var(--error);font-size:12px;padding:12px;background:var(--error-bg);border-radius:var(--radius-sm)"><i class="fas fa-circle-xmark"></i> Lỗi tải dữ liệu: ${e.message}</div>`;
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  SUPERADMIN: TOGGLE MEMBER VOTE OPEN
+// ══════════════════════════════════════════════════
+function setMemberVoteToggleUI(open) {
+  document.getElementById('member-vote-off-btn').classList.toggle('active', !open);
+  document.getElementById('member-vote-on-btn').classList.toggle('active', open);
+}
+
+async function setMemberVoteOpen(open) {
+  try {
+    await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).set({ memberVoteOpen: open }, { merge: true });
+    V.memberVoteOpen = open;
+    setMemberVoteToggleUI(open);
+    toast(open ? 'Đã mở Vote cho Member & Admin' : 'Đã đóng Vote cho Member & Admin', 'ok');
+  } catch(e) {
+    toast('Lỗi: ' + e.message, 'err');
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  SUPERADMIN: TOGGLE MEMBER INTERVIEW OPEN
+// ══════════════════════════════════════════════════
+function setMemberInterviewToggleUI(open) {
+  document.getElementById('member-interview-off-btn').classList.toggle('active', !open);
+  document.getElementById('member-interview-on-btn').classList.toggle('active', open);
+}
+
+async function setMemberInterviewOpen(open) {
+  try {
+    await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).set({ memberInterviewOpen: open }, { merge: true });
+    V.memberInterviewOpen = open;
+    setMemberInterviewToggleUI(open);
+    toast(open ? 'Đã mở Interview cho Member & Admin' : 'Đã đóng Interview cho Member & Admin', 'ok');
+  } catch(e) {
+    toast('Lỗi: ' + e.message, 'err');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);
