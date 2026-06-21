@@ -153,6 +153,15 @@
         font-weight: 600;
         font-size: 14px;
         color: var(--gray-800);
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+
+      .user-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
       }
 
       .user-details {
@@ -2248,7 +2257,7 @@
               sessionStorage.setItem("department", userDept);
 
               // Update UI
-              updateUserInfo(doc.id, userRole, userDept);
+              updateUserInfo(doc.id, userRole, userDept, user.photoURL || "");
               applyRoleUIRules();
 
               // Load applications
@@ -2269,7 +2278,7 @@
       });
 
       // Update user info in the sidebar
-      function updateUserInfo(fullname, role, department) {
+      function updateUserInfo(fullname, role, department, photoURL) {
         const userNameEl = document.getElementById("user-name");
         const userRoleEl = document.getElementById("user-role");
         const userAvatarEl = document.getElementById("user-avatar");
@@ -2277,8 +2286,14 @@
         if (userNameEl) userNameEl.textContent = fullname;
         if (userRoleEl)
           userRoleEl.textContent = `${role} • ${getDepartmentName(department)}`;
-        if (userAvatarEl)
-          userAvatarEl.textContent = fullname.charAt(0).toUpperCase();
+        if (userAvatarEl) {
+          if (photoURL) {
+            userAvatarEl.innerHTML = `<img src="${photoURL}" alt="" referrerpolicy="no-referrer" onerror="this.parentElement.textContent=(this.alt||'U').charAt(0).toUpperCase()">`;
+            userAvatarEl.querySelector("img").alt = fullname || "U";
+          } else {
+            userAvatarEl.textContent = (fullname || "U").charAt(0).toUpperCase();
+          }
+        }
       }
 
       // Apply UI rules based on role

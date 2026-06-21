@@ -452,6 +452,9 @@
           <button class="btn btn-ghost btn-sm" onclick="exportResult()">
             <i class="fas fa-download"></i> Xuất Excel
           </button>
+          <button class="btn btn-ghost btn-sm" id="delete-saved-schedule-btn" onclick="deleteSavedSchedule()" style="display:none;color:var(--error)">
+            <i class="fas fa-trash"></i> Xoá lịch đã lưu
+          </button>
         </div>
       </div>
 
@@ -667,6 +670,7 @@ const S = {
   activePerson: null,// {type:'candidate'|'interviewer', index}
   schedule: [],
   lastUnmatched: [], // unmatched list from the last run/load, kept alongside schedule for persistence
+  scheduleDirty: false, // true khi đã chạy Sắp xếp (hoặc sửa kết quả) nhưng chưa Lưu lịch — dùng để cảnh báo trước khi rời trang
   slotMode: 'offline',
   slotMetaRaw: {},   // raw slotMeta map as stored on system/interview_schedule, keyed by sanitized slot id
   publish: { round: 'round4', enabled: false, last: null }, // settings + last-publish record for "Công bố vào hệ thống"
@@ -1560,7 +1564,7 @@ function clearAll() {
   if (!canCRUD()) { toast('Bạn không có quyền xoá', 'err'); return; }
   if (!S.candidates.length && !S.interviewers.length) { toast('Không có gì để xoá','warn'); return; }
   showConfirm('Xoá toàn bộ người?', 'Tất cả ứng viên và nhân sự sẽ bị xoá.', () => {
-    S.candidates = []; S.interviewers = []; S.activePerson = null; S.schedule = []; S.lastUnmatched = [];
+    S.candidates = []; S.interviewers = []; S.activePerson = null; S.schedule = []; S.lastUnmatched = []; S.scheduleDirty = false;
     document.getElementById('results-section').style.display = 'none';
     renderPersonList(); updateCalTitle(); buildCalGrid();
     toast('Đã xoá tất cả');
@@ -1584,6 +1588,7 @@ function runArrangement() {
       const { schedule, unmatched } = arrangeInterviews();
       S.schedule = schedule;
       S.lastUnmatched = unmatched;
+      S.scheduleDirty = true;
       displayResults(schedule, unmatched);
       toast(`Ghép xong ${schedule.length} buổi phỏng vấn`, 'ok');
       document.getElementById('results-section').scrollIntoView({ behavior:'smooth' });
@@ -1865,6 +1870,8 @@ async function saveSchedule(opts) {
       arrangedBy: S.userEmail || '',
     }, { merge: true });
     if (!opts.silent) toast('Đã lưu lịch sắp xếp', 'ok');
+    S.scheduleDirty = false;
+    updateDeleteSavedScheduleVisibility(true);
   } catch(e) {
     toast('Lỗi lưu lịch: ' + e.message, 'err');
   } finally {
@@ -1882,9 +1889,55 @@ async function loadSavedSchedule() {
       S.lastUnmatched = data.arrangedUnmatched || [];
       displayResults(S.schedule, S.lastUnmatched);
     }
+    updateDeleteSavedScheduleVisibility(!!(data && Array.isArray(data.arrangedSchedule) && data.arrangedSchedule.length));
   } catch(e) {
     console.warn('Không tải được lịch đã lưu:', e);
   }
+}
+
+function updateDeleteSavedScheduleVisibility(hasSaved) {
+  const btn = document.getElementById('delete-saved-schedule-btn');
+  if (!btn) return;
+  btn.style.display = (canCRUD() && hasSaved) ? 'inline-flex' : 'none';
+}
+
+// ══════════════════════════════════════════════════
+//  XOÁ LỊCH ĐÃ LƯU (arrangedSchedule/arrangedUnmatched)
+//  CHỈ xoá kết quả sắp xếp — KHÔNG được đụng tới applications,
+//  interview_votes, account, hay slotMeta (Calendar quản lý field
+//  này trong cùng document). Dùng update() + FieldValue.delete()
+//  trên đúng 2 field, tuyệt đối không set()/delete() cả document.
+// ══════════════════════════════════════════════════
+async function deleteSavedSchedule() {
+  if (!canCRUD()) { toast('Bạn không có quyền xoá lịch đã lưu', 'err'); return; }
+  if (!window.db) { toast('Không có kết nối Firebase', 'err'); return; }
+
+  showConfirm(
+    'Xoá lịch đã lưu?',
+    'Thao tác này chỉ xoá kết quả sắp xếp (arrangedSchedule) đã lưu trên hệ thống — KHÔNG xoá hay thay đổi bất kỳ dữ liệu nào của ứng viên (applications), lịch vote, hay tài khoản. Bạn có thể chạy sắp xếp lại và Lưu lịch mới bất cứ lúc nào.',
+    async () => {
+      const btn = document.getElementById('delete-saved-schedule-btn');
+      if (btn) { btn.disabled = true; btn.innerHTML = '<span class="mini-spin"></span> Đang xoá...'; }
+      try {
+        await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).update({
+          arrangedSchedule: firebase.firestore.FieldValue.delete(),
+          arrangedUnmatched: firebase.firestore.FieldValue.delete(),
+          arrangedAt: firebase.firestore.FieldValue.delete(),
+          arrangedBy: firebase.firestore.FieldValue.delete(),
+        });
+        // Chỉ xoá kết quả hiển thị trên màn hình — KHÔNG đụng S.candidates/S.interviewers
+        S.schedule = [];
+        S.lastUnmatched = [];
+        document.getElementById('results-section').style.display = 'none';
+        updateDeleteSavedScheduleVisibility(false);
+        toast('Đã xoá lịch đã lưu trên hệ thống', 'ok');
+      } catch(e) {
+        toast('Lỗi khi xoá: ' + e.message, 'err');
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-trash"></i> Xoá lịch đã lưu'; }
+      }
+    }
+  );
 }
 
 // ══════════════════════════════════════════════════
@@ -2129,6 +2182,17 @@ function closeConfirm() { document.getElementById('confirm-overlay').classList.r
       document.getElementById(id).classList.remove('open');
     }
   });
+});
+
+// ══════════════════════════════════════════════════
+//  CẢNH BÁO RỜI TRANG KHI CHƯA LƯU LỊCH ĐÃ SẮP XẾP
+// ══════════════════════════════════════════════════
+window.addEventListener('beforeunload', (e) => {
+  if (S.scheduleDirty) {
+    e.preventDefault();
+    e.returnValue = ''; // Chrome yêu cầu set returnValue để hiện hộp thoại cảnh báo
+    return '';
+  }
 });
 
 // ══════════════════════════════════════════════════
