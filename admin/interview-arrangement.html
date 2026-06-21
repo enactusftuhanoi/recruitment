@@ -1,1357 +1,2046 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interview | Enactus FTU Hanoi</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Clash+Display:wght@600;700&display=swap" rel="stylesheet">
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        :root {
-            --primary: #F8F3CE;
-            --primary-light: #FFD54F;
-            --gray-50: #FAFAFA;
-            --gray-100: #F5F5F5;
-            --gray-200: #E5E7EB;
-            --gray-300: #D1D5DB;
-            --gray-400: #9CA3AF;
-            --gray-500: #6B7280;
-            --gray-600: #4B5563;
-            --gray-700: #374151;
-            --gray-800: #1F2937;
-            --gray-900: #111827;
-            --white: #FFFFFF;
-            --error: #EF4444;
-            --error-light: #FEE2E2;
-            --success: #10B981;
-            --success-light: #D1FAE5;
-            --warning: #F59E0B;
-            --warning-light: #FEF3C7;
-            --info: #3B82F6;
-            --info-light: #DBEAFE;
-            --border-radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --transition: all 0.3s ease;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interview | Enactus FTU Hanoi</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --yellow:#F5E642; --yellow-light:#FEFCE8; --yellow-mid:#FDE047;
+      --bg:#F8F8F6; --white:#FFFFFF;
+      --ink:#0F0F0E; --ink-60:#5A5A58; --ink-30:#BDBDBB; --ink-10:#F0F0EE;
+      --border:#E4E4E0;
+      --radius-sm:8px; --radius:12px; --radius-lg:20px;
+      --shadow-sm:0 1px 3px rgba(0,0,0,.07);
+      --shadow:0 4px 12px rgba(0,0,0,.08);
+      --shadow-lg:0 12px 32px rgba(0,0,0,.12);
+      --md-color:#3B82F6; --md-bg:#EFF6FF;
+      --hr-color:#10B981; --hr-bg:#ECFDF5;
+      --pd-color:#F59E0B; --pd-bg:#FFFBEB;
+      --er-color:#8B5CF6; --er-bg:#F5F3FF;
+      --success:#10B981; --error:#EF4444;
+      --t:.2s ease;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.5}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
+    /* HEADER */
+    .hdr{background:var(--white);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300}
+    .logo{font-size:15px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:9px}
+    .logo-img{height:30px;width:auto;display:block}
+    .nav{display:flex;gap:4px}
+    .nav a{padding:6px 14px;border-radius:var(--radius-sm);color:var(--ink-60);font-weight:500;text-decoration:none;transition:var(--t);font-size:13px}
+    .nav a:hover{background:var(--ink-10);color:var(--ink)}
+    .nav a.active{background:var(--yellow);color:var(--ink);font-weight:700}
+    .hdr-right{display:flex;align-items:center;gap:10px}
+    .hdr-user{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+    .hdr-user-name{font-size:12px;font-weight:700;color:var(--ink);line-height:1.1;max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .role-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid var(--border)}
+    .avatar{width:34px;height:34px;border-radius:50%;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;cursor:pointer;overflow:hidden}
+    .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 
-        body {
-            background-color: var(--gray-50);
-            color: var(--gray-800);
-            min-height: 100vh;
-        }
+    /* LAYOUT */
+    .app{display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 60px)}
 
-        /* Header */
-        .header {
-            background-color: var(--white);
-            padding: 16px 24px;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+    /* SIDEBAR */
+    .sidebar{background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;position:sticky;top:60px;max-height:calc(100vh - 60px)}
+    .sidebar-top{padding:20px;flex:1;display:flex;flex-direction:column;gap:18px;overflow-y:auto}
+    .sidebar-footer{padding:16px 20px;border-top:1px solid var(--border)}
+    .sec-title{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-30);margin-bottom:8px}
+    .divider{height:1px;background:var(--border)}
 
-        .logo {
-            display: flex;
-            align-items: center;
-        }
+    /* TAB TOGGLE */
+    .tab-toggle{display:flex;background:var(--ink-10);border-radius:var(--radius-sm);padding:3px;gap:2px}
+    .tab-btn{flex:1;padding:7px 4px;border:none;background:transparent;border-radius:6px;font-family:inherit;font-size:12px;font-weight:600;color:var(--ink-60);cursor:pointer;transition:var(--t);display:flex;align-items:center;justify-content:center;gap:5px}
+    .tab-btn.active{background:var(--white);color:var(--ink);box-shadow:var(--shadow-sm)}
 
-        .logo img {
-            height: 50px;
-            width: auto;
-        }
+    /* PERSON LIST */
+    .person-list{display:flex;flex-direction:column;gap:4px;max-height:240px;overflow-y:auto;padding-right:2px}
+    .person-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--radius-sm);border:1.5px solid var(--border);cursor:pointer;transition:var(--t);background:var(--white)}
+    .person-item:hover{border-color:var(--ink-30);background:var(--bg)}
+    .person-item.active{border-color:var(--ink);background:var(--ink);color:var(--white)}
+    .p-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+    .p-name{font-size:12px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .p-sub{font-size:10px;color:var(--ink-30);margin-top:1px}
+    .person-item.active .p-sub{color:rgba(255,255,255,.45)}
+    .p-del{background:none;border:none;cursor:pointer;font-size:11px;padding:2px 4px;border-radius:4px;color:var(--ink-30);transition:var(--t)}
+    .p-del:hover{background:rgba(239,68,68,.1);color:#ef4444}
+    .person-item.active .p-del{color:rgba(255,255,255,.4)}
+    .p-del:hover.person-item.active{color:rgba(255,0,0,.7)}
 
-        .nav-links {
-            display: flex;
-            gap: 16px;
-        }
+    /* EMPTY LIST */
+    .list-empty{text-align:center;padding:24px 12px;color:var(--ink-30)}
+    .list-empty i{font-size:22px;margin-bottom:8px;display:block}
+    .list-empty p{font-size:12px}
 
-        .nav-link {
-            padding: 8px 16px;
-            border-radius: var(--border-radius);
-            color: var(--gray-700);
-            text-decoration: none;
-            font-weight: 500;
-            transition: var(--transition);
-        }
+    /* ADD FORM */
+    .add-form{border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:12px;display:none}
+    .add-form.open{display:block}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    label.fl{display:block;font-size:11px;font-weight:600;color:var(--ink-60);margin-bottom:4px}
+    .fi,.fs{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-family:inherit;transition:var(--t);background:var(--white)}
+    .fi:focus,.fs:focus{outline:none;border-color:var(--yellow);box-shadow:0 0 0 3px rgba(245,230,66,.2)}
 
-        .nav-link:hover, .nav-link.active {
-            background-color: var(--primary);
-            color: var(--gray-800);
-        }
+    /* BUTTONS */
+    .btn{padding:9px 16px;border:none;border-radius:var(--radius-sm);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;transition:var(--t);display:inline-flex;align-items:center;gap:6px}
+    .btn-primary{background:var(--yellow);color:var(--ink)}
+    .btn-primary:hover{background:var(--yellow-mid)}
+    .btn-dark{background:var(--ink);color:var(--white)}
+    .btn-dark:hover{opacity:.85}
+    .btn-ghost{background:transparent;color:var(--ink-60);border:1.5px solid var(--border)}
+    .btn-ghost:hover{background:var(--ink-10);color:var(--ink)}
+    .btn-danger{background:#FEF2F2;color:#DC2626;border:1.5px solid #FECACA}
+    .btn-danger:hover{background:#FEE2E2}
+    .btn-sm{padding:6px 11px;font-size:11px}
+    .btn-xs{padding:4px 8px;font-size:11px}
+    .btn-full{width:100%;justify-content:center}
+    .btn:disabled{opacity:.4;cursor:not-allowed}
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+    /* FILE DROP */
+    .file-drop{border:2px dashed var(--border);border-radius:var(--radius);padding:14px;text-align:center;cursor:pointer;transition:var(--t);position:relative}
+    .file-drop:hover,.file-drop.over{border-color:var(--yellow-mid);background:var(--yellow-light)}
+    .file-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .file-drop-icon{font-size:18px;color:var(--ink-30);margin-bottom:4px}
+    .file-drop p{font-size:11px;color:var(--ink-60)}
+    .file-drop p b{color:var(--ink)}
+    .file-name-tag{font-size:10px;color:var(--hr-color);margin-top:4px;font-weight:600;display:none}
 
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            color: var(--gray-800);
-        }
+    /* MAIN */
+    .main{padding:24px 28px;display:flex;flex-direction:column;gap:20px;min-width:0}
+    .page-title{font-size:20px;font-weight:800;letter-spacing:-.5px}
+    .page-sub{font-size:12px;color:var(--ink-60);margin-top:3px}
 
-        /* Main Content */
-        .main-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 24px;
-        }
+    /* CARD */
+    .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-sm)}
+    .card-title{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .card-title .dot{width:8px;height:8px;border-radius:50%;background:var(--yellow)}
 
-        /* Card */
-        .card {
-            background-color: var(--white);
-            border-radius: var(--border-radius);
-            padding: 24px;
-            box-shadow: var(--shadow);
-            margin-bottom: 24px;
-        }
+    /* CALENDAR */
+    .cal-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:12px}
+    .cal-person-name{font-size:15px;font-weight:700}
+    .cal-person-sub{font-size:12px;color:var(--ink-60);margin-top:2px}
+    .cal-legend{display:flex;gap:10px;flex-wrap:wrap}
+    .leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-60)}
+    .leg-dot{width:12px;height:12px;border-radius:3px;border:1.5px solid transparent}
 
-        .card-header {
-            margin-bottom: 20px;
-        }
+    /* CALENDAR GRID — mỗi ngày là 1 khối riêng, các khối tự wrap xuống dòng */
+    .cal-scroll{overflow-x:visible}
+    .cal-grid{display:flex;flex-direction:column;align-items:stretch;gap:14px}
+    .cal-day-block{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;max-width:100%}
+    .cal-day-block.cal-day-scroll{overflow-x:auto;max-width:100%}
+    .cal-day-grid{display:grid}
+    .cal-day-title{grid-column:1/-1;background:var(--ink);color:var(--white);padding:8px 10px;text-align:center;font-size:11px;font-weight:700;white-space:nowrap}
+    .cal-time-header{background:var(--bg);color:var(--ink-60);padding:10px 6px;text-align:center;font-size:11px;border-right:1px solid var(--border);border-top:1px solid var(--border);white-space:nowrap}
+    .cal-time-header:last-child{border-right:none}
+    .cal-cell{min-height:56px;padding:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--t);border-right:1px solid var(--border);border-top:1px solid var(--border);position:relative;font-size:11px;text-align:center;user-select:none}
+    .cal-cell:last-child{border-right:none}
+    .cal-cell:hover{background:var(--yellow-light)}
+    .cal-cell.selected{background:var(--yellow);font-weight:700}
+    .cal-cell.selected::after{content:'✓';position:absolute;top:2px;right:3px;font-size:9px;color:var(--ink)}
+    .cal-cell.pic-avail{background:#EFF6FF}
+    .cal-cell.both{background:linear-gradient(135deg,var(--yellow) 45%,#BFDBFE 55%)}
+    .cal-cell.no-slot{background:var(--bg);cursor:default;opacity:.4}
+    .cal-cell.locked{cursor:not-allowed;opacity:.5}
 
-        .card-title {
-            font-family: 'Clash Display', sans-serif;
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--gray-900);
-            margin-bottom: 8px;
-        }
+    /* ROW mode - collapsed view */
+    .cal-grid-rows{display:flex;flex-direction:column;gap:2px}
+    .cal-row-item{display:flex;align-items:stretch;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;background:var(--white)}
+    .cal-row-time{padding:8px 12px;background:var(--bg);font-size:11px;font-weight:600;color:var(--ink-60);display:flex;flex-direction:column;justify-content:center;min-width:120px;border-right:1px solid var(--border)}
+    .cal-row-time .slot-id{font-size:9px;color:var(--ink-30);margin-bottom:2px}
+    .cal-row-persons{display:flex;flex:1;flex-wrap:wrap;gap:4px;padding:6px 10px;align-items:center}
+    .person-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:var(--t)}
+    .person-chip.available{background:var(--yellow-light);color:var(--ink);border:1.5px solid var(--yellow-mid)}
+    .person-chip.not-available{background:var(--ink-10);color:var(--ink-30);border:1.5px solid var(--border)}
 
-        .card-subtitle {
-            color: var(--gray-600);
-        }
+    /* DEPT BADGE */
+    .badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+    .b-md{background:var(--md-bg);color:var(--md-color)}
+    .b-hr{background:var(--hr-bg);color:var(--hr-color)}
+    .b-pd{background:var(--pd-bg);color:var(--pd-color)}
+    .b-er{background:var(--er-bg);color:var(--er-color)}
 
-        /* Form Elements */
-        .form-group {
-            margin-bottom: 16px;
-        }
+    /* STATS */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+    .stat-val{font-size:26px;font-weight:800;line-height:1}
+    .stat-label{font-size:11px;color:var(--ink-60);margin-top:4px}
 
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--gray-700);
-        }
+    /* FILTER TABS */
+    .filter-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+    .filter-tab{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:var(--t);color:var(--ink-60)}
+    .filter-tab.active{background:var(--ink);border-color:var(--ink);color:var(--white)}
 
-        .form-input, .form-textarea, .form-select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--gray-300);
-            border-radius: var(--border-radius);
-            font-size: 16px;
-            transition: var(--transition);
-        }
+    /* TABLE */
+    .tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius)}
+    table{width:100%;border-collapse:collapse}
+    thead th{background:var(--bg);padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--ink-60);letter-spacing:.2px;border-bottom:1px solid var(--border);white-space:nowrap}
+    tbody td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+    tbody tr:last-child td{border-bottom:none}
+    tbody tr:hover td{background:var(--bg)}
+    .num{color:var(--ink-30);font-size:12px}
 
-        .form-input:focus, .form-textarea:focus, .form-select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(248, 243, 206, 0.3);
-        }
+    /* SLOT MODAL */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);z-index:400;display:none;align-items:center;justify-content:center;padding:20px}
+    .overlay.open{display:flex}
+    .modal{background:var(--white);border-radius:var(--radius-lg);padding:28px;max-width:520px;width:100%;box-shadow:var(--shadow-lg);max-height:90vh;overflow-y:auto}
+    .modal-title{font-size:17px;font-weight:800;margin-bottom:6px}
+    .modal-sub{font-size:12px;color:var(--ink-60);margin-bottom:20px}
+    .modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:24px;padding-top:16px;border-top:1px solid var(--border)}
+    .form-group{margin-bottom:14px}
+    .toggle-row{display:flex;gap:8px;margin-bottom:6px}
+    .toggle-opt{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:var(--t);background:var(--white);color:var(--ink-60);text-align:center}
+    .toggle-opt.active{border-color:var(--ink);background:var(--ink);color:var(--white)}
 
-        /* Buttons */
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-        }
+    /* ACCESS DENIED */
+    .access-denied{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;color:var(--ink-60)}
+    .access-denied i{font-size:40px;margin-bottom:16px;color:var(--ink-30)}
+    .access-denied h2{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px}
+    .access-denied p{font-size:13px;max-width:300px}
 
-        .btn-primary {
-            background-color: var(--primary);
-            color: var(--gray-800);
-        }
+    /* LOADING OVERLAY */
+    .page-loading{position:fixed;inset:0;background:rgba(255,255,255,.85);backdrop-filter:blur(4px);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+    .page-loading.hidden{display:none}
+    .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--ink);border-radius:50%;animation:spin .6s linear infinite}
+    .mini-spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:var(--white);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+    @keyframes spin{to{transform:rotate(360deg)}}
 
-        .btn-primary:hover {
-            background-color: var(--primary-light);
-        }
+    /* TOAST */
+    .toast-wrap{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9999}
+    .toast{background:var(--ink);color:var(--white);padding:12px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;animation:slideIn .25s ease}
+    .toast.ok{background:#065F46}
+    .toast.err{background:#7F1D1D}
+    .toast.warn{background:#78350F}
+    @keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
 
-        .btn-secondary {
-            background-color: var(--gray-200);
-            color: var(--gray-700);
-        }
+    /* EMPTY */
+    .empty-state{text-align:center;padding:48px 20px;color:var(--ink-30)}
+    .empty-state i{font-size:32px;margin-bottom:12px;display:block}
+    .empty-state p{font-size:13px}
 
-        .btn-secondary:hover {
-            background-color: var(--gray-300);
-        }
+    /* HELPER */
+    .flex{display:flex;align-items:center}.gap-8{gap:8px}.gap-6{gap:6px}
+    .mt-6{margin-top:6px}.mt-10{margin-top:10px}.mt-16{margin-top:16px}
+    .jb{justify-content:space-between}
+    .text-sm{font-size:12px;color:var(--ink-60)}
+    .warn-box{background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:#92400E;display:flex;align-items:flex-start;gap:8px}
+    .info-box{background:var(--md-bg);border:1.5px solid #BFDBFE;border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:#1E40AF;display:flex;align-items:flex-start;gap:8px}
 
-        .btn-success {
-            background-color: var(--success);
-            color: white;
-        }
-
-        .btn-success:hover {
-            background-color: #0da271;
-        }
-
-        .btn i {
-            margin-right: 8px;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
-        }
-
-        /* Statistics */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background-color: var(--white);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .stat-label {
-            color: var(--gray-600);
-            font-size: 14px;
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            margin-bottom: 24px;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .tab {
-            padding: 12px 24px;
-            background: none;
-            border: none;
-            border-bottom: 2px solid transparent;
-            font-weight: 600;
-            color: var(--gray-600);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .tab.active {
-            color: var(--gray-900);
-            border-bottom-color: var(--primary);
-        }
-
-        .tab:hover:not(.active) {
-            color: var(--gray-800);
-        }
-
-        /* Table */
-        .table-container {
-            background-color: var(--white);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            margin-bottom: 24px;
-        }
-
-        .applications-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .applications-table th {
-            background-color: var(--gray-100);
-            padding: 16px;
-            text-align: left;
-            font-weight: 600;
-            color: var(--gray-700);
-            font-size: 14px;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .applications-table td {
-            padding: 16px;
-            border-bottom: 1px solid var(--gray-200);
-            font-size: 14px;
-            color: var(--gray-700);
-        }
-
-        .applications-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .applications-table tr:hover {
-            background-color: var(--gray-50);
-        }
-
-        /* Department badges */
-        .department-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-            margin-right: 4px;
-        }
-
-        .department-md {
-            background-color: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-        }
-
-        .department-hr {
-            background-color: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-        }
-
-        .department-pd {
-            background-color: rgba(245, 158, 11, 0.1);
-            color: #f59e0b;
-        }
-
-        .department-er {
-            background-color: rgba(139, 92, 246, 0.1);
-            color: #8b5cf6;
-        }
-
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        .loading i {
-            font-size: 32px;
-            color: var(--gray-400);
-            margin-bottom: 16px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 16px;
-            }
-            
-            .nav-links {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .tabs {
-                overflow-x: auto;
-            }
-        }
-    </style>
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+  </style>
 </head>
 <body>
-    <!-- Header -->
-    <div class="header">
-        <div class="logo">
-            <img src="/assets/logo_den.png" alt="Enactus FTU Hanoi Logo">
-        </div>
-        
-        <div class="nav-links">
-            <a href="dashboard.html" class="nav-link">Dashboard</a>
-        <a href="calendar.html" class="nav-link">Calendar</a>
-            <a href="interview-arrangement.html" class="nav-link active">Interview</a>
-        </div>
-        
-        <div class="user-info">
-            <div class="user-avatar" id="user-avatar">A</div>
-        </div>
-    </div>
 
-    <!-- Main Content -->
-<div class="main-content">
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">Sắp xếp lịch phỏng vấn</h2>
-            <p class="card-subtitle">Tải dữ liệu vote và sắp xếp nhân sự phỏng vấn</p>
-        </div>
-
-        <!-- Nguồn dữ liệu ứng viên -->
-        <div class="form-group">
-            <label class="form-label">Nguồn dữ liệu ứng viên</label>
-            <div style="display: flex; gap: 20px; margin-bottom: 16px;">
-                <label style="display: flex; align-items: center; gap: 8px;">
-                    <input type="radio" name="data-source" value="calendar" checked> 
-                    Lấy từ Calendar
-                </label>
-                <label style="display: flex; align-items: center; gap: 8px;">
-                    <input type="radio" name="data-source" value="upload"> 
-                    Upload file Excel
-                </label>
-            </div>
-        </div>
-
-        <!-- Upload ứng viên (chỉ hiện khi chọn upload) -->
-        <div id="candidate-upload-section" style="display: none; margin-bottom: 16px;">
-            <label class="form-label">Tải file dữ liệu ứng viên</label>
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <input type="file" id="candidate-file" accept=".xlsx,.xls" style="flex: 1; padding: 8px;">
-                <button class="btn btn-secondary" id="upload-candidate-btn">
-                    <i class="fas fa-upload"></i>
-                    Tải lên ứng viên
-                </button>
-            </div>
-            <small style="color: var(--gray-500); margin-top: 8px; display: block;">
-                File Excel chứa danh sách ứng viên và slot phỏng vấn đã chọn
-            </small>
-        </div>
-
-        <!-- Upload vote phỏng vấn -->
-        <div class="form-group">
-            <label class="form-label">Tải file dữ liệu vote phỏng vấn</label>
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <input type="file" id="interview-vote-file" accept=".xlsx,.xls" style="flex: 1; padding: 8px;">
-                <button class="btn btn-primary" id="upload-vote-btn">
-                    <i class="fas fa-upload"></i>
-                    Tải lên
-                </button>
-            </div>
-            <small style="color: var(--gray-500); margin-top: 8px; display: block;">
-                File Excel chứa dữ liệu vote của nhân sự phỏng vấn (định dạng như file mẫu)
-            </small>
-        </div>
-
-        <!-- Download templates -->
-        <div class="form-group">
-            <button class="btn btn-secondary" id="download-template-btn">
-                <i class="fas fa-download"></i>
-                Tải template vote phỏng vấn
-            </button>
-            <button class="btn btn-secondary" id="download-candidate-template-btn" style="margin-left: 10px;">
-                <i class="fas fa-download"></i>
-                Tải template ứng viên
-            </button>
-        </div>
-
-        <!-- Loading -->
-        <div id="loading" class="loading" style="display: none;">
-            <i class="fas fa-spinner"></i>
-            <p>Đang xử lý dữ liệu...</p>
-        </div>
-
-        <!-- Results section -->
-        <div id="arrangement-results" style="display: none; margin-top: 24px;">
-            <h3 style="margin-bottom: 16px;">Kết quả sắp xếp phỏng vấn</h3>
-            
-            <!-- Statistics -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value" id="total-interview-slots">0</div>
-                    <div class="stat-label">Tổng số ca phỏng vấn</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="total-candidates-arranged">0</div>
-                    <div class="stat-label">Ứng viên đã sắp xếp</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="total-interviewers">0</div>
-                    <div class="stat-label">Nhân sự phỏng vấn</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="total-interviews">0</div>
-                    <div class="stat-label">Buổi phỏng vấn</div>
-                </div>
-            </div>
-
-            <!-- Department tabs -->
-            <div class="tabs" id="department-tabs">
-                <button class="tab active" data-dept="all">Tất cả</button>
-                <button class="tab" data-dept="MD">Truyền thông</button>
-                <button class="tab" data-dept="HR">Nhân sự</button>
-                <button class="tab" data-dept="PD">Dự án</button>
-                <button class="tab" data-dept="ER">Đối ngoại</button>
-            </div>
-
-            <!-- Interview schedule table -->
-            <div class="table-container">
-                <table class="applications-table" id="interview-schedule-table">
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Ca phỏng vấn</th>
-                            <th>Thời gian</th>
-                            <th>Ứng viên</th>
-                            <th>Ban ứng tuyển</th>
-                            <th>Người phỏng vấn</th>
-                            <th>Ban phỏng vấn</th>
-                            <th>Ghi chú</th>
-                        </tr>
-                    </thead>
-                    <tbody id="interview-schedule-body">
-                        <!-- Data will be populated by JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Export button -->
-            <div class="action-buttons">
-                <button class="btn btn-secondary" id="preview-schedule-btn">
-                    <i class="fas fa-eye"></i>
-                    Xem trước
-                </button>
-                <button class="btn btn-primary" id="export-arrangement-btn">
-                    <i class="fas fa-download"></i>
-                    Xuất kết quả sắp xếp
-                </button>
-            </div>
-        </div>
-    </div>
+<!-- PAGE LOADING -->
+<div class="page-loading" id="page-loading">
+  <div class="spinner"></div>
+  <div style="font-size:13px;color:var(--ink-60)">Đang tải dữ liệu...</div>
 </div>
-</body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="logo">
+    <img src="/assets/logo_den.png" alt="Enactus FTU Hanoi" class="logo-img" />
+    <span>Enactus FTU Hanoi</span>
+  </div>
+  <nav class="nav">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="calendar.html">Calendar</a>
+    <a href="interview-arrangement.html" class="active">Interview</a>
+    <a href="vote.html">Vote</a>
+  </nav>
+  <div class="hdr-right">
+    <div class="hdr-user">
+      <div class="hdr-user-name" id="hdr-user-name">—</div>
+      <div class="role-badge" id="role-badge">—</div>
+    </div>
+    <div class="avatar" id="user-avatar">A</div>
+  </div>
+</header>
+
+<!-- APP BODY -->
+<div class="app" id="app-body">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+
+      <!-- MODE TOGGLE -->
+      <div>
+        <div class="sec-title">Đang tick lịch cho</div>
+        <div class="tab-toggle">
+          <button class="tab-btn active" id="mode-c" onclick="setMode('candidate')">
+            <i class="fas fa-user"></i> Ứng viên
+          </button>
+          <button class="tab-btn" id="mode-i" onclick="setMode('interviewer')">
+            <i class="fas fa-user-tie"></i> PIC
+          </button>
+        </div>
+      </div>
+
+      <!-- PERSON LIST -->
+      <div>
+        <div class="flex jb" style="margin-bottom:8px">
+          <div class="sec-title" style="margin:0" id="list-title">Danh sách ứng viên</div>
+          <div class="text-sm" id="list-count">0 người</div>
+        </div>
+        <div class="person-list" id="person-list">
+          <div class="list-empty"><i class="fas fa-users"></i><p>Chưa có ai</p></div>
+        </div>
+      </div>
+
+      <!-- ADD PERSON (SuperAdmin + Admin HR only) -->
+      <div id="add-person-section">
+        <button class="btn btn-ghost btn-full btn-sm" onclick="toggleAddForm()">
+          <i class="fas fa-plus"></i> Thêm người thủ công
+        </button>
+        <div class="add-form mt-6" id="add-form">
+          <div class="form-row">
+            <div>
+              <label class="fl">Họ và tên *</label>
+              <input class="fi" id="add-name" placeholder="Nguyễn Văn A" />
+            </div>
+            <div>
+              <label class="fl">Ban *</label>
+              <select class="fs" id="add-dept">
+                <option value="MD">Truyền thông</option>
+                <option value="HR">Nhân sự</option>
+                <option value="PD">Dự án</option>
+                <option value="ER">Đối ngoại</option>
+              </select>
+            </div>
+          </div>
+          <div id="secondary-dept-wrap" class="mt-6" style="display:none">
+            <label class="fl">Ban phụ (nếu apply 2 ban)</label>
+            <select class="fs" id="add-dept2">
+              <option value="">— Không có —</option>
+              <option value="MD">Truyền thông</option>
+              <option value="HR">Nhân sự</option>
+              <option value="PD">Dự án</option>
+              <option value="ER">Đối ngoại</option>
+            </select>
+          </div>
+          <div class="flex gap-6 mt-6">
+            <button class="btn btn-dark btn-sm" onclick="addPerson()"><i class="fas fa-check"></i> Thêm</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleAddForm()">Huỷ</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- IMPORT EXCEL -->
+      <div id="import-section">
+        <div class="sec-title">Import từ Excel</div>
+        <div class="file-drop" id="vote-drop">
+          <input type="file" id="vote-file" accept=".xlsx,.xls" onchange="handleVoteFile(event)" />
+          <div class="file-drop-icon"><i class="fas fa-file-excel"></i></div>
+          <p>Kéo thả hoặc <b>chọn file vote</b></p>
+          <div class="file-name-tag" id="vote-fname"></div>
+        </div>
+        <div class="flex gap-6 mt-6">
+          <button class="btn btn-ghost btn-sm btn-full" onclick="downloadTemplate()">
+            <i class="fas fa-download"></i> Template
+          </button>
+          <button class="btn btn-ghost btn-sm btn-full" onclick="clearAll()">
+            <i class="fas fa-trash"></i> Xoá hết
+          </button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- LOAD FROM CALENDAR -->
+      <div>
+        <div class="sec-title">Ứng viên từ Calendar</div>
+        <button class="btn btn-ghost btn-full btn-sm" id="cal-load-btn" onclick="loadFromCalendar()">
+          <i class="fas fa-calendar-check"></i> Tải ứng viên + lựa chọn ca
+        </button>
+        <div class="text-sm mt-6" style="line-height:1.6">
+          Ca phỏng vấn đã tự đồng bộ từ Calendar (xem khung "Các ca phỏng vấn" bên dưới). Bấm nút này để lấy danh sách ứng viên đã được duyệt & ca họ đã vote.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR FOOTER: RUN -->
+    <div class="sidebar-footer">
+      <button class="btn btn-dark btn-full" id="run-btn" onclick="runArrangement()">
+        <i class="fas fa-wand-magic-sparkles"></i> Sắp xếp lịch
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- TITLE ROW -->
+    <div class="flex jb gap-8">
+      <div>
+        <h1 class="page-title">Sắp xếp lịch phỏng vấn</h1>
+        <p class="page-sub" id="main-sub">Tick lịch trực tiếp cho từng người, sau đó bấm sắp xếp</p>
+      </div>
+      <div class="flex gap-6" id="slot-mgmt-btns" style="display:none">
+        <button class="btn btn-ghost btn-sm" id="resync-slots-btn" onclick="loadSlotsFromCalendar()">
+          <i class="fas fa-rotate"></i> Đồng bộ lại ca từ Calendar
+        </button>
+      </div>
+    </div>
+
+    <!-- INFO BOX -->
+    <div class="info-box" id="info-box">
+      <i class="fas fa-circle-info"></i>
+      <div>Ca phỏng vấn được <b>đồng bộ tự động từ Calendar</b> (ngày + khung giờ ứng viên đã vote). SuperAdmin/Admin (HR) bấm vào từng ca để điền <b>hình thức / địa điểm / ghi chú</b>. Chọn <b>ứng viên</b> hoặc <b>PIC</b> từ sidebar trái, sau đó click vào ô để đánh dấu ca rảnh. Ứng viên apply 2 ban sẽ được phỏng vấn 2 lần.</div>
+    </div>
+
+    <!-- CALENDAR CARD -->
+    <div class="card">
+      <div class="cal-header">
+        <div>
+          <div class="cal-person-name" id="cal-title">Chọn người để tick lịch</div>
+          <div class="cal-person-sub" id="cal-sub">Click tên từ danh sách bên trái</div>
+        </div>
+        <div class="cal-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--ink-10);border-color:var(--border)"></div> Trống</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--yellow);border-color:var(--yellow-mid)"></div> Đã tick</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#EFF6FF;border-color:#BFDBFE"></div> PIC sẵn</div>
+        </div>
+      </div>
+      <div class="cal-scroll">
+        <div class="cal-grid" id="cal-grid"><!-- built by JS --></div>
+      </div>
+    </div>
+
+    <!-- INTERVIEW SLOTS CARD -->
+    <div class="card" id="slots-card">
+      <div class="flex jb" style="margin-bottom:14px">
+        <div class="card-title" style="margin:0"><div class="dot"></div> Các ca phỏng vấn <span id="slot-count-badge" style="font-size:12px;font-weight:500;color:var(--ink-60);margin-left:4px"></span></div>
+        <div class="text-sm" id="slot-mgmt-hint" style="display:none">Bấm vào ca để cấu hình hình thức / địa điểm / ghi chú</div>
+      </div>
+      <div id="slots-list">
+        <div class="empty-state"><i class="fas fa-calendar-xmark"></i><p>Chưa có ca nào trên Calendar.<br>Vào trang Calendar để công bố lịch trước.</p></div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="results-section" style="display:none">
+      <div class="flex jb gap-8" style="margin-bottom:14px">
+        <div class="page-title" style="font-size:17px">Kết quả sắp xếp</div>
+        <div class="flex gap-6">
+          <button class="btn btn-ghost btn-sm" id="save-schedule-btn" onclick="saveSchedule()">
+            <i class="fas fa-save"></i> Lưu lịch
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="exportResult()">
+            <i class="fas fa-download"></i> Xuất Excel
+          </button>
+        </div>
+      </div>
+
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card"><div class="stat-val" id="s-slots">0</div><div class="stat-label">Ca đã dùng</div></div>
+        <div class="stat-card"><div class="stat-val" id="s-cands">0</div><div class="stat-label">Lượt phỏng vấn</div></div>
+        <div class="stat-card"><div class="stat-val" id="s-ivs">0</div><div class="stat-label">PIC tham gia</div></div>
+        <div class="stat-card"><div class="stat-val" id="s-unmatched">0</div><div class="stat-label" style="color:var(--error)">Chưa ghép được</div></div>
+      </div>
+
+      <div class="filter-tabs" id="dept-filter-tabs">
+        <button class="filter-tab active" data-dept="all" onclick="filterDept(this)">Tất cả</button>
+        <button class="filter-tab" data-dept="MD" onclick="filterDept(this)">Truyền thông</button>
+        <button class="filter-tab" data-dept="HR" onclick="filterDept(this)">Nhân sự</button>
+        <button class="filter-tab" data-dept="PD" onclick="filterDept(this)">Dự án</button>
+        <button class="filter-tab" data-dept="ER" onclick="filterDept(this)">Đối ngoại</button>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Ca phỏng vấn</th>
+              <th>Ngày</th>
+              <th>Thời gian</th>
+              <th>Ứng viên</th>
+              <th>Ban PV</th>
+              <th>Người phỏng vấn</th>
+              <th>Hình thức</th>
+              <th>Địa điểm / Link</th>
+              <th>Ghi chú</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="result-body"></tbody>
+        </table>
+      </div>
+
+      <div class="warn-box mt-16" id="unmatched-box" style="display:none">
+        <i class="fas fa-triangle-exclamation"></i>
+        <div id="unmatched-list"></div>
+      </div>
+
+      <!-- PUBLISH / CÀI ĐẶT CÔNG BỐ (SuperAdmin + Admin HR only) -->
+      <div class="card mt-16" id="publish-card" style="display:none">
+        <div class="card-title"><div class="dot"></div> Cài đặt công bố</div>
+        <div class="text-sm" style="margin-bottom:14px">Đẩy kết quả sắp xếp ở trên vào hồ sơ ứng viên (Profile) và bảng tổng (Dashboard). Chọn đúng vòng trước khi công bố — dữ liệu cũ của vòng đó (nếu có) sẽ bị ghi đè.</div>
+
+        <div class="form-group">
+          <label class="fl">Áp dụng cho vòng</label>
+          <div class="toggle-row" id="publish-round-row">
+            <button class="toggle-opt" id="publish-round-2" onclick="setPublishRound('round2')">Vòng 2</button>
+            <button class="toggle-opt active" id="publish-round-4" onclick="setPublishRound('round4')">Vòng 4 · Phỏng vấn cá nhân</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="fl">Công bố vào hệ thống</label>
+          <div class="toggle-row" style="max-width:220px">
+            <button class="toggle-opt active" id="publish-off-btn" onclick="setPublishEnabled(false)">Tắt</button>
+            <button class="toggle-opt" id="publish-on-btn" onclick="setPublishEnabled(true)">Bật</button>
+          </div>
+        </div>
+
+        <div class="info-box" id="publish-warning" style="display:none;margin-bottom:14px">
+          <i class="fas fa-circle-info"></i>
+          <div>Đã bật. Bấm <b>"Công bố vào hệ thống"</b> bên dưới để ghi dữ liệu — ứng viên sẽ thấy ngay trên trang Profile của họ.</div>
+        </div>
+
+        <div class="text-sm" id="publish-permission-note" style="display:none;margin-bottom:14px">
+          <i class="fas fa-lock"></i> Chỉ <b>SuperAdmin</b> mới có quyền bấm công bố. Bạn có thể chuẩn bị sẵn vòng / bật công tắc — SuperAdmin sẽ là người bấm nút công bố cuối cùng.
+        </div>
+
+        <button class="btn btn-dark" id="publish-btn" onclick="publishToSystem()" disabled>
+          <i class="fas fa-bullhorn"></i> Công bố vào hệ thống
+        </button>
+
+        <div id="publish-result" class="mt-16" style="display:none"></div>
+        <div id="revoke-section" style="display:none"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- SLOT MODAL -->
+<div class="overlay" id="slot-overlay">
+  <div class="modal">
+    <div class="modal-title">Cấu hình ca phỏng vấn</div>
+    <div class="modal-sub">Ngày giờ lấy từ Calendar — chỉ điền hình thức / địa điểm / ghi chú</div>
+
+    <input type="hidden" id="slot-edit-id" />
+
+    <div class="form-group" style="background:var(--bg);border-radius:var(--radius-sm);padding:10px 12px;display:flex;align-items:center;gap:8px">
+      <i class="fas fa-calendar-day" style="color:var(--ink-30)"></i>
+      <div>
+        <div id="slot-readonly-name" style="font-weight:700;font-size:13px">—</div>
+        <div id="slot-readonly-daytime" style="font-size:11px;color:var(--ink-60)">—</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="fl">Hình thức</label>
+      <div class="toggle-row">
+        <button class="toggle-opt active" id="mode-offline" onclick="setSlotMode('offline')">
+          <i class="fas fa-building"></i> Offline
+        </button>
+        <button class="toggle-opt" id="mode-online" onclick="setSlotMode('online')">
+          <i class="fas fa-video"></i> Online
+        </button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="fl" id="location-label">Địa điểm (dùng chung cho các ca offline)</label>
+      <input class="fi" id="slot-location" placeholder="Phòng A3.02 — Tòa A, FTU" />
+    </div>
+    <div class="form-group">
+      <label class="fl">Ghi chú</label>
+      <input class="fi" id="slot-note" placeholder="Mang CCCD, đến trước 5 phút..." />
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeSlotModal()">Huỷ</button>
+      <button class="btn btn-dark" id="slot-save-btn" onclick="saveSlot()">
+        <i class="fas fa-save"></i> Lưu cấu hình
+      </button>
+      <button class="btn btn-ghost btn-sm" id="slot-reset-btn" onclick="resetSlotMeta()" style="margin-left:auto;color:var(--ink-60)">
+        <i class="fas fa-rotate-left"></i> Đặt lại mặc định
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT SCHEDULE ROW MODAL -->
+<div class="overlay" id="edit-row-overlay">
+  <div class="modal">
+    <div class="modal-title">Sửa thông tin ca phỏng vấn</div>
+    <div class="modal-sub" id="edit-row-sub">—</div>
+
+    <input type="hidden" id="edit-row-index" />
+
+    <div class="form-group">
+      <label class="fl">Hình thức</label>
+      <div class="toggle-row">
+        <button class="toggle-opt active" id="edit-mode-offline" onclick="setEditRowMode('offline')">
+          <i class="fas fa-building"></i> Offline
+        </button>
+        <button class="toggle-opt" id="edit-mode-online" onclick="setEditRowMode('online')">
+          <i class="fas fa-video"></i> Online
+        </button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="fl" id="edit-row-location-label">Địa điểm</label>
+      <input class="fi" id="edit-row-location" placeholder="Phòng A3.02 — Tòa A, FTU" />
+    </div>
+    <div class="form-group">
+      <label class="fl">Người phỏng vấn <span style="font-weight:400;color:var(--ink-30)">(cách nhau bởi dấu phẩy)</span></label>
+      <input class="fi" id="edit-row-interviewers" placeholder="Nguyễn Văn A, Trần Thị B" />
+    </div>
+    <div class="form-group">
+      <label class="fl">Ghi chú</label>
+      <input class="fi" id="edit-row-note" placeholder="Mang CCCD, đến trước 5 phút..." />
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeEditRowModal()">Huỷ</button>
+      <button class="btn btn-dark" onclick="saveEditRow()">
+        <i class="fas fa-save"></i> Lưu thay đổi
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="overlay" id="confirm-overlay">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-title" id="confirm-title">Xác nhận</div>
+    <div id="confirm-body" style="font-size:13px;color:var(--ink-60);margin-top:6px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Huỷ</button>
+      <button class="btn btn-dark" id="confirm-ok">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- FIREBASE CONFIG + SCRIPT -->
 <script src="/script/config.js"></script>
-    <script>
+<script>
+// ══════════════════════════════════════════════════
+//  CONSTANTS
+// ══════════════════════════════════════════════════
+const DEPT_NAMES = { MD:'Truyền thông', HR:'Nhân sự', PD:'Dự án', ER:'Đối ngoại' };
+const DEPT_CLASS = { MD:'b-md', HR:'b-hr', PD:'b-pd', ER:'b-er' };
+const DEPT_COLORS = { MD:'--md-color', HR:'--hr-color', PD:'--pd-color', ER:'--er-color' };
+const DEPT_BG    = { MD:'--md-bg',    HR:'--hr-bg',    PD:'--pd-bg',    ER:'--er-bg'    };
 
-        // Biến lưu trữ dữ liệu sắp xếp
-        let interviewArrangementData = {
-            slots: [],
-            candidates: [],
-            interviewers: [],
-            schedule: []
-        };
+// ══════════════════════════════════════════════════
+//  APP STATE
+// ══════════════════════════════════════════════════
+const S = {
+  role: null,        // 'superadmin' | 'admin-hr' | 'admin-other' | 'member'
+  userEmail: '',
+  userName: '',
+  userDept: '',      // department code of the logged-in admin (used to scope admin-other edit rights)
+  mode: 'candidate', // 'candidate' | 'interviewer'
+  candidates: [],    // [{name, email, dept, dept2, availableSlots:[slotId,...], fromCalendar}]
+  interviewers: [],  // [{name, email, dept, availableSlots:[slotId,...]}]
+  slots: [],         // [{id, name, day, date, time, mode:'offline'|'online', location, note}] — flattened from system/interview_schedule (Calendar), metadata (mode/location/note) filled in by SuperAdmin/Admin-HR and persisted in system/interview_schedule.slotMeta
+  activePerson: null,// {type:'candidate'|'interviewer', index}
+  schedule: [],
+  lastUnmatched: [], // unmatched list from the last run/load, kept alongside schedule for persistence
+  slotMode: 'offline',
+  slotMetaRaw: {},   // raw slotMeta map as stored on system/interview_schedule, keyed by sanitized slot id
+  publish: { round: 'round4', enabled: false, last: null }, // settings + last-publish record for "Công bố vào hệ thống"
+};
 
-        // Event listener cho nút upload
-        document.getElementById('upload-vote-btn').addEventListener('click', function() {
-            const fileInput = document.getElementById('interview-vote-file');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                alert('Vui lòng chọn file Excel để tải lên');
-                return;
-            }
-            
-            processVoteFile(file);
-        });
+// ══════════════════════════════════════════════════
+//  ROLE HELPERS
+// ══════════════════════════════════════════════════
+function canCRUD()    { return S.role === 'superadmin' || S.role === 'admin-hr'; }
+function canView()    { return S.role !== null; }
+function canTick()    { return canCRUD(); } // only SuperAdmin / Admin-HR may tick availability for candidates/PIC
+function canManageSlots() { return canCRUD(); }
+function canPublish() { return S.role === 'superadmin'; } // only SuperAdmin may publish (and revoke a publish)
+function canEditRow(row) {
+  // Full edit rights: SuperAdmin / Admin (HR).
+  if (canCRUD()) return true;
+  // Admin của ban khác: chỉ được sửa ca phỏng vấn thuộc ban của chính mình.
+  if (S.role === 'admin-other' && S.userDept && row && row.candidateDept === S.userDept) return true;
+  return false;
+}
+// Admin của ban khác: được thêm / sửa / xoá / tick lịch cho PIC thuộc đúng ban mình
+// (không đụng được PIC ban khác, và không quản lý ứng viên).
+function canManageInterviewer(iv) {
+  if (canCRUD()) return true;
+  if (S.role === 'admin-other' && S.userDept) {
+    const dept = iv ? (iv.department || iv.dept || '') : S.userDept; // iv=null → đang thêm mới, ép về ban mình
+    return dept === S.userDept;
+  }
+  return false;
+}
+function canTickPerson(person) {
+  if (!person) return false;
+  if (canCRUD()) return true;
+  if (S.mode === 'interviewer') return canManageInterviewer(person);
+  return false; // candidates: chỉ SuperAdmin/Admin-HR được tick
+}
 
-        // Event listener cho nút tải template
-        document.getElementById('download-template-btn').addEventListener('click', function() {
-            downloadInterviewTemplate();
-        });
+function applyRoleUI() {
+  const roleLabel = S.role === 'superadmin' ? 'SuperAdmin'
+    : S.role === 'admin-hr' ? 'Admin (HR)'
+    : S.role === 'admin-other' ? `Admin (${DEPT_NAMES[S.userDept]||S.userDept||'—'})`
+    : '—';
+  document.getElementById('role-badge').textContent = roleLabel;
+  const nameEl = document.getElementById('hdr-user-name');
+  if (nameEl) nameEl.textContent = S.userName || S.userEmail || '—';
 
-        // Event listener cho nút xuất kết quả
-        document.getElementById('export-arrangement-btn').addEventListener('click', function() {
-            exportInterviewArrangement();
-        });
+  // Scope note under the page title — clarifies what admin-other can/can't do
+  const subEl = document.getElementById('main-sub');
+  if (subEl) {
+    if (S.role === 'admin-other') {
+      subEl.innerHTML = `Chế độ chỉ xem. Bạn có thể thêm/sửa <b>PIC của ban ${DEPT_NAMES[S.userDept]||S.userDept||'—'}</b>, và sửa <b>ca phỏng vấn của ban ${DEPT_NAMES[S.userDept]||S.userDept||'—'}</b> ở bảng "Kết quả sắp xếp" bên dưới.`;
+    } else {
+      subEl.textContent = 'Tick lịch trực tiếp cho từng người, sau đó bấm sắp xếp';
+    }
+  }
 
-        // Event listener cho nút xem trước
-        document.getElementById('preview-schedule-btn').addEventListener('click', function() {
-            previewSchedule();
-        });
+  // Import từ Excel: chỉ SuperAdmin + Admin HR (import hàng loạt, không scope theo ban được)
+  document.getElementById('import-section').style.display = canCRUD() ? 'block' : 'none';
 
-        // Event listener cho các tab department
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('tab') && e.target.dataset.dept) {
-                // Xóa active class từ tất cả các tab
-                document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-                // Thêm active class cho tab được click
-                e.target.classList.add('active');
-                
-                // Hiển thị dữ liệu theo department
-                filterScheduleByDepartment(e.target.dataset.dept);
-            }
-        });
+  // Thêm người thủ công: SuperAdmin/Admin-HR luôn thấy; Admin ban khác chỉ thấy khi
+  // đang ở tab PIC (vì họ chỉ được thêm PIC của ban mình, không được thêm ứng viên).
+  updateAddPersonVisibility();
 
-// Event listener cho radio buttons
-document.querySelectorAll('input[name="data-source"]').forEach(radio => {
-    radio.addEventListener('change', function() {
-        const candidateUploadSection = document.getElementById('candidate-upload-section');
-        if (this.value === 'upload') {
-            candidateUploadSection.style.display = 'block';
+  // Slot config (mode/location/note) + resync: only SuperAdmin + Admin HR
+  document.getElementById('slot-mgmt-btns').style.display = canCRUD() ? 'flex' : 'none';
+  document.getElementById('slot-mgmt-hint').style.display = canCRUD() ? 'block' : 'none';
+
+  // Run arrangement: only SuperAdmin + Admin HR
+  if (!canCRUD()) {
+    document.getElementById('run-btn').style.display = 'none';
+  }
+
+  // Re-render slot list so edit affordance (pencil) reflects permission
+  renderSlotsList();
+
+  // Update calendar lock
+  buildCalGrid();
+
+  // Publish ("Cài đặt công bố") section: SuperAdmin + Admin HR only
+  updatePublishCardVisibility();
+}
+
+// ══════════════════════════════════════════════════
+//  FIREBASE INIT (relies on /script/config.js)
+// ══════════════════════════════════════════════════
+// `db` is intentionally NOT declared with let/const here.
+// config.js (loaded above via <script src="/script/config.js">) already
+// declares `let db = firebase.firestore();` as a page-level global.
+// Declaring `let db;` again in this script caused:
+//   Uncaught SyntaxError: Identifier 'db' has already been declared
+// window.db is used everywhere below so this script works whether or not
+// config.js (or any other script) has already created the global.
+async function initApp() {
+  try { window.db = window.db || firebase.firestore(); } catch(e) { /* checked below */ }
+  try {
+    const ok = await resolveAuthAndRole();
+    if (!ok) return; // resolveAuthAndRole already redirected the page away
+    await loadSlotsFromCalendar();
+    await loadInterviewersFromFirestore();
+    await loadSavedSchedule();
+    await loadLastPublishInfo();
+  } catch(e) {
+    console.error('Init error:', e);
+    toast('Lỗi khởi tạo: ' + e.message, 'err');
+  } finally {
+    document.getElementById('page-loading').classList.add('hidden');
+  }
+}
+
+// Saves where the user was trying to go, then sends them to login.
+// login.html reads `postLoginRedirect` after a successful sign-in and sends
+// the user straight back here instead of always landing on dashboard.html.
+function goToLogin() {
+  sessionStorage.setItem('postLoginRedirect', location.pathname + location.search);
+  window.location.href = 'login.html';
+}
+
+// Single source of truth for "who is this and what can they do" — always
+// re-checked against Firestore's `account` collection (sessionStorage alone
+// can be stale or tampered with, so it is never trusted on its own here).
+//   • not signed in            → login.html
+//   • signed in, no account doc→ sign out, login.html
+//   • role = member            → vote.html (this tool isn't for members)
+//   • role unrecognized        → login.html
+//   • superadmin / admin       → proceed, S.role set accordingly
+function resolveAuthAndRole() {
+  return new Promise(resolve => {
+    if (typeof auth === 'undefined' || typeof firebase === 'undefined') {
+      // Firebase didn't load — we cannot verify identity, so do not grant access.
+      goToLogin();
+      return;
+    }
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) { goToLogin(); return; }
+      try {
+        if (!window.db) { goToLogin(); return; }
+        const email = user.email || '';
+        const snap = await window.db.collection('account').where('email','==',email).limit(1).get();
+        if (snap.empty) {
+          await auth.signOut();
+          goToLogin();
+          return;
+        }
+
+        const data = snap.docs[0].data();
+        const role = (data.role || '').toLowerCase();
+        const dept = (data.department || '').toUpperCase();
+        // accounts.html lưu tên làm ID của document (không có field "fullname" trong
+        // data) — nên phải lấy snap.docs[0].id, KHÔNG fallback sang user.displayName (tên Gmail).
+        const name = snap.docs[0].id || data.fullname || email;
+
+        // Keep sessionStorage fresh for other pages, but it's no longer the source of truth.
+        sessionStorage.setItem('email', email);
+        sessionStorage.setItem('role', role);
+        sessionStorage.setItem('department', dept);
+        sessionStorage.setItem('fullname', name);
+
+        S.userEmail = email;
+        S.userName  = name;
+        S.userDept  = dept;
+
+        if (role === 'superadmin') {
+          S.role = 'superadmin';
+        } else if (role === 'admin') {
+          S.role = (dept === 'HR') ? 'admin-hr' : 'admin-other';
+        } else if (role === 'member') {
+          window.location.href = 'vote.html';
+          return;
         } else {
-            candidateUploadSection.style.display = 'none';
+          // No recognized role on the account doc — treat as no access.
+          goToLogin();
+          return;
         }
+
+        // Gmail chỉ dùng để lấy ảnh đại diện (avatar) — tên luôn lấy từ Account.
+        setAvatar(name, email, user.photoURL || '');
+        applyRoleUI();
+        resolve(true);
+      } catch(e) {
+        console.error('Lỗi kiểm tra quyền:', e);
+        toast('Lỗi xác thực: ' + e.message, 'err');
+        resolve(false);
+      }
     });
-});
-
-// Event listener cho nút upload ứng viên
-document.getElementById('upload-candidate-btn').addEventListener('click', function() {
-    const fileInput = document.getElementById('candidate-file');
-    const file = fileInput.files[0];
-    
-    if (!file) {
-        alert('Vui lòng chọn file Excel ứng viên');
-        return;
-    }
-    
-    processCandidateFile(file);
-});
-
-// Hàm xử lý file ứng viên
-async function processCandidateFile(file) {
-    try {
-        document.getElementById('loading').style.display = 'block';
-        
-        const data = await readExcelFile(file);
-        const candidates = parseCandidateData(data);
-        
-        // Lấy dữ liệu interviewer từ file vote (nếu đã upload)
-        if (interviewArrangementData.interviewers.length === 0) {
-            alert('Vui lòng upload file vote phỏng vấn trước');
-            document.getElementById('loading').style.display = 'none';
-            return;
-        }
-        
-        // Cập nhật dữ liệu ứng viên
-        interviewArrangementData.candidates = candidates;
-        
-        // Thực hiện sắp xếp
-        interviewArrangementData.schedule = arrangeInterviews(interviewArrangementData);
-        
-        // Hiển thị kết quả
-        displayArrangementResults(interviewArrangementData);
-        
-        document.getElementById('loading').style.display = 'none';
-        
-    } catch (error) {
-        console.error('Lỗi xử lý file ứng viên:', error);
-        alert('Lỗi khi xử lý file ứng viên: ' + error.message);
-        document.getElementById('loading').style.display = 'none';
-    }
+  });
 }
 
-// Hàm parse dữ liệu ứng viên từ file Excel
-function parseCandidateData(data) {
-    const candidates = [];
-    
-    if (data.length < 2) {
-        throw new Error('File không đúng định dạng');
-    }
-    
-    // Bỏ qua header (dòng đầu tiên)
-    for (let i = 1; i < data.length; i++) {
-        const row = data[i];
-        if (!row || row.length < 4) continue;
-        
-        const candidate = {
-            name: row[1] || '', // Cột B: Họ và tên
-            department: convertDepartmentNameToCode(row[2] || ''), // Cột C: Ban ưu tiên
-            email: '', // File không có email
-            availableSlots: []
-        };
-        
-        // Lấy các slot available (cột D đến cuối)
-        for (let j = 3; j < row.length; j++) {
-            if (row[j] === 'X' || row[j] === 'x' || row[j] === '×') {
-                const slotId = `slot_${j-3}`;
-                candidate.availableSlots.push(slotId);
-            }
-        }
-        
-        // Chỉ thêm ứng viên có tên
-        if (candidate.name.trim()) {
-            candidates.push(candidate);
-        }
-    }
-    
-    console.log(`Đã parse ${candidates.length} ứng viên từ file`);
-    return candidates;
+// ══════════════════════════════════════════════════
+//  SLOTS — flattened from Calendar's system/interview_schedule doc.
+//  Day/time are READ-ONLY here (owned by Calendar page). SuperAdmin/Admin-HR
+//  only fill in mode/location/note afterwards; that metadata is persisted
+//  back into the SAME doc under the `slotMeta` map field, keyed by a
+//  sanitized slot id, so it never touches the `schedule` array Calendar reads.
+// ══════════════════════════════════════════════════
+const SCHEDULE_DOC_PATH = ['system', 'interview_schedule'];
+function sanitizeSlotKey(slotId) { return String(slotId).replace(/[^\w]/g, '_'); }
+function weekdayFromDate(dateStr) {
+  try {
+    const parts = String(dateStr).split('/');
+    if (parts.length !== 3) return dateStr;
+    const d = new Date(+parts[2], +parts[1] - 1, +parts[0]);
+    if (isNaN(d.getTime())) return dateStr;
+    const weekdays = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+    return weekdays[d.getDay()];
+  } catch(e) { return dateStr; }
 }
 
-// Hàm chuyển tên ban sang mã ban
-function convertDepartmentNameToCode(departmentName) {
-    const departmentMap = {
-        'Truyền thông': 'MD',
-        'Nhân sự': 'HR', 
-        'Dự án': 'PD',
-        'Đối ngoại': 'ER',
-        'MD': 'MD',
-        'HR': 'HR',
-        'PD': 'PD', 
-        'ER': 'ER'
-    };
-    return departmentMap[departmentName] || departmentName;
-}
+async function loadSlotsFromCalendar() {
+  if (!window.db) { S.slots = []; S.slotMetaRaw = {}; renderSlotsList(); buildCalGrid(); return; }
+  try {
+    const doc = await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).get();
+    const data = doc.exists ? doc.data() : null;
+    const days = (data && data.schedule) || [];
+    S.slotMetaRaw = (data && data.slotMeta) || {};
 
-// Thêm vào phần download template
-function downloadCandidateTemplate() {
-    const templateData = [
-        ['STT', 'Họ và tên', 'Ban ưu tiên', 'Ban dự bị', 'Ca 01: 09h20 - 09h50', 'Ca 02: 10h00 - 10h30', 'Ca 03: 10h40 - 11h10', 'Ca 04: 11h20 - 11h50', 'Ca 05: 14h00 - 14h30', 'Ca 06: 14h40 - 15h10', 'Ca 07: 15h20 - 15h50', 'Ca 08: 16h00 - 16h30', 'Ca 09: 20h00 - 20h30', 'Ca 10: 20h40 - 21h10', 'Ca 11: 21h20 - 21h50', 'Ca 12: 22h00 - 22h30', 'Ca 01: 08h00 - 08h30', 'Ca 02: 08h40 - 09h10', 'Ca 03: 09h20 - 09h50', 'Ca 04: 10h00 - 10h30', 'Ca 05: 10h40 - 11h10', 'Ca 06: 11h20 - 11h50', 'Ca 07: 14h00 - 14h30', 'Ca 08: 14h40 - 15h10', 'Ca 09: 15h20 - 15h50', 'Ca 10: 16h00 - 16h30'],
-        ['1', 'Nguyễn Văn A', 'Truyền thông', 'Nhân sự', 'X', '', 'X', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-        ['2', 'Trần Thị B', 'Nhân sự', 'Dự án', '', 'X', '', 'X', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
-    ];
-    
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet(templateData);
-    XLSX.utils.book_append_sheet(wb, ws, 'Danh sách ứng viên');
-    XLSX.writeFile(wb, 'Template_Danh_Sach_Ung_Vien.xlsx');
-}
-
-// Thêm nút download template ứng viên trong HTML
-document.getElementById('download-template-btn').addEventListener('click', function() {
-    downloadInterviewTemplate();
-});
-
-// Thêm nút mới
-document.getElementById('download-candidate-template-btn').addEventListener('click', function() {
-    downloadCandidateTemplate();
-});
-
-// Sửa hàm processVoteFile để chỉ xử lý interviewers
-async function processVoteFile(file) {
-    try {
-        document.getElementById('loading').style.display = 'block';
-        
-        const data = await readExcelFile(file);
-        const processedData = await processVoteData(data);
-        
-        // Chỉ cập nhật interviewers và slots, giữ nguyên candidates nếu có
-        interviewArrangementData.slots = processedData.slots;
-        interviewArrangementData.interviewers = processedData.interviewers;
-        
-        // Nếu đã có candidates, thực hiện sắp xếp ngay
-        if (interviewArrangementData.candidates.length > 0) {
-            interviewArrangementData.schedule = arrangeInterviews(interviewArrangementData);
-            displayArrangementResults(interviewArrangementData);
-        } else {
-            // Chỉ hiển thị thông báo thành công
-            alert('Đã tải lên dữ liệu nhân sự phỏng vấn thành công!');
-        }
-        
-        document.getElementById('loading').style.display = 'none';
-        
-    } catch (error) {
-        console.error('Lỗi xử lý file vote:', error);
-        alert('Lỗi khi xử lý file: ' + error.message);
-        document.getElementById('loading').style.display = 'none';
-    }
-}
-
-
-        // Đọc file Excel
-        function readExcelFile(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-
-                reader.onload = function(e) {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
-                        const sheetName = workbook.SheetNames[0];
-                        const worksheet = workbook.Sheets[sheetName];
-                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                        resolve(jsonData);
-                    } catch (error) {
-                        reject(error);
-                    }
-                };
-
-                reader.onerror = reject;
-                reader.readAsArrayBuffer(file);
-            });
-        }
-
-        // Xử lý dữ liệu vote - CHỈ xử lý interviewers và slots
-async function processVoteData(data) {
-    const result = {
-        slots: [],
-        candidates: [],  // Sẽ được điền từ Calendar hoặc Upload
-        interviewers: [], 
-        schedule: []
-    };
-
-    if (data.length < 2) {
-        throw new Error('File không đúng định dạng');
-    }
-
-    const headers = data[0];
-    const timeSlots = headers.slice(3);
-
-    // Tạo danh sách các ca phỏng vấn
-    result.slots = timeSlots.map((slot, index) => {
-        return {
-            id: `slot_${index}`,
-            name: slot,
-            date: extractDateFromSlot(slot),
-            time: extractTimeFromSlot(slot)
-        };
-    });
-
-    // Xử lý dữ liệu NHÂN SỰ PHỎNG VẤN từ file upload
-    let currentDepartment = '';
-    let currentGen = '';
-
-    for (let i = 1; i < data.length; i++) {
-        const row = data[i];
-        if (!row || row.length < 3) continue;
-
-        // Xác định ban và gen
-        if (row[0]) currentDepartment = row[0];
-        if (row[1]) currentGen = row[1];
-
-        const name = row[2];
-        if (!name) continue;
-
-        const interviewer = {
-            name: name.trim(),
-            department: currentDepartment,
-            availableSlots: []
-        };
-
-        // Lấy các slot available
-        timeSlots.forEach((slot, index) => {
-            const slotValue = row[3 + index];
-            if (slotValue === 'x' || slotValue === 'X') {
-                interviewer.availableSlots.push(result.slots[index].id);
-            }
+    const slots = [];
+    let order = 0;
+    days.forEach(day => {
+      const dayLabel = `${weekdayFromDate(day.date)} ${day.date}`;
+      (day.slots || []).forEach((time, idx) => {
+        const id = `${day.date}_${time}`;
+        const metaKey = sanitizeSlotKey(id);
+        const meta = S.slotMetaRaw[metaKey] || {};
+        slots.push({
+          id, metaKey,
+          name: `Ca ${idx + 1}`,
+          day: dayLabel, date: day.date, time,
+          mode: meta.mode || 'offline',
+          location: meta.location || '',
+          note: meta.note || '',
+          order: order++,
         });
-
-        result.interviewers.push(interviewer);
-    }
-
-    // KHÔNG gọi loadCandidatesFromCalendar() ở đây nữa
-    // Ứng viên sẽ được load riêng từ Calendar hoặc Upload
-    
-    return result;
+      });
+    });
+    S.slots = slots;
+  } catch(e) {
+    console.warn('Không tải được ca từ Calendar:', e);
+    S.slots = []; S.slotMetaRaw = {};
+    toast('Lỗi tải ca từ Calendar: ' + e.message, 'err');
+  }
+  renderSlotsList();
+  buildCalGrid();
 }
 
-        // Thêm hàm để load từ Calendar khi chọn option đó
+function renderSlotsList() {
+  const el = document.getElementById('slots-list');
+  document.getElementById('slot-count-badge').textContent = `(${S.slots.length} ca)`;
+  if (!S.slots.length) {
+    el.innerHTML = `<div class="empty-state"><i class="fas fa-calendar-xmark"></i><p>Chưa có ca nào trên Calendar.<br>Vào trang Calendar để công bố lịch trước.</p></div>`;
+    return;
+  }
+
+  // Group by day
+  const byDay = {};
+  S.slots.forEach(sl => {
+    if (!byDay[sl.day]) byDay[sl.day] = [];
+    byDay[sl.day].push(sl);
+  });
+
+  let html = '';
+  Object.keys(byDay).forEach(day => {
+    html += `<div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;color:var(--ink-60);margin-bottom:6px;letter-spacing:.3px">${day}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">`;
+    byDay[day].forEach(sl => {
+      const modeIcon = sl.mode === 'online' ? 'fas fa-video' : 'fas fa-building';
+      const editBtn = canManageSlots()
+        ? `<button onclick="event.stopPropagation();openSlotModal('${sl.id}')" style="background:none;border:none;cursor:pointer;color:var(--ink-30);font-size:10px;padding:2px 4px;border-radius:4px" title="Cấu hình hình thức / địa điểm / ghi chú"><i class="fas fa-pen"></i></button>`
+        : '';
+      const locText = sl.location ? `<span style="font-size:10px;color:var(--ink-30);margin-left:4px">· ${sl.location}</span>` : '';
+      const unconfigured = (!sl.location && !sl.note) ? `<span style="font-size:9px;color:var(--pd-color);font-weight:700;margin-left:2px">· chưa cấu hình</span>` : '';
+      html += `<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);">
+        <i class="${modeIcon}" style="font-size:10px;color:var(--ink-30)"></i>
+        <span style="font-size:12px;font-weight:600">${sl.name}</span>
+        <span style="font-size:11px;color:var(--ink-60)">${sl.time}</span>
+        ${locText}${canManageSlots() ? unconfigured : ''}
+        ${editBtn}
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+  el.innerHTML = html;
+}
+
+// SLOT MODAL — configures mode/location/note only; day/time are read-only (owned by Calendar)
+function openSlotModal(slotId) {
+  if (!canManageSlots()) return;
+  const sl = S.slots.find(s => s.id === slotId);
+  if (!sl) return;
+  document.getElementById('slot-edit-id').value = sl.id;
+  document.getElementById('slot-readonly-name').textContent = sl.name;
+  document.getElementById('slot-readonly-daytime').textContent = `${sl.day} · ${sl.time}`;
+  document.getElementById('slot-location').value = sl.location || '';
+  document.getElementById('slot-note').value = sl.note || '';
+  setSlotMode(sl.mode || 'offline');
+  document.getElementById('slot-overlay').classList.add('open');
+}
+
+function closeSlotModal() { document.getElementById('slot-overlay').classList.remove('open'); }
+
+function setSlotMode(mode) {
+  S.slotMode = mode;
+  document.getElementById('mode-offline').classList.toggle('active', mode === 'offline');
+  document.getElementById('mode-online').classList.toggle('active',  mode === 'online');
+  document.getElementById('location-label').textContent = mode === 'online'
+    ? 'Link phỏng vấn (Google Meet / Zoom)'
+    : 'Địa điểm (dùng chung cho các ca offline)';
+  document.getElementById('slot-location').placeholder = mode === 'online'
+    ? 'https://meet.google.com/...'
+    : 'Phòng A3.02 — Tòa A, FTU';
+}
+
+async function saveSlot() {
+  if (!canManageSlots()) { toast('Bạn không có quyền cấu hình ca', 'err'); return; }
+  const id   = document.getElementById('slot-edit-id').value;
+  if (!id) return;
+  const loc  = document.getElementById('slot-location').value.trim();
+  const note = document.getElementById('slot-note').value.trim();
+  const meta = { mode: S.slotMode, location: loc, note };
+  const metaKey = sanitizeSlotKey(id);
+
+  S.slotMetaRaw[metaKey] = meta;
+
+  if (window.db) {
+    try {
+      await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).update({ slotMeta: S.slotMetaRaw });
+    } catch(e) { toast('Lỗi lưu cấu hình ca: ' + e.message, 'err'); return; }
+  }
+
+  const idx = S.slots.findIndex(s => s.id === id);
+  if (idx !== -1) S.slots[idx] = { ...S.slots[idx], ...meta };
+
+  toast('Đã lưu cấu hình ca', 'ok');
+  closeSlotModal();
+  renderSlotsList();
+  buildCalGrid();
+}
+
+async function resetSlotMeta() {
+  if (!canManageSlots()) return;
+  const id = document.getElementById('slot-edit-id').value;
+  if (!id) return;
+  showConfirm('Đặt lại cấu hình ca này?', 'Hình thức sẽ về Offline, xoá địa điểm & ghi chú. Ca (ngày/giờ) vẫn giữ nguyên trên Calendar.', async () => {
+    const metaKey = sanitizeSlotKey(id);
+    delete S.slotMetaRaw[metaKey];
+    if (window.db) {
+      try {
+        await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).update({ slotMeta: S.slotMetaRaw });
+      } catch(e) { toast('Lỗi: ' + e.message, 'err'); return; }
+    }
+    const idx = S.slots.findIndex(s => s.id === id);
+    if (idx !== -1) S.slots[idx] = { ...S.slots[idx], mode:'offline', location:'', note:'' };
+    closeSlotModal();
+    renderSlotsList();
+    buildCalGrid();
+    toast('Đã đặt lại cấu hình ca', 'ok');
+  });
+}
+
+// ══════════════════════════════════════════════════
+//  LOAD INTERVIEWERS FROM FIRESTORE
+// ══════════════════════════════════════════════════
+async function loadInterviewersFromFirestore() {
+  if (!window.db) return;
+  try {
+    // Load members who have vote slots (pic_votes or interview_votes collection)
+    const snap = await window.db.collection('interview_votes').get();
+    if (snap.empty) return;
+    snap.forEach(doc => {
+      const d = doc.data();
+      const existing = S.interviewers.find(iv => iv.email === d.email);
+      if (!existing && d.name) {
+        S.interviewers.push({
+          name: d.name || d.fullname || d.email || '',
+          email: d.email || '',
+          department: normalizeDept(d.department || d.dept || ''),
+          availableSlots: mapCalendarSlotsToIds(d.availableSlots || d.slots || []),
+          fromFirestore: true,
+        });
+      }
+    });
+    renderPersonList();
+  } catch(e) {
+    console.warn('Could not load interview_votes:', e);
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  LOAD FROM CALENDAR (voting_candidates + applications)
+// ══════════════════════════════════════════════════
 async function loadFromCalendar() {
-    try {
-        document.getElementById('loading').style.display = 'block';
-        
-        interviewArrangementData.candidates = await loadCandidatesFromCalendar();
-        
-        // Nếu đã có interviewers, thực hiện sắp xếp ngay
-        if (interviewArrangementData.interviewers.length > 0) {
-            interviewArrangementData.schedule = arrangeInterviews(interviewArrangementData);
-            displayArrangementResults(interviewArrangementData);
-        } else {
-            alert('Đã tải ứng viên từ Calendar thành công! Vui lòng upload file vote phỏng vấn.');
+  if (!window.db) { toast('Không có kết nối Firebase', 'err'); return; }
+  const btn = document.getElementById('cal-load-btn');
+  btn.innerHTML = '<span class="mini-spin"></span> Đang tải...';
+  btn.disabled = true;
+
+  try {
+    // 1. Get list of approved candidates (voting_candidates)
+    const votingSnap = await window.db.collection('voting_candidates').get();
+    if (votingSnap.empty) { toast('Không có ứng viên nào trong voting_candidates', 'warn'); return; }
+
+    const approvedEmails = new Set(
+      votingSnap.docs.map(d => (d.data().email || '').toLowerCase().trim()).filter(Boolean)
+    );
+
+    // 2. Get applications with interview_schedule (slots they voted for)
+    const appSnap = await window.db.collection('applications').get();
+    let added = 0;
+
+    appSnap.forEach(doc => {
+      const app = doc.data();
+      const email = (app.email || '').toLowerCase().trim();
+      if (!approvedEmails.has(email)) return;
+
+      const name = app.fullname || app.name || email;
+      const dept1 = normalizeDept(app.priority_position || app.department || '');
+      const dept2 = normalizeDept(app.secondary_position || app.department2 || '');
+      const calSlots = app.interview_schedule || app.availableSlots || [];
+      const slots = mapCalendarSlotsToIds(calSlots);
+
+      // Check existing
+      const existIdx = S.candidates.findIndex(c => c.email === email && c.dept === dept1);
+      if (existIdx === -1 && dept1) {
+        S.candidates.push({ name, email, dept: dept1, dept2: dept2 !== dept1 ? dept2 : '', availableSlots: [...slots], fromCalendar: true });
+        added++;
+      }
+
+      // If apply 2 depts → second interview entry
+      if (dept2 && dept2 !== dept1) {
+        const exist2 = S.candidates.findIndex(c => c.email === email && c.dept === dept2);
+        if (exist2 === -1) {
+          S.candidates.push({ name, email, dept: dept2, dept2: dept1, availableSlots: [...slots], fromCalendar: true, isSecond: true });
+          added++;
         }
-        
-        document.getElementById('loading').style.display = 'none';
-        
-    } catch (error) {
-        console.error('Lỗi tải từ Calendar:', error);
-        alert('Lỗi khi tải từ Calendar: ' + error.message);
-        document.getElementById('loading').style.display = 'none';
-    }
+      }
+    });
+
+    renderPersonList();
+    buildCalGrid();
+    toast(`Đã tải ${added} lượt phỏng vấn từ Calendar`, 'ok');
+  } catch(e) {
+    toast('Lỗi tải Calendar: ' + e.message, 'err');
+  } finally {
+    btn.innerHTML = '<i class="fas fa-calendar-check"></i> Tải ứng viên + lựa chọn ca';
+    btn.disabled = false;
+  }
 }
 
-// Thêm event listener cho nút upload vote để hỗ trợ cả 2 options
-document.getElementById('upload-vote-btn').addEventListener('click', function() {
-    const fileInput = document.getElementById('interview-vote-file');
-    const file = fileInput.files[0];
-    
-    if (!file) {
-        alert('Vui lòng chọn file Excel để tải lên');
-        return;
+// Map calendar slot IDs to interview slot IDs.
+// Since slots are now flattened straight from Calendar's system/interview_schedule
+// (see loadSlotsFromCalendar), ids are already in the exact "DD/MM/YYYY_HH:MM - HH:MM"
+// format candidates/PIC voted with — so this is normally a direct match. The fuzzy
+// fallback only covers older/legacy vote data that doesn't already use that format.
+function mapCalendarSlotsToIds(calSlots) {
+  if (!calSlots || !calSlots.length) return [];
+  return calSlots.map(cs => {
+    // Exact match (expected case: id format already matches Calendar)
+    if (S.slots.some(s => s.id === cs)) return cs;
+    // Fallback: fuzzy match by time string (legacy data)
+    const found = S.slots.find(s => cs.includes && (cs.includes(s.time) || cs.includes(s.name)));
+    return found ? found.id : null;
+  }).filter(Boolean);
+}
+
+function normalizeDept(raw) {
+  const map = { 'truyền thông':'MD','truyen thong':'MD','md':'MD',
+                'nhân sự':'HR','nhan su':'HR','hr':'HR',
+                'dự án':'PD','du an':'PD','pd':'PD',
+                'đối ngoại':'ER','doi ngoai':'ER','er':'ER' };
+  return map[(raw||'').toLowerCase().trim()] || (raw||'').toUpperCase().trim().substring(0,2) || raw;
+}
+
+// ══════════════════════════════════════════════════
+//  PERSON MANAGEMENT
+// ══════════════════════════════════════════════════
+function setMode(mode) {
+  S.mode = mode;
+  S.activePerson = null;
+  document.getElementById('mode-c').classList.toggle('active', mode === 'candidate');
+  document.getElementById('mode-i').classList.toggle('active', mode === 'interviewer');
+
+  // Show secondary dept field only for candidates
+  const sf = document.getElementById('secondary-dept-wrap');
+  if (sf) sf.style.display = mode === 'candidate' ? 'block' : 'none';
+
+  document.getElementById('list-title').textContent = mode === 'candidate' ? 'Danh sách ứng viên' : 'Danh sách PIC';
+  updateAddPersonVisibility();
+  renderPersonList();
+  updateCalTitle();
+  buildCalGrid();
+}
+
+// Thêm người thủ công: SuperAdmin/Admin-HR thấy ở cả 2 tab; Admin ban khác chỉ
+// thấy ở tab PIC (và khi mở form, dropdown ban sẽ bị khoá về đúng ban của họ — xem toggleAddForm()).
+function updateAddPersonVisibility() {
+  const el = document.getElementById('add-person-section');
+  if (!el) return;
+  const visible = canCRUD() || (S.role === 'admin-other' && S.mode === 'interviewer');
+  el.style.display = visible ? 'block' : 'none';
+}
+
+function getList() { return S.mode === 'candidate' ? S.candidates : S.interviewers; }
+function getActivePerson() {
+  if (!S.activePerson) return null;
+  const list = S.activePerson.type === 'candidate' ? S.candidates : S.interviewers;
+  return list[S.activePerson.index] || null;
+}
+
+function renderPersonList() {
+  const list = getList();
+  const el   = document.getElementById('person-list');
+  document.getElementById('list-count').textContent = list.length + ' người';
+
+  if (!list.length) {
+    el.innerHTML = `<div class="list-empty"><i class="fas fa-users"></i><p>Chưa có ai</p></div>`;
+    return;
+  }
+
+  el.innerHTML = list.map((p, i) => {
+    const isActive = S.activePerson && S.activePerson.type === S.mode && S.activePerson.index === i;
+    const dept = p.dept || p.department || '';
+    const dc   = DEPT_CLASS[dept] || 'b-hr';
+    const tickCount = p.availableSlots ? p.availableSlots.length : 0;
+    const secondTag = p.dept2 ? ` · ${DEPT_NAMES[p.dept2]||p.dept2}` : '';
+    const calIcon   = p.fromCalendar ? '<i class="fas fa-calendar-check" style="font-size:9px;opacity:.5;margin-left:2px" title="Từ Calendar"></i>' : '';
+    const canManageThis = S.mode === 'candidate' ? canCRUD() : canManageInterviewer(p);
+    return `<div class="person-item ${isActive?'active':''}" onclick="selectPerson(${i})">
+      <div class="p-avatar ${dc}" style="background:var(${DEPT_BG[dept]||'--ink-10'});color:var(${DEPT_COLORS[dept]||'--ink'});min-width:28px">
+        ${(p.name||'?').charAt(0).toUpperCase()}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div class="p-name">${p.name||''}${calIcon}</div>
+        <div class="p-sub">${tickCount} ca · <span class="badge ${dc}" style="font-size:9px;padding:1px 5px">${DEPT_NAMES[dept]||dept}${secondTag}</span></div>
+      </div>
+      ${canManageThis ? `<button class="p-del" onclick="event.stopPropagation();removePerson(${i})"><i class="fas fa-times"></i></button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function selectPerson(i) {
+  S.activePerson = { type: S.mode, index: i };
+  renderPersonList();
+  updateCalTitle();
+  buildCalGrid();
+}
+
+function updateCalTitle() {
+  const p = getActivePerson();
+  const titleEl = document.getElementById('cal-title');
+  const subEl   = document.getElementById('cal-sub');
+  if (!p) {
+    titleEl.textContent = 'Chọn người để tick lịch';
+    subEl.textContent   = 'Click tên từ danh sách bên trái';
+    return;
+  }
+  const dept  = p.dept || p.department || '';
+  const dept2 = p.dept2 || '';
+  const role  = S.mode === 'candidate' ? 'Ứng viên' : 'PIC';
+  titleEl.textContent = `${p.name} — ${DEPT_NAMES[dept]||dept}${dept2?' · '+DEPT_NAMES[dept2]:''}`;
+  subEl.textContent   = `${role} · ${p.availableSlots ? p.availableSlots.length : 0} ca đã tick · Click ô để thay đổi`;
+}
+
+function toggleAddForm() {
+  const f = document.getElementById('add-form');
+  f.classList.toggle('open');
+  if (f.classList.contains('open')) {
+    document.getElementById('secondary-dept-wrap').style.display = S.mode === 'candidate' ? 'block' : 'none';
+    const deptSel = document.getElementById('add-dept');
+    if (S.role === 'admin-other' && S.mode === 'interviewer' && S.userDept) {
+      deptSel.value = S.userDept;
+      deptSel.disabled = true;
+    } else {
+      deptSel.disabled = false;
     }
-    
-    // Kiểm tra xem đã có dữ liệu ứng viên chưa
-    const dataSource = document.querySelector('input[name="data-source"]:checked').value;
-    
-    if (dataSource === 'calendar' && interviewArrangementData.candidates.length === 0) {
-        // Tự động load từ Calendar nếu chọn option Calendar
-        loadFromCalendar();
+    document.getElementById('add-name').focus();
+  }
+}
+
+function addPerson() {
+  const canAdd = S.mode === 'candidate' ? canCRUD() : canManageInterviewer(null);
+  if (!canAdd) { toast('Bạn không có quyền thêm người', 'err'); return; }
+  const name  = document.getElementById('add-name').value.trim();
+  // Admin ban khác chỉ được thêm PIC của đúng ban mình — ép cứng dept, không tin dropdown.
+  const dept  = (S.role === 'admin-other' && S.mode === 'interviewer') ? S.userDept : document.getElementById('add-dept').value;
+  const dept2 = S.mode === 'candidate' ? document.getElementById('add-dept2').value : '';
+  if (!name) { toast('Nhập tên trước!', 'err'); return; }
+
+  const person = { name, email: '', dept, dept2: dept2 || '', availableSlots: [], fromCalendar: false };
+  if (S.mode === 'candidate') S.candidates.push(person);
+  else S.interviewers.push({ name, email: '', department: dept, availableSlots: [] });
+
+  const list = getList();
+  S.activePerson = { type: S.mode, index: list.length - 1 };
+
+  document.getElementById('add-name').value = '';
+  document.getElementById('add-form').classList.remove('open');
+  renderPersonList();
+  updateCalTitle();
+  buildCalGrid();
+  toast(`Đã thêm ${name}`);
+}
+
+function removePerson(i) {
+  const list = getList();
+  const target = list[i];
+  if (!target) return;
+  const canRemove = S.mode === 'candidate' ? canCRUD() : canManageInterviewer(target);
+  if (!canRemove) { toast('Bạn không có quyền xoá người', 'err'); return; }
+  const name = target.name;
+  list.splice(i, 1);
+  if (S.activePerson && S.activePerson.type === S.mode && S.activePerson.index === i) S.activePerson = null;
+  renderPersonList();
+  updateCalTitle();
+  buildCalGrid();
+  toast(`Đã xoá ${name}`);
+}
+
+// ══════════════════════════════════════════════════
+//  CALENDAR GRID (slot columns)
+// ══════════════════════════════════════════════════
+function buildCalGrid() {
+  const grid = document.getElementById('cal-grid');
+  if (!S.slots.length) {
+    grid.innerHTML = `<div style="padding:32px;text-align:center;color:var(--ink-30);font-size:13px;width:100%">Chưa có ca nào — kiểm tra lịch đã công bố trên trang Calendar chưa</div>`;
+    return;
+  }
+
+  const activePerson = getActivePerson();
+  const selectedSet  = new Set(activePerson ? (activePerson.availableSlots || []) : []);
+  const locked       = activePerson ? !canTick() : false;
+
+  // For candidate: show which slots have PIC available (same dept)
+  let picSlotSet = new Set();
+  if (activePerson && S.mode === 'candidate') {
+    const dept = activePerson.dept || activePerson.department || '';
+    S.interviewers.filter(iv => iv.department === dept || iv.dept === dept)
+      .forEach(iv => (iv.availableSlots||[]).forEach(s => picSlotSet.add(s)));
+  }
+
+  // Group slots by day — mỗi ngày build thành 1 khối riêng để có thể wrap xuống dòng,
+  // tránh bảng kéo dài vô tận theo chiều ngang khi có nhiều ngày/nhiều ca.
+  const days = [...new Set(S.slots.map(s => s.day))];
+  const SCROLL_THRESHOLD = 12; // ngày nào có nhiều hơn ngần này ca thì khối đó tự cuộn ngang riêng
+
+  let html = '';
+  days.forEach(day => {
+    const daySlots = S.slots.filter(s => s.day === day);
+    const needsScroll = daySlots.length > SCROLL_THRESHOLD;
+
+    html += `<div class="cal-day-block${needsScroll ? ' cal-day-scroll' : ''}">`;
+    html += `<div class="cal-day-grid" style="grid-template-columns:repeat(${daySlots.length},minmax(80px,1fr))">`;
+    html += `<div class="cal-day-title">${day}</div>`;
+
+    // Row: time labels
+    daySlots.forEach(sl => {
+      html += `<div class="cal-time-header">${sl.name}<br><span style="font-weight:400">${sl.time}</span></div>`;
+    });
+
+    // Row: tick cells
+    daySlots.forEach(sl => {
+      const isSel = selectedSet.has(sl.id);
+      const hasPic = picSlotSet.has(sl.id);
+      let cls = 'cal-cell';
+      if (isSel && hasPic) cls += ' both';
+      else if (isSel) cls += ' selected';
+      else if (hasPic) cls += ' pic-avail';
+      if (locked || !activePerson) cls += ' locked';
+      const lockAttr = locked || !activePerson ? '' : `onclick="toggleSlot('${sl.id}')"`;
+      const modeIcon = sl.mode === 'online'
+        ? `<i class="fas fa-video" style="position:absolute;top:3px;left:3px;font-size:8px;color:var(--ink-30)" title="Online"></i>`
+        : '';
+      html += `<div class="${cls}" ${lockAttr} title="${sl.day} · ${sl.time}${sl.location?' · '+sl.location:''}">
+        ${modeIcon}
+        ${isSel ? '<i class="fas fa-check" style="font-size:11px"></i>' : ''}
+      </div>`;
+    });
+
+    html += `</div></div>`; // .cal-day-grid, .cal-day-block
+  });
+
+  grid.innerHTML = html;
+}
+
+function toggleSlot(slotId) {
+  const p = getActivePerson();
+  if (!p) { toast('Chọn người trước!', 'err'); return; }
+  if (!canTick()) { toast('Bạn không có quyền tick lịch', 'err'); return; }
+
+  const slots = p.availableSlots || (p.availableSlots = []);
+  const idx   = slots.indexOf(slotId);
+  if (idx === -1) slots.push(slotId);
+  else slots.splice(idx, 1);
+
+  buildCalGrid();
+  renderPersonList();
+  updateCalTitle();
+}
+
+// ══════════════════════════════════════════════════
+//  IMPORT EXCEL
+// ══════════════════════════════════════════════════
+function handleVoteFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  document.getElementById('vote-fname').textContent = file.name;
+  document.getElementById('vote-fname').style.display = 'block';
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb   = XLSX.read(new Uint8Array(e.target.result), { type:'array' });
+      const ws   = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header:1 });
+      parseVoteFile(rows);
+    } catch(err) { toast('Lỗi đọc file: '+err.message, 'err'); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseVoteFile(rows) {
+  if (!canCRUD()) { toast('Bạn không có quyền import', 'err'); return; }
+  if (rows.length < 2) { toast('File không đúng định dạng', 'err'); return; }
+  const headers   = rows[0];
+  const slotCount = Math.min(headers.length - 3, S.slots.length);
+  let addedIV = 0, addedC = 0;
+  let currentDept = '';
+
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row || row.length < 3) continue;
+    if (row[0]) currentDept = normalizeDept(String(row[0]));
+    const gen  = String(row[1]||'').trim().toUpperCase();
+    const name = String(row[2]||'').trim();
+    if (!name) continue;
+
+    const slots = [];
+    for (let j = 0; j < slotCount; j++) {
+      const v = row[3+j];
+      if (v==='x'||v==='X'||v==='×'||v===1) slots.push(S.slots[j].id);
     }
-    
-    processVoteFile(file);
+
+    if (gen === 'PIC' || gen === 'INTERVIEWER') {
+      const parts = name.split(' - ');
+      const pName = parts[0].trim();
+      const pDept = parts[1] ? normalizeDept(parts[1].trim()) : currentDept;
+      if (!S.interviewers.find(iv=>iv.name===pName)) {
+        S.interviewers.push({ name:pName, email:'', department:pDept, availableSlots:slots });
+        addedIV++;
+      }
+    } else {
+      if (!S.candidates.find(c=>c.name===name && c.dept===currentDept)) {
+        S.candidates.push({ name, email:'', dept:currentDept, dept2:'', availableSlots:slots });
+        addedC++;
+      }
+    }
+  }
+  renderPersonList();
+  buildCalGrid();
+  toast(`Nhập: ${addedC} ứng viên, ${addedIV} PIC`, 'ok');
+}
+
+function downloadTemplate() {
+  const slotHeaders = S.slots.map(s => `${s.name}: ${s.time} (${s.day})`);
+  const data = [
+    ['BAN','GEN','HỌ VÀ TÊN', ...slotHeaders],
+    ['ER','15','Đào Mai An',    ...new Array(S.slots.length).fill('')],
+    ['HR','15','Trịnh Hà Anh',  ...new Array(S.slots.length).fill('')],
+    ['MD','15','Trần Diệu Anh', ...new Array(S.slots.length).fill('')],
+    ['PD','15','Nguyễn Vũ Quỳnh Anh',...new Array(S.slots.length).fill('')],
+    ['','PIC','Nguyễn Văn A - HR', 'x','x','','','x','','','','','','','', ...new Array(Math.max(0,S.slots.length-12)).fill('')],
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [8,6,25,...new Array(S.slots.length).fill(20)].map(wch=>({wch}));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Template');
+  XLSX.writeFile(wb, 'Template_Vote_Phong_Van.xlsx');
+  toast('Đã tải template');
+}
+
+function clearAll() {
+  if (!canCRUD()) { toast('Bạn không có quyền xoá', 'err'); return; }
+  if (!S.candidates.length && !S.interviewers.length) { toast('Không có gì để xoá','warn'); return; }
+  showConfirm('Xoá toàn bộ người?', 'Tất cả ứng viên và PIC sẽ bị xoá.', () => {
+    S.candidates = []; S.interviewers = []; S.activePerson = null; S.schedule = []; S.lastUnmatched = [];
+    document.getElementById('results-section').style.display = 'none';
+    renderPersonList(); updateCalTitle(); buildCalGrid();
+    toast('Đã xoá tất cả');
+  });
+}
+
+// ══════════════════════════════════════════════════
+//  ARRANGEMENT ALGORITHM
+// ══════════════════════════════════════════════════
+function runArrangement() {
+  if (!canCRUD()) { toast('Bạn không có quyền thực hiện thao tác này', 'err'); return; }
+  if (!S.candidates.length)  { toast('Chưa có ứng viên!', 'err'); return; }
+  if (!S.interviewers.length){ toast('Chưa có PIC nào!', 'err'); return; }
+
+  const btn = document.getElementById('run-btn');
+  btn.innerHTML = '<span class="mini-spin"></span> Đang sắp xếp...';
+  btn.disabled = true;
+
+  setTimeout(() => {
+    try {
+      const { schedule, unmatched } = arrangeInterviews();
+      S.schedule = schedule;
+      S.lastUnmatched = unmatched;
+      displayResults(schedule, unmatched);
+      toast(`Ghép xong ${schedule.length} buổi phỏng vấn`, 'ok');
+      document.getElementById('results-section').scrollIntoView({ behavior:'smooth' });
+    } catch(e) {
+      toast('Lỗi sắp xếp: '+e.message, 'err');
+    } finally {
+      btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Sắp xếp lại';
+      btn.disabled = false;
+    }
+  }, 200);
+}
+
+function arrangeInterviews() {
+  const schedule  = [];
+  const unmatched = [];
+  const ivCount   = {}; // interviewer name → count of sessions
+  const slotIVBusy = {}; // slotId → Set of interviewer names busy
+
+  S.interviewers.forEach(iv => {
+    ivCount[iv.name] = 0;
+    (iv.availableSlots||[]).forEach(sid => {
+      if (!slotIVBusy[sid]) slotIVBusy[sid] = new Set();
+    });
+  });
+
+  // Group interviewers by dept
+  const ivByDept = {};
+  S.interviewers.forEach(iv => {
+    const d = iv.department || iv.dept || '';
+    if (!ivByDept[d]) ivByDept[d] = [];
+    ivByDept[d].push(iv);
+  });
+
+  // Sort candidates by number of available slots (fewest first = harder to schedule)
+  const sorted = [...S.candidates].sort((a,b) =>
+    (a.availableSlots||[]).length - (b.availableSlots||[]).length
+  );
+
+  sorted.forEach(candidate => {
+    const dept  = candidate.dept || candidate.department || '';
+    const ivList = ivByDept[dept] || [];
+    if (!ivList.length) { unmatched.push({ name:candidate.name, dept, reason:'Không có PIC cho ban này' }); return; }
+    if (!candidate.availableSlots || !candidate.availableSlots.length) {
+      unmatched.push({ name:candidate.name, dept, reason:'Chưa tick ca nào' }); return;
+    }
+
+    let bestSlot = null, bestIVs = [], minScore = Infinity;
+
+    // For each slot the candidate can do:
+    candidate.availableSlots.forEach(slotId => {
+      // Find IVs available in this slot
+      const availIVs = ivList.filter(iv => (iv.availableSlots||[]).includes(slotId));
+      if (availIVs.length < 1) return; // need at least 1 (ideally 2+)
+
+      // Score: prefer slots with 2+ IVs, prefer IVs with fewer sessions
+      const score = -availIVs.length * 10 + availIVs.reduce((s,iv) => s + (ivCount[iv.name]||0), 0);
+      if (score < minScore) {
+        minScore = score;
+        bestSlot = slotId;
+        bestIVs  = availIVs;
+      }
+    });
+
+    if (!bestSlot) { unmatched.push({ name:candidate.name, dept, reason:'Không tìm được ca chung với PIC' }); return; }
+
+    // Pick top 2 IVs with fewest sessions
+    const pickedIVs = bestIVs.sort((a,b) => (ivCount[a.name]||0)-(ivCount[b.name]||0)).slice(0,2);
+    pickedIVs.forEach(iv => ivCount[iv.name] = (ivCount[iv.name]||0) + 1);
+
+    const slot = S.slots.find(s => s.id === bestSlot) || { name:bestSlot, day:'', time:'', mode:'offline', location:'', note:'' };
+    schedule.push({
+      slotId:   bestSlot,
+      slotName: slot.name,
+      day:      slot.day,
+      time:     slot.time,
+      mode:     slot.mode,
+      location: slot.location,
+      note:     slot.note,
+      candidateName: candidate.name,
+      candidateEmail:candidate.email || '',
+      candidateDept: dept,
+      candidateType: candidate.isSecond ? 'secondary' : 'priority', // maps to round{N}.priority|secondary on the application doc
+      interviewers:  pickedIVs.map(iv => ({ name:iv.name, dept: iv.department||iv.dept||'' })),
+    });
+  });
+
+  // Sort by slot order
+  schedule.sort((a,b) => {
+    const ai = S.slots.findIndex(s=>s.id===a.slotId);
+    const bi = S.slots.findIndex(s=>s.id===b.slotId);
+    return ai - bi;
+  });
+
+  return { schedule, unmatched };
+}
+
+// ══════════════════════════════════════════════════
+//  DISPLAY RESULTS
+// ══════════════════════════════════════════════════
+function displayResults(schedule, unmatched) {
+  document.getElementById('results-section').style.display = 'block';
+  updatePublishCardVisibility();
+
+  const usedSlots = new Set(schedule.map(s=>s.slotId));
+  const usedIVs   = new Set(schedule.flatMap(s=>s.interviewers.map(iv=>iv.name)));
+  document.getElementById('s-slots').textContent = usedSlots.size;
+  document.getElementById('s-cands').textContent = schedule.length;
+  document.getElementById('s-ivs').textContent   = usedIVs.size;
+  document.getElementById('s-unmatched').textContent = (unmatched||[]).length;
+
+  renderTable(schedule, 'all');
+
+  const ub = document.getElementById('unmatched-box');
+  const ul = document.getElementById('unmatched-list');
+  if (unmatched && unmatched.length) {
+    ul.innerHTML = `<b>Chưa ghép được ${unmatched.length} ứng viên:</b><br>` +
+      unmatched.map(u => `• ${u.name} (${DEPT_NAMES[u.dept]||u.dept}) — ${u.reason}`).join('<br>');
+    ub.style.display = 'flex';
+  } else {
+    ub.style.display = 'none';
+  }
+}
+
+function renderTable(schedule, deptFilter) {
+  const body     = document.getElementById('result-body');
+  const filtered = deptFilter === 'all' ? schedule : schedule.filter(s=>s.candidateDept===deptFilter);
+
+  if (!filtered.length) {
+    body.innerHTML = `<tr><td colspan="11"><div class="empty-state"><i class="fas fa-calendar-xmark"></i><p>Không có buổi phỏng vấn nào</p></div></td></tr>`;
+    return;
+  }
+
+  body.innerHTML = filtered.map((s) => {
+    const i = S.schedule.indexOf(s); // index in the master array — used for editing & permission scoping
+    const dc = DEPT_CLASS[s.candidateDept] || 'b-md';
+    const modeHtml = s.mode === 'online'
+      ? `<span class="badge" style="background:#EFF6FF;color:#1D4ED8"><i class="fas fa-video" style="font-size:9px"></i> Online</span>`
+      : `<span class="badge" style="background:#F0FDF4;color:#166534"><i class="fas fa-building" style="font-size:9px"></i> Offline</span>`;
+    const ivHtml = (s.interviewers||[]).map(iv => {
+      const idc = DEPT_CLASS[iv.dept] || 'b-md';
+      return `<span class="badge ${idc}" style="margin-right:3px">${iv.name}</span>`;
+    }).join('');
+    const locHtml = s.location
+      ? (s.mode === 'online'
+          ? `<a href="${s.location}" target="_blank" style="color:var(--md-color);font-size:12px;word-break:break-all">Link</a>`
+          : `<span style="font-size:12px">${s.location}</span>`)
+      : `<span style="color:var(--ink-30);font-size:11px">—</span>`;
+    const actionHtml = canEditRow(s)
+      ? `<button class="btn btn-ghost btn-xs" onclick="openEditRowModal(${i})" title="Sửa ca phỏng vấn"><i class="fas fa-pen"></i></button>`
+      : `<span style="color:var(--ink-30)">—</span>`;
+
+    return `<tr data-dept="${s.candidateDept}">
+      <td class="num">${i+1}</td>
+      <td><b>${s.slotName}</b></td>
+      <td style="white-space:nowrap;font-size:12px">${s.day}</td>
+      <td style="white-space:nowrap;font-size:12px">${s.time}</td>
+      <td>
+        <div style="font-weight:600;font-size:13px">${s.candidateName}</div>
+        ${s.candidateEmail ? `<div style="font-size:10px;color:var(--ink-30)">${s.candidateEmail}</div>` : ''}
+      </td>
+      <td><span class="badge ${dc}">${DEPT_NAMES[s.candidateDept]||s.candidateDept}</span></td>
+      <td>${ivHtml || '<span style="color:var(--ink-30)">—</span>'}</td>
+      <td>${modeHtml}</td>
+      <td>${locHtml}</td>
+      <td style="font-size:12px;color:var(--ink-60)">${s.note||'—'}</td>
+      <td>${actionHtml}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filterDept(btn) {
+  document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable(S.schedule, btn.dataset.dept);
+}
+
+// ══════════════════════════════════════════════════
+//  EDIT SCHEDULE ROW — lets SuperAdmin/Admin-HR edit any row, and lets
+//  Admin của ban khác edit only rows where candidateDept === their own dept
+//  (enforced both for showing the button via canEditRow() and again here).
+// ══════════════════════════════════════════════════
+let _editRowMode = 'offline';
+
+function openEditRowModal(idx) {
+  const row = S.schedule[idx];
+  if (!row || !canEditRow(row)) { toast('Bạn không có quyền sửa ca này', 'err'); return; }
+  document.getElementById('edit-row-index').value = idx;
+  document.getElementById('edit-row-sub').textContent =
+    `${row.candidateName} · ${DEPT_NAMES[row.candidateDept]||row.candidateDept} · ${row.day} ${row.time}`;
+  document.getElementById('edit-row-location').value = row.location || '';
+  document.getElementById('edit-row-interviewers').value = (row.interviewers||[]).map(iv=>iv.name).join(', ');
+  document.getElementById('edit-row-note').value = row.note || '';
+  setEditRowMode(row.mode || 'offline');
+  document.getElementById('edit-row-overlay').classList.add('open');
+}
+
+function closeEditRowModal() { document.getElementById('edit-row-overlay').classList.remove('open'); }
+
+function setEditRowMode(mode) {
+  _editRowMode = mode;
+  document.getElementById('edit-mode-offline').classList.toggle('active', mode === 'offline');
+  document.getElementById('edit-mode-online').classList.toggle('active', mode === 'online');
+  document.getElementById('edit-row-location-label').textContent = mode === 'online'
+    ? 'Link phỏng vấn (Google Meet / Zoom)'
+    : 'Địa điểm';
+  document.getElementById('edit-row-location').placeholder = mode === 'online'
+    ? 'https://meet.google.com/...'
+    : 'Phòng A3.02 — Tòa A, FTU';
+}
+
+async function saveEditRow() {
+  const idx = parseInt(document.getElementById('edit-row-index').value, 10);
+  const row = S.schedule[idx];
+  if (!row || !canEditRow(row)) { toast('Bạn không có quyền sửa ca này', 'err'); return; }
+
+  const namesRaw = document.getElementById('edit-row-interviewers').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const interviewers = namesRaw.map(name => {
+    const match = S.interviewers.find(iv => iv.name.toLowerCase() === name.toLowerCase());
+    return { name, dept: match ? (match.department||match.dept||row.candidateDept) : row.candidateDept };
+  });
+
+  row.mode = _editRowMode;
+  row.location = document.getElementById('edit-row-location').value.trim();
+  row.note = document.getElementById('edit-row-note').value.trim();
+  row.interviewers = interviewers;
+
+  closeEditRowModal();
+  const activeTab = document.querySelector('.filter-tab.active');
+  renderTable(S.schedule, activeTab ? activeTab.dataset.dept : 'all');
+  toast('Đã cập nhật ca phỏng vấn', 'ok');
+
+  // Persist right away so the edit isn't lost on refresh and other admins see it
+  await saveSchedule({ silent: true });
+}
+
+// ══════════════════════════════════════════════════
+//  EXPORT
+// ══════════════════════════════════════════════════
+function exportResult() {
+  if (!S.schedule.length) { toast('Chưa có lịch để xuất', 'err'); return; }
+  const data = [['#','Ca PV','Ngày','Thời gian','Ứng viên','Email','Ban UV','Người phỏng vấn','Hình thức','Địa điểm/Link','Ghi chú']];
+  S.schedule.forEach((s,i) => {
+    data.push([
+      i+1, s.slotName, s.day, s.time, s.candidateName, s.candidateEmail||'',
+      DEPT_NAMES[s.candidateDept]||s.candidateDept,
+      (s.interviewers||[]).map(iv=>iv.name).join(', '),
+      s.mode === 'online' ? 'Online' : 'Offline',
+      s.location||'', s.note||''
+    ]);
+  });
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [4,16,10,14,22,24,14,28,8,28,20].map(wch=>({wch}));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Lịch phỏng vấn');
+  XLSX.writeFile(wb, `Lich_Phong_Van_${new Date().toISOString().split('T')[0]}.xlsx`);
+  toast('Đã xuất Excel', 'ok');
+}
+
+// ══════════════════════════════════════════════════
+//  SAVE / LOAD ARRANGED SCHEDULE — persists S.schedule (the matching result)
+//  into system/interview_schedule.arrangedSchedule so it survives reloads
+//  and is visible to Admin-other (who can never run the algorithm, only
+//  edit their own dept's rows once a schedule has been saved).
+// ══════════════════════════════════════════════════
+async function saveSchedule(opts) {
+  opts = opts || {};
+  if (!(canCRUD() || S.role === 'admin-other')) { if (!opts.silent) toast('Bạn không có quyền lưu lịch', 'err'); return; }
+  if (!S.schedule.length) { if (!opts.silent) toast('Chưa có lịch để lưu', 'err'); return; }
+  if (!window.db) { if (!opts.silent) toast('Không có kết nối Firebase', 'err'); return; }
+
+  const btn = document.getElementById('save-schedule-btn');
+  if (btn && !opts.silent) { btn.disabled = true; btn.innerHTML = '<span class="mini-spin"></span> Đang lưu...'; }
+
+  try {
+    await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).set({
+      arrangedSchedule: S.schedule,
+      arrangedUnmatched: S.lastUnmatched || [],
+      arrangedAt: new Date().toISOString(),
+      arrangedBy: S.userEmail || '',
+    }, { merge: true });
+    if (!opts.silent) toast('Đã lưu lịch sắp xếp', 'ok');
+  } catch(e) {
+    toast('Lỗi lưu lịch: ' + e.message, 'err');
+  } finally {
+    if (btn && !opts.silent) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Lưu lịch'; }
+  }
+}
+
+async function loadSavedSchedule() {
+  if (!window.db) return;
+  try {
+    const doc = await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).get();
+    const data = doc.exists ? doc.data() : null;
+    if (data && Array.isArray(data.arrangedSchedule) && data.arrangedSchedule.length) {
+      S.schedule = data.arrangedSchedule;
+      S.lastUnmatched = data.arrangedUnmatched || [];
+      displayResults(S.schedule, S.lastUnmatched);
+    }
+  } catch(e) {
+    console.warn('Không tải được lịch đã lưu:', e);
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  PUBLISH TO SYSTEM — pushes S.schedule into applications/{id}
+//  at round{N}.{priority|secondary}.{time,location,interviewer,method,note}.
+//  Dashboard (round table) and Profile (timeline) both read straight from
+//  those same fields, so no changes are needed on those pages — this is
+//  the only write path. Only SuperAdmin can actually click publish/revoke
+//  (canPublish()) — Admin (HR) has full edit rights elsewhere on this page
+//  but cannot pull the trigger. Also requires the "Bật" toggle to be on
+//  before the button is enabled, so it's never an accidental click.
+// ══════════════════════════════════════════════════
+function updatePublishCardVisibility() {
+  const card = document.getElementById('publish-card');
+  if (!card) return;
+  const resultsVisible = document.getElementById('results-section').style.display !== 'none';
+  card.style.display = (canCRUD() && resultsVisible && S.schedule.length) ? 'block' : 'none';
+
+  const note = document.getElementById('publish-permission-note');
+  if (note) note.style.display = (canCRUD() && !canPublish()) ? 'block' : 'none';
+
+  const publishBtn = document.getElementById('publish-btn');
+  if (publishBtn) publishBtn.disabled = !S.publish.enabled || !canPublish();
+
+  renderRevokeSection();
+}
+
+function setPublishRound(round) {
+  S.publish.round = round;
+  document.getElementById('publish-round-2').classList.toggle('active', round === 'round2');
+  document.getElementById('publish-round-4').classList.toggle('active', round === 'round4');
+}
+
+function setPublishEnabled(enabled) {
+  if (!canCRUD()) return;
+  S.publish.enabled = enabled;
+  document.getElementById('publish-off-btn').classList.toggle('active', !enabled);
+  document.getElementById('publish-on-btn').classList.toggle('active', enabled);
+  document.getElementById('publish-warning').style.display = enabled ? 'flex' : 'none';
+  document.getElementById('publish-btn').disabled = !enabled || !canPublish();
+}
+
+async function publishToSystem() {
+  if (!canPublish()) { toast('Chỉ SuperAdmin mới có quyền công bố', 'err'); return; }
+  if (!S.schedule.length) { toast('Chưa có lịch để công bố', 'err'); return; }
+  if (!S.publish.enabled) { toast('Bật công tắc "Công bố vào hệ thống" trước', 'warn'); return; }
+  if (!window.db) { toast('Không có kết nối Firebase', 'err'); return; }
+
+  const round = S.publish.round;
+  const roundLabel = round === 'round4' ? 'Vòng 4 (Phỏng vấn cá nhân)' : 'Vòng 2';
+
+  showConfirm(
+    `Công bố ${S.schedule.length} lượt phỏng vấn vào ${roundLabel}?`,
+    'Hồ sơ ứng viên & bảng Dashboard của vòng này sẽ được cập nhật ngay. Dữ liệu cũ (nếu có) sẽ bị ghi đè.',
+    () => doPublish(round)
+  );
+}
+
+async function doPublish(round) {
+  const btn = document.getElementById('publish-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="mini-spin"></span> Đang công bố...';
+
+  let ok = 0;
+  const failed = [];
+  const publishedItems = []; // tracked so SuperAdmin can revoke this exact publish later
+
+  for (const s of S.schedule) {
+    try {
+      if (!s.candidateEmail) { failed.push(`${s.candidateName} — thiếu email, không xác định được hồ sơ`); continue; }
+
+      const snap = await window.db.collection('applications').where('email', '==', s.candidateEmail).limit(1).get();
+      if (snap.empty) { failed.push(`${s.candidateName} — không tìm thấy hồ sơ ứng tuyển (${s.candidateEmail})`); continue; }
+
+      const type = s.candidateType || 'priority';
+      const fields = {
+        time: `${s.day} ${s.time}`.trim(),
+        location: s.location || '',
+        method: s.mode || 'offline',
+        note: s.note || '',
+      };
+      if (round === 'round4') fields.interviewer = (s.interviewers || []).map(iv => iv.name).join(', ');
+
+      const updates = {};
+      Object.keys(fields).forEach(k => { updates[`${round}.${type}.${k}`] = fields[k]; });
+
+      await window.db.collection('applications').doc(snap.docs[0].id).update(updates);
+      ok++;
+      publishedItems.push({ docId: snap.docs[0].id, type, candidateName: s.candidateName, hasInterviewer: round === 'round4' });
+    } catch (e) {
+      failed.push(`${s.candidateName} — lỗi: ${e.message}`);
+    }
+  }
+
+  btn.disabled = !S.publish.enabled || !canPublish();
+  btn.innerHTML = '<i class="fas fa-bullhorn"></i> Công bố vào hệ thống';
+
+  const resultBox = document.getElementById('publish-result');
+  resultBox.style.display = 'block';
+  if (failed.length) {
+    resultBox.innerHTML = `<div class="warn-box"><i class="fas fa-triangle-exclamation"></i><div><b>Đã công bố ${ok}/${S.schedule.length} lượt.</b> ${failed.length} lượt lỗi:<br>${failed.map(f=>'• '+f).join('<br>')}</div></div>`;
+  } else {
+    resultBox.innerHTML = `<div class="info-box"><i class="fas fa-circle-check"></i><div>Đã công bố thành công ${ok}/${S.schedule.length} lượt phỏng vấn vào ${round === 'round4' ? 'Vòng 4' : 'Vòng 2'}.</div></div>`;
+  }
+  toast(`Công bố xong: ${ok}/${S.schedule.length} lượt`, failed.length ? 'warn' : 'ok');
+
+  if (ok > 0) {
+    S.publish.last = { round, publishedAt: new Date().toISOString(), publishedBy: S.userEmail || '', items: publishedItems };
+    try {
+      await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).set({ lastPublish: S.publish.last }, { merge: true });
+    } catch(e) { console.warn('Không lưu được lastPublish:', e); }
+  }
+  renderRevokeSection();
+}
+
+// ══════════════════════════════════════════════════
+//  REVOKE PUBLISH — clears the fields written by the most recent publish
+//  (tracked above) back out of applications/{id}. SuperAdmin only, mirrors
+//  publish permission.
+// ══════════════════════════════════════════════════
+async function loadLastPublishInfo() {
+  if (!window.db) return;
+  try {
+    const doc = await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).get();
+    const data = doc.exists ? doc.data() : null;
+    if (data && data.lastPublish && Array.isArray(data.lastPublish.items) && data.lastPublish.items.length) {
+      S.publish.last = data.lastPublish;
+      renderRevokeSection();
+    }
+  } catch(e) {
+    console.warn('Không tải được lastPublish:', e);
+  }
+}
+
+function renderRevokeSection() {
+  const el = document.getElementById('revoke-section');
+  if (!el) return;
+  const lp = S.publish.last;
+  if (!canPublish() || !lp || !lp.items || !lp.items.length) {
+    el.style.display = 'none';
+    el.innerHTML = '';
+    return;
+  }
+  const roundLabel = lp.round === 'round4' ? 'Vòng 4' : 'Vòng 2';
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div class="warn-box mt-16" style="margin-bottom:10px">
+      <i class="fas fa-clock-rotate-left"></i>
+      <div>Lần công bố gần nhất: <b>${lp.items.length} lượt</b> vào <b>${roundLabel}</b>${lp.publishedBy ? ' bởi ' + lp.publishedBy : ''}.</div>
+    </div>
+    <button class="btn btn-danger btn-sm" id="revoke-btn" onclick="revokePublish()">
+      <i class="fas fa-rotate-left"></i> Thu hồi dữ liệu đã công bố
+    </button>`;
+}
+
+async function revokePublish() {
+  if (!canPublish()) { toast('Bạn không có quyền thu hồi', 'err'); return; }
+  const lp = S.publish.last;
+  if (!lp || !lp.items || !lp.items.length) { toast('Không có dữ liệu để thu hồi', 'err'); return; }
+  if (!window.db) { toast('Không có kết nối Firebase', 'err'); return; }
+
+  const roundLabel = lp.round === 'round4' ? 'Vòng 4' : 'Vòng 2';
+  showConfirm(
+    `Thu hồi ${lp.items.length} lượt đã công bố?`,
+    `Dữ liệu lịch phỏng vấn (thời gian, địa điểm, người phỏng vấn, ghi chú...) sẽ bị xoá khỏi hồ sơ ứng viên & Dashboard cho ${roundLabel}. Hành động này không thể hoàn tác.`,
+    async () => {
+      const btn = document.getElementById('revoke-btn');
+      if (btn) { btn.disabled = true; btn.innerHTML = '<span class="mini-spin"></span> Đang thu hồi...'; }
+
+      let ok = 0;
+      const failed = [];
+      for (const item of lp.items) {
+        try {
+          const fv = firebase.firestore.FieldValue.delete();
+          const updates = {
+            [`${lp.round}.${item.type}.time`]: fv,
+            [`${lp.round}.${item.type}.location`]: fv,
+            [`${lp.round}.${item.type}.method`]: fv,
+            [`${lp.round}.${item.type}.note`]: fv,
+          };
+          if (item.hasInterviewer) updates[`${lp.round}.${item.type}.interviewer`] = fv;
+          await window.db.collection('applications').doc(item.docId).update(updates);
+          ok++;
+        } catch(e) {
+          failed.push(`${item.candidateName} — lỗi: ${e.message}`);
+        }
+      }
+
+      S.publish.last = null;
+      try {
+        await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).update({ lastPublish: firebase.firestore.FieldValue.delete() });
+      } catch(e) { console.warn('Không xoá được lastPublish:', e); }
+
+      renderRevokeSection();
+      toast(`Đã thu hồi ${ok}/${lp.items.length} lượt` + (failed.length ? ` (${failed.length} lỗi)` : ''), failed.length ? 'warn' : 'ok');
+    }
+  );
+}
+
+// ══════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════
+// Avatar ảnh lấy từ Google (nếu có) — tên hiển thị luôn lấy từ Account, không bao giờ lấy tên Gmail.
+function setAvatar(name, email, photoURL) {
+  const el = document.getElementById('user-avatar');
+  if (!el) return;
+  if (photoURL) {
+    el.innerHTML = `<img src="${photoURL}" alt="" referrerpolicy="no-referrer" onerror="this.parentElement.textContent=(this.alt||'A').charAt(0).toUpperCase()">`;
+    el.querySelector('img').alt = name || email || 'A';
+  } else {
+    el.textContent = (name || email || 'A').charAt(0).toUpperCase();
+  }
+}
+
+function toast(msg, type='') {
+  const wrap = document.getElementById('toast-wrap');
+  const el   = document.createElement('div');
+  el.className = `toast ${type}`;
+  const icon = type==='ok'?'check-circle':type==='err'?'circle-xmark':type==='warn'?'triangle-exclamation':'circle-info';
+  el.innerHTML = `<i class="fas fa-${icon}"></i> ${msg}`;
+  wrap.appendChild(el);
+  setTimeout(()=>el.remove(), 3200);
+}
+
+// ══════════════════════════════════════════════════
+//  CONFIRM MODAL
+// ══════════════════════════════════════════════════
+let _confirmCb = null;
+function showConfirm(title, body, cb) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-body').textContent  = body;
+  _confirmCb = cb;
+  document.getElementById('confirm-overlay').classList.add('open');
+  document.getElementById('confirm-ok').onclick = () => { closeConfirm(); if(_confirmCb)_confirmCb(); };
+}
+function closeConfirm() { document.getElementById('confirm-overlay').classList.remove('open'); }
+
+// Close overlays on backdrop click
+['slot-overlay','confirm-overlay','edit-row-overlay'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => {
+    if (e.target === document.getElementById(id)) {
+      document.getElementById(id).classList.remove('open');
+    }
+  });
 });
 
-        // Lấy dữ liệu ứng viên từ calendar (Firestore)
-        async function loadCandidatesFromCalendar() {
-    try {
-        const votingSnapshot = await db.collection('voting_candidates').get();
-        
-        if (votingSnapshot.empty) {
-            console.warn('Không tìm thấy ứng viên nào trong voting_candidates');
-            return [];
-        }
-        
-        const votingCandidates = votingSnapshot.docs.map(doc => {
-            const data = doc.data();
-            return data.email ? data.email.toLowerCase().trim() : null;
-        }).filter(email => email);
-        
-        const applicationsSnapshot = await db.collection('applications').get();
-        const candidates = [];
-        
-        applicationsSnapshot.forEach(doc => {
-            const app = doc.data();
-            const appEmail = app.email ? app.email.toLowerCase().trim() : '';
-            
-            if (votingCandidates.includes(appEmail)) {
-                const availableSlots = convertCalendarSlotsToInterviewSlots(app.interview_schedule || []);
-                
-                if (availableSlots.length === 0) {
-                    console.warn(`Ứng viên ${app.fullname} không có slot phỏng vấn nào`);
-                }
-                
-                candidates.push({
-                    name: app.fullname || 'Không có tên',
-                    email: app.email || '',
-                    department: app.priority_position || 'Chưa xác định',
-                    gen: app.gen || '',
-                    availableSlots: availableSlots
-                });
-            }
-        });
-        
-        console.log(`Đã tải ${candidates.length} ứng viên từ calendar`);
-        return candidates;
-        
-    } catch (error) {
-        console.error('Error loading candidates from calendar:', error);
-        alert('Lỗi khi tải dữ liệu ứng viên: ' + error.message);
-        return [];
-    }
-}
-
-        // Chuyển đổi slot IDs từ calendar format sang interview format
-        function convertCalendarSlotsToInterviewSlots(calendarSlots) {
-    if (!calendarSlots || calendarSlots.length === 0) return [];
-    
-    // Tạo mapping động dựa trên pattern
-    const slotMapping = {};
-    const timeSlots = [
-        'Ca 01: 09h20 - 09h50', 'Ca 02: 10h00 - 10h30', 'Ca 03: 10h40 - 11h10',
-        'Ca 04: 11h20 - 11h50', 'Ca 05: 14h00 - 14h30', 'Ca 06: 14h40 - 15h10',
-        'Ca 07: 15h20 - 15h50', 'Ca 08: 16h00 - 16h30', 'Ca 09: 20h00 - 20h30',
-        'Ca 10: 20h40 - 21h10', 'Ca 11: 21h20 - 21h50', 'Ca 12: 22h00 - 22h30',
-        'Ca 01: 08h00 - 08h30', 'Ca 02: 08h40 - 09h10', 'Ca 03: 09h20 - 09h50',
-        'Ca 04: 10h00 - 10h30', 'Ca 05: 10h40 - 11h10', 'Ca 06: 11h20 - 11h50',
-        'Ca 07: 14h00 - 14h30', 'Ca 08: 14h40 - 15h10', 'Ca 09: 15h20 - 15h50',
-        'Ca 10: 16h00 - 16h30'
-    ];
-    
-    // Tạo mapping cho tất cả các slot
-    timeSlots.forEach((slot, index) => {
-        // Tạo pattern cho cả Thứ Bảy và Chủ Nhật
-        const saturdayPattern = `day_.*_${slot.replace(/:/g, '').replace(/\s+/g, ' ').trim()}`;
-        const sundayPattern = `day_.*_${slot.replace(/:/g, '').replace(/\s+/g, ' ').trim()}`;
-        
-        slotMapping[saturdayPattern] = `slot_${index}`;
-        slotMapping[sundayPattern] = `slot_${index}`;
+// ══════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // Drag-drop on vote file
+  const drop = document.getElementById('vote-drop');
+  if (drop) {
+    drop.addEventListener('dragover', e=>{e.preventDefault();drop.classList.add('over')});
+    drop.addEventListener('dragleave', ()=>drop.classList.remove('over'));
+    drop.addEventListener('drop', e=>{
+      e.preventDefault(); drop.classList.remove('over');
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      document.getElementById('vote-fname').textContent = file.name;
+      document.getElementById('vote-fname').style.display = 'block';
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const wb = XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        parseVoteFile(XLSX.utils.sheet_to_json(ws,{header:1}));
+      };
+      reader.readAsArrayBuffer(file);
     });
-    
-    return calendarSlots.map(slot => {
-        // Tìm pattern phù hợp
-        for (const pattern in slotMapping) {
-            if (slot.includes(pattern.replace('day_.*_', ''))) {
-                return slotMapping[pattern];
-            }
-        }
-        return slot; // Fallback
-    }).filter(slot => slot); // Loại bỏ giá trị undefined/null
-}
+  }
 
-        // Xem trước lịch phỏng vấn
-        function previewSchedule() {
-            if (interviewArrangementData.schedule.length === 0) {
-                alert('Không có dữ liệu để xem trước');
-                return;
-            }
-            
-            // Tạo popup preview
-            const previewModal = document.createElement('div');
-            previewModal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.5);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 1000;
-            `;
-            
-            const previewContent = document.createElement('div');
-            previewContent.style.cssText = `
-                background: white;
-                padding: 24px;
-                border-radius: 12px;
-                max-width: 90%;
-                max-height: 90%;
-                overflow: auto;
-            `;
-            
-            previewContent.innerHTML = `
-                <h3>Xem trước lịch phỏng vấn</h3>
-                <div style="margin: 16px 0;">
-                    <strong>Tổng số buổi phỏng vấn:</strong> ${interviewArrangementData.schedule.length}
-                </div>
-                <button id="close-preview" class="btn btn-primary">
-                    Đóng
-                </button>
-            `;
-            
-            previewModal.appendChild(previewContent);
-            document.body.appendChild(previewModal);
-            
-            // Đóng khi click nút đóng
-            document.getElementById('close-preview').addEventListener('click', function() {
-                document.body.removeChild(previewModal);
-            });
-            
-            // Đóng khi click outside
-            previewModal.addEventListener('click', function(e) {
-                if (e.target === previewModal) {
-                    document.body.removeChild(previewModal);
-                }
-            });
-        }
+  // Enter key in add-name
+  document.getElementById('add-name').addEventListener('keydown', e=>{if(e.key==='Enter')addPerson()});
 
-        // Trích xuất ngày từ tên slot
-        function extractDateFromSlot(slot) {
-            if (slot.includes('Ca 01:') || slot.includes('Ca 02:') || slot.includes('Ca 03:') || 
-                slot.includes('Ca 04:') || slot.includes('Ca 05:') || slot.includes('Ca 06:') ||
-                slot.includes('Ca 07:') || slot.includes('Ca 08:') || slot.includes('Ca 09:') ||
-                slot.includes('Ca 10:') || slot.includes('Ca 11:') || slot.includes('Ca 12:')) {
-                return 'Thứ Bảy';
-            } else {
-                return 'Chủ Nhật';
-            }
-        }
-
-        // Trích xuất thời gian từ tên slot
-        function extractTimeFromSlot(slot) {
-            const timeMatch = slot.match(/(\d{1,2}h\d{1,2})\s*-\s*(\d{1,2}h\d{1,2})/);
-            if (timeMatch) {
-                return `${timeMatch[1]} - ${timeMatch[2]}`;
-            }
-            return slot;
-        }
-
-        // Thuật toán sắp xếp phỏng vấn
-        function arrangeInterviews(data) {
-    const schedule = [];
-    
-    // Tạo mapping theo department
-    const interviewersByDept = {};
-    data.interviewers.forEach(interviewer => {
-        if (!interviewersByDept[interviewer.department]) {
-            interviewersByDept[interviewer.department] = [];
-        }
-        interviewersByDept[interviewer.department].push(interviewer);
-    });
-    
-    // Sắp xếp ứng viên theo department
-    const candidatesByDept = {};
-    data.candidates.forEach(candidate => {
-        const dept = candidate.department;
-        if (!candidatesByDept[dept]) {
-            candidatesByDept[dept] = [];
-        }
-        candidatesByDept[dept].push(candidate);
-    });
-    
-    // Theo dõi số lượng interview của mỗi người
-    const interviewerCount = {};
-    data.interviewers.forEach(interviewer => {
-        interviewerCount[interviewer.name] = 0;
-    });
-    
-    // Sắp xếp phỏng vấn cho từng ban
-    Object.keys(candidatesByDept).forEach(dept => {
-        const candidates = candidatesByDept[dept];
-        const interviewers = interviewersByDept[dept] || [];
-        
-        if (interviewers.length === 0) {
-            console.warn(`Không có nhân sự phỏng vấn cho ban ${dept}`);
-            return;
-        }
-        
-        candidates.forEach(candidate => {
-            const availableSlots = candidate.availableSlots;
-            
-            if (availableSlots.length === 0) {
-                console.warn(`Ứng viên ${candidate.name} không có slot nào khả dụng`);
-                return;
-            }
-            
-            let bestSlot = null;
-            let bestInterviewer = null;
-            let minScore = Infinity;
-            
-            // Tìm slot và interviewer tối ưu
-            availableSlots.forEach(slotId => {
-                const interviewsInSlot = schedule.filter(item => 
-                    item.slotId === slotId && item.candidateDepartment === dept
-                ).length;
-                
-                interviewers.forEach(interviewer => {
-                    if (interviewer.availableSlots.includes(slotId)) {
-                        const currentCount = interviewerCount[interviewer.name] || 0;
-                        const slotCount = interviewsInSlot;
-                        
-                        // Điểm số ưu tiên (càng thấp càng tốt)
-                        const score = currentCount * 2 + slotCount;
-                        
-                        if (score < minScore) {
-                            minScore = score;
-                            bestSlot = slotId;
-                            bestInterviewer = interviewer;
-                        }
-                    }
-                });
-            });
-            
-            if (bestSlot && bestInterviewer) {
-                const slot = data.slots.find(s => s.id === bestSlot);
-                if (slot) {
-                    schedule.push({
-                        slotId: bestSlot,
-                        slotName: slot.name,
-                        time: slot.time,
-                        date: slot.date,
-                        candidate: candidate.name,
-                        candidateDepartment: candidate.department,
-                        interviewer: bestInterviewer.name,
-                        interviewerDepartment: bestInterviewer.department,
-                        note: `Email: ${candidate.email}`
-                    });
-                    
-                    // Cập nhật số lượng interview
-                    interviewerCount[bestInterviewer.name] = (interviewerCount[bestInterviewer.name] || 0) + 1;
-                }
-            } else {
-                console.warn(`Không thể sắp xếp phỏng vấn cho ${candidate.name}`);
-            }
-        });
-    });
-    
-    return schedule;
-}
-
-        // Hiển thị kết quả sắp xếp
-        function displayArrangementResults(data) {
-            // Cập nhật thống kê
-            document.getElementById('total-interview-slots').textContent = data.slots.length;
-            document.getElementById('total-candidates-arranged').textContent = data.candidates.length;
-            document.getElementById('total-interviewers').textContent = data.interviewers.length;
-            document.getElementById('total-interviews').textContent = data.schedule.length;
-            
-            // Hiển thị bảng lịch phỏng vấn
-            renderInterviewSchedule(data.schedule);
-            
-            // Hiển thị kết quả
-            document.getElementById('arrangement-results').style.display = 'block';
-        }
-
-        // Render bảng lịch phỏng vấn
-        function renderInterviewSchedule(schedule) {
-            const tbody = document.getElementById('interview-schedule-body');
-            tbody.innerHTML = '';
-            
-            schedule.forEach((item, index) => {
-                const tr = document.createElement('tr');
-                
-                // Xác định class cho department badge
-                const deptClass = `department-${item.candidateDepartment.toLowerCase()}`;
-                
-                tr.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${item.slotName}</td>
-                    <td>${item.time}</td>
-                    <td>${item.candidate}</td>
-                    <td><span class="department-badge ${deptClass}">${getDepartmentName(item.candidateDepartment)}</span></td>
-                    <td>${item.interviewer}</td>
-                    <td><span class="department-badge ${deptClass}">${getDepartmentName(item.interviewerDepartment)}</span></td>
-                    <td>${item.note}</td>
-                `;
-                
-                tbody.appendChild(tr);
-            });
-        }
-
-        // Lọc lịch theo department
-        function filterScheduleByDepartment(dept) {
-            const tbody = document.getElementById('interview-schedule-body');
-            const rows = tbody.querySelectorAll('tr');
-            
-            rows.forEach(row => {
-                if (dept === 'all') {
-                    row.style.display = '';
-                } else {
-                    const candidateDept = row.cells[4].querySelector('.department-badge').textContent;
-                    const display = getDepartmentCode(candidateDept) === dept ? '' : 'none';
-                    row.style.display = display;
-                }
-            });
-        }
-
-        // Lấy tên đầy đủ của ban từ mã
-        function getDepartmentName(code) {
-            const departments = {
-                'MD': 'Truyền thông',
-                'HR': 'Nhân sự',
-                'PD': 'Dự án',
-                'ER': 'Đối ngoại'
-            };
-            return departments[code] || code;
-        }
-
-        // Lấy mã ban từ tên đầy đủ
-        function getDepartmentCode(name) {
-            const departments = {
-                'Truyền thông': 'MD',
-                'Nhân sự': 'HR',
-                'Dự án': 'PD',
-                'Đối ngoại': 'ER'
-            };
-            return departments[name] || name;
-        }
-
-        // Tải template mẫu
-        function downloadInterviewTemplate() {
-            // Tạo dữ liệu mẫu dựa trên file đã cung cấp
-            const templateData = [
-                ['BAN', 'GEN', 'HỌ VÀ TÊN', 'Ca 01: 09h20 - 09h50', 'Ca 02: 10h00 - 10h30', 'Ca 03: 10h40 - 11h10', 'Ca 04: 11h20 - 11h50', 'Ca 05: 14h00 - 14h30', 'Ca 06: 14h40 - 15h10', 'Ca 07: 15h20 - 15h50', 'Ca 08: 16h00 - 16h30', 'Ca 09: 20h00 - 20h30', 'Ca 10: 20h40 - 21h10', 'Ca 11: 21h20 - 21h50', 'Ca 12: 22h00 - 22h30', 'Ca 01: 08h00 - 08h30', 'Ca 02: 08h40 - 09h10', 'Ca 03: 09h20 - 09h50', 'Ca 04: 10h00 - 10h30', 'Ca 05: 10h40 - 11h10', 'Ca 06: 11h20 - 11h50', 'Ca 07: 14h00 - 14h30', 'Ca 08: 14h40 - 15h10', 'Ca 09: 15h20 - 15h50', 'Ca 10: 16h00 - 16h30'],
-                ['ER', '15', 'Đào Mai An', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-                ['', '', 'Dương Đức Khoa', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-                ['PD', '15', 'Nguyễn Vũ Quỳnh Anh', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-                ['', '', 'Nguyễn Thị Kiều Khanh', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-                ['HR', '15', 'Trịnh Hà Anh', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-                ['', '', 'Nguyễn Hoàng Diễm', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-                ['MD', '15', 'Trần Diệu Anh', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-                ['', '', 'Bùi Tuấn Anh', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-                ['', 'PIC', 'Nguyễn Văn A - HR', 'x', 'x', '', '', 'x', 'x', '', '', '', '', '', '', 'x', 'x', '', '', '', '', '', '', ''],
-                ['', '', 'Trần Thị B - PD', '', '', 'x', 'x', '', '', 'x', 'x', '', '', '', '', '', '', 'x', 'x', '', '', '', '', ''],
-                ['', '', 'Lê Văn C - MD', '', '', '', '', '', '', '', '', 'x', 'x', 'x', 'x', '', '', '', '', 'x', 'x', 'x', 'x', ''],
-                ['', '', 'Phạm Thị D - ER', 'x', 'x', 'x', 'x', '', '', '', '', '', '', '', '', 'x', 'x', 'x', 'x', '', '', '', '', '']
-            ];
-
-            // Tạo workbook và worksheet
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet(templateData);
-
-            // Định dạng cột
-            ws['!cols'] = [
-                { wch: 8 },  // BAN
-                { wch: 6 },  // GEN
-                { wch: 25 }, // HỌ VÀ TÊN
-                { wch: 18 }, // Ca 01
-                { wch: 18 }, // Ca 02
-                { wch: 18 }, // Ca 03
-                { wch: 18 }, // Ca 04
-                { wch: 18 }, // Ca 05
-                { wch: 18 }, // Ca 06
-                { wch: 18 }, // Ca 07
-                { wch: 18 }, // Ca 08
-                { wch: 18 }, // Ca 09
-                { wch: 18 }, // Ca 10
-                { wch: 18 }, // Ca 11
-                { wch: 18 }, // Ca 12
-                { wch: 18 }, // Ca 01 (CN)
-                { wch: 18 }, // Ca 02 (CN)
-                { wch: 18 }, // Ca 03 (CN)
-                { wch: 18 }, // Ca 04 (CN)
-                { wch: 18 }, // Ca 05 (CN)
-                { wch: 18 }, // Ca 06 (CN)
-                { wch: 18 }, // Ca 07 (CN)
-                { wch: 18 }, // Ca 08 (CN)
-                { wch: 18 }  // Ca 09 (CN)
-            ];
-
-            XLSX.utils.book_append_sheet(wb, ws, 'Interview Schedule');
-            XLSX.writeFile(wb, 'Template_Vote_Phong_Van.xlsx');
-        }
-
-        // Xuất kết quả sắp xếp
-        function exportInterviewArrangement() {
-            if (interviewArrangementData.schedule.length === 0) {
-                alert('Không có dữ liệu để xuất');
-                return;
-            }
-
-            // Tạo dữ liệu cho Excel
-            const data = [
-                ['STT', 'Ca phỏng vấn', 'Thời gian', 'Ứng viên', 'Ban ứng tuyển', 'Người phỏng vấn', 'Ban phỏng vấn', 'Ghi chú']
-            ];
-
-            interviewArrangementData.schedule.forEach((item, index) => {
-                data.push([
-                    index + 1,
-                    item.slotName,
-                    item.time,
-                    item.candidate,
-                    getDepartmentName(item.candidateDepartment),
-                    item.interviewer,
-                    getDepartmentName(item.interviewerDepartment),
-                    item.note
-                ]);
-            });
-
-            // Tạo worksheet
-            const ws = XLSX.utils.aoa_to_sheet(data);
-
-            // Định dạng cột
-            ws['!cols'] = [
-                { wch: 5 },  // STT
-                { wch: 25 }, // Ca phỏng vấn
-                { wch: 20 }, // Thời gian
-                { wch: 25 }, // Ứng viên
-                { wch: 15 }, // Ban ứng tuyển
-                { wch: 25 }, // Người phỏng vấn
-                { wch: 15 }, // Ban phỏng vấn
-                { wch: 15 }  // Ghi chú
-            ];
-
-            // Tạo workbook
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Lịch phỏng vấn');
-
-            // Xuất file
-            const fileName = `Lich_Phong_Van_${new Date().toISOString().split('T')[0]}.xlsx`;
-            XLSX.writeFile(wb, fileName);
-        }
-
-        // Khởi tạo trang
-        document.addEventListener('DOMContentLoaded', function() {
-            // Cập nhật avatar người dùng
-            const userEmail = sessionStorage.getItem('email') || 'Admin';
-            document.getElementById('user-avatar').textContent = userEmail.charAt(0).toUpperCase();
-        });
-    </script>
+  // Init app (Firebase)
+  initApp();
+});
+</script>
 </body>
 </html>

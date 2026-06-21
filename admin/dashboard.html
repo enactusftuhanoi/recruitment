@@ -2217,6 +2217,7 @@
 
       // Check authentication
       if (!userEmail || !userRole) {
+        sessionStorage.setItem("postLoginRedirect", location.pathname + location.search);
         window.location.href = "login.html";
       }
 
@@ -2262,6 +2263,7 @@
             console.error("Lỗi khi lấy account:", e);
           }
         } else {
+          sessionStorage.setItem("postLoginRedirect", location.pathname + location.search);
           window.location.href = "login.html";
         }
       });

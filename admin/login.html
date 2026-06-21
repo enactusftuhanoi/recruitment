@@ -378,6 +378,23 @@
 
   const provider = new firebase.auth.GoogleAuthProvider();
 
+  // Nếu một trang khác (dashboard, interview-arrangement, calendar, ...) đẩy
+  // người dùng về đây vì chưa đăng nhập, nó sẽ lưu URL gốc vào sessionStorage
+  // trước khi chuyển hướng. Sau khi đăng nhập xong, ta quay lại đúng trang đó
+  // thay vì luôn nhảy về dashboard/response mặc định.
+  function consumeSafeRedirect() {
+    const target = sessionStorage.getItem('postLoginRedirect');
+    sessionStorage.removeItem('postLoginRedirect');
+    if (!target) return null;
+    // Chỉ chấp nhận đường dẫn tương đối dạng "ten-file.html" hoặc
+    // "ten-file.html?query" trong cùng site — chặn mọi nỗ lực open-redirect
+    // (không cho phép "://", không cho phép bắt đầu bằng "//").
+    if (/^[a-zA-Z0-9_\-\/]+\.html(\?[^\s'"]*)?$/.test(target) && !target.includes('://') && !target.startsWith('//')) {
+      return target;
+    }
+    return null;
+  }
+
   // Login button
   document.getElementById('loginBtn').addEventListener('click', () => {
     const loginBtn = document.getElementById('loginBtn');
@@ -408,11 +425,12 @@
             sessionStorage.setItem("fullname", accountData.fullname || user.displayName || "");
             sessionStorage.setItem("department", accountData.department || "");
 
-            // Điều hướng theo role
+            // Điều hướng theo role — quay về trang người dùng muốn vào lúc đầu
+            // (nếu có lưu lại), nếu không thì dùng trang mặc định theo role.
             if (accountData.role === "member") {
-              window.location.href = "response.html";
+              window.location.href = consumeSafeRedirect() || "response.html";
             } else if (accountData.role === "admin" || accountData.role === "superadmin") {
-              window.location.href = "dashboard.html";
+              window.location.href = consumeSafeRedirect() || "dashboard.html";
             } else {
               await auth.signOut();
               loginError.textContent = "Tài khoản không có quyền truy cập.";

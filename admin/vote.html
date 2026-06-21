@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vote| Enactus FTU Hanoi</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <style>
+    :root {
+      --yellow:#F5E642; --yellow-light:#FEFCE8; --yellow-mid:#FDE047;
+      --bg:#F8F8F6; --white:#FFFFFF;
+      --ink:#0F0F0E; --ink-60:#5A5A58; --ink-30:#BDBDBB; --ink-10:#F0F0EE;
+      --border:#E4E4E0;
+      --radius-sm:8px; --radius:12px; --radius-lg:20px;
+      --shadow-sm:0 1px 3px rgba(0,0,0,.07);
+      --shadow-lg:0 12px 32px rgba(0,0,0,.12);
+      --success:#10B981; --success-bg:#ECFDF5;
+      --error:#EF4444; --error-bg:#FEF2F2;
+      --warn:#F59E0B; --warn-bg:#FFFBEB;
+      --md-color:#3B82F6;
+      --t:.2s ease;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.5}
+
+    /* HEADER */
+    .hdr{background:var(--white);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300}
+    .logo{font-size:15px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:9px}
+    .logo-img{height:30px;width:auto;display:block}
+    .nav{display:flex;gap:4px}
+    .nav a{padding:6px 14px;border-radius:var(--radius-sm);color:var(--ink-60);font-weight:500;text-decoration:none;transition:var(--t);font-size:13px}
+    .nav a:hover{background:var(--ink-10);color:var(--ink)}
+    .nav a.active{background:var(--yellow);color:var(--ink);font-weight:700}
+    .hdr-right{display:flex;align-items:center;gap:10px}
+    .hdr-user{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+    .hdr-user-name{font-size:12px;font-weight:700;color:var(--ink);line-height:1.1;max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .role-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid var(--border)}
+    .avatar{width:34px;height:34px;border-radius:50%;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;overflow:hidden}
+    .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+
+    /* LAYOUT */
+    .wrap{max-width:780px;margin:0 auto;padding:32px 20px 80px;display:flex;flex-direction:column;gap:18px}
+    .page-title{font-size:20px;font-weight:800;letter-spacing:-.5px}
+    .page-sub{font-size:13px;color:var(--ink-60);margin-top:4px}
+
+    /* CARD */
+    .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-sm)}
+    .card h2{font-size:16px;font-weight:800;margin-bottom:6px}
+    .card h3{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+
+    /* FORM */
+    .form-group{margin-bottom:14px}
+    label.fl{display:block;font-size:12px;font-weight:600;color:var(--ink-60);margin-bottom:5px}
+    .fi,.fs{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;background:var(--white)}
+    .fi:focus,.fs:focus{outline:none;border-color:var(--yellow-mid);box-shadow:0 0 0 3px rgba(245,230,66,.2)}
+
+    /* BUTTONS */
+    .btn{padding:10px 18px;border:none;border-radius:var(--radius-sm);font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;transition:var(--t);display:inline-flex;align-items:center;justify-content:center;gap:7px}
+    .btn-primary{background:var(--yellow);color:var(--ink)}
+    .btn-primary:hover{background:var(--yellow-mid)}
+    .btn-dark{background:var(--ink);color:var(--white)}
+    .btn-dark:hover{opacity:.85}
+    .btn-ghost{background:transparent;color:var(--ink-60);border:1.5px solid var(--border)}
+    .btn-ghost:hover{background:var(--ink-10);color:var(--ink)}
+    .btn-full{width:100%}
+    .btn-sm{padding:7px 12px;font-size:12px}
+
+    /* TOGGLE */
+    .toggle-row{display:flex;background:var(--ink-10);border-radius:var(--radius-sm);padding:3px;gap:2px;max-width:240px}
+    .toggle-opt{flex:1;padding:8px 6px;border:none;background:transparent;border-radius:6px;font-family:inherit;font-size:12px;font-weight:700;color:var(--ink-60);cursor:pointer;transition:var(--t)}
+    .toggle-opt.active{background:var(--white);color:var(--ink);box-shadow:var(--shadow-sm)}
+
+    /* STATUS BANNER */
+    .status-banner{border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+    .status-banner.pending{background:var(--warn-bg);color:#92400E}
+    .status-banner.done{background:var(--success-bg);color:#065F46}
+
+    /* SLOT CHIPS */
+    .day-group{margin-bottom:16px}
+    .day-group:last-child{margin-bottom:0}
+    .day-label{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--ink-30);margin-bottom:8px}
+    .chip-row{display:flex;flex-wrap:wrap;gap:8px}
+    .slot-chip{padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-family:inherit;font-size:12px;font-weight:600;color:var(--ink-60);cursor:pointer;transition:var(--t);display:inline-flex;align-items:center;gap:6px}
+    .slot-chip:hover{border-color:var(--ink-30)}
+    .slot-chip.active{background:var(--yellow);border-color:var(--yellow-mid);color:var(--ink)}
+    .slot-chip i{font-size:10px}
+
+    /* ALUMNI LINK BOX */
+    .link-box{display:flex;gap:8px;align-items:center;background:var(--bg);border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-top:12px}
+    .link-box code{flex:1;font-size:12px;color:var(--ink-60);overflow-x:auto;white-space:nowrap}
+
+    .info-box{background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:#1E40AF;display:flex;align-items:flex-start;gap:8px;margin-bottom:14px}
+
+    /* EMPTY / CLOSED STATES */
+    .center-state{text-align:center;padding:50px 20px}
+    .center-state i{font-size:34px;color:var(--ink-30);margin-bottom:14px;display:block}
+    .center-state h2{font-size:17px;font-weight:800;margin-bottom:6px}
+    .center-state p{font-size:13px;color:var(--ink-60);max-width:340px;margin:0 auto}
+
+    /* LOADING */
+    .page-loading{position:fixed;inset:0;background:rgba(255,255,255,.9);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+    .page-loading.hidden{display:none}
+    .spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--ink);border-radius:50%;animation:spin .6s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* TOAST */
+    .toast-wrap{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9999}
+    .toast{background:var(--ink);color:var(--white);padding:12px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;animation:slideIn .25s ease}
+    .toast.ok{background:#065F46}
+    .toast.err{background:#7F1D1D}
+    .toast.warn{background:#78350F}
+    @keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
+  </style>
+</head>
+<body>
+
+<div class="page-loading" id="page-loading">
+  <div class="spinner"></div>
+  <div style="font-size:13px;color:var(--ink-60)">Đang tải...</div>
+</div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="logo">
+    <img src="/assets/logo_den.png" alt="Enactus FTU Hanoi" class="logo-img" />
+    <span>Enactus FTU Hanoi</span>
+  </div>
+  <nav class="nav" id="main-nav">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="calendar.html">Calendar</a>
+    <a href="interview-arrangement.html">Interview</a>
+    <a href="vote.html" class="active">Vote</a>
+  </nav>
+  <div class="hdr-right" id="hdr-right">
+    <div class="hdr-user">
+      <div class="hdr-user-name" id="hdr-user-name">—</div>
+      <div class="role-badge" id="role-badge">—</div>
+    </div>
+    <div class="avatar" id="user-avatar">A</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div>
+    <h1 class="page-title">Vote lịch phỏng vấn</h1>
+    <p class="page-sub" id="vote-sub">Chọn tất cả khung giờ bạn có thể tham gia phỏng vấn ứng viên.</p>
+  </div>
+
+  <!-- GUEST FORM CLOSED -->
+  <div class="card center-state" id="guest-closed" style="display:none">
+    <i class="fas fa-lock"></i>
+    <h2>Form hiện đang đóng</h2>
+    <p>Ban tổ chức chưa mở đăng ký lịch PIC cho Alumni vào lúc này. Vui lòng liên hệ BTC Enactus FTU Hanoi để biết thêm chi tiết.</p>
+  </div>
+
+  <!-- GUEST INTAKE -->
+  <div class="card" id="guest-intake" style="display:none">
+    <h2>Đăng ký làm PIC khách mời (Alumni)</h2>
+    <p class="page-sub" style="margin-bottom:18px">Cảm ơn bạn đã đồng ý hỗ trợ phỏng vấn! Điền thông tin bên dưới rồi chọn lịch rảnh nhé.</p>
+    <div class="form-group">
+      <label class="fl">Họ và tên *</label>
+      <input class="fi" id="guest-name" placeholder="Nguyễn Văn A" />
+    </div>
+    <div class="form-group">
+      <label class="fl">Email (để BTC liên hệ xác nhận)</label>
+      <input class="fi" id="guest-email" type="email" placeholder="email@example.com" />
+    </div>
+    <div class="form-group">
+      <label class="fl">Ban</label>
+      <select class="fs" id="guest-dept">
+        <option value="MD">Truyền thông</option>
+        <option value="HR">Nhân sự</option>
+        <option value="PD">Dự án</option>
+        <option value="ER">Đối ngoại</option>
+      </select>
+    </div>
+    <button class="btn btn-dark btn-full" onclick="startGuestVoting()">
+      Tiếp tục — chọn lịch rảnh <i class="fas fa-arrow-right"></i>
+    </button>
+  </div>
+
+  <!-- MAIN VOTE CONTENT -->
+  <div id="vote-content" style="display:none">
+
+    <div class="status-banner pending" id="status-banner" style="margin-bottom:18px">
+      <i class="fas fa-circle-info"></i> Đang tải trạng thái...
+    </div>
+
+    <!-- SUPERADMIN: ALUMNI FORM CONTROL -->
+    <div class="card" id="superadmin-alumni-panel" style="display:none;margin-bottom:18px">
+      <h3><i class="fas fa-user-graduate"></i> Form công khai cho Alumni</h3>
+      <p class="page-sub" style="margin-bottom:12px">Bật để mở link công khai (không cần đăng nhập) cho Alumni tự tick lịch rảnh tham gia phỏng vấn.</p>
+      <div class="toggle-row">
+        <button class="toggle-opt active" id="alumni-off-btn" onclick="setAlumniOpen(false)">Tắt</button>
+        <button class="toggle-opt" id="alumni-on-btn" onclick="setAlumniOpen(true)">Bật</button>
+      </div>
+      <div class="link-box" id="alumni-link-box" style="display:none">
+        <code id="alumni-link-text"></code>
+        <button class="btn btn-ghost btn-sm" onclick="copyAlumniLink()"><i class="fas fa-copy"></i> Copy</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div id="slots-by-day"><!-- built by JS --></div>
+    </div>
+
+    <button class="btn btn-dark btn-full" style="margin-top:16px" onclick="saveVote()" id="save-btn">
+      <i class="fas fa-check"></i> Lưu lịch rảnh
+    </button>
+  </div>
+
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- FIREBASE CONFIG -->
+<script src="/script/config.js"></script>
+<script>
+// ══════════════════════════════════════════════════
+//  CONSTANTS
+// ══════════════════════════════════════════════════
+const DEPT_NAMES = { MD:'Truyền thông', HR:'Nhân sự', PD:'Dự án', ER:'Đối ngoại' };
+const SCHEDULE_DOC_PATH = ['system', 'interview_schedule'];
+
+// ══════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════
+const V = {
+  mode: 'staff',           // 'staff' | 'guest'
+  user: { name:'', email:'', department:'', role:'', photoURL:'' },
+  slots: [],                // [{id, day, date, time, mode}]
+  selected: new Set(),      // slot ids ticked
+  alumniOpen: false,
+  isSuperAdmin: false,
+};
+
+// ══════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════
+function sanitizeKey(s) { return String(s).replace(/[^\w]/g, '_').toLowerCase(); }
+function sanitizeSlotKey(slotId) { return String(slotId).replace(/[^\w]/g, '_'); }
+function weekdayFromDate(dateStr) {
+  try {
+    const parts = String(dateStr).split('/');
+    if (parts.length !== 3) return dateStr;
+    const d = new Date(+parts[2], +parts[1] - 1, +parts[0]);
+    if (isNaN(d.getTime())) return dateStr;
+    const weekdays = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+    return weekdays[d.getDay()];
+  } catch(e) { return dateStr; }
+}
+function roleLabel(role, dept) {
+  const fixed = { superadmin:'SuperAdmin', 'admin-hr':'Admin (HR)', member:'Member' };
+  if (fixed[role]) return fixed[role];
+  if (role === 'admin-other') return dept ? `Admin (${DEPT_NAMES[dept]||dept})` : 'Admin';
+  return role || '—';
+}
+// Avatar ảnh lấy từ Google (nếu có) — tên hiển thị luôn lấy từ Account, không bao giờ lấy tên Gmail.
+function setAvatar(name, email, photoURL) {
+  const el = document.getElementById('user-avatar');
+  if (!el) return;
+  if (photoURL) {
+    el.innerHTML = `<img src="${photoURL}" alt="" referrerpolicy="no-referrer" onerror="this.parentElement.textContent=(this.alt||'A').charAt(0).toUpperCase()">`;
+    el.querySelector('img').alt = name || email || 'A';
+  } else {
+    el.textContent = (name || email || 'A').charAt(0).toUpperCase();
+  }
+}
+function toast(msg, type='') {
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  const icon = type==='ok'?'check-circle':type==='err'?'circle-xmark':type==='warn'?'triangle-exclamation':'circle-info';
+  el.innerHTML = `<i class="fas fa-${icon}"></i> ${msg}`;
+  wrap.appendChild(el);
+  setTimeout(()=>el.remove(), 3200);
+}
+
+// ══════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════
+async function init() {
+  window.db = window.db || firebase.firestore();
+
+  const params = new URLSearchParams(location.search);
+  V.mode = params.get('guest') === '1' ? 'guest' : 'staff';
+
+  await loadSlots();
+
+  if (V.mode === 'guest') {
+    initGuestMode();
+    document.getElementById('page-loading').classList.add('hidden');
+  } else {
+    await initStaffMode();
+    document.getElementById('page-loading').classList.add('hidden');
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  LOAD SLOTS (read-only, same doc Calendar/Interview use)
+// ══════════════════════════════════════════════════
+async function loadSlots() {
+  try {
+    const doc = await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).get();
+    const data = doc.exists ? doc.data() : null;
+    V.alumniOpen = !!(data && data.alumniVoteOpen);
+    const days = (data && data.schedule) || [];
+    const slotMeta = (data && data.slotMeta) || {};
+    const slots = [];
+    days.forEach(day => {
+      const dayLabel = `${weekdayFromDate(day.date)} ${day.date}`;
+      (day.slots || []).forEach(time => {
+        const id = `${day.date}_${time}`;
+        const meta = slotMeta[sanitizeSlotKey(id)] || {};
+        slots.push({ id, day: dayLabel, date: day.date, time, mode: meta.mode || 'offline' });
+      });
+    });
+    V.slots = slots;
+  } catch(e) {
+    console.warn('Không tải được ca:', e);
+    V.slots = [];
+    toast('Lỗi tải lịch ca: ' + e.message, 'err');
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  STAFF MODE (SuperAdmin / Admin / Member — requires login)
+// ══════════════════════════════════════════════════
+function initStaffMode() {
+  return new Promise(resolve => {
+    if (typeof auth === 'undefined') {
+      // Demo fallback if config.js / auth isn't wired up yet
+      V.user = { name:'Demo', email:'demo@enactus.vn', department:'HR', role:'member', photoURL:'' };
+      finishStaffSetup().then(resolve);
+      return;
+    }
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) { sessionStorage.setItem('postLoginRedirect', location.pathname + location.search); window.location.href = 'login.html'; return; }
+      try {
+        if (!window.db) { sessionStorage.setItem('postLoginRedirect', location.pathname + location.search); window.location.href = 'login.html'; return; }
+        const email = user.email || '';
+        // Luôn tra lại Account trong Firestore — tên hiển thị & lưu vote PHẢI là tên
+        // trong Account, không bao giờ lấy theo tên Gmail (user.displayName).
+        const snap = await window.db.collection('account').where('email','==',email).limit(1).get();
+        if (snap.empty) {
+          await auth.signOut();
+          sessionStorage.setItem('postLoginRedirect', location.pathname + location.search);
+          window.location.href = 'login.html';
+          return;
+        }
+
+        const data = snap.docs[0].data();
+        const name = snap.docs[0].id || email; // Tên = document ID bên Account, KHÔNG fallback sang user.displayName
+        const role = (data.role || '').toLowerCase();
+        const dept = (data.department || '').toUpperCase();
+
+        sessionStorage.setItem('email', email);
+        sessionStorage.setItem('role', role);
+        sessionStorage.setItem('department', dept);
+        sessionStorage.setItem('fullname', name);
+
+        let normRole = 'member';
+        if (role === 'superadmin') normRole = 'superadmin';
+        else if (role === 'admin') normRole = dept === 'HR' ? 'admin-hr' : 'admin-other';
+        else if (role === 'member') normRole = 'member';
+
+        // Gmail chỉ được dùng để lấy ảnh đại diện (avatar), không dùng cho tên.
+        V.user = { name, email, department: dept, role: normRole, photoURL: user.photoURL || '' };
+        V.isSuperAdmin = normRole === 'superadmin';
+        await finishStaffSetup();
+        resolve();
+      } catch(e) {
+        console.error('Lỗi xác thực:', e);
+        toast('Lỗi xác thực: ' + e.message, 'err');
+      }
+    });
+  });
+}
+
+async function finishStaffSetup() {
+  document.getElementById('role-badge').textContent = roleLabel(V.user.role, V.user.department);
+  document.getElementById('hdr-user-name').textContent = V.user.name || V.user.email || '—';
+  setAvatar(V.user.name, V.user.email, V.user.photoURL);
+  document.getElementById('vote-sub').textContent =
+    `Xin chào ${V.user.name}${V.user.department ? ' · ' + (DEPT_NAMES[V.user.department]||V.user.department) : ''} — chọn tất cả khung giờ bạn có thể tham gia phỏng vấn.`;
+
+  if (V.isSuperAdmin) {
+    document.getElementById('superadmin-alumni-panel').style.display = 'block';
+    setAlumniToggleUI(V.alumniOpen);
+  }
+
+  await loadExistingVote();
+  renderSlotChips();
+  document.getElementById('vote-content').style.display = 'block';
+}
+
+async function loadExistingVote() {
+  if (!V.user.name) return;
+  try {
+    const doc = await window.db.collection('interview_votes').doc(sanitizeKey(V.user.name)).get();
+    if (doc.exists) {
+      const d = doc.data();
+      (d.availableSlots || []).forEach(s => V.selected.add(s));
+    }
+  } catch(e) { console.warn('Không tải được tick cũ:', e); }
+}
+
+// ══════════════════════════════════════════════════
+//  GUEST MODE (Alumni — no login, gated by alumniVoteOpen)
+// ══════════════════════════════════════════════════
+function initGuestMode() {
+  document.getElementById('main-nav').style.display = 'none';
+  document.getElementById('hdr-right').style.display = 'none';
+
+  if (!V.alumniOpen) {
+    document.getElementById('guest-closed').style.display = 'block';
+    return;
+  }
+  document.getElementById('guest-intake').style.display = 'block';
+}
+
+function startGuestVoting() {
+  const name = document.getElementById('guest-name').value.trim();
+  if (!name) { toast('Nhập họ tên trước đã nhé', 'err'); return; }
+
+  V.user = {
+    name,
+    email: document.getElementById('guest-email').value.trim(),
+    department: document.getElementById('guest-dept').value,
+    role: 'alumni',
+  };
+
+  document.getElementById('guest-intake').style.display = 'none';
+  document.getElementById('vote-sub').textContent =
+    `Xin chào ${name} — chọn tất cả khung giờ bạn có thể tham gia phỏng vấn.`;
+  renderSlotChips();
+  document.getElementById('vote-content').style.display = 'block';
+}
+
+// ══════════════════════════════════════════════════
+//  RENDER SLOT CHIPS
+// ══════════════════════════════════════════════════
+function renderSlotChips() {
+  const el = document.getElementById('slots-by-day');
+  if (!V.slots.length) {
+    el.innerHTML = `<div class="center-state" style="padding:24px 10px"><i class="fas fa-calendar-xmark"></i><h2 style="font-size:14px">Chưa có ca nào</h2><p>Ban tổ chức chưa công bố lịch phỏng vấn.</p></div>`;
+    updateStatusBanner();
+    return;
+  }
+
+  const byDay = {};
+  V.slots.forEach(s => { (byDay[s.day] = byDay[s.day] || []).push(s); });
+
+  el.innerHTML = Object.keys(byDay).map(day => `
+    <div class="day-group">
+      <div class="day-label">${day}</div>
+      <div class="chip-row">
+        ${byDay[day].map(s => `
+          <button type="button" class="slot-chip ${V.selected.has(s.id) ? 'active' : ''}" onclick="toggleSlot('${s.id}', this)">
+            <i class="fas ${s.mode === 'online' ? 'fa-video' : 'fa-building'}"></i> ${s.time}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  updateStatusBanner();
+}
+
+function toggleSlot(id, btn) {
+  if (V.selected.has(id)) V.selected.delete(id); else V.selected.add(id);
+  btn.classList.toggle('active');
+  updateStatusBanner();
+}
+
+function updateStatusBanner() {
+  const el = document.getElementById('status-banner');
+  if (V.selected.size === 0) {
+    el.className = 'status-banner pending';
+    el.innerHTML = `<i class="fas fa-triangle-exclamation"></i> Bạn chưa tick ca nào — vui lòng chọn ít nhất 1 khung giờ rồi bấm Lưu.`;
+  } else {
+    el.className = 'status-banner done';
+    el.innerHTML = `<i class="fas fa-check-circle"></i> Đã chọn ${V.selected.size} ca. Bạn có thể chỉnh sửa lại bất cứ lúc nào trước khi BTC chốt lịch.`;
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  SAVE VOTE
+// ══════════════════════════════════════════════════
+async function saveVote() {
+  if (!V.user.name) { toast('Thiếu thông tin người tick', 'err'); return; }
+  if (!V.selected.size && !confirm('Bạn chưa chọn ca nào, vẫn muốn lưu (đồng nghĩa hiện chưa rảnh ca nào)?')) return;
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+
+  const payload = {
+    name: V.user.name,
+    email: V.user.email || '',
+    department: V.user.department || '',
+    role: V.user.role || '',
+    source: V.mode === 'guest' ? 'alumni' : 'staff',
+    availableSlots: Array.from(V.selected),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+
+  try {
+    if (V.user.name) {
+      await window.db.collection('interview_votes').doc(sanitizeKey(V.user.name)).set(payload, { merge: true });
+    } else {
+      await window.db.collection('interview_votes').add(payload);
+    }
+    toast('Đã lưu lịch rảnh — cảm ơn bạn!', 'ok');
+  } catch(e) {
+    toast('Lỗi khi lưu: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check"></i> Lưu lịch rảnh';
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  SUPERADMIN: TOGGLE PUBLIC ALUMNI FORM
+// ══════════════════════════════════════════════════
+function setAlumniToggleUI(open) {
+  document.getElementById('alumni-off-btn').classList.toggle('active', !open);
+  document.getElementById('alumni-on-btn').classList.toggle('active', open);
+  const linkBox = document.getElementById('alumni-link-box');
+  linkBox.style.display = open ? 'flex' : 'none';
+  if (open) {
+    document.getElementById('alumni-link-text').textContent = `${location.origin}${location.pathname}?guest=1`;
+  }
+}
+
+async function setAlumniOpen(open) {
+  try {
+    await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).set({ alumniVoteOpen: open }, { merge: true });
+    V.alumniOpen = open;
+    setAlumniToggleUI(open);
+    toast(open ? 'Đã mở form công khai cho Alumni' : 'Đã đóng form công khai', 'ok');
+  } catch(e) {
+    toast('Lỗi: ' + e.message, 'err');
+  }
+}
+
+function copyAlumniLink() {
+  const url = `${location.origin}${location.pathname}?guest=1`;
+  navigator.clipboard.writeText(url).then(
+    () => toast('Đã copy link!', 'ok'),
+    () => toast('Không copy được, hãy copy thủ công', 'err')
+  );
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

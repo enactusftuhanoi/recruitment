@@ -651,6 +651,7 @@ function logout() {
 // ===== Kiểm tra quyền =====
 auth.onAuthStateChanged(user => {
   if (!user) {
+    sessionStorage.setItem("postLoginRedirect", location.pathname + location.search);
     window.location.href = "login.html";
     return;
   }
