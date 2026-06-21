@@ -203,7 +203,7 @@ function buildInterviewFromSlots(slots) {
 
     // Tạo câu hỏi duy nhất
     const interviewQuestion = {
-        id: "interview_schedule",
+        id: "application_interview_slots",
         question: "Vui lòng chọn các khung giờ phỏng vấn bạn có thể tham gia (chọn ít nhất 3 ca)",
         options: options
     };
@@ -458,9 +458,9 @@ function restoreInterviewSchedule() {
     if (!saved) return;
     try {
         const data = JSON.parse(saved);
-        if (data.interview_schedule && Array.isArray(data.interview_schedule)) {
+        if (data.application_interview_slots && Array.isArray(data.application_interview_slots)) {
             document.querySelectorAll('#interview-schedule input[type="checkbox"]').forEach(cb => {
-                if (data.interview_schedule.includes(cb.value)) {
+                if (data.application_interview_slots.includes(cb.value)) {
                     cb.checked = true;
                     // Kích hoạt hiệu ứng
                     const item = cb.closest('.checkbox-item');
@@ -705,7 +705,7 @@ function renderInterviewSchedule() {
             }
             
             item.innerHTML = `
-                <input type="checkbox" id="${optionId}" name="interview_schedule[]" value="${opt}" style="margin-right:10px;width:18px;height:18px;flex-shrink:0;">
+                <input type="checkbox" id="${optionId}" name="application_interview_slots[]" value="${opt}" style="margin-right:10px;width:18px;height:18px;flex-shrink:0;">
                 <label for="${optionId}" style="cursor:pointer;font-weight:500;color:#374151;font-size:13.5px;flex:1;">
                     <span style="display:inline-block;min-width:50px;font-weight:600;color:var(--gray-600);">Ca ${caNumber}</span>
                     ${displayText}
@@ -748,9 +748,9 @@ function renderInterviewSchedule() {
     if (saved) {
         try {
             const data = JSON.parse(saved);
-            if (data.interview_schedule && Array.isArray(data.interview_schedule)) {
+            if (data.application_interview_slots && Array.isArray(data.application_interview_slots)) {
                 document.querySelectorAll('#interview-schedule input[type="checkbox"]').forEach(cb => {
-                    if (data.interview_schedule.includes(cb.value)) {
+                    if (data.application_interview_slots.includes(cb.value)) {
                         cb.checked = true;
                         const item = cb.closest('.checkbox-item');
                         if (item) {
@@ -1666,7 +1666,7 @@ function collectFormData() {
     if (applicationType === 'interview' && interview.length > 0) {
         const checkedBoxes = document.querySelectorAll('#interview-schedule input[type="checkbox"]:checked');
         if (checkedBoxes.length > 0) {
-            formData.interview_schedule = Array.from(checkedBoxes).map(cb => cb.value);
+            formData.application_interview_slots = Array.from(checkedBoxes).map(cb => cb.value);
         }
     }
 
@@ -1747,9 +1747,9 @@ function loadFormData() {
         setTimeout(() => {
             restoreBanQuestionsDirectly();
             // Khôi phục lịch phỏng vấn
-            if (data.interview_schedule) {
+            if (data.application_interview_slots) {
                 document.querySelectorAll('#interview-schedule input[type="checkbox"]').forEach(cb => {
-                    if (data.interview_schedule.includes(cb.value)) {
+                    if (data.application_interview_slots.includes(cb.value)) {
                         cb.checked = true;
                         const item = cb.closest('.checkbox-item');
                         if (item) {

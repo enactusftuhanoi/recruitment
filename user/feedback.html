@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feedback Vòng 3 | Enactus FTU Hanoi</title>
+    <title>Feedback | Enactus FTU Hanoi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -603,7 +603,7 @@
 
         <!-- Feedback Form -->
         <div id="feedback-form-container" class="feedback-container" style="display: none;">
-            <h1 class="feedback-title">📝 Feedback Vòng 3 - Teamwork</h1>
+            <h1 class="feedback-title">Feedback Vòng 3 - Teamwork</h1>
             <p class="feedback-subtitle">Chia sẻ trải nghiệm của bạn sau quá trình tham gia vòng 3</p>
 
             <form id="feedback-form" novalidate>
@@ -653,30 +653,21 @@
             console.log('✅ Đã đăng nhập:', user.email);
 
             try {
-                // Lấy thông tin account từ Firestore
-                const snap = await db
-                    .collection("account")
-                    .where("email", "==", user.email)
-                    .limit(1)
-                    .get();
-
-                if (snap.empty) {
-                    console.log('❌ Không tìm thấy account, đăng xuất');
-                    await auth.signOut();
-                    window.location.href = "../login.html";
-                    return;
-                }
-
-                const doc = snap.docs[0];
-                const data = doc.data();
-
-                currentUser = { id: doc.id, ...data };
+                // BUG FIX #10: Trước đây query collection "account" riêng — collection này
+                // không đồng nhất với phần còn lại của hệ thống (dùng "applications"),
+                // khiến snap.empty = true và user bị signOut ngay lập tức dù đã login hợp lệ.
+                // Fix: dùng thẳng Firebase Auth user, fullname lấy từ applications trong checkEligibility().
+                currentUser = {
+                    id: user.uid,
+                    email: user.email,
+                    fullname: user.displayName || user.email
+                };
                 console.log('✅ Đã tải thông tin user:', currentUser.fullname || currentUser.email);
 
                 // Cập nhật avatar
                 const avatar = document.getElementById("user-avatar");
                 if (avatar) {
-                    const name = data.fullname || data.email || "U";
+                    const name = currentUser.fullname || currentUser.email || "U";
                     avatar.textContent = name.charAt(0).toUpperCase();
                 }
 
@@ -717,7 +708,7 @@
                 if (settingsDoc.data().deadline) {
                     const deadline = settingsDoc.data().deadline.toDate();
                     if (new Date() > deadline) {
-                        showAccessDenied("⏰ Thời hạn gửi feedback đã kết thúc");
+                        showAccessDenied("Thời hạn gửi feedback đã kết thúc");
                         return;
                     }
                 }
@@ -756,6 +747,13 @@
                 }
 
                 console.log('✅ Đã đủ điều kiện gửi feedback');
+
+                // Sync fullname từ applications (nguồn chính xác hơn displayName)
+                if (appData.fullname) {
+                    currentUser.fullname = appData.fullname;
+                    const avatar = document.getElementById("user-avatar");
+                    if (avatar) avatar.textContent = appData.fullname.charAt(0).toUpperCase();
+                }
 
                 // 4. Load team members
                 await loadTeamMembers(appData.round3.team);
@@ -852,7 +850,7 @@
 
                 if (!feedbackSnapshot.empty) {
                     feedbackSubmitted = true;
-                    showStatus("✅ Bạn đã gửi feedback trước đó. Cảm ơn bạn đã đóng góp!", "success");
+                    showStatus("Bạn đã gửi feedback trước đó. Cảm ơn bạn đã đóng góp!", "success");
                 }
             } catch (error) {
                 console.error("❌ Lỗi khi kiểm tra feedback:", error);
@@ -922,7 +920,7 @@
             submitBtn.type = "submit";
             submitBtn.className = "submit-btn";
             submitBtn.id = "submit-btn";
-            submitBtn.textContent = feedbackSubmitted ? "✅ Đã gửi Feedback" : "📤 Gửi Feedback";
+            submitBtn.textContent = feedbackSubmitted ? "Đã gửi Feedback" : "Gửi Feedback";
             submitBtn.disabled = feedbackSubmitted;
             form.appendChild(submitBtn);
 
@@ -1302,7 +1300,7 @@
             // Disable button
             const submitBtn = document.getElementById("submit-btn");
             submitBtn.disabled = true;
-            submitBtn.textContent = "⏳ Đang gửi...";
+            submitBtn.textContent = "Đang gửi...";
 
             try {
                 // Thu thập dữ liệu
@@ -1367,9 +1365,9 @@
                 await db.collection("feedback").add(formData);
 
                 feedbackSubmitted = true;
-                submitBtn.textContent = "✅ Đã gửi Feedback";
+                submitBtn.textContent = "Đã gửi Feedback";
                 submitBtn.disabled = true;
-                showStatus("✅ Cảm ơn bạn đã gửi feedback! Đóng góp của bạn rất có giá trị.", "success");
+                showStatus("Cảm ơn bạn đã gửi feedback! Đóng góp của bạn rất có giá trị.", "success");
 
                 // Cập nhật trạng thái đã gửi trong ứng dụng
                 await db.collection("applications").doc(currentApplication.id).update({
@@ -1379,9 +1377,9 @@
 
             } catch (error) {
                 console.error("❌ Lỗi khi gửi feedback:", error);
-                showStatus("❌ Có lỗi xảy ra khi gửi feedback. Vui lòng thử lại.", "error");
+                showStatus("Có lỗi xảy ra khi gửi feedback. Vui lòng thử lại.", "error");
                 submitBtn.disabled = false;
-                submitBtn.textContent = "📤 Gửi Feedback";
+                submitBtn.textContent = "Gửi Feedback";
             }
         }
 

@@ -6846,9 +6846,17 @@ function setupRound3SaveHandlers() {
     const tbody = document.getElementById("round3-table-body");
     
     tbody.querySelectorAll(".save-btn").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-            const appId = btn.getAttribute("data-id");
-            const row = btn.closest("tr");
+        // BUG FIX #9: Clone node để xóa toàn bộ event listeners cũ.
+        // Trước đây mỗi lần renderRound3/simplifyTeamRendering được gọi lại
+        // (sau refreshApplications), setupRound3SaveHandlers chạy lại và
+        // addEventListener chồng thêm handler mới lên handler cũ vẫn còn đó.
+        // Kết quả: 1 lần click = N lần update Firestore → advisor bị ghi N lần.
+        const freshBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(freshBtn, btn);
+
+        freshBtn.addEventListener("click", async (e) => {
+            const appId = freshBtn.getAttribute("data-id");
+            const row = freshBtn.closest("tr");
             
             const app = applications.find(a => a.id === appId);
             if (!app) return;

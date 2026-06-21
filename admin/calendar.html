@@ -335,6 +335,65 @@
             margin-top: 24px;
         }
 
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--gray-300);
+            transition: 0.3s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: var(--success);
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        .toggle-switch input:disabled + .toggle-slider {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .publish-toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
         /* Loading */
         .loading {
             text-align: center;
@@ -659,16 +718,45 @@
                         <i class="fas fa-save"></i>
                         Lưu lịch phỏng vấn
                     </button>
-                    <button class="btn btn-success" id="publish-schedule-btn">
-                        <i class="fas fa-bell"></i>
-                        Công bố lịch phỏng vấn
-                    </button>
                 </div>
             </div>
         </div>
 
         <!-- Settings Tab -->
         <div id="settings-tab" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Công bố lịch phỏng vấn</h2>
+                    <p class="card-subtitle">Mở lịch cho ứng viên vào chọn ca, và đặt hạn đóng đơn vote</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Hạn đóng đơn vote lịch</label>
+                    <p class="card-subtitle">Sau thời điểm này, ứng viên sẽ không thể chọn/thay đổi lịch nữa (tự động khóa)</p>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                        <input type="date" class="form-input" id="vote-deadline-date" style="flex:1;min-width:140px;">
+                        <input type="time" class="form-input" id="vote-deadline-time" style="flex:1;min-width:120px;">
+                    </div>
+                    <button class="btn btn-secondary" id="save-deadline-btn" style="margin-top: 12px;">
+                        <i class="fas fa-clock"></i>
+                        Lưu hạn đóng đơn
+                    </button>
+                    <p id="deadline-status" style="font-size: 13px; color: var(--gray-600); margin-top: 8px;"></p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Trạng thái công bố lịch</label>
+                    <div class="publish-toggle-row">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="publish-schedule-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span id="publish-toggle-label" style="font-weight: 600; color: var(--gray-700);">Chưa công bố</span>
+                    </div>
+                    <p class="card-subtitle" style="margin-top: 6px;">Bật để mở lịch cho ứng viên vào chọn ca. Tắt để đóng/ẩn lịch (ứng viên sẽ không vào chọn được nữa).</p>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">Cài đặt hệ thống</h2>
@@ -812,6 +900,22 @@
                 if (scheduleDoc.exists) {
                     const data = scheduleDoc.data();
                     interviewSchedule = data.schedule || [];
+
+                    // Khởi tạo trạng thái toggle công bố lịch
+                    setPublishToggleUI(data.published === true);
+
+                    // Load hạn đóng đơn vote (nếu đã từng lưu)
+                    if (data.deadline) {
+                        const deadline = data.deadline.toDate();
+                        const pad = (n) => String(n).padStart(2, '0');
+                        const dateStr = `${deadline.getFullYear()}-${pad(deadline.getMonth() + 1)}-${pad(deadline.getDate())}`;
+                        const timeStr = `${pad(deadline.getHours())}:${pad(deadline.getMinutes())}`;
+
+                        document.getElementById('vote-deadline-date').value = dateStr;
+                        document.getElementById('vote-deadline-time').value = timeStr;
+                        document.getElementById('deadline-status').textContent =
+                            `Hạn hiện tại: ${pad(deadline.getDate())}/${pad(deadline.getMonth() + 1)}/${deadline.getFullYear()} ${timeStr}`;
+                    }
                 } else {
                     // Save default schedule
                     await db.collection('system').doc('interview_schedule').set({
@@ -819,6 +923,7 @@
                         published: false,
                         locked: false
                     });
+                    setPublishToggleUI(false);
                 }
                 
                 // Cập nhật trạng thái nút sau khi load schedule
@@ -904,6 +1009,17 @@
             } catch (error) {
                 console.error('Error syncing voting candidates:', error);
             }
+        }
+
+        // Function để cập nhật giao diện toggle công bố lịch
+        function setPublishToggleUI(isPublished) {
+            const toggle = document.getElementById('publish-schedule-toggle');
+            const label = document.getElementById('publish-toggle-label');
+            if (!toggle || !label) return;
+
+            toggle.checked = isPublished;
+            label.textContent = isPublished ? 'Đã công bố' : 'Chưa công bố';
+            label.style.color = isPublished ? 'var(--success)' : 'var(--gray-700)';
         }
 
         // Function để cập nhật trạng thái nút khóa/mở
@@ -1371,14 +1487,67 @@
                 }
             });
             
-            // Publish schedule button
-            document.getElementById('publish-schedule-btn').addEventListener('click', async function() {
-                if (interviewSchedule.length === 0) {
-                    alert('Vui lòng tạo lịch phỏng vấn trước khi công bố');
+            // Save vote deadline button
+            document.getElementById('save-deadline-btn').addEventListener('click', async function() {
+                const dateVal = document.getElementById('vote-deadline-date').value;
+                const timeVal = document.getElementById('vote-deadline-time').value;
+                const statusEl = document.getElementById('deadline-status');
+
+                if (!dateVal || !timeVal) {
+                    alert('Vui lòng chọn đầy đủ ngày và giờ cho hạn đóng đơn');
                     return;
                 }
-                
-                if (confirm('Bạn có chắc chắn muốn công bố lịch phỏng vấn này?')) {
+
+                // Ghép ngày + giờ thành 1 đối tượng Date (giờ địa phương)
+                const deadlineDate = new Date(`${dateVal}T${timeVal}:00`);
+
+                if (isNaN(deadlineDate.getTime())) {
+                    alert('Ngày/giờ không hợp lệ');
+                    return;
+                }
+
+                const btn = this;
+                const originalHTML = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+
+                try {
+                    await db.collection('system').doc('interview_schedule').set({
+                        deadline: deadlineDate,
+                        deadline_updated_at: new Date(),
+                        deadline_updated_by: currentUser.email
+                    }, { merge: true });
+
+                    const pad = (n) => String(n).padStart(2, '0');
+                    statusEl.textContent =
+                        `Hạn hiện tại: ${pad(deadlineDate.getDate())}/${pad(deadlineDate.getMonth() + 1)}/${deadlineDate.getFullYear()} ${pad(deadlineDate.getHours())}:${pad(deadlineDate.getMinutes())}`;
+
+                    alert('✅ Đã lưu hạn đóng đơn vote lịch thành công!');
+                } catch (error) {
+                    console.error('Error saving vote deadline:', error);
+                    alert('❌ Có lỗi xảy ra khi lưu hạn đóng đơn');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                }
+            });
+
+            // Publish schedule toggle
+            document.getElementById('publish-schedule-toggle').addEventListener('change', async function() {
+                const wantPublish = this.checked;
+
+                if (wantPublish) {
+                    if (interviewSchedule.length === 0) {
+                        alert('Vui lòng tạo lịch phỏng vấn trước khi công bố');
+                        setPublishToggleUI(false);
+                        return;
+                    }
+
+                    if (!confirm('Bạn có chắc chắn muốn công bố lịch phỏng vấn này?')) {
+                        setPublishToggleUI(false);
+                        return;
+                    }
+
                     try {
                         await db.collection('system').doc('interview_schedule').set({
                             schedule: interviewSchedule,
@@ -1386,11 +1555,32 @@
                             locked: false,
                             published_at: new Date()
                         }, { merge: true });
-                        
+
+                        setPublishToggleUI(true);
                         alert('Lịch phỏng vấn đã được công bố thành công!');
                     } catch (error) {
                         console.error('Error publishing schedule:', error);
                         alert('Có lỗi xảy ra khi công bố lịch phỏng vấn');
+                        setPublishToggleUI(false);
+                    }
+                } else {
+                    if (!confirm('Bạn có chắc chắn muốn ĐÓNG công bố lịch phỏng vấn? Ứng viên sẽ không vào chọn lịch được nữa.')) {
+                        setPublishToggleUI(true);
+                        return;
+                    }
+
+                    try {
+                        await db.collection('system').doc('interview_schedule').set({
+                            published: false,
+                            unpublished_at: new Date()
+                        }, { merge: true });
+
+                        setPublishToggleUI(false);
+                        alert('Đã đóng công bố lịch phỏng vấn.');
+                    } catch (error) {
+                        console.error('Error unpublishing schedule:', error);
+                        alert('Có lỗi xảy ra khi đóng công bố lịch phỏng vấn');
+                        setPublishToggleUI(true);
                     }
                 }
             });

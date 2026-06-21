@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chọn lịch phỏng vấn | Enactus FTU Hanoi</title>
+    <title>Calendar | Enactus FTU Hanoi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -222,6 +222,15 @@
         .calendar-header p {
             color: var(--neutral-600);
             font-size: 15px;
+        }
+
+        #profile-btn {
+            margin-top: 28px;
+            max-width: 200px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            clear: both;
         }
 
         /* Progress Bar */
@@ -458,7 +467,7 @@
         /* Success Message */
         .success-message {
             text-align: center;
-            padding: 48px 32px;
+            padding: 36px 28px;
             background: white;
             border-radius: var(--radius-2xl);
             box-shadow: var(--shadow-xl);
@@ -478,71 +487,72 @@
         }
 
         .success-icon {
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
             background: var(--success-100);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 24px;
+            margin: 0 auto 16px;
             color: var(--success-600);
-            font-size: 40px;
+            font-size: 28px;
         }
 
         .success-message h2 {
-            font-size: 28px;
+            font-size: 22px;
             font-weight: 700;
             color: var(--neutral-900);
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .success-message p {
             color: var(--neutral-600);
-            margin-bottom: 32px;
+            margin-bottom: 20px;
             max-width: 400px;
             margin-left: auto;
             margin-right: auto;
+            font-size: 14px;
         }
 
         /* Selected Slots Summary */
         .selected-slots-summary {
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-radius: 20px;
-            padding: 24px;
-            margin: 24px auto;
-            max-width: 550px;
+            border-radius: 16px;
+            padding: 18px;
+            margin: 16px auto 0;
+            max-width: 480px;
             text-align: left;
             border: 1px solid var(--neutral-200);
         }
 
         .summary-title {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 700;
             color: var(--neutral-800);
-            margin-bottom: 20px;
+            margin-bottom: 14px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding-bottom: 16px;
+            gap: 8px;
+            padding-bottom: 12px;
             border-bottom: 2px dashed var(--neutral-300);
         }
 
         .summary-title i {
             color: var(--primary-600);
-            font-size: 20px;
+            font-size: 15px;
             background: var(--primary-100);
-            padding: 8px;
-            border-radius: 12px;
+            padding: 6px;
+            border-radius: 10px;
         }
 
         .summary-slots {
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            max-height: 400px;
+            gap: 10px;
+            max-height: 320px;
             overflow-y: auto;
-            padding-right: 8px;
+            padding-right: 6px;
         }
 
         /* Scrollbar */
@@ -563,11 +573,11 @@
         /* Date Group */
         .date-group {
             background: white;
-            border-radius: 16px;
-            padding: 16px;
+            border-radius: 12px;
+            padding: 12px;
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--neutral-200);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .date-group:last-child {
@@ -575,19 +585,19 @@
         }
 
         .date-header {
-            font-size: 16px;
+            font-size: 13px;
             font-weight: 600;
             color: var(--primary-700);
-            margin-bottom: 12px;
-            padding-bottom: 8px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
             border-bottom: 1px solid var(--neutral-200);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .date-header i {
-            font-size: 16px;
+            font-size: 13px;
             color: var(--primary-500);
         }
 
@@ -595,11 +605,11 @@
         .slot-card {
             display: flex;
             align-items: center;
-            gap: 16px;
-            padding: 12px 16px;
+            gap: 10px;
+            padding: 8px 10px;
             background: var(--neutral-50);
-            border-radius: 12px;
-            margin-bottom: 8px;
+            border-radius: 10px;
+            margin-bottom: 6px;
             transition: all 0.2s ease;
             border: 1px solid transparent;
         }
@@ -607,8 +617,8 @@
         .slot-card:hover {
             background: white;
             border-color: var(--primary-500);
-            transform: translateX(4px);
-            box-shadow: var(--shadow-md);
+            transform: translateX(2px);
+            box-shadow: var(--shadow-sm);
         }
 
         .slot-card:last-child {
@@ -616,45 +626,45 @@
         }
 
         .slot-number {
-            width: 36px;
-            height: 36px;
+            width: 26px;
+            height: 26px;
             background: var(--primary-500);
-            border-radius: 10px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 16px;
+            font-size: 12px;
             color: var(--neutral-800);
             flex-shrink: 0;
-            box-shadow: 0 4px 10px rgba(252, 211, 77, 0.3);
+            box-shadow: 0 2px 6px rgba(252, 211, 77, 0.3);
         }
 
         .slot-details {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 2px;
         }
 
         .slot-title {
             font-weight: 600;
-            font-size: 15px;
+            font-size: 13px;
             color: var(--neutral-800);
         }
 
         .slot-time {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 14px;
+            gap: 6px;
+            font-size: 12px;
             color: var(--neutral-600);
         }
 
         .slot-time i {
             color: var(--primary-600);
-            font-size: 13px;
-            width: 16px;
+            font-size: 11px;
+            width: 14px;
         }
 
         .slot-date {
@@ -927,6 +937,16 @@
                         return;
                     }
 
+                    // Kiểm tra hạn đóng đơn vote lịch
+                    if (scheduleDoc.data().deadline) {
+                        const deadline = scheduleDoc.data().deadline.toDate();
+                        if (new Date() > deadline) {
+                            const pad = (n) => String(n).padStart(2, '0');
+                            showError(`Đã quá hạn chọn lịch phỏng vấn (Hạn: ${pad(deadline.getDate())}/${pad(deadline.getMonth() + 1)}/${deadline.getFullYear()} ${pad(deadline.getHours())}:${pad(deadline.getMinutes())}). Vui lòng liên hệ BTC nếu cần hỗ trợ.`);
+                            return;
+                        }
+                    }
+
                     // Check if user has an application
                     const snapshot = await db.collection('applications')
                                         .where('email', '==', user.email)
@@ -1116,6 +1136,7 @@
                 
                 return {
                     date: displayDate,
+                    rawDate: dateStr,
                     time: timeStr,
                     display: `${displayDate} • ${timeStr}`
                 };
@@ -1123,10 +1144,19 @@
                 console.error('Error parsing slot info:', error);
                 return {
                     date: 'Không xác định',
+                    rawDate: '',
                     time: slotId,
                     display: slotId
                 };
             }
+        }
+
+        // Tìm số thứ tự ca thật của 1 khung giờ trong lịch ngày đó (theo đúng thứ tự admin đã tạo)
+        function getCaNumber(rawDate, timeStr) {
+            const day = interviewSchedule.find(d => d.date === rawDate);
+            if (!day || !day.slots) return null;
+            const idx = day.slots.indexOf(timeStr);
+            return idx >= 0 ? idx + 1 : null;
         }
 
         // Update selection progress
@@ -1186,12 +1216,14 @@
 
         // Show success message with selected slots
         function showSuccessMessage() {
-            // Parse tất cả các slot đã chọn
+            // Parse tất cả các slot đã chọn, kèm số ca thật (theo đúng thứ tự admin đã tạo)
             const parsedSlots = selectedSlots.map(slotId => {
                 const info = parseSlotInfo(slotId);
+                const realCaNumber = getCaNumber(info.rawDate, info.time);
                 return {
                     id: slotId,
-                    ...info
+                    ...info,
+                    caNumber: realCaNumber
                 };
             });
             
@@ -1207,8 +1239,11 @@
             // Generate summary HTML
             let summaryHTML = '';
             
-            // Hiển thị theo ngày, đánh số thứ tự riêng cho mỗi ngày
+            // Hiển thị theo ngày
             Object.entries(groupedByDate).forEach(([date, slots]) => {
+                // Sắp xếp theo số ca tăng dần để dễ nhìn
+                slots.sort((a, b) => (a.caNumber ?? 999) - (b.caNumber ?? 999));
+
                 summaryHTML += `
                     <div class="date-group">
                         <div class="date-header">
@@ -1217,21 +1252,17 @@
                         </div>
                 `;
                 
-                // Đánh số từ 1 cho mỗi ngày
-                slots.forEach((slot, index) => {
-                    const caNumber = index + 1;
+                slots.forEach((slot) => {
+                    // Số ca thật trong lịch ngày đó; fallback nếu vì lý do gì không tìm thấy
+                    const caLabel = slot.caNumber ?? '?';
                     summaryHTML += `
                         <div class="slot-card">
-                            <div class="slot-number">${caNumber}</div>
+                            <div class="slot-number">${caLabel}</div>
                             <div class="slot-details">
-                                <div class="slot-title">Ca ${caNumber}</div>
+                                <div class="slot-title">Ca ${caLabel}</div>
                                 <div class="slot-time">
                                     <i class="far fa-clock"></i>
                                     ${slot.time}
-                                </div>
-                                <div class="slot-date">
-                                    <i class="far fa-calendar"></i>
-                                    ${slot.date}
                                 </div>
                             </div>
                         </div>

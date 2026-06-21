@@ -43,16 +43,19 @@
             --success-100: #dcfce7;
             --success-500: #22c55e;
             --success-600: #16a34a;
+            --success-700: #15803d;
             
             --warning-50: #fffbeb;
             --warning-100: #fef3c7;
             --warning-500: #f59e0b;
             --warning-600: #d97706;
+            --warning-700: #b45309;
             
             --error-50: #fef2f2;
             --error-100: #fee2e2;
             --error-500: #ef4444;
             --error-600: #dc2626;
+            --error-700: #b91c1c;
             
             --info-50: #eff6ff;
             --info-100: #dbeafe;
@@ -478,7 +481,52 @@
         .info-box-sub {
             font-size: 13px;
             color: var(--neutral-500);
-            margin-top: 4px;
+            margin-top: 6px;
+        }
+
+        .dept-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+
+        .dept-badge.new {
+            background: var(--primary-100);
+            color: var(--primary-800);
+        }
+
+        .dept-badge.pending {
+            background: var(--warning-100);
+            color: var(--warning-700);
+        }
+
+        .dept-badge.pass {
+            background: var(--success-100);
+            color: var(--success-700);
+        }
+
+        .dept-badge.not-pass {
+            background: var(--error-100);
+            color: var(--error-700);
+        }
+
+        .dept-badge.success {
+            background: var(--success-100);
+            color: var(--success-700);
+        }
+
+        .dept-badge.voted {
+            background: var(--primary-100);
+            color: var(--primary-800);
+        }
+
+        .dept-badge.interviewed {
+            background: var(--info-100);
+            color: var(--info-600);
         }
 
         /* Timeline */
@@ -936,7 +984,7 @@
                         <div class="info-box-value" id="priority-department">Chưa có</div>
                         <div class="info-box-sub" id="priority-status"></div>
                     </div>
-                    <div class="info-box">
+                    <div class="info-box" id="secondary-dept-box">
                         <div class="info-box-label">Nguyện vọng 2</div>
                         <div class="info-box-value" id="secondary-department">Chưa có</div>
                         <div class="info-box-sub" id="secondary-status"></div>
@@ -1082,13 +1130,28 @@
             const priorityDept = getDepartmentName(applicationData.priority_position);
             const secondaryDept = getDepartmentName(applicationData.secondary_position);
             document.getElementById('priority-department').textContent = priorityDept || 'Không có';
-            document.getElementById('secondary-department').textContent = secondaryDept || 'Không có';
+
+            const secondaryBox = document.getElementById('secondary-dept-box');
+            if (!applicationData.secondary_position) {
+                // Không có nguyện vọng 2 -> ẩn hẳn box, không hiện not-pass
+                secondaryBox.style.display = 'none';
+            } else {
+                secondaryBox.style.display = '';
+                document.getElementById('secondary-department').textContent = secondaryDept || 'Không có';
+            }
             
             // Department statuses
             const priorityStatus = getDeptStatusForRound(applicationData, 'priority');
-            const secondaryStatus = getDeptStatusForRound(applicationData, 'secondary');
-            document.getElementById('priority-status').textContent = priorityStatus ? getStatusText(priorityStatus) : '';
-            document.getElementById('secondary-status').textContent = secondaryStatus ? getStatusText(secondaryStatus) : '';
+            document.getElementById('priority-status').innerHTML = priorityStatus
+                ? `<span class="dept-badge ${getStatusClass(priorityStatus)}">${getStatusText(priorityStatus)}</span>`
+                : '';
+
+            if (applicationData.secondary_position) {
+                const secondaryStatus = getDeptStatusForRound(applicationData, 'secondary');
+                document.getElementById('secondary-status').innerHTML = secondaryStatus
+                    ? `<span class="dept-badge ${getStatusClass(secondaryStatus)}">${getStatusText(secondaryStatus)}</span>`
+                    : '';
+            }
             
             // Current round
             const currentRound = applicationData.current_round || 'round1';
@@ -1180,7 +1243,7 @@
                     frag.appendChild(row);
                 });
                 
-                const typeRow = createDetailRow('Hình thức', applicationData.application_type || 'Form trực tuyến');
+                const typeRow = createDetailRow('Hình thức', applicationData.application_type === 'interview' ? 'Phỏng vấn thay đơn' : (applicationData.application_type || 'Điền đơn'));
                 frag.appendChild(typeRow);
                 
                 let ts = 'Không xác định';
@@ -1519,21 +1582,44 @@
                 const voteStatus = document.getElementById('vote-status');
                 
                 if (scheduleDoc.exists && scheduleDoc.data().published === true) {
+                    const scheduleData = scheduleDoc.data();
+
+                    // Đã đóng vote nếu admin khóa thủ công HOẶC đã quá hạn đóng đơn
+                    const isLocked = scheduleData.locked === true;
+                    let isPastDeadline = false;
+                    if (scheduleData.deadline) {
+                        isPastDeadline = new Date() > scheduleData.deadline.toDate();
+                    }
+                    const votingClosed = isLocked || isPastDeadline;
+
                     const hasVotingRights = await checkVotingRights();
                     
                     if (hasVotingRights) {
                         const hasVoted = applicationData.interview_schedule && applicationData.interview_schedule.length >= 3;
                         
                         if (!hasVoted) {
-                            notification.style.display = 'flex';
-                            voteStatus.style.display = 'none';
-                            
-                            if (scheduleDoc.data().published_at) {
-                                const publishDate = scheduleDoc.data().published_at.toDate();
-                                const deadline = new Date(publishDate);
-                                deadline.setDate(deadline.getDate() + 3);
-                                document.getElementById('notification-deadline').textContent = 
-                                    `${deadline.getDate()}/${deadline.getMonth() + 1}/${deadline.getFullYear()}`;
+                            if (votingClosed) {
+                                // Đã hết hạn/đã khóa mà chưa chọn lịch -> không mời chọn nữa
+                                notification.style.display = 'none';
+                                voteStatus.style.display = 'none';
+                            } else {
+                                notification.style.display = 'flex';
+                                voteStatus.style.display = 'none';
+                                
+                                if (scheduleData.deadline) {
+                                    // Ưu tiên dùng hạn admin đã set thủ công
+                                    const deadline = scheduleData.deadline.toDate();
+                                    const pad = (n) => String(n).padStart(2, '0');
+                                    document.getElementById('notification-deadline').textContent =
+                                        `${pad(deadline.getDate())}/${pad(deadline.getMonth() + 1)}/${deadline.getFullYear()} ${pad(deadline.getHours())}:${pad(deadline.getMinutes())}`;
+                                } else if (scheduleData.published_at) {
+                                    // Fallback: chưa set hạn thủ công thì lấy ngày công bố + 3 ngày
+                                    const publishDate = scheduleData.published_at.toDate();
+                                    const deadline = new Date(publishDate);
+                                    deadline.setDate(deadline.getDate() + 3);
+                                    document.getElementById('notification-deadline').textContent = 
+                                        `${deadline.getDate()}/${deadline.getMonth() + 1}/${deadline.getFullYear()}`;
+                                }
                             }
                         } else {
                             notification.style.display = 'none';
@@ -1752,7 +1838,9 @@
                 'pending': 'pending',
                 'pass': 'pass',
                 'not-pass': 'not-pass',
-                'success': 'success'
+                'success': 'success',
+                'voted': 'voted',
+                'interviewed': 'interviewed'
             };
             return map[status] || 'pending';
         }
@@ -1763,7 +1851,9 @@
                 'pending': 'Pending',
                 'pass': 'Pass',
                 'not-pass': 'Not Pass',
-                'success': 'Success'
+                'success': 'Success',
+                'voted': 'Đã chọn lịch',
+                'interviewed': 'Đã phỏng vấn'
             };
             return map[status] || status;
         }
