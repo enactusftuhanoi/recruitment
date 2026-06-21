@@ -98,7 +98,7 @@ function buildInterviewFromSlots(slots) {
     if (!slots || slots.length === 0) return [];
 
     const question = {
-        id: "interview_schedule",
+        id: "application_interview_slots",
         question: "Vui lòng chọn các khung giờ phỏng vấn bạn có thể tham gia (chọn ít nhất 3 ca)",
         options: []
     };
@@ -297,7 +297,7 @@ function getDepartmentStatus(application, type) {
 function canViewDepartment(application, deptType) {
     if (!application) return false;
     if (userRole === "superadmin") return true;
-    if (userRole === "admin") {
+    if (userRole === "admin" || userRole === "member") {
         const deptCode = deptType === "priority" 
             ? application.priority_position 
             : application.secondary_position;
@@ -309,7 +309,7 @@ function canViewDepartment(application, deptType) {
 function canViewAnyDepartment(application) {
     if (!application) return false;
     if (userRole === "superadmin") return true;
-    if (userRole === "admin") {
+    if (userRole === "admin" || userRole === "member") {
         return application.priority_position === userDept || 
                application.secondary_position === userDept;
     }
@@ -1702,7 +1702,7 @@ function getDepartmentStatus(application, type) {
 function canViewDepartment(application, deptType) {
   if (!application) return false;
   if (userRole === "superadmin") return true;
-  if (userRole === "admin") {
+  if (userRole === "admin" || userRole === "member") {
     const deptCode = deptType === "priority" 
       ? application.priority_position 
       : application.secondary_position;
@@ -1714,7 +1714,7 @@ function canViewDepartment(application, deptType) {
 function canViewAnyDepartment(application) {
   if (!application) return false;
   if (userRole === "superadmin") return true;
-  if (userRole === "admin") {
+  if (userRole === "admin" || userRole === "member") {
     return application.priority_position === userDept || 
            application.secondary_position === userDept;
   }
