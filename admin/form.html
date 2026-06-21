@@ -1862,6 +1862,30 @@
         </div>
     </div>
 </div>
+
+<div class="modal-overlay" id="modal-add-date">
+    <div class="modal" style="max-width:380px;">
+        <div class="modal-header">
+            <div class="modal-header-title">Thêm ngày phỏng vấn</div>
+            <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-add-date')">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 4L4 12M4 4l8 8"/>
+                </svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Chọn ngày</label>
+                <input type="date" class="form-input" id="add-date-input">
+                <div style="font-size:12px;color:var(--gray-500);margin-top:6px;">Sẽ tạo 3 ca mặc định (08:00, 09:15, 10:30) cho ngày được chọn.</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('modal-add-date')">Hủy</button>
+            <button class="btn btn-primary" onclick="confirmAddDate()">Thêm ngày</button>
+        </div>
+    </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
 <script src="/script/config.js"></script>
@@ -2999,7 +3023,7 @@ function renderInterviewSlots() {
             <div style="font-weight:600;color:var(--blue-700);font-size:14px;">Thêm ngày mới</div>
             <div style="font-size:12px;color:var(--blue-600);">Tạo 3 ca mặc định cho ngày mới (08:00, 09:30, 13:00)</div>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="addNewDate()">
+        <button class="btn btn-primary btn-sm" onclick="openAddDateModal()">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;">
                 <path d="M8 3v10M3 8h10"/>
             </svg>
@@ -3157,9 +3181,10 @@ function renderInterviewSlots() {
     });
 }
 
-function addNewDate() {
+function openAddDateModal() {
     if (!interviewSettings.slots) interviewSettings.slots = [];
-    
+
+    // Gợi ý ngày kế tiếp (ngày sau ngày cuối cùng đã có, hoặc hôm nay nếu chưa có ca nào)
     let lastDate = new Date();
     if (interviewSettings.slots.length > 0) {
         let maxDate = null;
@@ -3178,31 +3203,49 @@ function addNewDate() {
             lastDate.setDate(lastDate.getDate() + 1);
         }
     }
-    
-    const dateStr = lastDate.toISOString().split('T')[0];
+
+    const suggestedDateStr = lastDate.toISOString().split('T')[0];
+    const input = document.getElementById('add-date-input');
+    if (input) input.value = suggestedDateStr;
+    openModal('modal-add-date');
+}
+
+function confirmAddDate() {
+    const input = document.getElementById('add-date-input');
+    const dateStr = input ? input.value : '';
+
+    if (!dateStr) {
+        showToast("Vui lòng chọn ngày", "error");
+        return;
+    }
+
+    if (!interviewSettings.slots) interviewSettings.slots = [];
+
+    // Kiểm tra ngày đã tồn tại chưa
+    const existingSlotsInDay = interviewSettings.slots.filter(slot => slot.dateTime === dateStr);
+    if (existingSlotsInDay.length > 0) {
+        showToast("Ngày này đã có ca phỏng vấn. Hãy thêm ca trực tiếp vào ngày đó hoặc chọn ngày khác.", "error");
+        return;
+    }
+
+    const parts = dateStr.split('-');
+    const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
     const weekdays = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-    const dayOfWeek = weekdays[lastDate.getDay()];
-    const day = String(lastDate.getDate()).padStart(2, '0');
-    const month = String(lastDate.getMonth() + 1).padStart(2, '0');
-    const year = lastDate.getFullYear();
+    const dayOfWeek = weekdays[d.getDay()];
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
     const dateDisplay = `${dayOfWeek}, ${day}/${month}/${year}`;
-    
-    // Tìm số ca hiện có trong ngày này
-    const existingSlotsInDay = interviewSettings.slots.filter(slot => {
-        if (slot.dateTime === dateStr) return true;
-        return false;
-    });
-    const startCaNumber = existingSlotsInDay.length + 1;
-    
+
     // Tạo 3 ca mặc định, mỗi ca 1 tiếng, cách nhau 15 phút
     const timeSlots = [
         { start: '08:00', end: '09:00' },
         { start: '09:15', end: '10:15' },
         { start: '10:30', end: '11:30' }
     ];
-    
+
     timeSlots.forEach((time, idx) => {
-        const caNum = startCaNumber + idx;
+        const caNum = idx + 1;
         interviewSettings.slots.push({
             dateTime: dateStr,
             startTime: time.start,
@@ -3210,7 +3253,8 @@ function addNewDate() {
             label: `Ca ${caNum} (${time.start} - ${time.end}) - ${dateDisplay}`
         });
     });
-    
+
+    closeModal('modal-add-date');
     renderInterviewSlots();
     showToast(`Đã thêm ngày ${dateDisplay} với 3 ca mặc định`, "success");
 }
