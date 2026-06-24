@@ -5,32 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login | Enactus FTU Hanoi</title>
   <link rel="icon" href="/assets/icon.png" type="image/png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Clash+Display:wght@600;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-    
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
     :root {
-      /* Theme Colors - Updated to Yellow/Gray/White */
       --yellow: #F8F3CE;
+      --yellow-mid: #F5E642;
       --yellow-light: #FFD54F;
       --gray-50: #FAFAFA;
       --gray-100: #F5F5F5;
+      --gray-200: #E5E7EB;
       --gray-900: #374151;
       --gray-700: #6B7280;
       --gray-600: #9CA3AF;
       --white: #FFFFFF;
-      --error: #f44336;
-      --success: #8BC34A;
+      --ink: #0F0F0E;
+      --error: #EF4444;
+      --error-bg: #FEF2F2;
+      --success: #10B981;
+      --info-bg: #EFF6FF;
+      --info-color: #1E40AF;
+      --radius: 12px;
+      --radius-lg: 20px;
+      --shadow: 0 10px 25px rgba(0,0,0,.08);
+      --shadow-lg: 0 20px 50px rgba(0,0,0,.18);
     }
 
     body {
-      background-color: var(--gray-50);
+      background: var(--gray-50);
       min-height: 100vh;
       display: flex;
       justify-content: center;
@@ -38,594 +41,737 @@
       padding: 20px;
     }
 
-    /* Main Container */
+    /* ── CONTAINER ── */
     .container {
       width: 100%;
-      max-width: 420px;
+      max-width: 440px;
       background: var(--white);
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
       overflow: hidden;
+      transition: box-shadow .3s ease;
     }
+    .container:hover { box-shadow: 0 15px 35px rgba(0,0,0,.12); }
 
-    /* Header Section */
+    /* ── HEADER ── */
     .header {
       background: linear-gradient(135deg, var(--yellow), var(--yellow-light));
-      padding: 32px 24px;
+      padding: 32px 24px 28px;
       text-align: center;
-      color: var(--gray-900);
-      position: relative;
     }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 16px;
-      transition: transform 0.3s ease;
-    }
-
-    .logo:hover {
-      transform: scale(1.05);
-    }
-
-    .logo img {
-      height: 75px;
-      width: auto;
-    }
-
+    .logo { display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; transition: transform .3s; }
+    .logo:hover { transform: scale(1.05); }
+    .logo img { height: 72px; width: auto; }
     h1 {
       font-family: 'Clash Display', 'Plus Jakarta Sans', sans-serif;
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      letter-spacing: -0.01em;
-      color: var(--gray-900);
+      font-size: 20px; font-weight: 700; letter-spacing: -.01em; color: var(--gray-900);
     }
 
-    .tagline {
-      font-size: 10px;
-      font-weight: 600;
-      opacity: 0.8;
-      letter-spacing: 0.5px;
-    }
+    /* ── CONTENT ── */
+    .content { padding: 28px 24px; }
 
-    /* Content Section */
-    .content {
-      padding: 32px 24px;
+    /* ── ROLE SELECTOR ── */
+    .role-selector { display: flex; gap: 8px; margin-bottom: 20px; }
+    .role-tab {
+      flex: 1; padding: 10px 12px; border: 2px solid var(--gray-200);
+      border-radius: var(--radius); background: var(--white);
+      font-family: inherit; font-size: 13px; font-weight: 600; color: var(--gray-700);
+      cursor: pointer; transition: all .2s ease; display: flex; flex-direction: column;
+      align-items: center; gap: 6px; text-align: center; line-height: 1.3;
     }
-
-    /* Welcome Text */
-    .welcome-text {
-      text-align: center;
-      margin-bottom: 24px;
+    .role-tab svg { flex-shrink: 0; }
+    .role-tab:hover { border-color: var(--yellow-mid); background: #FFFBF0; }
+    .role-tab.active {
+      border-color: var(--gray-900); background: var(--gray-900); color: var(--white);
     }
+    .role-tab.active svg path, .role-tab.active svg rect, .role-tab.active svg circle { stroke: var(--white); }
 
-    .welcome-text h2 {
-      font-family: 'Clash Display', 'Plus Jakarta Sans', sans-serif;
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--gray-900);
-      margin-bottom: 8px;
-      letter-spacing: -0.01em;
-    }
-
-    .welcome-text p {
-      font-size: 15px;
-      color: var(--gray-700);
-      line-height: 1.5;
-    }
-
-    /* Login Section */
-    .login-section {
-      margin-top: 16px;
-    }
-
+    /* ── LOGIN BUTTON ── */
     .login-btn {
-      background: var(--white);
-      color: var(--gray-700);
-      border: 2px solid #E5E7EB;
-      padding: 14px 20px;
-      font-size: 15px;
-      font-weight: 600;
-      border-radius: 12px;
-      cursor: pointer;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      transition: all 0.3s ease;
-      font-family: inherit;
+      background: var(--white); color: var(--gray-700); border: 2px solid var(--gray-200);
+      padding: 14px 20px; font-size: 15px; font-weight: 600; border-radius: var(--radius);
+      cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center;
+      gap: 12px; transition: all .3s ease; font-family: inherit;
     }
-
     .login-btn:hover {
-      border-color: var(--yellow);
-      background: #FFFBF0;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.15);
+      border-color: var(--yellow-mid); background: #FFFBF0;
+      transform: translateY(-1px); box-shadow: 0 4px 12px rgba(245,230,66,.2);
     }
-
-    .login-btn:focus {
-      outline: none;
-      border-color: var(--yellow);
-      box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
-    }
-
-    .login-btn i {
-      font-size: 18px;
-    }
+    .login-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
     .login-error {
-      color: var(--error);
-      font-size: 13px;
-      text-align: center;
-      margin-top: 12px;
-      padding: 8px 12px;
-      background: #FEF2F2;
-      border-radius: 8px;
-      display: none;
+      color: var(--error); font-size: 13px; text-align: center;
+      margin-top: 12px; padding: 10px 14px; background: var(--error-bg);
+      border-radius: 8px; display: none; line-height: 1.5;
     }
 
-    /* User Profile */
-    .user-profile {
-      display: none;
-      text-align: center;
-      padding: 20px 0;
-      animation: fadeIn 0.4s ease-out;
-    }
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: var(--gray-200); margin: 20px 0; }
 
-    @keyframes fadeIn {
-      0% { opacity: 0; transform: translateY(10px); }
-      100% { opacity: 1; transform: translateY(0); }
+    /* ── CONTEXT INFO ── */
+    .context-info {
+      background: var(--info-bg); border: 1.5px solid #BFDBFE; border-radius: 10px;
+      padding: 10px 14px; font-size: 12px; color: var(--info-color);
+      display: flex; align-items: flex-start; gap: 8px; line-height: 1.5;
     }
+    .context-info svg { flex-shrink: 0; margin-top: 1px; }
 
-    .user-avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 16px;
-      object-fit: cover;
-      margin: 0 auto 16px;
-      border: 3px solid var(--yellow);
-      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
-      transition: transform 0.3s ease;
-    }
+    /* ── FOOTER ── */
+    .footer { padding: 18px 24px; text-align: center; border-top: 1px solid var(--gray-200); }
+    .footer p { font-size: 12px; color: var(--gray-600); line-height: 1.4; }
 
-    .user-avatar:hover {
-      transform: scale(1.05);
-    }
-
-    .user-name {
-      font-family: 'Clash Display', 'Plus Jakarta Sans', sans-serif;
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 4px;
-      color: var(--gray-900);
-      letter-spacing: -0.01em;
-    }
-
-    .user-email {
-      font-size: 14px;
-      color: var(--gray-600);
-      margin-bottom: 20px;
-      padding: 6px 12px;
-      background: var(--gray-100);
-      border-radius: 20px;
-      display: inline-block;
-    }
-
-    .continue-btn {
-      background: var(--yellow);
-      color: var(--gray-900);
-      border: none;
-      padding: 12px 24px;
-      font-size: 15px;
-      font-weight: 600;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-bottom: 16px;
-      font-family: inherit;
-      box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
-    }
-
-    .continue-btn:hover {
-      background: var(--yellow-light);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
-    }
-
-    .continue-btn:focus {
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2);
-    }
-
-    .logout-btn {
-      color: var(--gray-600);
-      font-size: 13px;
-      margin-top: 12px;
-      display: inline-block;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      padding: 6px 12px;
-      border-radius: 6px;
-    }
-
-    .logout-btn:hover {
-      color: var(--error);
-      background: rgba(244, 67, 54, 0.1);
-    }
-
-    /* Footer */
-    .footer {
-      padding: 20px 24px;
-      text-align: center;
-      border-top: 1px solid #E5E7EB;
-    }
-
-    .footer p {
-      font-size: 12px;
-      color: var(--gray-600);
-      line-height: 1.4;
-    }
-
-    /* Loading Animation */
+    /* ── LOADING SPINNER ── */
     .loading {
-      width: 18px;
-      height: 18px;
-      border: 2px solid #E5E7EB;
-      border-top: 2px solid var(--gray-700);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
+      width: 18px; height: 18px; border: 2px solid var(--gray-200);
+      border-top-color: var(--gray-700); border-radius: 50%;
+      animation: spin 1s linear infinite; display: inline-block;
     }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    @keyframes fadeIn { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: translateY(0); } }
 
-    @keyframes spin {
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Responsive */
-    @media (max-width: 480px) {
-      body {
-        padding: 16px;
-      }
-      
-      .container {
-        max-width: 360px;
-        border-radius: 16px;
-      }
-      
-      .header {
-        padding: 28px 20px;
-      }
-      
-      .content {
-        padding: 28px 20px;
-      }
-      
-      .footer {
-        padding: 16px 20px;
-      }
-      
-      h1 {
-        font-size: 20px;
-      }
-      
-      .welcome-text h2 {
-        font-size: 18px;
-      }
-      
-      .tagline {
-        font-size: 13px;
-      }
-    }
-
-    /* Smooth transitions for sections */
-    .login-section,
-    .user-profile {
-      transition: opacity 0.3s ease, transform 0.3s ease;
-    }
-
-    .login-section.fade-out {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-
-    .user-profile.fade-in {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* Hover effect for container */
-    .container:hover {
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
-      transition: box-shadow 0.3s ease;
-    }
-
-    /* Member choice popup */
+    /* ── POPUP OVERLAY ── */
     .popup-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
+      z-index: 1000; align-items: center; justify-content: center; padding: 20px;
     }
+    .popup-overlay.show { display: flex; }
 
-    .popup-overlay.show {
-      display: flex;
-    }
-
+    /* ── POPUP CARD ── */
     .popup-card {
-      width: 100%;
-      max-width: 360px;
-      background: var(--white);
-      border-radius: 20px;
-      padding: 32px 28px;
-      text-align: center;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-      animation: fadeIn 0.3s ease-out;
+      width: 100%; max-width: 380px; background: var(--white);
+      border-radius: var(--radius-lg); padding: 32px 28px;
+      box-shadow: var(--shadow-lg); animation: fadeIn .3s ease-out;
     }
-
+    .popup-avatar {
+      width: 64px; height: 64px; border-radius: 14px; object-fit: cover;
+      margin: 0 auto 14px; display: block; border: 3px solid var(--yellow-mid);
+    }
     .popup-title {
       font-family: 'Clash Display', 'Plus Jakarta Sans', sans-serif;
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--gray-900);
-      margin-bottom: 6px;
-      letter-spacing: -0.01em;
+      font-size: 18px; font-weight: 700; color: var(--gray-900);
+      margin-bottom: 4px; text-align: center; letter-spacing: -.01em;
     }
+    .popup-email {
+      font-size: 12px; color: var(--gray-600); text-align: center;
+      margin-bottom: 20px; padding: 4px 10px; background: var(--gray-100);
+      border-radius: 20px; display: inline-block;
+    }
+    .popup-header { text-align: center; margin-bottom: 20px; }
+    .popup-sub { font-size: 14px; color: var(--gray-700); margin-bottom: 0; }
 
-    .popup-sub {
-      font-size: 14px;
-      color: var(--gray-700);
-      margin-bottom: 24px;
-    }
-
-    .popup-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .popup-vote-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+    .popup-actions { display: flex; flex-direction: column; gap: 10px; }
 
     .popup-btn {
-      background: var(--yellow);
-      color: var(--gray-900);
-      border: none;
-      padding: 14px 20px;
-      font-size: 15px;
-      font-weight: 600;
-      border-radius: 12px;
-      cursor: pointer;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: all 0.3s ease;
-      font-family: inherit;
+      background: var(--white); color: var(--gray-900); border: 2px solid var(--gray-200);
+      padding: 13px 18px; font-size: 14px; font-weight: 600; border-radius: var(--radius);
+      cursor: pointer; width: 100%; display: flex; align-items: center; gap: 12px;
+      transition: all .25s ease; font-family: inherit; text-align: left;
     }
-
     .popup-btn:hover {
-      background: var(--yellow-light);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+      border-color: var(--gray-900); background: var(--gray-900); color: var(--white);
     }
-
+    .popup-btn:hover svg path, .popup-btn:hover svg rect { stroke: var(--white); }
+    .popup-btn:hover .btn-icon { background: rgba(255,255,255,.15); }
+    .popup-btn.primary {
+      background: var(--yellow); border-color: var(--yellow-mid); color: var(--gray-900);
+    }
+    .popup-btn.primary:hover {
+      background: var(--yellow-light); border-color: var(--yellow-light);
+    }
     .popup-btn.disabled {
-      background: var(--gray-100);
-      color: var(--gray-600);
-      cursor: not-allowed;
-      pointer-events: none;
-      box-shadow: none;
+      opacity: .45; cursor: not-allowed; pointer-events: none;
     }
 
-    .popup-btn.disabled:hover {
-      transform: none;
-      box-shadow: none;
+    .btn-icon {
+      width: 32px; height: 32px; border-radius: 8px; background: var(--gray-100);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
+    .btn-text-wrap { display: flex; flex-direction: column; gap: 1px; }
+    .btn-label { font-size: 14px; font-weight: 600; line-height: 1.2; }
+    .btn-desc { font-size: 11px; color: var(--gray-600); font-weight: 400; }
+    .popup-btn:hover .btn-desc { color: rgba(255,255,255,.65); }
+    .popup-btn.disabled .btn-desc { color: var(--gray-600); }
 
     .popup-note {
-      font-size: 12px;
-      color: var(--gray-600);
-      margin: 0;
+      font-size: 12px; color: var(--gray-600); padding: 8px 12px;
+      background: var(--gray-100); border-radius: 8px; line-height: 1.5;
+      display: flex; align-items: flex-start; gap: 6px;
+    }
+    .popup-note svg { flex-shrink: 0; margin-top: 1px; }
+
+    .popup-logout {
+      margin-top: 14px; text-align: center;
+      font-size: 12px; color: var(--gray-600); cursor: pointer;
+      padding: 6px; border-radius: 6px; transition: all .2s;
+      border: none; background: none; font-family: inherit; width: 100%;
+    }
+    .popup-logout:hover { color: var(--error); background: var(--error-bg); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 480px) {
+      body { padding: 14px; }
+      .container { border-radius: 16px; }
+      .header { padding: 26px 20px 22px; }
+      .content { padding: 24px 18px; }
+      h1 { font-size: 18px; }
     }
   </style>
 </head>
 <body>
-  <!-- Main Container -->
-  <div class="container">
-    <div class="header">
-      <div class="logo">
-        <img src="/assets/logo_den.png" alt="Logo" />
-      </div>
-    </div>
-    
-    <div class="content">
-      <div class="welcome-text">
-        <h1>Đăng nhập hệ thống</h1>
-      </div>
 
-      <!-- Login Section -->
-      <div class="login-section">
-        <button id="loginBtn" class="login-btn">
-          <i class="fab fa-google"></i>
-          <span class="btn-text">Login with Google</span>
-        </button>
-        <p class="login-error" id="loginError"></p>
-      </div>
+<div class="container">
+  <div class="header">
+    <div class="logo">
+      <img src="/assets/logo_den.png" alt="Enactus FTU Hanoi" />
+    </div>
+    <h1>Đăng nhập hệ thống</h1>
+  </div>
+
+  <div class="content">
+    <!-- Role selector -->
+    <div class="role-selector" id="roleSelector">
+      <button class="role-tab active" data-role="staff" onclick="selectRole('staff')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Nhân sự
+      </button>
+      <button class="role-tab" data-role="alumni" onclick="selectRole('alumni')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+        Alumni
+      </button>
     </div>
 
-    <div class="footer">
-      <p>© 2026 Enactus FTU Hanoi. All Rights Reserved.</p>
+    <!-- Context info -->
+    <div class="context-info" id="contextInfo">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span id="contextText">Dành cho thành viên của Enactus FTU Hanoi.</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Login button -->
+    <div class="login-section">
+      <button id="loginBtn" class="login-btn" onclick="doLogin()">
+        <!-- Google SVG icon -->
+        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+          <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+        </svg>
+        <span class="btn-text">Đăng nhập với Google</span>
+      </button>
+      <p class="login-error" id="loginError"></p>
     </div>
   </div>
 
-  <!-- Member choice popup: hiện sau khi Member login xong, cho chọn Xem đơn hoặc Vote lịch -->
-  <div class="popup-overlay" id="memberChoiceOverlay">
-    <div class="popup-card">
-      <h2 class="popup-title">Chào, <span id="popupUserName"></span>!</h2>
-      <p class="popup-sub">Bạn muốn vào đâu?</p>
-      <div class="popup-actions">
-        <button class="popup-btn" id="popupResponseBtn">
-          <i class="fas fa-file-lines"></i>
-          <span>Xem đơn</span>
-        </button>
-        <div class="popup-vote-wrap">
-          <button class="popup-btn" id="popupVoteBtn">
-            <i class="fas fa-check-to-slot"></i>
-            <span>Vote lịch</span>
-          </button>
-          <p class="popup-note" id="popupVoteNote" style="display:none">SuperAdmin chưa mở Vote lịch cho Member.</p>
+  <div class="footer">
+    <p>© 2026 Enactus FTU Hanoi. All Rights Reserved.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     POPUP — Nhân sự (Member)
+══════════════════════════════════════════ -->
+<div class="popup-overlay" id="memberPopup">
+  <div class="popup-card">
+    <div class="popup-header">
+      <img id="memberAvatar" class="popup-avatar" src="" alt="" style="display:none" />
+      <div class="popup-title">Chào, <span id="memberName"></span>!</div>
+      <div style="text-align:center"><span class="popup-email" id="memberEmail"></span></div>
+      <p class="popup-sub" style="margin-top:10px">Bạn muốn vào đâu?</p>
+    </div>
+    <div class="popup-actions">
+      <button class="popup-btn" id="memberResponseBtn" onclick="go('response.html')">
+        <div class="btn-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
         </div>
+        <div class="btn-text-wrap"><span class="btn-label">Xem đơn</span><span class="btn-desc">Danh sách hồ sơ ứng tuyển</span></div>
+      </button>
+      <button class="popup-btn" id="memberVoteBtn" onclick="go('vote.html')">
+        <div class="btn-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <polyline points="9 11 12 14 22 4"/>
+          </svg>
+        </div>
+        <div class="btn-text-wrap"><span class="btn-label">Vote lịch</span><span class="btn-desc">Chọn ca phỏng vấn</span></div>
+      </button>
+      <button class="popup-btn" id="memberInterviewBtn" onclick="go('interview.html')" style="display:none">
+        <div class="btn-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <polyline points="16 11 18 13 22 9"/>
+          </svg>
+        </div>
+        <div class="btn-text-wrap"><span class="btn-label">Phòng phỏng vấn</span><span class="btn-desc">Vào hệ thống phỏng vấn</span></div>
+      </button>
+      <div class="popup-note" id="memberVoteNote" style="display:none">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        SuperAdmin chưa mở Vote lịch.
+      </div>
+      <div class="popup-note" id="memberInterviewNote" style="display:none">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="memberInterviewNoteText">Chưa có vòng phỏng vấn nào được kích hoạt.</span>
       </div>
     </div>
+    <button class="popup-logout" onclick="doLogout()">Đăng xuất tài khoản khác</button>
   </div>
+</div>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  <script src="/script/config.js"></script>
+<!-- ══════════════════════════════════════════
+     POPUP — Admin / SuperAdmin
+══════════════════════════════════════════ -->
+<div class="popup-overlay" id="adminPopup">
+  <div class="popup-card">
+    <div class="popup-header">
+      <img id="adminAvatar" class="popup-avatar" src="" alt="" style="display:none" />
+      <div class="popup-title">Chào, <span id="adminName"></span>!</div>
+      <div style="text-align:center"><span class="popup-email" id="adminEmail"></span></div>
+      <p class="popup-sub" style="margin-top:10px">Bạn muốn vào đâu?</p>
+    </div>
+    <div class="popup-actions">
+      <button class="popup-btn primary" onclick="go('dashboard.html')">
+        <div class="btn-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+        </div>
+        <div class="btn-text-wrap"><span class="btn-label">Dashboard</span><span class="btn-desc">Tổng quan hệ thống</span></div>
+      </button>
+      <button class="popup-btn" id="adminInterviewBtn" onclick="go('interview.html')" style="display:none">
+        <div class="btn-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <polyline points="16 11 18 13 22 9"/>
+          </svg>
+        </div>
+        <div class="btn-text-wrap"><span class="btn-label">Phòng phỏng vấn</span><span class="btn-desc">Vào hệ thống phỏng vấn trực tiếp</span></div>
+      </button>
+      <div class="popup-note" id="adminInterviewNote" style="display:none">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Chưa có vòng phỏng vấn nào được kích hoạt.
+      </div>
+    </div>
+    <button class="popup-logout" onclick="doLogout()">Đăng xuất tài khoản khác</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     POPUP — Alumni
+══════════════════════════════════════════ -->
+<div class="popup-overlay" id="alumniPopup">
+  <div class="popup-card">
+    <div class="popup-header">
+      <img id="alumniAvatar" class="popup-avatar" src="" alt="" style="display:none" />
+      <div class="popup-title">Chào, <span id="alumniName"></span>!</div>
+      <div style="text-align:center"><span class="popup-email" id="alumniEmail"></span></div>
+    </div>
+    <div class="popup-actions" id="alumniActions">
+      <!-- Filled dynamically -->
+    </div>
+    <button class="popup-logout" onclick="doLogout()">Đăng xuất tài khoản khác</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="/script/config.js"></script>
 <script>
+// ══════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════
+const provider = new firebase.auth.GoogleAuthProvider();
+let selectedRole = 'staff'; // 'staff' | 'alumni'
 
-  const provider = new firebase.auth.GoogleAuthProvider();
+// ── Role selector ──────────────────────────────────
+function selectRole(role) {
+  selectedRole = role;
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[data-role="${role}"]`).classList.add('active');
 
-  // Nếu một trang khác (dashboard, interview-arrangement, calendar, ...) đẩy
-  // người dùng về đây vì chưa đăng nhập, nó sẽ lưu URL gốc vào sessionStorage
-  // trước khi chuyển hướng. Sau khi đăng nhập xong, ta quay lại đúng trang đó
-  // thay vì luôn nhảy về dashboard/response mặc định.
-  function consumeSafeRedirect() {
-    const target = sessionStorage.getItem('postLoginRedirect');
-    sessionStorage.removeItem('postLoginRedirect');
-    if (!target) return null;
-    // Chỉ chấp nhận đường dẫn tương đối dạng "ten-file.html" hoặc
-    // "ten-file.html?query" trong cùng site — chặn mọi nỗ lực open-redirect
-    // (không cho phép "://", không cho phép bắt đầu bằng "//").
-    if (/^[a-zA-Z0-9_\-\/]+\.html(\?[^\s'"]*)?$/.test(target) && !target.includes('://') && !target.startsWith('//')) {
-      return target;
-    }
-    return null;
+  const contextText = document.getElementById('contextText');
+  if (role === 'alumni') {
+    contextText.textContent = 'Dành cho Alumni của Enactus FTU Hanoi.';
+  } else {
+    contextText.textContent = 'Dành cho thành viên của Enactus FTU Hanoi.';
   }
+}
 
-  // ──────────────────────────────────────────────────────────
-  // Popup chọn "Xem đơn" / "Vote lịch" cho Member.
-  // Trước khi hiện, check field memberVoteOpen trong
-  // system/interview_schedule (cùng doc mà vote.html dùng) —
-  // nếu SuperAdmin chưa mở thì nút Vote lịch bị xám, không bấm được.
-  // ──────────────────────────────────────────────────────────
-  async function showMemberChoicePopup(name) {
-    document.getElementById('popupUserName').textContent = name || '';
+// ── Safe redirect ──────────────────────────────────
+function consumeSafeRedirect() {
+  const target = sessionStorage.getItem('postLoginRedirect');
+  sessionStorage.removeItem('postLoginRedirect');
+  if (!target) return null;
+  if (/^[a-zA-Z0-9_\-\/]+\.html(\?[^\s'"]*)?$/.test(target) && !target.includes('://') && !target.startsWith('//')) {
+    return target;
+  }
+  return null;
+}
 
-    const voteBtn = document.getElementById('popupVoteBtn');
-    const voteNote = document.getElementById('popupVoteNote');
-    let voteOpen = false;
+// ── Navigate ──────────────────────────────────────
+function go(url) {
+  window.location.href = url;
+}
+
+// ── Logout ────────────────────────────────────────
+async function doLogout() {
+  await auth.signOut();
+  document.querySelectorAll('.popup-overlay').forEach(p => p.classList.remove('show'));
+  resetLoginBtn();
+}
+
+// ── Reset login button ────────────────────────────
+function resetLoginBtn() {
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = false;
+  btn.querySelector('.btn-text').textContent = 'Đăng nhập với Google';
+}
+
+// ── Set btn loading ───────────────────────────────
+function setLoginLoading(loading) {
+  const btn = document.getElementById('loginBtn');
+  const span = btn.querySelector('.btn-text');
+  btn.disabled = loading;
+  if (loading) {
+    span.innerHTML = '<span class="loading"></span>';
+  } else {
+    span.textContent = 'Đăng nhập với Google';
+  }
+}
+
+// ── Show error ────────────────────────────────────
+function showError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// ── Fetch system/interview_schedule ───────────────
+async function fetchScheduleDoc() {
+  try {
+    const doc = await db.collection('system').doc('interview_schedule').get();
+    return doc.exists ? doc.data() : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+// ── Check có vòng nào đang active không ───────────
+function checkAnyRoundActive(schedData) {
+  return ['round1','round2','round4'].some(r => schedData[`roundStatus_${r}`] === 'active');
+}
+
+// ── Check user có trong lịch phân công không ──────
+async function isUserScheduledAsPIC(email) {
+  try {
+    const schedData = await fetchScheduleDoc();
+
+    // Tìm tên của user từ interview_votes hoặc interview_pics (vì slotRoles lưu name, không có email)
+    let userName = null;
     try {
-      const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
-      voteOpen = !!(scheduleDoc.exists && scheduleDoc.data().memberVoteOpen);
-    } catch (e) {
-      voteOpen = false;
+      const voteSnap = await db.collection('interview_votes')
+        .where('email', '==', email.toLowerCase()).limit(1).get();
+      if (!voteSnap.empty) userName = voteSnap.docs[0].data().name || null;
+    } catch(e) {}
+    if (!userName) {
+      try {
+        const picsSnap = await db.collection('interview_pics')
+          .where('email', '==', email.toLowerCase()).limit(1).get();
+        if (!picsSnap.empty) userName = picsSnap.docs[0].data().name || null;
+      } catch(e) {}
     }
 
-    if (voteOpen) {
-      voteBtn.classList.remove('disabled');
-      voteNote.style.display = 'none';
-    } else {
-      voteBtn.classList.add('disabled');
-      voteNote.style.display = 'block';
-    }
+    const emailLower = email.toLowerCase();
 
-    document.getElementById('memberChoiceOverlay').classList.add('show');
+    for (const round of ['round1', 'round2', 'round4']) {
+      // 1. Check slotRoles (host, checkin, secretary...) — lưu theo name
+      const slotRoles = schedData[`arrangedSlotRoles_${round}`] || {};
+      for (const roleMap of Object.values(slotRoles)) {
+        for (const people of Object.values(roleMap || {})) {
+          if (!Array.isArray(people)) continue;
+          if (people.some(p =>
+            (p.email || '').toLowerCase() === emailLower ||
+            (userName && p.name === userName)
+          )) return true;
+        }
+      }
+      // 2. Check arrangedSchedule rows (interviewer) — lưu cả email lẫn name
+      const sched = schedData[`arrangedSchedule_${round}`] || [];
+      for (const row of sched) {
+        const allPeople = [
+          ...Object.values(row.roles || {}).flat(),
+          ...(row.interviewers || [])
+        ];
+        if (allPeople.some(p =>
+          (p.email || '').toLowerCase() === emailLower ||
+          (userName && p.name === userName)
+        )) return true;
+      }
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
+}
+
+// ── Set popup avatar ──────────────────────────────
+function setPopupAvatar(prefix, photoURL, name) {
+  const img = document.getElementById(prefix + 'Avatar');
+  if (photoURL && img) {
+    img.src = photoURL;
+    img.alt = name || '';
+    img.style.display = 'block';
+    img.onerror = () => { img.style.display = 'none'; };
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  SHOW POPUPS
+// ══════════════════════════════════════════════════
+
+// ── Member popup ──────────────────────────────────
+async function showMemberPopup(user, accountData) {
+  const name = accountData.fullname || user.displayName || '';
+  const email = user.email || '';
+
+  document.getElementById('memberName').textContent = name;
+  document.getElementById('memberEmail').textContent = email;
+  setPopupAvatar('member', user.photoURL, name);
+
+  const schedData = await fetchScheduleDoc();
+
+  // Vote lịch
+  const voteOpen = !!schedData.memberVoteOpen;
+  const voteBtn  = document.getElementById('memberVoteBtn');
+  const voteNote = document.getElementById('memberVoteNote');
+  if (voteOpen) {
+    voteBtn.classList.remove('disabled');
+    voteNote.style.display = 'none';
+  } else {
+    voteBtn.classList.add('disabled');
+    voteNote.style.display = 'flex';
   }
 
-  document.getElementById('popupResponseBtn').addEventListener('click', () => {
-    window.location.href = 'response.html';
-  });
+  // Phòng phỏng vấn
+  const roundActive = checkAnyRoundActive(schedData);
+  const ivBtn   = document.getElementById('memberInterviewBtn');
+  const ivNote  = document.getElementById('memberInterviewNote');
+  const ivText  = document.getElementById('memberInterviewNoteText');
 
-  document.getElementById('popupVoteBtn').addEventListener('click', function () {
-    if (this.classList.contains('disabled')) return;
-    window.location.href = 'vote.html';
-  });
+  if (roundActive) {
+    const scheduled = await isUserScheduledAsPIC(email);
+    if (scheduled) {
+      ivBtn.style.display = 'flex';
+      ivNote.style.display = 'none';
+    } else {
+      ivBtn.style.display = 'none';
+      ivNote.style.display = 'flex';
+      ivText.textContent = 'Bạn không có lịch phân công trong vòng phỏng vấn này.';
+    }
+  } else {
+    ivBtn.style.display = 'none';
+    ivNote.style.display = 'flex';
+    ivText.textContent = 'Chưa có vòng phỏng vấn nào được kích hoạt.';
+  }
 
-  // Login button
-  document.getElementById('loginBtn').addEventListener('click', () => {
-    const loginBtn = document.getElementById('loginBtn');
-    const loginError = document.getElementById('loginError');
-    const btnText = loginBtn.querySelector('.btn-text');
+  document.getElementById('memberPopup').classList.add('show');
+}
 
-    loginError.style.display = 'none';
-    btnText.innerHTML = '<div class="loading"></div>';
-    loginBtn.disabled = true;
+// ── Admin / SuperAdmin popup ──────────────────────
+async function showAdminPopup(user, accountData) {
+  const name = accountData.fullname || user.displayName || '';
+  const email = user.email || '';
 
-    auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
-      .then(() => auth.signInWithPopup(provider))
-      .then(async (result) => {
-        const user = result.user;
-        const email = user.email;
+  document.getElementById('adminName').textContent = name;
+  document.getElementById('adminEmail').textContent = email;
+  setPopupAvatar('admin', user.photoURL, name);
 
-        try {
-          const querySnapshot = await db.collection("account")
-            .where("email", "==", email)
-            .get();
+  const schedData = await fetchScheduleDoc();
+  const roundActive = checkAnyRoundActive(schedData);
+  const ivBtn  = document.getElementById('adminInterviewBtn');
+  const ivNote = document.getElementById('adminInterviewNote');
 
-          if (!querySnapshot.empty) {
-            const accountData = querySnapshot.docs[0].data();
+  if (roundActive) {
+    ivBtn.style.display = 'flex';
+    ivNote.style.display = 'none';
+  } else {
+    ivBtn.style.display = 'none';
+    ivNote.style.display = 'flex';
+  }
 
-            // Lưu session
-            sessionStorage.setItem("email", email);
-            sessionStorage.setItem("role", accountData.role || "member");
-            sessionStorage.setItem("fullname", accountData.fullname || user.displayName || "");
-            sessionStorage.setItem("department", accountData.department || "");
+  document.getElementById('adminPopup').classList.add('show');
+}
 
-            // Điều hướng theo role — quay về trang người dùng muốn vào lúc đầu
-            // (nếu có lưu lại, vd bị 1 trang khác đá về login vì chưa đăng nhập).
-            // Member: nếu không có redirect cụ thể nào đang chờ, hiện popup cho
-            // chọn Xem đơn hay Vote lịch (thay vì luôn nhảy thẳng response.html).
-            if (accountData.role === "member") {
-              const redirectTarget = consumeSafeRedirect();
-              if (redirectTarget) {
-                window.location.href = redirectTarget;
-              } else {
-                const displayName = accountData.fullname || user.displayName || '';
-                await showMemberChoicePopup(displayName);
-              }
-            } else if (accountData.role === "admin" || accountData.role === "superadmin") {
-              window.location.href = consumeSafeRedirect() || "dashboard.html";
-            } else {
-              await auth.signOut();
-              loginError.textContent = "Tài khoản không có quyền truy cập.";
-              loginError.style.display = 'block';
-              btnText.textContent = 'Login with Google';
-              loginBtn.disabled = false;
-            }
+// ── Alumni popup ──────────────────────────────────
+async function showAlumniPopup(user, accountData) {
+  const name = accountData.fullname || user.displayName || '';
+  const email = user.email || '';
 
-          } else {
-            await auth.signOut();
-            loginError.textContent = "Email chưa được cấp quyền trong hệ thống.";
-            loginError.style.display = 'block';
-            btnText.textContent = 'Login with Google';
-            loginBtn.disabled = false;
-          }
-        } catch (err) {
-          loginError.textContent = err.message;
-          loginError.style.display = 'block';
-          btnText.textContent = 'Login with Google';
-          loginBtn.disabled = false;
-        }
-      })
-      .catch((error) => {
-        loginError.textContent = error.message;
-        loginError.style.display = 'block';
-        btnText.textContent = 'Login with Google';
-        loginBtn.disabled = false;
-      });
-  });
+  document.getElementById('alumniName').textContent = name;
+  document.getElementById('alumniEmail').textContent = email;
+  setPopupAvatar('alumni', user.photoURL, name);
+
+  const actionsEl = document.getElementById('alumniActions');
+  const schedData = await fetchScheduleDoc();
+  const roundActive = checkAnyRoundActive(schedData);
+
+  if (!roundActive) {
+    actionsEl.innerHTML = `
+      <div class="popup-note" style="margin-bottom:4px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        SuperAdmin chưa kích hoạt vòng phỏng vấn. Vui lòng chờ thông báo từ ban tổ chức.
+      </div>`;
+    document.getElementById('alumniPopup').classList.add('show');
+    return;
+  }
+
+  const scheduled = await isUserScheduledAsPIC(email);
+  if (scheduled) {
+    actionsEl.innerHTML = `
+      <p style="font-size:13px;color:var(--gray-700);margin-bottom:4px">Bạn đã được phân công phỏng vấn trong vòng này.</p>
+      <button class="popup-btn primary" onclick="go('interview.html')">
+        <div class="btn-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <polyline points="16 11 18 13 22 9"/>
+          </svg>
+        </div>
+        <div class="btn-text-wrap"><span class="btn-label">Vào phòng phỏng vấn</span><span class="btn-desc">Phiên phỏng vấn đang mở</span></div>
+      </button>`;
+  } else {
+    actionsEl.innerHTML = `
+      <div class="popup-note">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Email <b>${email}</b> không có lịch phân công trong vòng phỏng vấn hiện tại. Vui lòng liên hệ ban tổ chức.
+      </div>`;
+  }
+
+  document.getElementById('alumniPopup').classList.add('show');
+}
+
+// ══════════════════════════════════════════════════
+//  MAIN LOGIN FLOW
+// ══════════════════════════════════════════════════
+async function doLogin() {
+  const loginError = document.getElementById('loginError');
+  loginError.style.display = 'none';
+  setLoginLoading(true);
+
+  try {
+    await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+    const result = await auth.signInWithPopup(provider);
+    const user   = result.user;
+    const email  = user.email;
+
+    // ══════════════════════════════════════════════
+    //  ALUMNI FLOW — check interview_votes, KHÔNG check account
+    // ══════════════════════════════════════════════
+    if (selectedRole === 'alumni') {
+      const voteSnap = await db.collection('interview_votes')
+        .where('email', '==', email)
+        .where('source', '==', 'alumni')
+        .limit(1)
+        .get();
+
+      if (voteSnap.empty) {
+        await auth.signOut();
+        setLoginLoading(false);
+        showError('Email này chưa đăng ký phỏng vấn Alumni. Vui lòng điền form đăng ký trước (vote.html?guest=1), dùng đúng email Google của bạn.');
+        return;
+      }
+
+      const alumniData = voteSnap.docs[0].data();
+      const accountData = { fullname: alumniData.name || user.displayName || '', role: 'alumni' };
+
+      sessionStorage.setItem('email', email);
+      sessionStorage.setItem('role', 'alumni');
+      sessionStorage.setItem('fullname', accountData.fullname);
+      sessionStorage.setItem('department', alumniData.department || '');
+      if (user.photoURL) sessionStorage.setItem('photoURL', user.photoURL);
+
+      setLoginLoading(false);
+      await showAlumniPopup(user, accountData);
+      return;
+    }
+
+    // ══════════════════════════════════════════════
+    //  STAFF FLOW — check account collection như cũ
+    // ══════════════════════════════════════════════
+    const querySnapshot = await db.collection('account').where('email', '==', email).get();
+
+    if (querySnapshot.empty) {
+      await auth.signOut();
+      setLoginLoading(false);
+      showError('Email này chưa được cấp quyền trong hệ thống.');
+      return;
+    }
+
+    const accountData = querySnapshot.docs[0].data();
+    const role = (accountData.role || 'member').toLowerCase();
+
+    // Nếu nhân sự vô tình chọn tab Alumni → chặn
+    if (role === 'alumni') {
+      await auth.signOut();
+      setLoginLoading(false);
+      showError('Tài khoản Alumni phải dùng nút đăng nhập Alumni.');
+      return;
+    }
+
+    // Save session
+    sessionStorage.setItem('email', email);
+    sessionStorage.setItem('role', role);
+    sessionStorage.setItem('fullname', accountData.fullname || user.displayName || '');
+    sessionStorage.setItem('department', accountData.department || '');
+    if (user.photoURL) sessionStorage.setItem('photoURL', user.photoURL);
+
+    setLoginLoading(false);
+
+    const redirectTarget = consumeSafeRedirect();
+
+    if (role === 'superadmin' || role === 'admin') {
+      if (redirectTarget) {
+        go(redirectTarget);
+      } else {
+        await showAdminPopup(user, accountData);
+      }
+
+    } else if (role === 'member') {
+      if (redirectTarget) {
+        go(redirectTarget);
+      } else {
+        await showMemberPopup(user, accountData);
+      }
+
+    } else {
+      await auth.signOut();
+      showError('Tài khoản không có quyền truy cập hệ thống.');
+    }
+
+  } catch (err) {
+    setLoginLoading(false);
+    if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
+    showError(err.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
+  }
+}
 </script>
 </body>
 </html>
