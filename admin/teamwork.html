@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teamwork | Enactus FTU Hanoi</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<style>
+:root {
+  --yellow: #F4D03F; --yellow-light: #FFF9E6; --yellow-mid: #F7C948; --yellow-deep: #E8A400;
+  --bg: #F6F7FB; --white: #FFFFFF;
+  --ink: #14161F; --ink-60: #63667A; --ink-30: #A8AABC; --ink-10: #EEF0F5;
+  --border: #E6E8F0;
+  --radius-sm: 10px; --radius: 16px; --radius-lg: 22px;
+  --shadow-sm: 0 2px 8px rgba(20,22,31,.05);
+  --shadow: 0 8px 24px rgba(20,22,31,.08);
+  --shadow-lg: 0 20px 48px rgba(20,22,31,.16);
+  --success: #10B981; --success-bg: #E7F9F1;
+  --error: #EF4444; --error-bg: #FDECEC;
+  --warn: #F59E0B; --warn-bg: #FEF6E7;
+  --info: #4F7CFF; --info-bg: #EEF2FF;
+  --t: .2s cubic-bezier(.4,0,.2,1);
+  --grad-accent: linear-gradient(135deg, var(--yellow-mid) 0%, var(--yellow-deep) 100%);
+  --grad-ink: linear-gradient(135deg, #23253A 0%, #14161F 100%);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background: radial-gradient(1100px 480px at 100% -10%, rgba(244,208,63,.10), transparent 60%),
+              radial-gradient(900px 420px at -10% 0%, rgba(79,124,255,.06), transparent 55%),
+              var(--bg);
+  background-attachment: fixed; color: var(--ink); min-height: 100vh; font-size: 14px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--ink-30);border-radius:10px}
+
+/* HEADER */
+.hdr{background:rgba(255,255,255,.85);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);border-bottom:1px solid var(--border);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300}
+.logo{font-size:15px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:10px;color:var(--ink)}
+.logo-img{height:30px;width:auto;display:block;filter:drop-shadow(0 2px 6px rgba(20,22,31,.12))}
+.nav{display:flex;gap:4px;background:var(--ink-10);padding:4px;border-radius:999px}
+.nav a{padding:7px 16px;border-radius:999px;color:var(--ink-60);font-weight:600;text-decoration:none;transition:var(--t);font-size:13px}
+.nav a:hover{color:var(--ink)}
+.nav a.active{background:var(--grad-ink);color:var(--white);font-weight:700;box-shadow:0 4px 12px rgba(20,22,31,.25)}
+.hdr-right{display:flex;align-items:center;gap:12px}
+.hdr-user{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.hdr-user-name{font-size:12.5px;font-weight:700;color:var(--ink)}
+.hdr-user-role{font-size:11px;color:var(--ink-60)}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--grad-accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#3a2c00;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.logout-btn{padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--ink-60);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:var(--t);display:flex;align-items:center;gap:6px}
+.logout-btn:hover{background:var(--error-bg);color:var(--error);border-color:#FECACA}
+
+.container{max-width:1360px;width:100%;margin:0 auto;padding:28px 24px 90px}
+.page-title-row{margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px}
+.page-title{font-size:26px;font-weight:800;letter-spacing:-.6px}
+.page-sub{font-size:13px;color:var(--ink-60);margin-top:4px;font-weight:500}
+.card-title{font-size:12px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.6px}
+.card-title .dot{width:8px;height:8px;border-radius:50%;background:var(--grad-accent);box-shadow:0 0 0 4px var(--yellow-light);flex-shrink:0}
+
+/* BUTTONS */
+.btn{padding:9px 16px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--white);color:var(--ink-60);font-weight:700;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:var(--t);font-family:inherit}
+.btn:hover{color:var(--ink);border-color:var(--ink-30)}
+.btn.primary{background:var(--grad-ink);color:var(--white);border:none;box-shadow:0 4px 12px rgba(20,22,31,.18)}
+.btn.primary:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(20,22,31,.25)}
+.btn.gold{background:var(--grad-accent);border:none;color:#3a2c00}
+.btn.gold:hover{transform:translateY(-1px)}
+.btn.success{background:var(--success-bg);color:var(--success);border-color:#A7EED0}
+.btn.danger{background:var(--error-bg);color:var(--error);border-color:#F8C9C9}
+.btn.sm{padding:6px 11px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* STATS */
+.stats-section{padding:20px 22px 22px;background:rgba(255,255,255,.8);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);margin-bottom:22px}
+.stats-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat-pill{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;display:flex;flex-direction:column;gap:4px}
+.stat-pill .stat-num{font-size:22px;font-weight:800;letter-spacing:-.4px}
+.stat-pill .stat-label{font-size:11px;font-weight:700;color:var(--ink-60);text-transform:uppercase;letter-spacing:.4px}
+
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--ink-10);padding:4px;border-radius:999px;margin-bottom:22px;flex-wrap:wrap;width:fit-content}
+.tab{padding:9px 18px;font-weight:700;font-size:12.5px;color:var(--ink-60);cursor:pointer;border-radius:999px;transition:var(--t);display:flex;align-items:center;gap:7px}
+.tab:hover{color:var(--ink)}
+.tab.active{background:var(--grad-ink);color:var(--white);box-shadow:0 4px 12px rgba(20,22,31,.2)}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* CARD */
+.card{background:rgba(255,255,255,.85);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-sm);margin-bottom:20px}
+
+/* LAYOUT: pool + teams */
+.teamwork-layout{display:grid;grid-template-columns:260px 1fr;gap:20px;align-items:start}
+@media (max-width:1000px){.teamwork-layout{grid-template-columns:1fr}}
+.pool-card{position:sticky;top:84px}
+.pool-list{display:flex;flex-direction:column;gap:8px;min-height:60px}
+.candidate-chip{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;font-size:12.5px;font-weight:700;cursor:grab;display:flex;align-items:center;gap:8px;transition:var(--t)}
+.candidate-chip:hover{border-color:var(--yellow-deep);box-shadow:var(--shadow-sm)}
+.candidate-chip i{color:var(--ink-30)}
+.candidate-chip .dept-tag{margin-left:auto;font-size:10px;font-weight:800;color:var(--ink-60);background:var(--ink-10);padding:2px 7px;border-radius:20px}
+
+.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px}
+.team-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow-sm);transition:var(--t)}
+.team-card:hover{box-shadow:var(--shadow)}
+.team-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
+.team-name{font-size:15.5px;font-weight:800;display:flex;align-items:center;gap:8px}
+.team-name input{border:none;background:transparent;font-size:15.5px;font-weight:800;font-family:inherit;padding:2px 4px;border-radius:6px;width:100%}
+.team-name input:focus{outline:2px solid var(--yellow-deep);background:var(--yellow-light)}
+.team-order-badge{background:var(--yellow-light);color:var(--yellow-deep);font-weight:800;font-size:12px;padding:3px 10px;border-radius:20px;flex-shrink:0}
+
+.staff-slot{border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:6px;min-height:40px;display:flex;align-items:center;gap:8px;transition:var(--t);font-size:12.5px}
+.staff-slot.drag-over{border-color:var(--yellow-deep);background:var(--yellow-light)}
+.staff-slot .slot-label{font-size:10px;font-weight:800;text-transform:uppercase;color:var(--ink-30);letter-spacing:.4px;width:70px;flex-shrink:0}
+.staff-chip{background:var(--info-bg);color:var(--info);font-weight:700;padding:4px 10px;border-radius:20px;font-size:11.5px;display:inline-flex;align-items:center;gap:6px}
+.staff-chip i.remove{cursor:pointer;opacity:.6}
+.staff-chip i.remove:hover{opacity:1}
+.slot-empty{color:var(--ink-30);font-size:11.5px;font-style:italic}
+
+.members-list{display:flex;flex-direction:column;gap:6px;min-height:50px;margin-top:10px;border-top:1px solid var(--border);padding-top:10px}
+.member-row{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;display:flex;align-items:center;gap:8px;cursor:grab}
+.member-row .m-name{font-weight:700;font-size:12.5px;flex:1}
+.role-badge{font-size:10px;font-weight:800;padding:2px 22px 2px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.3px;border:none;cursor:pointer;font-family:inherit;-webkit-appearance:none;appearance:none;width:auto;max-width:96px;flex-shrink:0;background-repeat:no-repeat;background-position:right 7px center;background-size:9px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M1 1l4 4 4-4' stroke='%23000' stroke-width='1.4' fill='none'/></svg>")}
+select.role-badge.leader{background-color:#FDE68A}
+select.role-badge.subleader{background-color:#BFDBFE}
+select.role-badge.member{background-color:var(--ink-10)}
+.role-badge.leader{background:#FDE68A;color:#92400E}
+.role-badge.subleader{background:#BFDBFE;color:#1E40AF}
+.role-badge.member{background:var(--ink-10);color:var(--ink-60)}
+
+.team-footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+.pitching-confirm{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700}
+.pitching-confirm.confirmed{color:var(--success)}
+.pitching-confirm.not-confirmed{color:var(--ink-30)}
+
+/* Badges */
+.badge{padding:4px 12px;border-radius:20px;font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.badge-success{background:var(--success-bg);color:var(--success)}
+.badge-error{background:var(--error-bg);color:var(--error)}
+.badge-warn{background:var(--warn-bg);color:var(--warn)}
+.badge-info{background:var(--info-bg);color:var(--info)}
+.badge-neutral{background:var(--ink-10);color:var(--ink-60)}
+
+/* Table */
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-60);padding:10px 12px;border-bottom:1.5px solid var(--border)}
+td{padding:11px 12px;border-bottom:1px solid var(--ink-10);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+input,select,textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px;font-family:inherit;background:var(--white);color:var(--ink);transition:var(--t);width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow-deep);box-shadow:0 0 0 4px rgba(244,208,63,.2)}
+textarea{resize:vertical;min-height:64px}
+label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;display:block}
+
+.doc-item,.sub-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.doc-item a{color:var(--yellow-deep);font-weight:700;font-size:13px;text-decoration:none}
+.doc-item a:hover{text-decoration:underline}
+
+.empty-state{text-align:center;padding:44px 20px;color:var(--ink-30)}
+.empty-state i{font-size:36px;margin-bottom:10px;display:block;opacity:.5}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,31,.5);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--white);border-radius:var(--radius-lg);width:100%;max-width:480px;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-head h3{font-size:15.5px;font-weight:800}
+.modal-close{cursor:pointer;color:var(--ink-30);font-size:18px}
+.modal-body{padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+
+/* @ mention dropdown */
+.mention-wrap{position:relative}
+.mention-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);max-height:220px;overflow-y:auto;z-index:50;display:none}
+.mention-dropdown.show{display:block}
+.mention-option{padding:9px 12px;font-size:12.5px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between}
+.mention-option:hover{background:var(--yellow-light)}
+
+.sortable-ghost{opacity:.35}
+.sortable-drag{opacity:.9}
+
+/* Feedback: question cards, type badges, toggle switches (ported from feedback.html) */
+.question-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;cursor:grab}
+.question-card.dragging{opacity:.4}
+.question-card.drag-over{border-color:var(--yellow-deep)}
+.question-card .drag-handle{color:var(--ink-30);padding-top:2px}
+.question-content{flex:1;min-width:0}
+.question-label{font-weight:700;font-size:13px;margin-bottom:6px}
+.question-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:11px;color:var(--ink-60)}
+.type-badge{font-weight:800;padding:2px 9px;border-radius:20px;font-size:10px;text-transform:uppercase;letter-spacing:.3px;background:var(--info-bg);color:var(--info)}
+.required-badge{font-weight:800;padding:2px 9px;border-radius:20px;font-size:10px;background:var(--error-bg);color:var(--error)}
+.question-actions{display:flex;gap:6px;flex-shrink:0}
+.icon-btn{width:28px;height:28px;border:1px solid var(--border);background:var(--white);border-radius:8px;cursor:pointer;color:var(--ink-60);display:flex;align-items:center;justify-content:center;transition:var(--t)}
+.icon-btn:hover{color:var(--ink);border-color:var(--ink-30)}
+.icon-btn.delete:hover{color:var(--error);border-color:#F8C9C9;background:var(--error-bg)}
+.toggle-switch{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--ink-10);border-radius:22px;transition:var(--t)}
+.toggle-slider::before{content:"";position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:var(--white);border-radius:50%;transition:var(--t);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle-switch input:checked + .toggle-slider{background:var(--grad-accent)}
+.toggle-switch input:checked + .toggle-slider::before{transform:translateX(18px)}
+.setting-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid var(--ink-10)}
+.setting-row:last-of-type{border-bottom:none}
+.setting-title{font-weight:700;font-size:13px}
+.setting-desc{font-size:11.5px;color:var(--ink-60);margin-top:2px}
+.option-row{display:flex;gap:8px;margin-bottom:6px}
+.feedback-item-header{cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.feedback-item-body{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.feedback-item-body.open{display:block}
+.qa-row{margin-bottom:8px;font-size:12.5px}
+.qa-question{font-weight:700;color:var(--ink-60);margin-bottom:2px}
+
+/* Chia team (auto/manual) preview cards */
+.tm-tab-content{display:none}
+.tm-tab-content.active{display:block}
+.tm-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px}
+.tm-card-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.tm-card-head input{font-weight:800;font-size:13.5px}
+.tm-dept-badges{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.tm-dept-badge{font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:var(--ink-10);color:var(--ink-60)}
+.tm-member-list{font-size:12px;color:var(--ink-60);margin-bottom:8px;display:flex;flex-wrap:wrap;gap:6px}
+.tm-member-list span{background:var(--white);border:1px solid var(--border);padding:2px 8px;border-radius:20px}
+.tm-staff-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.tm-remove-team{margin-left:auto}
+
+@media (max-width:900px){.stats-summary{grid-template-columns:repeat(2,1fr)}.teams-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="logo"><img src="/assets/logo_den.png" alt="Enactus FTU Hanoi" class="logo-img" /><span>Enactus FTU Hanoi</span></div>
+  <nav class="nav">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="teamwork.html" class="active">Teamwork</a>
+    <a href="feedback.html">Feedback</a>
+  </nav>
+  <div class="hdr-right">
+    <div class="hdr-user">
+      <div class="hdr-user-name" id="user-name">User</div>
+      <div class="hdr-user-role" id="user-role">Role</div>
+    </div>
+    <div class="avatar" id="user-avatar">U</div>
+    <button class="logout-btn" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="page-title-row">
+    <div>
+      <h1 class="page-title">Teamwork - Vòng 3</h1>
+      <p class="page-sub">Chia team &middot; Tài liệu &amp; Nộp bài &middot; Pitching Day</p>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="btn" id="sync-btn"><i class="fas fa-rotate"></i> Đồng bộ ứng viên Vòng 3</button>
+      <button class="btn" id="fix-team-field-btn" title="Ghi lại round3.team cho các thành viên đã vào team từ trước (chạy 1 lần)"><i class="fas fa-wrench"></i> Fix team cho ứng viên cũ</button>
+      <button class="btn" id="reset-teams-btn" style="color:#c0392b;border-color:#c0392b;" title="Xoá toàn bộ team, bài nộp, pitching và đưa hết ứng viên về pool"><i class="fas fa-trash-alt"></i> Reset dữ liệu</button>
+      <button class="btn primary" id="add-team-btn"><i class="fas fa-plus"></i> Tạo team</button>
+    </div>
+  </div>
+
+  <div class="stats-section">
+    <div class="card-title"><span class="dot"></span> Tổng quan</div>
+    <div class="stats-summary" id="stats-summary"></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="teams"><i class="fas fa-users"></i> Chia &amp; Quản lý Team</div>
+    <div class="tab" data-tab="docs"><i class="fas fa-folder-open"></i> Tài liệu &amp; Nộp bài</div>
+    <div class="tab" data-tab="pitching"><i class="fas fa-microphone"></i> Pitching Day</div>
+  </div>
+
+  <!-- TAB: TEAMS -->
+  <div class="tab-content active" id="teams-content">
+    <div class="teamwork-layout">
+      <div class="card pool-card">
+        <div class="card-title"><span class="dot"></span> Ứng viên chưa vào team</div>
+        <div class="pool-list" id="pool-list" data-team="pool"></div>
+      </div>
+      <div class="teams-grid" id="teams-grid"></div>
+    </div>
+  </div>
+
+  <!-- TAB: DOCS & SUBMISSION -->
+  <div class="tab-content" id="docs-content">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span> Tài liệu chung cho Vòng 3
+        <button class="btn sm primary" style="margin-left:auto;" onclick="openDocModal()"><i class="fas fa-plus"></i> Thêm tài liệu</button>
+      </div>
+      <div id="docs-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot"></span> Deadline &amp; Yêu cầu nộp bài
+        <button class="btn sm" style="margin-left:auto;" id="edit-deadline-btn"><i class="fas fa-clock"></i> Chỉnh deadline</button>
+      </div>
+      <div id="deadline-info"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot"></span> Nộp bài của các team</div>
+      <div id="submissions-list"></div>
+    </div>
+  </div>
+
+  <!-- TAB: PITCHING DAY -->
+  <div class="tab-content" id="pitching-content">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span> Thời gian &amp; Địa điểm chung
+        <button class="btn sm" style="margin-left:auto;" id="edit-pitching-info-btn"><i class="fas fa-pen"></i> Chỉnh sửa</button>
+      </div>
+      <div id="pitching-info"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span> Thống kê xác nhận tham gia (theo từng cá nhân)</div>
+      <div id="pitching-stats" class="stats-summary"></div>
+      <div id="pitching-absent-list" style="margin-top:14px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span> Thứ tự pitching &amp; Chi tiết theo team</div>
+      <table>
+        <thead><tr><th style="width:70px;">Thứ tự</th><th>Team</th><th>Advisor / Supporter</th><th style="width:120px;">Tiến độ xác nhận</th><th>Chi tiết từng thành viên</th></tr></thead>
+        <tbody id="pitching-tbody"></tbody>
+      </table>
+      <div id="pitching-empty" class="empty-state" style="display:none;"><i class="fas fa-microphone"></i>Chưa có team nào.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Chia Team (port đầy đủ từ dashboard cũ) -->
+<div class="modal-overlay" id="team-modal">
+  <div class="modal" style="max-width:900px;">
+    <div class="modal-head"><h3>Chia Team Vòng 3</h3><i class="fas fa-xmark modal-close" data-close="team-modal"></i></div>
+    <div class="modal-body">
+      <div class="tabs" style="margin-bottom:14px;">
+        <div class="tab active" data-tm-tab="auto">Chia tự động</div>
+        <div class="tab" data-tm-tab="manual">Chia thủ công</div>
+        <div class="tab" data-tm-tab="single">Tạo 1 team trống</div>
+      </div>
+
+      <!-- AUTO -->
+      <div class="tm-tab-content active" id="tm-auto-tab">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;">
+          <div style="min-width:200px;"><label class="f-label">Phương thức chia</label>
+            <select id="tm-division-method">
+              <option value="byTeamCount">Chia theo số team</option>
+              <option value="byTeamSize">Chia theo số người mỗi team</option>
+            </select>
+          </div>
+          <div id="tm-count-group" style="min-width:120px;"><label class="f-label">Số team</label><input type="number" id="tm-team-count" min="2" max="20" value="6" /></div>
+          <div id="tm-size-group" style="min-width:120px;display:none;"><label class="f-label">Số người/team</label><input type="number" id="tm-team-size" min="3" max="15" value="5" /></div>
+          <button class="btn primary" id="tm-generate-auto-btn"><i class="fas fa-random"></i> Tạo Team</button>
+        </div>
+        <div id="tm-auto-preview"></div>
+      </div>
+
+      <!-- MANUAL -->
+      <div class="tm-tab-content" id="tm-manual-tab" style="display:none;">
+        <div style="display:flex;gap:12px;align-items:flex-end;margin-bottom:14px;">
+          <div style="min-width:140px;"><label class="f-label">Số team</label><input type="number" id="tm-manual-count" min="1" max="20" value="6" /></div>
+          <button class="btn primary" id="tm-generate-manual-btn"><i class="fas fa-list"></i> Tạo form nhập team</button>
+        </div>
+        <div id="tm-manual-forms"></div>
+      </div>
+
+      <!-- SINGLE -->
+      <div class="tm-tab-content" id="tm-single-tab" style="display:none;">
+        <div><label class="f-label">Tên team</label><input id="tm-single-name" placeholder="VD: Team 1 - Golden Falcons" /></div>
+      </div>
+    </div>
+    <div class="modal-foot" id="tm-foot">
+      <button class="btn" data-close="team-modal">Huỷ</button>
+      <button class="btn" id="tm-export-btn" style="display:none;"><i class="fas fa-file-excel"></i> Export danh sách</button>
+      <button class="btn primary" id="tm-confirm-btn"><i class="fas fa-check"></i> Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal: Document -->
+<div class="modal-overlay" id="doc-modal">
+  <div class="modal">
+    <div class="modal-head"><h3>Thêm tài liệu chung</h3><i class="fas fa-xmark modal-close" data-close="doc-modal"></i></div>
+    <div class="modal-body">
+      <div><label class="f-label">Tên tài liệu</label><input id="doc-title" placeholder="VD: Guideline Pitching Day" /></div>
+      <div><label class="f-label">Đường link</label><input id="doc-url" placeholder="https://..." /></div>
+      <div><label class="f-label">Ghi chú (tuỳ chọn)</label><textarea id="doc-note"></textarea></div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-close="doc-modal">Huỷ</button><button class="btn primary" id="doc-save-btn"><i class="fas fa-check"></i> Thêm</button></div>
+  </div>
+</div>
+
+<!-- Modal: Deadline -->
+<div class="modal-overlay" id="deadline-modal">
+  <div class="modal">
+    <div class="modal-head"><h3>Deadline nộp bài (áp dụng cho mọi team)</h3><i class="fas fa-xmark modal-close" data-close="deadline-modal"></i></div>
+    <div class="modal-body">
+      <div><label class="f-label">Hạn nộp bài</label><input type="datetime-local" id="dl-datetime" /></div>
+      <div><label class="f-label">Yêu cầu nộp bài</label><textarea id="dl-note" placeholder="VD: Nộp pitch deck (PDF) + video demo tối đa 3 phút"></textarea></div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-close="deadline-modal">Huỷ</button><button class="btn primary" id="dl-save-btn"><i class="fas fa-check"></i> Lưu</button></div>
+  </div>
+</div>
+
+<!-- Modal: Submit work -->
+<div class="modal-overlay" id="submit-modal">
+  <div class="modal">
+    <div class="modal-head"><h3>Nộp bài cho team</h3><i class="fas fa-xmark modal-close" data-close="submit-modal"></i></div>
+    <div class="modal-body">
+      <div><label class="f-label">Hình thức nộp</label>
+        <select id="sub-type"><option value="link">Link (Drive/Youtube/Figma...)</option><option value="text">Văn bản / Ghi chú</option><option value="file">Tải file lên (PDF, Word, Excel, PPT, ảnh, zip...)</option></select>
+      </div>
+      <div id="sub-content-wrap"><label class="f-label">Nội dung</label><textarea id="sub-content" placeholder="Dán link hoặc nhập nội dung..."></textarea></div>
+      <div id="sub-file-wrap" style="display:none;">
+        <label class="f-label">Chọn file (tối đa 200MB)</label>
+        <input type="file" id="sub-file-input" />
+        <div id="sub-file-status" style="font-size:12px;margin-top:6px;color:#666;"></div>
+      </div>
+      <div><label class="f-label">Ghi chú thêm (tuỳ chọn)</label><input id="sub-note" /></div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-close="submit-modal">Huỷ</button><button class="btn primary" id="sub-save-btn"><i class="fas fa-upload"></i> Nộp bài</button></div>
+  </div>
+</div>
+
+<!-- Modal: Pitching common info -->
+<div class="modal-overlay" id="pinfo-modal">
+  <div class="modal">
+    <div class="modal-head"><h3>Thời gian &amp; địa điểm Pitching Day</h3><i class="fas fa-xmark modal-close" data-close="pinfo-modal"></i></div>
+    <div class="modal-body">
+      <div><label class="f-label">Ngày &amp; giờ</label><input type="datetime-local" id="pinfo-datetime" /></div>
+      <div><label class="f-label">Địa điểm</label><input id="pinfo-location" placeholder="VD: Hội trường D201 - Trụ sở FTU" /></div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-close="pinfo-modal">Huỷ</button><button class="btn primary" id="pinfo-save-btn"><i class="fas fa-check"></i> Lưu</button></div>
+  </div>
+</div>
+
+<script src="/script/config.js"></script>
+<script>
+/* ============================= AUTH ============================= */
+const userEmail = sessionStorage.getItem("email");
+let userRole = sessionStorage.getItem("role") || null;
+let userDept = sessionStorage.getItem("department") || null;
+
+if (!userEmail || !userRole) {
+  sessionStorage.setItem("postLoginRedirect", location.pathname + location.search);
+  window.location.href = "login.html";
+}
+if (userRole === "member") window.location.href = "response.html";
+
+auth.onAuthStateChanged(async (user) => {
+  if (!user) { window.location.href = "login.html"; return; }
+  try {
+    const snap = await db.collection("account").where("email", "==", user.email).limit(1).get();
+    if (snap.empty) { await auth.signOut(); window.location.href = "login.html"; return; }
+    const doc = snap.docs[0];
+    const data = doc.data();
+    userRole = data.role || userRole;
+    userDept = data.department || userDept;
+    sessionStorage.setItem("role", userRole);
+    sessionStorage.setItem("department", userDept);
+    document.getElementById("user-name").textContent = doc.id;
+    document.getElementById("user-role").textContent = `${userRole} • ${deptName(userDept)}`;
+    document.getElementById("user-avatar").textContent = (doc.id || "U").charAt(0).toUpperCase();
+
+    // Chỉ superadmin, admin hoặc advisor/supporter của 1 team mới được vào trang này
+    await loadAll();
+    if (!(userRole === "superadmin" || userRole === "admin" || isStaffOfAnyTeam(userEmail))) {
+      Swal.fire({ icon: "error", title: "Không có quyền truy cập", text: "Bạn không phải advisor/supporter của team nào.", confirmButtonColor: "#E8A400" })
+        .then(() => (window.location.href = "dashboard.html"));
+      return;
+    }
+    applyRoleUI();
+    renderEverything();
+
+    // Mở đúng tab nếu có ?tab=... trên URL
+    const wantedTab = new URLSearchParams(window.location.search).get("tab");
+    if (wantedTab) {
+      const tabEl = document.querySelector(`.tabs > .tab[data-tab="${wantedTab}"]`);
+      if (tabEl) tabEl.click();
+    }
+  } catch (e) { console.error(e); }
+});
+
+document.getElementById("logout-btn").addEventListener("click", () => auth.signOut().then(() => (window.location.href = "login.html")));
+
+function deptName(code) {
+  switch (code) { case "MD": return "Truyền thông"; case "HR": return "Nhân sự"; case "PD": return "Dự án"; case "ER": return "Đối ngoại"; default: return code || ""; }
+}
+function isSuperOrAdmin() { return userRole === "superadmin" || userRole === "admin"; }
+function isStaffOfAnyTeam(email) { return teams.some((t) => teamStaffEmails(t).includes(email)); }
+function teamStaffEmails(t) {
+  const arr = [];
+  if (t.advisor?.email) arr.push(t.advisor.email);
+  (t.supporters || []).forEach((s) => s.email && arr.push(s.email));
+  return arr;
+}
+function canManageTeam(t) { return isSuperOrAdmin() || teamStaffEmails(t).includes(userEmail); }
+function isLeaderOrSubOf(t) {
+  const m = (t.members || []).find((m) => m.email === userEmail);
+  return m && (m.role === "leader" || m.role === "subleader");
+}
+function canSubmitFor(t) { return canManageTeam(t) || isLeaderOrSubOf(t); }
+
+/* ============================= NOTIFY ============================= */
+const AppToast = Swal.mixin({ toast: true, position: "top-end", showConfirmButton: false, timer: 3000, timerProgressBar: true, customClass: { popup: "app-toast" } });
+const notifySuccess = (m) => AppToast.fire({ icon: "success", title: m });
+const notifyError = (m) => AppToast.fire({ icon: "error", title: m, timer: 4000 });
+const notifyInfo = (m) => AppToast.fire({ icon: "info", title: m });
+function confirmDialog(message, opts = {}) {
+  return Swal.fire({ title: opts.title || "Xác nhận", text: message, icon: "question", showCancelButton: true, confirmButtonText: opts.confirmText || "Xác nhận", cancelButtonText: "Huỷ", confirmButtonColor: "#E8A400", cancelButtonColor: "#63667A", reverseButtons: true }).then((r) => r.isConfirmed);
+}
+function openModal(id) { document.getElementById(id).classList.add("show"); }
+function closeModal(id) { document.getElementById(id).classList.remove("show"); }
+document.querySelectorAll("[data-close]").forEach((el) => el.addEventListener("click", () => closeModal(el.dataset.close)));
+document.querySelectorAll(".modal-overlay").forEach((ov) => ov.addEventListener("click", (e) => { if (e.target === ov) ov.classList.remove("show"); }));
+
+/* ============================= STATE ============================= */
+const TEAMS_COL = "teamwork_teams";
+const SETTINGS_DOC = db.collection("teamwork_settings").doc("main");
+const SUBMISSIONS_COL = "teamwork_submissions";
+
+let teams = [];
+let candidates = []; // ứng viên đã pass vòng 2 / đang ở vòng 3, chưa gán vào team nào (id, name, email, dept)
+let allApplications = []; // toàn bộ applications (dùng cho thuật toán chia team tự động)
+let allAccounts = []; // nhân sự CLB { id(=fullname), email, role, department }
+let settings = { documents: [], submissionDeadline: null, submissionNote: "", pitchingDatetime: "", pitchingLocation: "" };
+let submissions = {}; // teamId -> submission
+
+async function loadAll() {
+  const [teamSnap, appSnap, accSnap, setSnap, subSnap] = await Promise.all([
+    db.collection(TEAMS_COL).get(),
+    db.collection("applications").get(),
+    db.collection("account").get(),
+    SETTINGS_DOC.get(),
+    db.collection(SUBMISSIONS_COL).get(),
+  ]);
+
+  teams = teamSnap.docs.map((d) => ({ id: d.id, members: [], advisor: null, supporters: [], pitchingOrder: null, pitchingConfirmed: false, ...d.data() }));
+
+  const assignedIds = new Set();
+  teams.forEach((t) => (t.members || []).forEach((m) => assignedIds.add(m.id)));
+
+  candidates = [];
+  allApplications = [];
+  appSnap.forEach((doc) => {
+    const a = doc.data();
+    allApplications.push({ id: doc.id, ...a });
+    const inRound3Plus = ["round3", "round4", "success"].includes(a.current_round);
+    if (!inRound3Plus) return;
+    if (assignedIds.has(doc.id)) return;
+    candidates.push({ id: doc.id, name: a.fullName || a.full_name || a.fullname || doc.id, email: a.email || "", dept: a.priority_position || "" });
+  });
+
+  allAccounts = accSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+  const setData = setSnap.exists ? setSnap.data() : {};
+  settings = { documents: [], submissionDeadline: null, submissionNote: "", pitchingDatetime: "", pitchingLocation: "", ...setData };
+
+  submissions = {};
+  subSnap.forEach((d) => (submissions[d.id] = d.data()));
+
+  teams.sort((a, b) => (a.pitchingOrder || 999) - (b.pitchingOrder || 999) || (a.name || "").localeCompare(b.name || ""));
+}
+
+function applyRoleUI() {
+  const canCreate = isSuperOrAdmin();
+  document.getElementById("add-team-btn").style.display = canCreate ? "inline-flex" : "none";
+  document.getElementById("sync-btn").style.display = canCreate ? "inline-flex" : "none";
+  document.getElementById("fix-team-field-btn").style.display = canCreate ? "inline-flex" : "none";
+  document.getElementById("reset-teams-btn").style.display = canCreate ? "inline-flex" : "none";
+}
+
+function renderEverything() {
+  renderStats();
+  renderPool();
+  renderTeamsGrid();
+  renderDocsTab();
+  renderPitchingTab();
+}
+
+function submissionStatus(teamId) {
+  const s = submissions[teamId];
+  if (s && s.content) return "submitted";
+  if (settings.submissionDeadline && new Date(settings.submissionDeadline) < new Date()) return "late";
+  if (settings.submissionDeadline) return "pending";
+  return "none";
+}
+function statusBadge(status) {
+  const map = {
+    submitted: '<span class="badge badge-success">Đã nộp</span>',
+    late: '<span class="badge badge-error">Trễ hạn</span>',
+    pending: '<span class="badge badge-warn">Chưa nộp</span>',
+    none: '<span class="badge badge-neutral">Chưa có deadline</span>',
+  };
+  return map[status];
+}
+
+function renderStats() {
+  const totalMembers = teams.reduce((s, t) => s + (t.members || []).length, 0);
+  const submitted = teams.filter((t) => submissionStatus(t.id) === "submitted").length;
+  const confirmedMembers = teams.reduce((s, t) => s + (t.members || []).filter((m) => m.pitchingConfirm === "yes").length, 0);
+  document.getElementById("stats-summary").innerHTML = `
+    <div class="stat-pill"><div class="stat-num">${teams.length}</div><div class="stat-label">Tổng số team</div></div>
+    <div class="stat-pill"><div class="stat-num">${totalMembers}</div><div class="stat-label">Tổng thành viên</div></div>
+    <div class="stat-pill"><div class="stat-num">${candidates.length}</div><div class="stat-label">Chưa vào team</div></div>
+    <div class="stat-pill"><div class="stat-num">${submitted}/${teams.length}</div><div class="stat-label">Đã nộp bài</div></div>
+    <div class="stat-pill"><div class="stat-num">${confirmedMembers}/${totalMembers}</div><div class="stat-label">Xác nhận tham gia Pitching</div></div>
+  `;
+}
+
+/* ============================= TAB: TEAMS ============================= */
+function renderPool() {
+  const el = document.getElementById("pool-list");
+  el.innerHTML = candidates.length ? candidates.map((c) => `
+    <div class="candidate-chip" draggable="true" data-id="${c.id}"><i class="fas fa-grip-vertical"></i>${c.name}<span class="dept-tag">${c.dept || "—"}</span></div>
+  `).join("") : `<div class="empty-state" style="padding:20px;"><i class="fas fa-user-check"></i>Hết ứng viên</div>`;
+  initSortable(el, "pool");
+}
+
+function renderTeamsGrid() {
+  const grid = document.getElementById("teams-grid");
+  if (!teams.length) { grid.innerHTML = `<div class="empty-state"><i class="fas fa-people-group"></i>Chưa có team nào. Bấm "Đồng bộ" hoặc "Tạo team".</div>`; return; }
+  grid.innerHTML = teams.map((t) => {
+    const manage = canManageTeam(t);
+    return `
+    <div class="team-card">
+      <div class="team-card-head">
+        <div class="team-name">${manage ? `<input value="${t.name || ""}" onchange="renameTeam('${t.id}', this.value)" />` : (t.name || "Team")}</div>
+        ${t.pitchingOrder ? `<div class="team-order-badge">#${t.pitchingOrder}</div>` : ""}
+        ${manage ? `<button class="btn sm danger" onclick="deleteTeam('${t.id}')"><i class="fas fa-trash"></i></button>` : ""}
+      </div>
+
+      <div class="mention-wrap">
+        <div class="staff-slot" data-team="${t.id}" data-role="advisor">
+          <span class="slot-label">Advisor</span>
+          ${t.advisor ? `<span class="staff-chip"><i class="fas fa-user-tie"></i>${t.advisor.id}${manage ? `<i class="fas fa-xmark remove" onclick="removeStaff('${t.id}','advisor')"></i>` : ""}</span>` : `<span class="slot-empty">Kéo thả hoặc gõ @ để gắn advisor</span>`}
+        </div>
+        ${manage ? `<input class="mention-input" placeholder="Gõ @ để tìm nhân sự làm advisor..." data-team="${t.id}" data-role="advisor" />
+        <div class="mention-dropdown" data-team="${t.id}" data-role="advisor"></div>` : ""}
+      </div>
+
+      <div class="mention-wrap">
+        <div class="staff-slot" data-team="${t.id}" data-role="supporters">
+          <span class="slot-label">Supporter</span>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;">
+          ${(t.supporters || []).length ? t.supporters.map((s) => `<span class="staff-chip"><i class="fas fa-hands-helping"></i>${s.id}${manage ? `<i class="fas fa-xmark remove" onclick="removeSupporter('${t.id}','${s.id}')"></i>` : ""}</span>`).join("") : `<span class="slot-empty">Kéo thả hoặc gõ @ để gắn supporter</span>`}
+          </div>
+        </div>
+        ${manage ? `<input class="mention-input" placeholder="Gõ @ để tìm nhân sự làm supporter..." data-team="${t.id}" data-role="supporters" />
+        <div class="mention-dropdown" data-team="${t.id}" data-role="supporters"></div>` : ""}
+      </div>
+
+      <div class="members-list" data-team="${t.id}">
+        ${(t.members || []).map((m) => `
+          <div class="member-row" data-id="${m.id}">
+            <i class="fas fa-grip-vertical" style="color:var(--ink-30);"></i>
+            <span class="m-name">${m.name}</span>
+            ${manage ? `
+            <select class="role-badge ${m.role || 'member'}" onchange="setMemberRole('${t.id}','${m.id}', this.value)">
+              <option value="leader" ${m.role === "leader" ? "selected" : ""}>Leader</option>
+              <option value="subleader" ${m.role === "subleader" ? "selected" : ""}>Sub Leader</option>
+              <option value="member" ${(!m.role || m.role === "member") ? "selected" : ""}>Member</option>
+            </select>` : `<span class="role-badge ${m.role || 'member'}">${m.role === "leader" ? "Leader" : m.role === "subleader" ? "Sub Leader" : "Member"}</span>`}
+          </div>
+        `).join("") || '<div class="slot-empty" style="padding:6px 0;">Kéo ứng viên vào đây</div>'}
+      </div>
+
+      ${manage ? `
+      <div class="mention-wrap" style="margin-top:8px;">
+        <input class="mention-input" placeholder="Gõ @ để tìm ứng viên thêm vào team..." data-team="${t.id}" data-role="member" />
+        <div class="mention-dropdown" data-team="${t.id}" data-role="member"></div>
+      </div>` : ""}
+
+      <div class="team-footer">
+        ${statusBadge(submissionStatus(t.id))}
+        ${(() => {
+          const mem = t.members || [];
+          const yes = mem.filter((m) => m.pitchingConfirm === "yes").length;
+          const allConfirmed = mem.length > 0 && yes === mem.length;
+          return `<span class="pitching-confirm ${allConfirmed ? "confirmed" : "not-confirmed"}"><i class="fas ${allConfirmed ? "fa-check-circle" : "fa-circle"}"></i>Pitching: ${yes}/${mem.length}</span>`;
+        })()}
+      </div>
+    </div>`;
+  }).join("");
+
+  teams.forEach((t) => initSortable(grid.querySelector(`.members-list[data-team="${t.id}"]`), t.id));
+  setupMentionInputs();
+}
+
+function initSortable(el, teamId) {
+  if (!el) return;
+  new Sortable(el, {
+    group: "members",
+    animation: 150,
+    onAdd: async (evt) => {
+      const candId = evt.item.dataset.id;
+      await moveCandidateToTeam(candId, teamId);
+    },
+    onRemove: () => {},
+  });
+}
+
+/* Đồng bộ round3.team trên applications mỗi khi thành viên vào/ra khỏi team, để feedback.html,
+   bảng "Quyền gửi", và mọi nơi khác đọc application.round3.team đều thấy đúng team hiện tại. */
+async function syncMemberTeamField(memberId, teamName) {
+  if (!memberId || memberId.startsWith("manual_")) return; // ứng viên nhập tay, không map được application thật
+  try {
+    if (teamName) {
+      await db.collection("applications").doc(memberId).update({ "round3.team": teamName });
+    } else {
+      await db.collection("applications").doc(memberId).update({ "round3.team": firebase.firestore.FieldValue.delete() });
+    }
+  } catch (e) { console.warn("Không sync được round3.team cho", memberId, e); }
+}
+
+/* Đồng bộ round3.advisor1 / round3.advisor2 / round3.supporter trên applications của
+   toàn bộ thành viên 1 team, mỗi khi advisor/supporter được gắn, gỡ, hoặc khi có
+   thành viên mới vào team (để họ thừa hưởng đúng advisor/supporter hiện tại của team). */
+async function syncTeamStaffFields(teamId) {
+  const t = teams.find((tm) => tm.id === teamId);
+  if (!t) return;
+  const advisor1 = t.advisor?.id || "";
+  const advisor2 = (t.supporters || [])[0]?.id || "";
+  const supporter = (t.supporters || [])[1]?.id || "";
+  const members = (t.members || []).filter((m) => m.id && !m.id.startsWith("manual_"));
+  if (!members.length) return;
+  try {
+    const batch = db.batch();
+    members.forEach((m) => {
+      batch.update(db.collection("applications").doc(m.id), {
+        "round3.advisor1": advisor1 || firebase.firestore.FieldValue.delete(),
+        "round3.advisor2": advisor2 || firebase.firestore.FieldValue.delete(),
+        "round3.supporter": supporter || firebase.firestore.FieldValue.delete(),
+      });
+    });
+    await batch.commit();
+  } catch (e) { console.warn("Không sync được advisor/supporter cho team", teamId, e); }
+}
+
+async function moveCandidateToTeam(candId, targetTeamId) {
+  try {
+    // Xoá khỏi team hiện tại (nếu có)
+    for (const t of teams) {
+      if ((t.members || []).some((m) => m.id === candId)) {
+        const newMembers = t.members.filter((m) => m.id !== candId);
+        await db.collection(TEAMS_COL).doc(t.id).update({ members: newMembers });
+      }
+    }
+    if (targetTeamId !== "pool") {
+      const cand = candidates.find((c) => c.id === candId) || (function () {
+        for (const t of teams) { const m = (t.members || []).find((m) => m.id === candId); if (m) return m; }
+        return null;
+      })();
+      const targetTeam = teams.find((t) => t.id === targetTeamId);
+      const newMembers = [...(targetTeam.members || []), { id: candId, name: cand.name, email: cand.email || "", role: "member" }];
+      await db.collection(TEAMS_COL).doc(targetTeamId).update({ members: newMembers });
+      await syncMemberTeamField(candId, targetTeam.name);
+      await loadAll();
+      await syncTeamStaffFields(targetTeamId);
+    } else {
+      await syncMemberTeamField(candId, null);
+      if (candId && !candId.startsWith("manual_")) {
+        await db.collection("applications").doc(candId).update({
+          "round3.advisor1": firebase.firestore.FieldValue.delete(),
+          "round3.advisor2": firebase.firestore.FieldValue.delete(),
+          "round3.supporter": firebase.firestore.FieldValue.delete(),
+        }).catch((e) => console.warn("Không xoá được advisor/supporter cũ cho", candId, e));
+      }
+      await loadAll();
+    }
+    renderEverything();
+  } catch (e) { notifyError("Lỗi khi cập nhật team: " + e.message); }
+}
+
+window.setMemberRole = async (teamId, memberId, role) => {
+  const t = teams.find((t) => t.id === teamId);
+  const members = (t.members || []).map((m) => (m.id === memberId ? { ...m, role } : m));
+  await db.collection(TEAMS_COL).doc(teamId).update({ members });
+  notifySuccess("Đã cập nhật vai trò");
+  await loadAll(); renderEverything();
+};
+
+window.renameTeam = async (teamId, name) => {
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  const t = teams.find((t) => t.id === teamId);
+  await db.collection(TEAMS_COL).doc(teamId).update({ name: trimmed });
+  if (t) {
+    const batch = db.batch();
+    (t.members || []).forEach((m) => {
+      if (m.id && !m.id.startsWith("manual_")) batch.update(db.collection("applications").doc(m.id), { "round3.team": trimmed });
+    });
+    await batch.commit().catch((e) => console.warn(e));
+  }
+  await loadAll(); renderTeamsGrid();
+};
+
+window.deleteTeam = async (teamId) => {
+  const ok = await confirmDialog("Xoá team này? Thành viên sẽ về lại danh sách chưa chia team.", { confirmText: "Xoá" });
+  if (!ok) return;
+  const t = teams.find((t) => t.id === teamId);
+  if (t) {
+    const batch = db.batch();
+    (t.members || []).forEach((m) => {
+      if (m.id && !m.id.startsWith("manual_")) batch.update(db.collection("applications").doc(m.id), {
+        "round3.team": firebase.firestore.FieldValue.delete(),
+        "round3.advisor1": firebase.firestore.FieldValue.delete(),
+        "round3.advisor2": firebase.firestore.FieldValue.delete(),
+        "round3.supporter": firebase.firestore.FieldValue.delete(),
+      });
+    });
+    await batch.commit().catch((e) => console.warn(e));
+  }
+  await db.collection(TEAMS_COL).doc(teamId).delete();
+  await db.collection(SUBMISSIONS_COL).doc(teamId).delete().catch(() => {});
+  notifySuccess("Đã xoá team");
+  await loadAll(); renderEverything();
+};
+
+/* ============================= CHIA TEAM (port đầy đủ logic thuật toán cũ từ dashboard) ============================= */
+let tmGeneratedTeams = []; // teams đang preview (chưa lưu), dùng chung cho auto & manual
+
+document.getElementById("add-team-btn").addEventListener("click", () => {
+  tmGeneratedTeams = [];
+  document.getElementById("tm-auto-preview").innerHTML = "";
+  document.getElementById("tm-manual-forms").innerHTML = "";
+  document.getElementById("tm-single-name").value = "";
+  document.getElementById("tm-export-btn").style.display = "none";
+  switchTmTab("auto");
+  openModal("team-modal");
+});
+
+function switchTmTab(name) {
+  document.querySelectorAll("[data-tm-tab]").forEach((t) => t.classList.toggle("active", t.dataset.tmTab === name));
+  document.querySelectorAll(".tm-tab-content").forEach((c) => (c.style.display = "none"));
+  document.getElementById("tm-" + name + "-tab").style.display = "block";
+  document.getElementById("tm-export-btn").style.display = name === "single" ? "none" : (tmGeneratedTeams.length ? "inline-flex" : "none");
+}
+document.querySelectorAll("[data-tm-tab]").forEach((t) => t.addEventListener("click", () => switchTmTab(t.dataset.tmTab)));
+
+document.getElementById("tm-division-method").addEventListener("change", (e) => {
+  document.getElementById("tm-count-group").style.display = e.target.value === "byTeamCount" ? "block" : "none";
+  document.getElementById("tm-size-group").style.display = e.target.value === "byTeamSize" ? "block" : "none";
+});
+
+/* ---- Nguồn ứng viên: đang ở round3 (current_round === "round3" đã tự đảm bảo pass vòng 1 & 2, không cần check thêm) ---- */
+function tmLoadEligibleCandidates() {
+  return allApplications.filter((app) => app.current_round === "round3");
+}
+function tmCategorizeByDepartment(cands) {
+  const byDept = { MD: [], HR: [], PD: [], ER: [] };
+  cands.forEach((c) => {
+    const hasPriority = !!c.priority_position && !!byDept[c.priority_position];
+    const hasSecondary = !!c.secondary_position && !!byDept[c.secondary_position];
+    if (hasPriority) {
+      byDept[c.priority_position].push({ id: c.id, name: c.fullname || c.fullName || c.id, email: c.email, department: c.priority_position, hasTwoDepartments: hasSecondary, originalCandidate: c });
+    }
+    if (hasSecondary) {
+      byDept[c.secondary_position].push({ id: c.id, name: c.fullname || c.fullName || c.id, email: c.email, department: c.secondary_position, hasTwoDepartments: hasPriority, originalCandidate: c });
+    }
+  });
+  return byDept;
+}
+function tmFindBestTeam(teamsArr, passedDepartments, candidateId) {
+  let bestIndex = 0, minScore = Infinity;
+  for (let i = 0; i < teamsArr.length; i++) {
+    const team = teamsArr[i];
+    if (team.assignedCandidates && team.assignedCandidates.has(candidateId)) continue;
+    let score = 0;
+    passedDepartments.forEach((d) => { score += team.departments[d.department] || 0; });
+    score += team.members.length / 10;
+    if (score < minScore) { minScore = score; bestIndex = i; }
+  }
+  return bestIndex;
+}
+function tmDivideByTeamCount(cands, teamCount) {
+  const teamsArr = Array.from({ length: teamCount }, (_, i) => ({ id: i + 1, name: `Team ${i + 1}`, members: [], departments: { MD: 0, HR: 0, PD: 0, ER: 0 }, assignedCandidates: new Set() }));
+  const allC = [];
+  const seen = new Set();
+  cands.forEach((c) => {
+    if (seen.has(c.id)) return;
+    const passed = [];
+    if (c.priority_position) passed.push({ department: c.priority_position, type: "priority" });
+    if (c.secondary_position) passed.push({ department: c.secondary_position, type: "secondary" });
+    if (!passed.length) return;
+    const data = { id: c.id, name: c.fullname || c.fullName || c.id, email: c.email, passedDepartments: passed, hasTwoDepartments: passed.length === 2 };
+    allC.push(data); seen.add(c.id);
+  });
+  const sorted = [...allC].sort((a, b) => (b.hasTwoDepartments ? 1 : 0) - (a.hasTwoDepartments ? 1 : 0));
+  const shuffled = sorted.sort(() => Math.random() - 0.3);
+  shuffled.forEach((c) => {
+    const idx = tmFindBestTeam(teamsArr, c.passedDepartments, c.id);
+    teamsArr[idx].members.push(c);
+    c.passedDepartments.forEach((d) => teamsArr[idx].departments[d.department]++);
+    teamsArr[idx].assignedCandidates.add(c.id);
+  });
+  teamsArr.forEach((t) => delete t.assignedCandidates);
+  return teamsArr;
+}
+function tmDivideByTeamSize(cands, teamSize) {
+  const teamCount = Math.max(1, Math.ceil(cands.length / teamSize));
+  return tmDivideByTeamCount(cands, teamCount);
+}
+
+document.getElementById("tm-generate-auto-btn").addEventListener("click", () => {
+  const cands = tmLoadEligibleCandidates();
+  if (!cands.length) return notifyError("Không có ứng viên nào pass vòng 2 để chia team!");
+  const method = document.getElementById("tm-division-method").value;
+  tmGeneratedTeams = method === "byTeamCount"
+    ? tmDivideByTeamCount(cands, parseInt(document.getElementById("tm-team-count").value) || 2)
+    : tmDivideByTeamSize(cands, parseInt(document.getElementById("tm-team-size").value) || 5);
+  renderTmPreview(tmGeneratedTeams, "tm-auto-preview");
+  document.getElementById("tm-export-btn").style.display = "inline-flex";
+});
+
+function renderTmPreview(teamsArr, containerId) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = teamsArr.map((t, i) => `
+    <div class="tm-card" data-tm-index="${i}">
+      <div class="tm-card-head">
+        <input value="${t.name}" onchange="tmGeneratedTeams[${i}].name=this.value" />
+        <button class="btn sm danger tm-remove-team" onclick="tmRemoveTeam(${i}, '${containerId}')"><i class="fas fa-trash"></i></button>
+      </div>
+      ${t.departments ? `<div class="tm-dept-badges">${Object.entries(t.departments).map(([k, v]) => `<span class="tm-dept-badge">${k}: ${v}</span>`).join("")}</div>` : ""}
+      <div class="tm-member-list">${t.members.length ? t.members.map((m) => `<span>${m.name}</span>`).join("") : '<span style="color:var(--ink-30);">Chưa có thành viên</span>'}</div>
+      <div class="tm-staff-row mention-wrap">
+        <div><input class="mention-input" placeholder="Gõ @ để tìm advisor..." data-tm="${i}" data-tmrole="advisor1" /><div class="mention-dropdown" data-tm="${i}" data-tmrole="advisor1"></div></div>
+        <div><input class="mention-input" placeholder="Gõ @ để tìm advisor 2 (tuỳ chọn)..." data-tm="${i}" data-tmrole="advisor2" /><div class="mention-dropdown" data-tm="${i}" data-tmrole="advisor2"></div></div>
+      </div>
+      <div class="mention-wrap" style="margin-top:8px;">
+        <input class="mention-input" placeholder="Gõ @ để tìm supporter..." data-tm="${i}" data-tmrole="supporter" /><div class="mention-dropdown" data-tm="${i}" data-tmrole="supporter"></div>
+      </div>
+    </div>`).join("");
+  setupTmMentionInputs(teamsArr);
+}
+window.tmRemoveTeam = (idx, containerId) => {
+  tmGeneratedTeams.splice(idx, 1);
+  renderTmPreview(tmGeneratedTeams, containerId);
+};
+
+function setupTmMentionInputs(teamsArr) {
+  document.querySelectorAll(".mention-input[data-tm]").forEach((input) => {
+    const idx = parseInt(input.dataset.tm), role = input.dataset.tmrole;
+    const dropdown = document.querySelector(`.mention-dropdown[data-tm="${idx}"][data-tmrole="${role}"]`);
+    input.addEventListener("input", () => {
+      const raw = input.value.replace(/^@/, "").toLowerCase();
+      const matches = allAccounts.filter((a) => a.id.toLowerCase().includes(raw) || (a.email || "").toLowerCase().includes(raw)).slice(0, 8);
+      dropdown.innerHTML = matches.map((a) => `<div class="mention-option" data-name="${a.id}" data-email="${a.email || ""}">${a.id}<span style="color:var(--ink-30);">${a.email || ""}</span></div>`).join("") || `<div class="mention-option" style="color:var(--ink-30);">Không tìm thấy</div>`;
+      dropdown.classList.add("show");
+    });
+    input.addEventListener("focus", () => input.dispatchEvent(new Event("input")));
+    input.addEventListener("blur", () => setTimeout(() => dropdown.classList.remove("show"), 150));
+    dropdown.addEventListener("mousedown", (e) => {
+      const opt = e.target.closest(".mention-option");
+      if (!opt || !opt.dataset.name) return;
+      input.value = opt.dataset.name;
+      const t = teamsArr[idx];
+      if (role === "advisor1") t.advisor1 = { id: opt.dataset.name, email: opt.dataset.email };
+      else if (role === "advisor2") t.advisor2 = { id: opt.dataset.name, email: opt.dataset.email };
+      else t.supporter = { id: opt.dataset.name, email: opt.dataset.email };
+      dropdown.classList.remove("show");
+    });
+  });
+}
+
+/* ---- MANUAL ---- */
+document.getElementById("tm-generate-manual-btn").addEventListener("click", () => {
+  const count = parseInt(document.getElementById("tm-manual-count").value) || 1;
+  tmGeneratedTeams = Array.from({ length: count }, (_, i) => ({ id: i + 1, name: `Team ${i + 1}`, members: [], membersRaw: "" }));
+  const el = document.getElementById("tm-manual-forms");
+  el.innerHTML = tmGeneratedTeams.map((t, i) => `
+    <div class="tm-card" data-tm-index="${i}">
+      <div class="tm-card-head">
+        <input value="${t.name}" onchange="tmGeneratedTeams[${i}].name=this.value" />
+        <button class="btn sm danger tm-remove-team" onclick="tmRemoveManualTeam(${i})"><i class="fas fa-trash"></i></button>
+      </div>
+      <label class="f-label">Thành viên (mỗi tên 1 dòng, đúng họ tên trong đơn ứng tuyển)</label>
+      <textarea rows="3" placeholder="Nguyễn Văn A&#10;Trần Thị B" onchange="tmGeneratedTeams[${i}].membersRaw=this.value"></textarea>
+      <div class="tm-staff-row mention-wrap" style="margin-top:8px;">
+        <div><input class="mention-input" placeholder="Gõ @ để tìm advisor..." data-tm="${i}" data-tmrole="advisor1" /><div class="mention-dropdown" data-tm="${i}" data-tmrole="advisor1"></div></div>
+        <div><input class="mention-input" placeholder="Gõ @ để tìm advisor 2 (tuỳ chọn)..." data-tm="${i}" data-tmrole="advisor2" /><div class="mention-dropdown" data-tm="${i}" data-tmrole="advisor2"></div></div>
+      </div>
+      <div class="mention-wrap" style="margin-top:8px;">
+        <input class="mention-input" placeholder="Gõ @ để tìm supporter..." data-tm="${i}" data-tmrole="supporter" /><div class="mention-dropdown" data-tm="${i}" data-tmrole="supporter"></div>
+      </div>
+    </div>`).join("");
+  setupTmMentionInputs(tmGeneratedTeams);
+  document.getElementById("tm-export-btn").style.display = "inline-flex";
+});
+window.tmRemoveManualTeam = (idx) => {
+  tmGeneratedTeams.splice(idx, 1);
+  document.getElementById("tm-generate-manual-btn").click(); // rebuild indices cleanly is complex; simplest is re-render list without regenerating count
+};
+// (re-render sau khi xoá, giữ nguyên dữ liệu các team còn lại)
+window.tmRemoveManualTeam = (idx) => {
+  tmGeneratedTeams.splice(idx, 1);
+  const el = document.getElementById("tm-manual-forms");
+  el.innerHTML = tmGeneratedTeams.map((t, i) => `
+    <div class="tm-card" data-tm-index="${i}">
+      <div class="tm-card-head">
+        <input value="${t.name}" onchange="tmGeneratedTeams[${i}].name=this.value" />
+        <button class="btn sm danger tm-remove-team" onclick="tmRemoveManualTeam(${i})"><i class="fas fa-trash"></i></button>
+      </div>
+      <label class="f-label">Thành viên (mỗi tên 1 dòng)</label>
+      <textarea rows="3" onchange="tmGeneratedTeams[${i}].membersRaw=this.value">${t.membersRaw || ""}</textarea>
+      <div class="tm-staff-row mention-wrap" style="margin-top:8px;">
+        <div><input class="mention-input" placeholder="Gõ @ để tìm advisor..." data-tm="${i}" data-tmrole="advisor1" value="${t.advisor1?.id || ""}" /><div class="mention-dropdown" data-tm="${i}" data-tmrole="advisor1"></div></div>
+        <div><input class="mention-input" placeholder="Gõ @ để tìm advisor 2 (tuỳ chọn)..." data-tm="${i}" data-tmrole="advisor2" value="${t.advisor2?.id || ""}" /><div class="mention-dropdown" data-tm="${i}" data-tmrole="advisor2"></div></div>
+      </div>
+      <div class="mention-wrap" style="margin-top:8px;">
+        <input class="mention-input" placeholder="Gõ @ để tìm supporter..." data-tm="${i}" data-tmrole="supporter" value="${t.supporter?.id || ""}" /><div class="mention-dropdown" data-tm="${i}" data-tmrole="supporter"></div>
+      </div>
+    </div>`).join("");
+  setupTmMentionInputs(tmGeneratedTeams);
+};
+
+function tmFindCandidateByName(name) {
+  const pool = tmLoadEligibleCandidates();
+  const norm = (s) => (s || "").trim().toLowerCase();
+  return pool.find((c) => norm(c.fullname || c.fullName) === norm(name));
+}
+
+/* ---- SINGLE (tạo 1 team trống, không qua thuật toán) ---- */
+
+/* ---- EXPORT ---- */
+document.getElementById("tm-export-btn").addEventListener("click", () => {
+  if (!tmGeneratedTeams.length) return notifyInfo("Chưa có team nào để export");
+  const wb = XLSX.utils.book_new();
+  const data = [["DANH SÁCH CHIA TEAM VÒNG 3"], []];
+  data.push(["Team", "Advisor 1", "Advisor 2", "Supporter", "Họ và tên", "Email"]);
+  tmGeneratedTeams.forEach((t) => {
+    const members = t.members?.length ? t.members : (t.membersRaw || "").split("\n").map((n) => n.trim()).filter(Boolean).map((n) => ({ name: n, email: tmFindCandidateByName(n)?.email || "" }));
+    if (!members.length) { data.push([t.name, t.advisor1?.id || "", t.advisor2?.id || "", t.supporter?.id || "", "", ""]); return; }
+    members.forEach((m, i) => data.push([i === 0 ? t.name : "", i === 0 ? (t.advisor1?.id || "") : "", i === 0 ? (t.advisor2?.id || "") : "", i === 0 ? (t.supporter?.id || "") : "", m.name, m.email || ""]));
+  });
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb, ws, "Chia team");
+  XLSX.writeFile(wb, `enactus_chia_team_${new Date().toISOString().split("T")[0]}.xlsx`);
+});
+
+/* ---- CONFIRM: lưu vào teamwork_teams (để tương thích toàn bộ phần còn lại của trang) ---- */
+document.getElementById("tm-confirm-btn").addEventListener("click", async () => {
+  const activeTab = document.querySelector("[data-tm-tab].active").dataset.tmTab;
+
+  if (activeTab === "single") {
+    const name = document.getElementById("tm-single-name").value.trim();
+    if (!name) return notifyError("Vui lòng nhập tên team");
+    await db.collection(TEAMS_COL).add({ name, members: [], advisor: null, supporters: [], pitchingOrder: teams.length + 1, pitchingConfirmed: false, createdAt: new Date().toISOString() });
+    notifySuccess("Đã tạo team");
+    closeModal("team-modal");
+    await loadAll(); renderEverything();
+    return;
+  }
+
+  if (!tmGeneratedTeams.length) return notifyError("Chưa có team nào để xác nhận");
+  const ok = await confirmDialog(`Xác nhận lưu ${tmGeneratedTeams.length} team vào hệ thống?`);
+  if (!ok) return;
+
+  try {
+    const batch = db.batch();
+    tmGeneratedTeams.forEach((t, i) => {
+      let members = [];
+      if (t.members?.length) {
+        members = t.members.map((m) => ({ id: m.id, name: m.name, email: m.email || "", role: "member" }));
+      } else if (t.membersRaw) {
+        members = t.membersRaw.split("\n").map((n) => n.trim()).filter(Boolean).map((n) => {
+          const c = tmFindCandidateByName(n);
+          return { id: c ? c.id : ("manual_" + fbGenId()), name: n, email: c?.email || "", role: "member" };
+        });
+      }
+      const supporters = [];
+      if (t.advisor2) supporters.push(t.advisor2);
+      if (t.supporter) supporters.push(t.supporter);
+      const ref = db.collection(TEAMS_COL).doc();
+      batch.set(ref, { name: t.name, members, advisor: t.advisor1 || null, supporters, pitchingOrder: i + 1, pitchingConfirmed: false, createdAt: new Date().toISOString() });
+      const advisor1Name = t.advisor1?.id || "";
+      const advisor2Name = t.advisor2?.id || "";
+      const supporterName = t.supporter?.id || "";
+      members.forEach((m) => {
+        if (m.id && !m.id.startsWith("manual_")) {
+          batch.update(db.collection("applications").doc(m.id), {
+            "round3.team": t.name,
+            "round3.advisor1": advisor1Name || firebase.firestore.FieldValue.delete(),
+            "round3.advisor2": advisor2Name || firebase.firestore.FieldValue.delete(),
+            "round3.supporter": supporterName || firebase.firestore.FieldValue.delete(),
+          });
+        }
+      });
+    });
+    await batch.commit();
+    notifySuccess(`Đã lưu ${tmGeneratedTeams.length} team vào hệ thống!`);
+    tmGeneratedTeams = [];
+    closeModal("team-modal");
+    await loadAll(); renderEverything();
+  } catch (e) {
+    notifyError("Lỗi khi lưu team: " + e.message);
+  }
+});
+
+document.getElementById("sync-btn").addEventListener("click", async () => {
+  await loadAll();
+  renderEverything();
+  notifySuccess(`Đã đồng bộ. Hiện có ${candidates.length} ứng viên vòng 3 chưa vào team.`);
+});
+
+document.getElementById("fix-team-field-btn").addEventListener("click", async () => {
+  const ok = await confirmDialog("Ghi lại round3.team + advisor1/advisor2/supporter cho tất cả thành viên đang có trong các team hiện tại (dùng khi dữ liệu cũ bị thiếu)?");
+  if (!ok) return;
+  try {
+    const batch = db.batch();
+    let count = 0;
+    teams.forEach((t) => {
+      const advisor1 = t.advisor?.id || "";
+      const advisor2 = (t.supporters || [])[0]?.id || "";
+      const supporter = (t.supporters || [])[1]?.id || "";
+      (t.members || []).forEach((m) => {
+        if (m.id && !m.id.startsWith("manual_")) {
+          batch.update(db.collection("applications").doc(m.id), {
+            "round3.team": t.name,
+            "round3.advisor1": advisor1 || firebase.firestore.FieldValue.delete(),
+            "round3.advisor2": advisor2 || firebase.firestore.FieldValue.delete(),
+            "round3.supporter": supporter || firebase.firestore.FieldValue.delete(),
+          });
+          count++;
+        }
+      });
+    });
+    if (!count) return notifyInfo("Không có thành viên nào cần fix.");
+    await batch.commit();
+    notifySuccess(`Đã fix round3.team + advisor/supporter cho ${count} ứng viên.`);
+    await loadAll(); renderEverything();
+  } catch (e) { notifyError("Lỗi khi fix: " + e.message); }
+});
+
+/* ---- RESET TOÀN BỘ: xoá mọi team, bài nộp, pitching; đưa hết ứng viên về pool.
+   Không đụng tới deadline nộp bài, quyền feedback, hay dữ liệu feedback đã gửi. ---- */
+async function commitInChunks(ops) {
+  // Firestore giới hạn 500 thao tác / batch, chia nhỏ cho an toàn.
+  for (let i = 0; i < ops.length; i += 400) {
+    const batch = db.batch();
+    ops.slice(i, i + 400).forEach((op) => op(batch));
+    await batch.commit();
+  }
+}
+
+document.getElementById("reset-teams-btn").addEventListener("click", async () => {
+  const { value: typed } = await Swal.fire({
+    title: "Reset TOÀN BỘ dữ liệu Teamwork?",
+    html: `<div style="text-align:left">
+      <p>Hành động này sẽ <b>xoá vĩnh viễn</b>:</p>
+      <ul style="margin:8px 0 8px 18px;">
+        <li>Toàn bộ team hiện có (${teams.length} team)</li>
+        <li>Toàn bộ bài nộp của các team</li>
+        <li>Thông tin thứ tự &amp; xác nhận Pitching Day</li>
+        <li>round3.team / advisor1 / advisor2 / supporter trên hồ sơ mọi ứng viên (đưa hết về "chưa vào team")</li>
+      </ul>
+      <p><b>Không</b> ảnh hưởng: deadline nộp bài, quyền gửi feedback, feedback đã gửi.</p>
+      <p>Gõ <b>XOA HET</b> để xác nhận:</p>
+    </div>`,
+    icon: "warning",
+    input: "text",
+    inputPlaceholder: "XOA HET",
+    showCancelButton: true,
+    confirmButtonText: "Reset",
+    cancelButtonText: "Huỷ",
+    confirmButtonColor: "#c0392b",
+    cancelButtonColor: "#6b7280",
+    reverseButtons: true,
+    focusCancel: true,
+    preConfirm: (val) => {
+      if ((val || "").trim().toUpperCase() !== "XOA HET") {
+        Swal.showValidationMessage("Bạn cần gõ đúng \"XOA HET\" để xác nhận");
+        return false;
+      }
+      return val;
+    },
+  });
+  if (!typed) return;
+
+  Swal.fire({ title: "Đang reset dữ liệu Teamwork...", allowOutsideClick: false, allowEscapeKey: false, didOpen: () => Swal.showLoading() });
+  try {
+    const ops = [];
+
+    // 1) Xoá round3.team/advisor1/advisor2/supporter của mọi ứng viên đang có trong team nào đó
+    teams.forEach((t) => {
+      (t.members || []).forEach((m) => {
+        if (m.id && !m.id.startsWith("manual_")) {
+          ops.push((batch) => batch.update(db.collection("applications").doc(m.id), {
+            "round3.team": firebase.firestore.FieldValue.delete(),
+            "round3.advisor1": firebase.firestore.FieldValue.delete(),
+            "round3.advisor2": firebase.firestore.FieldValue.delete(),
+            "round3.supporter": firebase.firestore.FieldValue.delete(),
+          }));
+        }
+      });
+    });
+
+    // 2) Xoá toàn bộ team
+    teams.forEach((t) => ops.push((batch) => batch.delete(db.collection(TEAMS_COL).doc(t.id))));
+
+    // 3) Xoá toàn bộ bài nộp (submissions được lưu theo teamId)
+    const subSnap = await db.collection(SUBMISSIONS_COL).get();
+    subSnap.docs.forEach((d) => ops.push((batch) => batch.delete(d.ref)));
+
+    await commitInChunks(ops);
+
+    Swal.close();
+    notifySuccess(`Đã reset xong: xoá ${teams.length} team, ${subSnap.size} bài nộp, đưa hết ứng viên về pool.`);
+    await loadAll();
+    renderEverything();
+  } catch (e) {
+    Swal.close();
+    notifyError("Lỗi khi reset: " + e.message);
+  }
+});
+
+/* ---- @ mention gắn advisor / supporter ---- */
+function setupMentionInputs() {
+  document.querySelectorAll(".mention-input").forEach((input) => {
+    const teamId = input.dataset.team, role = input.dataset.role;
+    const dropdown = document.querySelector(`.mention-dropdown[data-team="${teamId}"][data-role="${role}"]`);
+    if (!dropdown) return;
+
+    if (role === "member") {
+      // Thêm ứng viên (từ pool chưa vào team) vào team này, giống kiểu @ advisor/supporter
+      input.addEventListener("input", () => {
+        const raw = input.value.replace(/^@/, "").toLowerCase();
+        const matches = candidates.filter((c) => c.name.toLowerCase().includes(raw) || (c.email || "").toLowerCase().includes(raw)).slice(0, 8);
+        dropdown.innerHTML = matches.map((c) => `<div class="mention-option" data-id="${c.id}">${c.name}<span style="color:var(--ink-30);">${c.dept || ""}</span></div>`).join("") || `<div class="mention-option" style="color:var(--ink-30);">Hết ứng viên</div>`;
+        dropdown.classList.add("show");
+      });
+      input.addEventListener("focus", () => input.dispatchEvent(new Event("input")));
+      input.addEventListener("blur", () => setTimeout(() => dropdown.classList.remove("show"), 150));
+      dropdown.addEventListener("mousedown", async (e) => {
+        const opt = e.target.closest(".mention-option");
+        if (!opt || !opt.dataset.id) return;
+        await moveCandidateToTeam(opt.dataset.id, teamId);
+        input.value = "";
+        dropdown.classList.remove("show");
+      });
+      return;
+    }
+
+    input.addEventListener("input", () => {
+      const raw = input.value.replace(/^@/, "").toLowerCase();
+      const matches = allAccounts.filter((a) => a.id.toLowerCase().includes(raw) || (a.email || "").toLowerCase().includes(raw)).slice(0, 8);
+      dropdown.innerHTML = matches.map((a) => `<div class="mention-option" data-name="${a.id}" data-email="${a.email || ""}">${a.id}<span style="color:var(--ink-30);">${a.email || ""}</span></div>`).join("") || `<div class="mention-option" style="color:var(--ink-30);">Không tìm thấy</div>`;
+      dropdown.classList.add("show");
+    });
+    input.addEventListener("focus", () => input.dispatchEvent(new Event("input")));
+    input.addEventListener("blur", () => setTimeout(() => dropdown.classList.remove("show"), 150));
+    dropdown.addEventListener("mousedown", async (e) => {
+      const opt = e.target.closest(".mention-option");
+      if (!opt || !opt.dataset.name) return;
+      await assignStaff(teamId, role, { id: opt.dataset.name, email: opt.dataset.email });
+      input.value = "";
+      dropdown.classList.remove("show");
+    });
+  });
+}
+async function assignStaff(teamId, role, staff) {
+  const t = teams.find((t) => t.id === teamId);
+  try {
+    if (role === "advisor") {
+      await db.collection(TEAMS_COL).doc(teamId).update({ advisor: staff });
+    } else {
+      const list = [...(t.supporters || [])];
+      if (!list.some((s) => s.id === staff.id)) list.push(staff);
+      await db.collection(TEAMS_COL).doc(teamId).update({ supporters: list });
+    }
+    notifySuccess(`Đã gắn ${role === "advisor" ? "advisor" : "supporter"}: ${staff.id}`);
+    await loadAll();
+    await syncTeamStaffFields(teamId);
+    renderTeamsGrid();
+  } catch (e) { notifyError("Lỗi: " + e.message); }
+}
+window.removeStaff = async (teamId, role) => {
+  await db.collection(TEAMS_COL).doc(teamId).update({ advisor: null });
+  await loadAll();
+  await syncTeamStaffFields(teamId);
+  renderTeamsGrid();
+};
+window.removeSupporter = async (teamId, staffId) => {
+  const t = teams.find((t) => t.id === teamId);
+  const list = (t.supporters || []).filter((s) => s.id !== staffId);
+  await db.collection(TEAMS_COL).doc(teamId).update({ supporters: list });
+  await loadAll();
+  await syncTeamStaffFields(teamId);
+  renderTeamsGrid();
+};
+
+/* Kéo-thả nhân sự (advisor/supporter chip) trực tiếp lên slot -- hỗ trợ kéo từ pool ứng viên? 
+   Với nhân sự CLB, thao tác chính là @ mention ở trên; slot cũng nhận dragover để gợi ý nếu sau này mở rộng kéo thả từ danh sách nhân sự. */
+document.addEventListener("dragover", (e) => { const slot = e.target.closest(".staff-slot"); if (slot) { e.preventDefault(); slot.classList.add("drag-over"); } });
+document.addEventListener("dragleave", (e) => { const slot = e.target.closest(".staff-slot"); if (slot) slot.classList.remove("drag-over"); });
+
+/* ============================= TAB: DOCS & SUBMISSION ============================= */
+function renderDocsTab() {
+  const list = document.getElementById("docs-list");
+  const manage = isSuperOrAdmin();
+  list.innerHTML = (settings.documents || []).length ? settings.documents.map((d, i) => `
+    <div class="doc-item">
+      <div><a href="${d.url}" target="_blank" rel="noopener"><i class="fas fa-link"></i> ${d.title}</a>${d.note ? `<div style="font-size:11.5px;color:var(--ink-60);margin-top:2px;">${d.note}</div>` : ""}</div>
+      ${manage ? `<button class="btn sm danger" onclick="removeDoc(${i})"><i class="fas fa-trash"></i></button>` : ""}
+    </div>`).join("") : `<div class="empty-state" style="padding:20px;"><i class="fas fa-file"></i>Chưa có tài liệu chung nào.</div>`;
+  document.querySelector('[onclick="openDocModal()"]')?.style && (document.querySelector('.card .btn.sm.primary').style.display = manage ? "inline-flex" : "none");
+
+  const dl = document.getElementById("deadline-info");
+  dl.innerHTML = `
+    <p style="font-size:13px;"><b>Hạn nộp bài:</b> ${settings.submissionDeadline ? new Date(settings.submissionDeadline).toLocaleString("vi-VN") : "Chưa đặt"}</p>
+    ${settings.submissionNote ? `<p style="font-size:13px;margin-top:6px;color:var(--ink-60);"><b>Yêu cầu:</b> ${settings.submissionNote}</p>` : ""}
+  `;
+  document.getElementById("edit-deadline-btn").style.display = isSuperOrAdmin() ? "inline-flex" : "none";
+
+  const subList = document.getElementById("submissions-list");
+  subList.innerHTML = teams.length ? teams.map((t) => {
+    const s = submissions[t.id];
+    const canSub = canSubmitFor(t);
+    return `
+    <div class="sub-item">
+      <div>
+        <b>${t.name}</b> ${statusBadge(submissionStatus(t.id))}
+        ${s ? `<div style="font-size:12px;color:var(--ink-60);margin-top:4px;">${s.type === "link" ? `<a href="${s.content}" target="_blank" rel="noopener">${s.content}</a>` : s.content}${s.note ? " • " + s.note : ""}<br>Nộp lúc ${new Date(s.submittedAt).toLocaleString("vi-VN")} bởi ${s.submittedBy || ""}</div>` : `<div style="font-size:12px;color:var(--ink-30);margin-top:4px;">Chưa nộp bài</div>`}
+      </div>
+      ${canSub ? `<button class="btn sm primary" onclick="openSubmitModal('${t.id}')"><i class="fas fa-upload"></i> ${s ? "Nộp lại" : "Nộp bài"}</button>` : ""}
+    </div>`;
+  }).join("") : `<div class="empty-state"><i class="fas fa-inbox"></i>Chưa có team nào.</div>`;
+}
+
+function openDocModal() {
+  document.getElementById("doc-title").value = "";
+  document.getElementById("doc-url").value = "";
+  document.getElementById("doc-note").value = "";
+  openModal("doc-modal");
+}
+document.getElementById("doc-save-btn").addEventListener("click", async () => {
+  const title = document.getElementById("doc-title").value.trim();
+  const url = document.getElementById("doc-url").value.trim();
+  if (!title || !url) return notifyError("Vui lòng nhập đủ tên và link");
+  const docs = [...(settings.documents || []), { title, url, note: document.getElementById("doc-note").value.trim() }];
+  await SETTINGS_DOC.set({ documents: docs }, { merge: true });
+  notifySuccess("Đã thêm tài liệu");
+  closeModal("doc-modal");
+  await loadAll(); renderDocsTab();
+});
+window.removeDoc = async (idx) => {
+  const docs = [...(settings.documents || [])];
+  docs.splice(idx, 1);
+  await SETTINGS_DOC.set({ documents: docs }, { merge: true });
+  await loadAll(); renderDocsTab();
+};
+
+document.getElementById("edit-deadline-btn").addEventListener("click", () => {
+  document.getElementById("dl-datetime").value = settings.submissionDeadline ? settings.submissionDeadline.slice(0, 16) : "";
+  document.getElementById("dl-note").value = settings.submissionNote || "";
+  openModal("deadline-modal");
+});
+document.getElementById("dl-save-btn").addEventListener("click", async () => {
+  const val = document.getElementById("dl-datetime").value;
+  if (!val) return notifyError("Vui lòng chọn thời gian");
+  await SETTINGS_DOC.set({ submissionDeadline: new Date(val).toISOString(), submissionNote: document.getElementById("dl-note").value.trim() }, { merge: true });
+  notifySuccess("Đã lưu deadline chung");
+  closeModal("deadline-modal");
+  await loadAll(); renderDocsTab(); renderTeamsGrid();
+});
+
+/* ---- Upload file lên Google Drive qua Apps Script ---- */
+const GAS_UPLOAD_URL = "https://script.google.com/macros/s/AKfycbx-MlGw7bSxc4rq9n5_RMiYf0LoCaWtN-zrKY5F8rm8zj0xK6XY7PSD-wLDL4eirUMECg/exec";
+const UPLOAD_SECRET = "enactus-ftu-hanoi-tg19.0";
+
+async function uploadFileToDrive(file, teamName) {
+  const formData = new FormData();
+  formData.append("secret", UPLOAD_SECRET);
+  formData.append("teamName", teamName);
+  formData.append("file", file, file.name);
+
+  const res = await fetch(GAS_UPLOAD_URL, { method: "POST", body: formData });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || "Upload thất bại");
+  return data; // { fileId, fileName, fileUrl, downloadUrl, size }
+}
+
+let submittingTeamId = null;
+window.openSubmitModal = (teamId) => {
+  submittingTeamId = teamId;
+  const s = submissions[teamId];
+  document.getElementById("sub-type").value = s?.type || "link";
+  document.getElementById("sub-content").value = s?.content || "";
+  document.getElementById("sub-note").value = s?.note || "";
+  document.getElementById("sub-file-input").value = "";
+  document.getElementById("sub-file-status").textContent = "";
+  toggleSubmitTypeUI();
+  openModal("submit-modal");
+};
+
+function toggleSubmitTypeUI() {
+  const type = document.getElementById("sub-type").value;
+  document.getElementById("sub-content-wrap").style.display = type === "file" ? "none" : "";
+  document.getElementById("sub-file-wrap").style.display = type === "file" ? "" : "none";
+}
+document.getElementById("sub-type").addEventListener("change", toggleSubmitTypeUI);
+
+document.getElementById("sub-save-btn").addEventListener("click", async () => {
+  const type = document.getElementById("sub-type").value;
+  const note = document.getElementById("sub-note").value.trim();
+  const saveBtn = document.getElementById("sub-save-btn");
+  const team = teams.find((t) => t.id === submittingTeamId);
+  const teamName = team ? team.name : "khong-ro-team";
+
+  if (type === "file") {
+    const fileInput = document.getElementById("sub-file-input");
+    const file = fileInput.files[0];
+    if (!file) return notifyError("Vui lòng chọn file để nộp");
+
+    saveBtn.disabled = true;
+    document.getElementById("sub-file-status").textContent = "Đang tải file lên...";
+    try {
+      const uploaded = await uploadFileToDrive(file, teamName);
+      await db.collection(SUBMISSIONS_COL).doc(submittingTeamId).set({
+        type: "file",
+        content: uploaded.fileUrl,
+        fileName: uploaded.fileName,
+        downloadUrl: uploaded.downloadUrl,
+        note, submittedAt: new Date().toISOString(), submittedBy: userEmail,
+      });
+      notifySuccess("Nộp bài (file) thành công!");
+      closeModal("submit-modal");
+      await loadAll(); renderDocsTab(); renderTeamsGrid();
+    } catch (err) {
+      notifyError("Lỗi upload: " + err.message);
+    } finally {
+      saveBtn.disabled = false;
+      document.getElementById("sub-file-status").textContent = "";
+    }
+    return;
+  }
+
+  const content = document.getElementById("sub-content").value.trim();
+  if (!content) return notifyError("Vui lòng nhập nội dung nộp bài");
+  await db.collection(SUBMISSIONS_COL).doc(submittingTeamId).set({
+    type, content, note,
+    submittedAt: new Date().toISOString(), submittedBy: userEmail,
+  });
+  notifySuccess("Nộp bài thành công!");
+  closeModal("submit-modal");
+  await loadAll(); renderDocsTab(); renderTeamsGrid();
+});
+
+/* ============================= TAB: PITCHING DAY ============================= */
+function renderPitchingTab() {
+  document.getElementById("pitching-info").innerHTML = `
+    <p style="font-size:13px;"><b>Thời gian:</b> ${settings.pitchingDatetime ? new Date(settings.pitchingDatetime).toLocaleString("vi-VN") : "Chưa đặt"}</p>
+    <p style="font-size:13px;margin-top:6px;"><b>Địa điểm:</b> ${settings.pitchingLocation || "Chưa đặt"}</p>
+  `;
+  document.getElementById("edit-pitching-info-btn").style.display = isSuperOrAdmin() ? "inline-flex" : "none";
+
+  // ---- Thống kê theo từng cá nhân (không phải theo team) ----
+  let totalMembers = 0, yesCount = 0, noCount = 0, pendingCount = 0;
+  const absentList = []; // { name, team, reason }
+
+  teams.forEach((t) => {
+    (t.members || []).forEach((m) => {
+      totalMembers++;
+      if (m.pitchingConfirm === "yes") yesCount++;
+      else if (m.pitchingConfirm === "no") {
+        noCount++;
+        absentList.push({ name: m.name, team: t.name, reason: m.pitchingReason || "(không ghi lý do)" });
+      } else pendingCount++;
+    });
+  });
+
+  document.getElementById("pitching-stats").innerHTML = `
+    <div class="stat-pill"><div class="stat-num">${totalMembers}</div><div class="stat-label">Tổng số thành viên</div></div>
+    <div class="stat-pill"><div class="stat-num" style="color:#16a34a;">${yesCount}</div><div class="stat-label">Xác nhận tham gia</div></div>
+    <div class="stat-pill"><div class="stat-num" style="color:#dc2626;">${noCount}</div><div class="stat-label">Không tham gia</div></div>
+    <div class="stat-pill"><div class="stat-num" style="color:#d97706;">${pendingCount}</div><div class="stat-label">Chưa xác nhận</div></div>
+  `;
+
+  const absentEl = document.getElementById("pitching-absent-list");
+  if (!absentList.length) {
+    absentEl.innerHTML = `<div class="empty-state" style="padding:14px;"><i class="fas fa-check-circle"></i>Chưa có ai báo không tham gia.</div>`;
+  } else {
+    absentEl.innerHTML = `
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ink-70);">Danh sách KHÔNG tham gia (kèm lý do):</div>
+      <table>
+        <thead><tr><th>Họ tên</th><th>Team</th><th>Lý do</th></tr></thead>
+        <tbody>
+          ${absentList.map((a) => `<tr><td>${a.name}</td><td>${a.team}</td><td>${a.reason}</td></tr>`).join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  // ---- Bảng theo team, chi tiết từng thành viên ----
+  const tbody = document.getElementById("pitching-tbody");
+  const emptyEl = document.getElementById("pitching-empty");
+  if (!teams.length) { tbody.innerHTML = ""; emptyEl.style.display = "block"; return; }
+  emptyEl.style.display = "none";
+  tbody.innerHTML = teams.map((t) => {
+    const members = t.members || [];
+    const yes = members.filter((m) => m.pitchingConfirm === "yes").length;
+    const detailHtml = members.length
+      ? members.map((m) => {
+          let badge = '<span class="badge badge-warn">Chưa xác nhận</span>';
+          if (m.pitchingConfirm === "yes") badge = '<span class="badge badge-success">Tham gia</span>';
+          if (m.pitchingConfirm === "no") badge = `<span class="badge badge-error">Không tham gia${m.pitchingReason ? " • " + m.pitchingReason : ""}</span>`;
+          return `<div style="margin-bottom:4px;font-size:12.5px;"><b>${m.name}</b> ${badge}</div>`;
+        }).join("")
+      : '<span class="slot-empty">Chưa có thành viên</span>';
+
+    return `
+    <tr>
+      <td><input type="number" min="1" style="width:64px;" value="${t.pitchingOrder || ""}" ${isSuperOrAdmin() ? "" : "disabled"} onchange="updatePitchingOrder('${t.id}', this.value)" /></td>
+      <td><b>${t.name}</b></td>
+      <td style="font-size:12px;color:var(--ink-60);">${t.advisor ? t.advisor.id : "—"}${(t.supporters || []).length ? " • " + t.supporters.map((s) => s.id).join(", ") : ""}</td>
+      <td><span class="badge ${yes === members.length && members.length > 0 ? "badge-success" : "badge-warn"}">${yes}/${members.length}</span></td>
+      <td>${detailHtml}</td>
+    </tr>`;
+  }).join("");
+}
+
+window.updatePitchingOrder = async (teamId, val) => {
+  await db.collection(TEAMS_COL).doc(teamId).update({ pitchingOrder: parseInt(val, 10) || null });
+  await loadAll(); renderPitchingTab(); renderTeamsGrid();
+};
+document.getElementById("edit-pitching-info-btn").addEventListener("click", () => {
+  document.getElementById("pinfo-datetime").value = settings.pitchingDatetime ? settings.pitchingDatetime.slice(0, 16) : "";
+  document.getElementById("pinfo-location").value = settings.pitchingLocation || "";
+  openModal("pinfo-modal");
+});
+document.getElementById("pinfo-save-btn").addEventListener("click", async () => {
+  const val = document.getElementById("pinfo-datetime").value;
+  await SETTINGS_DOC.set({ pitchingDatetime: val ? new Date(val).toISOString() : "", pitchingLocation: document.getElementById("pinfo-location").value.trim() }, { merge: true });
+  notifySuccess("Đã lưu thời gian & địa điểm Pitching Day");
+  closeModal("pinfo-modal");
+  await loadAll(); renderPitchingTab();
+});
+
+/* ============================= TAB SWITCHING (chính) ============================= */
+document.querySelectorAll(".tabs > .tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    if (!tab.dataset.tab) return;
+    document.querySelectorAll(".tabs > .tab").forEach((t) => t.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(tab.dataset.tab + "-content").classList.add("active");
+  });
+});
+</script>
+</body>
+</html>

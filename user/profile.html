@@ -333,6 +333,171 @@
             font-weight: 500;
         }
 
+        /* Teamwork Card */
+        .teamwork-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--neutral-200);
+        }
+
+        .teamwork-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .teamwork-card-header i {
+            color: var(--primary-600);
+            font-size: 18px;
+        }
+
+        .teamwork-card-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--neutral-800);
+        }
+
+        .tw-block {
+            padding: 16px;
+            background: var(--neutral-50);
+            border: 1px solid var(--neutral-200);
+            border-radius: var(--radius);
+            margin-bottom: 14px;
+        }
+
+        .tw-block:last-child {
+            margin-bottom: 0;
+        }
+
+        .tw-block-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--neutral-800);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .tw-block-title i {
+            color: var(--primary-600);
+        }
+
+        .tw-doc-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .tw-doc-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: white;
+            border: 1px solid var(--neutral-200);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--neutral-700);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .tw-doc-item:hover {
+            border-color: var(--primary-400);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tw-doc-item i {
+            color: var(--primary-600);
+        }
+
+        .tw-empty {
+            font-size: 13px;
+            color: var(--neutral-500);
+            padding: 8px 0;
+        }
+
+        .tw-sub-info {
+            font-size: 13px;
+            color: var(--neutral-600);
+            margin-bottom: 12px;
+            line-height: 1.7;
+        }
+
+        .tw-sub-info b {
+            color: var(--neutral-800);
+        }
+
+        .tw-field {
+            margin-bottom: 12px;
+        }
+
+        .tw-field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--neutral-600);
+            margin-bottom: 6px;
+        }
+
+        .tw-field input[type="text"],
+        .tw-field input[type="file"],
+        .tw-field textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--neutral-300);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            background: white;
+        }
+
+        .tw-field textarea {
+            resize: vertical;
+        }
+
+        .tw-hint {
+            font-size: 11px;
+            color: var(--neutral-500);
+            margin-top: 4px;
+        }
+
+        .tw-pitching-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tw-field-or {
+            text-align: center;
+            font-size: 12px;
+            color: var(--neutral-400);
+            margin: 4px 0 12px;
+        }
+
+        .tw-readonly-note {
+            font-size: 13px;
+            color: var(--neutral-500);
+            font-style: italic;
+        }
+
+        .tw-status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .tw-status-badge.submitted { background: var(--success-100); color: var(--success-700); }
+        .tw-status-badge.pending { background: var(--warning-100); color: var(--warning-700); }
+        .tw-status-badge.late { background: var(--error-100); color: var(--error-700); }
+
         /* Profile Card */
         .profile-card {
             background: white;
@@ -888,6 +1053,49 @@
         </div>
 
         <div id="profile-content" style="display: none;">
+            <!-- Profile Card -->
+            <div class="profile-card">
+                <div class="profile-header">
+                    <img id="profile-avatar-img" class="profile-avatar-large" src="" alt="Avatar" style="display: none;">
+                    <div id="profile-avatar-initial" class="profile-avatar-large">U</div>
+                    <div class="profile-info">
+                        <h1 id="profile-name">Họ tên ứng viên</h1>
+                        <div class="profile-meta">
+                            <div class="meta-item">
+                                <i class="fas fa-envelope"></i>
+                                <span id="profile-email">email@example.com</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-phone"></i>
+                                <span id="profile-phone">0123456789</span>
+                            </div>
+                        </div>
+                        <span class="status-tag" id="profile-status">Đang xử lý</span>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-box">
+                        <div class="info-box-label">Nguyện vọng 1</div>
+                        <div class="info-box-value" id="priority-department">Chưa có</div>
+                        <div class="info-box-sub" id="priority-status"></div>
+                    </div>
+                    <div class="info-box" id="secondary-dept-box">
+                        <div class="info-box-label">Nguyện vọng 2</div>
+                        <div class="info-box-value" id="secondary-department">Chưa có</div>
+                        <div class="info-box-sub" id="secondary-status"></div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-box-label">Vòng hiện tại</div>
+                        <div class="info-box-value" id="current-round">Chưa có</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-box-label">Ngày ứng tuyển</div>
+                        <div class="info-box-value" id="application-time">Chưa có</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Interview Schedule Notification -->
             <div id="interview-notification" class="notification-card" style="display: none;">
                 <div class="notification-icon">
@@ -957,46 +1165,77 @@
                 <span class="status-badge">Đã gửi</span>
             </div>
 
-            <!-- Profile Card -->
-            <div class="profile-card">
-                <div class="profile-header">
-                    <img id="profile-avatar-img" class="profile-avatar-large" src="" alt="Avatar" style="display: none;">
-                    <div id="profile-avatar-initial" class="profile-avatar-large">U</div>
-                    <div class="profile-info">
-                        <h1 id="profile-name">Họ tên ứng viên</h1>
-                        <div class="profile-meta">
-                            <div class="meta-item">
-                                <i class="fas fa-envelope"></i>
-                                <span id="profile-email">email@example.com</span>
-                            </div>
-                            <div class="meta-item">
-                                <i class="fas fa-phone"></i>
-                                <span id="profile-phone">0123456789</span>
-                            </div>
-                        </div>
-                        <span class="status-tag" id="profile-status">Đang xử lý</span>
+            <!-- Teamwork: Tài liệu, Nộp bài, Pitching Day -->
+            <div id="teamwork-card" class="teamwork-card" style="display: none;">
+                <div class="teamwork-card-header">
+                    <i class="fas fa-people-group"></i>
+                    <h2>Teamwork - Vòng 3</h2>
+                </div>
+
+                <!-- Tài liệu chung -->
+                <div class="tw-block">
+                    <div class="tw-block-title"><i class="fas fa-folder-open"></i> Tài liệu chung</div>
+                    <div id="tw-documents-list" class="tw-doc-list">
+                        <div class="tw-empty">Đang tải...</div>
                     </div>
                 </div>
 
-                <div class="info-grid">
-                    <div class="info-box">
-                        <div class="info-box-label">Nguyện vọng 1</div>
-                        <div class="info-box-value" id="priority-department">Chưa có</div>
-                        <div class="info-box-sub" id="priority-status"></div>
+                <!-- Nộp bài -->
+                <div class="tw-block">
+                    <div class="tw-block-title"><i class="fas fa-upload"></i> Nộp bài Teamwork</div>
+                    <div id="tw-submission-info" class="tw-sub-info"></div>
+                    <div id="tw-submission-form" style="display:none;">
+                        <div class="tw-field">
+                            <label>Nộp file (tải lên Drive CLB)</label>
+                            <input type="file" id="tw-file-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,.png,.jpg,.jpeg">
+                            <div class="tw-hint">Định dạng: PDF, Word, PowerPoint, Excel, ZIP/RAR, PNG/JPG • Tối đa 200MB</div>
+                        </div>
+                        <div class="tw-field-or">hoặc</div>
+                        <div class="tw-field">
+                            <label>Dán link (Google Slide/Drive/YouTube...)</label>
+                            <input type="text" id="tw-link-input" placeholder="https://...">
+                        </div>
+                        <div class="tw-field">
+                            <label>Ghi chú (không bắt buộc)</label>
+                            <textarea id="tw-note-input" rows="2" placeholder="Ghi chú thêm cho bài nộp..."></textarea>
+                        </div>
+                        <button class="btn btn-primary" id="tw-submit-btn">
+                            <span id="tw-submit-btn-text">Nộp bài</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
                     </div>
-                    <div class="info-box" id="secondary-dept-box">
-                        <div class="info-box-label">Nguyện vọng 2</div>
-                        <div class="info-box-value" id="secondary-department">Chưa có</div>
-                        <div class="info-box-sub" id="secondary-status"></div>
+                    <div id="tw-submission-readonly-note" class="tw-readonly-note" style="display:none;">
+                        Chỉ Leader hoặc Sub Leader của team mới có thể nộp bài.
                     </div>
-                    <div class="info-box">
-                        <div class="info-box-label">Vòng hiện tại</div>
-                        <div class="info-box-value" id="current-round">Chưa có</div>
+                </div>
+
+                <!-- Pitching Day -->
+                <div class="tw-block" id="tw-pitching-block" style="display:none;">
+                    <div class="tw-block-title"><i class="fas fa-bullhorn"></i> Pitching Day</div>
+                    <div id="tw-pitching-info" class="tw-sub-info"></div>
+
+                    <div id="tw-pitching-form" style="display:none;">
+                        <div class="tw-field">
+                            <label>Bạn có tham gia Pitching Day không? (Xác nhận cho cá nhân bạn)</label>
+                        </div>
+                        <div class="tw-pitching-actions">
+                            <button class="btn btn-primary" id="tw-pitching-yes-btn">
+                                <i class="fas fa-check"></i> <span>Tôi sẽ tham gia</span>
+                            </button>
+                            <button class="btn btn-secondary" id="tw-pitching-no-btn">
+                                <i class="fas fa-times"></i> <span>Tôi không thể tham gia</span>
+                            </button>
+                        </div>
+                        <div class="tw-field" id="tw-pitching-reason-wrap" style="display:none;margin-top:10px;">
+                            <label>Lý do không tham gia (bắt buộc)</label>
+                            <textarea id="tw-pitching-reason-input" rows="2" placeholder="VD: Trùng lịch thi, có việc gia đình..."></textarea>
+                            <button class="btn btn-primary" id="tw-pitching-reason-save-btn" style="margin-top:8px;">
+                                <span>Gửi lý do</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="info-box">
-                        <div class="info-box-label">Ngày ứng tuyển</div>
-                        <div class="info-box-value" id="application-time">Chưa có</div>
-                    </div>
+
+                    <div id="tw-pitching-readonly-note" class="tw-readonly-note" style="display:none;"></div>
                 </div>
             </div>
 
@@ -1094,6 +1333,9 @@
                         // Check notifications
                         checkFeedbackNotification();
                         checkInterviewNotification();
+
+                        // Teamwork: tài liệu chung, nộp bài, pitching day
+                        loadTeamworkSection();
                         
                         document.getElementById('loading').style.display = 'none';
                         document.getElementById('profile-content').style.display = 'block';
@@ -1670,7 +1912,7 @@
                 if (settings.exists && settings.data().enabled === true) {
                     const hasFeedback = await checkExistingFeedback();
                     
-                    if (!hasFeedback && applicationData.current_round === 'round3') {
+                    if (!hasFeedback && applicationData.current_round === 'round3' && applicationData.feedback_permission === true) {
                         notification.style.display = 'flex';
                         status.style.display = 'none';
                         
@@ -1858,6 +2100,322 @@
             return map[status] || status;
         }
 
+        /* ============================= TEAMWORK: TÀI LIỆU / NỘP BÀI / PITCHING DAY ============================= */
+        // Apps Script web app dùng để upload file lên Google Drive của CLB
+        const DRIVE_UPLOAD_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-MlGw7bSxc4rq9n5_RMiYf0LoCaWtN-zrKY5F8rm8zj0xK6XY7PSD-wLDL4eirUMECg/exec';
+        const DRIVE_UPLOAD_SECRET = 'enactus-ftu-hanoi-tg19.0';
+        const DRIVE_MAX_FILE_SIZE = 200 * 1024 * 1024; // 200MB
+        const DRIVE_ALLOWED_EXTENSIONS = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'zip', 'rar', 'png', 'jpg', 'jpeg'];
+
+        const TW_TEAMS_COL = 'teamwork_teams';
+        const TW_SETTINGS_DOC = db.collection('teamwork_settings').doc('main');
+        const TW_SUBMISSIONS_COL = 'teamwork_submissions';
+
+        let twTeam = null;        // team doc hiện tại của ứng viên
+        let twSettings = null;    // teamwork_settings/main
+        let twSubmission = null;  // teamwork_submissions/{teamId}
+        let twMyRole = null;      // 'leader' | 'subleader' | 'member' | null
+
+        async function loadTeamworkSection() {
+            try {
+                const roundObj = applicationData.round3 || {};
+                const teamName = roundObj.team;
+
+                // Chỉ hiện khi ứng viên đã ở vòng 3 trở lên và đã có team
+                const inTeamworkStage = ['round3', 'round4', 'success'].includes(applicationData.current_round) && teamName;
+                if (!inTeamworkStage) {
+                    document.getElementById('teamwork-card').style.display = 'none';
+                    return;
+                }
+
+                const [teamSnap, settingsSnap] = await Promise.all([
+                    db.collection(TW_TEAMS_COL).where('name', '==', teamName).limit(1).get(),
+                    TW_SETTINGS_DOC.get()
+                ]);
+
+                twSettings = settingsSnap.exists ? settingsSnap.data() : {};
+                twSettings = { documents: [], submissionDeadline: null, submissionNote: '', pitchingDatetime: '', pitchingLocation: '', ...twSettings };
+
+                if (teamSnap.empty) {
+                    // Chưa đồng bộ team trong teamwork_teams, chỉ hiện tài liệu chung
+                    twTeam = null;
+                    twMyRole = null;
+                } else {
+                    twTeam = { id: teamSnap.docs[0].id, ...teamSnap.docs[0].data() };
+                    const me = (twTeam.members || []).find(m => m.id === applicationData.id);
+                    twMyRole = me ? (me.role || 'member') : null;
+
+                    const subSnap = await db.collection(TW_SUBMISSIONS_COL).doc(twTeam.id).get();
+                    twSubmission = subSnap.exists ? subSnap.data() : null;
+                }
+
+                document.getElementById('teamwork-card').style.display = 'block';
+                renderTwDocuments();
+                renderTwSubmission();
+                renderTwPitching();
+            } catch (error) {
+                console.error('Error loading teamwork section:', error);
+            }
+        }
+
+        function renderTwDocuments() {
+            const el = document.getElementById('tw-documents-list');
+            const docs = (twSettings && twSettings.documents) || [];
+            if (!docs.length) {
+                el.innerHTML = '<div class="tw-empty">Chưa có tài liệu chung nào.</div>';
+                return;
+            }
+            el.innerHTML = docs.map(d => `
+                <a class="tw-doc-item" href="${d.url || d.link || '#'}" target="_blank" rel="noopener">
+                    <i class="fas fa-file-alt"></i>
+                    <span>${d.title || d.name || 'Tài liệu'}</span>
+                </a>
+            `).join('');
+        }
+
+        function twSubmissionStatus() {
+            if (twSubmission && twSubmission.content) return 'submitted';
+            if (twSettings.submissionDeadline && new Date(twSettings.submissionDeadline) < new Date()) return 'late';
+            if (twSettings.submissionDeadline) return 'pending';
+            return 'none';
+        }
+
+        function renderTwSubmission() {
+            const infoEl = document.getElementById('tw-submission-info');
+            const formEl = document.getElementById('tw-submission-form');
+            const readonlyEl = document.getElementById('tw-submission-readonly-note');
+
+            const status = twSubmissionStatus();
+            const statusMap = {
+                submitted: '<span class="tw-status-badge submitted">Đã nộp</span>',
+                pending: '<span class="tw-status-badge pending">Chưa nộp</span>',
+                late: '<span class="tw-status-badge late">Trễ hạn</span>',
+                none: '<span class="tw-status-badge pending">Chưa có deadline</span>'
+            };
+
+            let infoHtml = `<p><b>Trạng thái:</b> ${statusMap[status]}</p>`;
+            if (twSettings.submissionDeadline) {
+                infoHtml += `<p><b>Hạn nộp:</b> ${new Date(twSettings.submissionDeadline).toLocaleString('vi-VN')}</p>`;
+            }
+            if (twSettings.submissionNote) {
+                infoHtml += `<p><b>Yêu cầu:</b> ${twSettings.submissionNote}</p>`;
+            }
+            if (twSubmission && twSubmission.content) {
+                const contentHtml = twSubmission.type === 'link'
+                    ? `<a href="${twSubmission.content}" target="_blank" rel="noopener">${twSubmission.content}</a>`
+                    : twSubmission.content;
+                infoHtml += `<p><b>Bài đã nộp:</b> ${contentHtml}${twSubmission.note ? ' • ' + twSubmission.note : ''}</p>`;
+                infoHtml += `<p style="font-size:12px;color:var(--neutral-500);">Nộp lúc ${new Date(twSubmission.submittedAt).toLocaleString('vi-VN')} bởi ${twSubmission.submittedBy || ''}</p>`;
+            }
+            infoEl.innerHTML = infoHtml;
+
+            const canSubmit = twMyRole === 'leader' || twMyRole === 'subleader';
+            formEl.style.display = canSubmit ? 'block' : 'none';
+            readonlyEl.style.display = canSubmit ? 'none' : 'block';
+
+            if (canSubmit) {
+                document.getElementById('tw-submit-btn-text').textContent = (twSubmission && twSubmission.content) ? 'Nộp lại' : 'Nộp bài';
+                if (twSubmission) {
+                    document.getElementById('tw-link-input').value = twSubmission.type === 'link' ? (twSubmission.content || '') : '';
+                    document.getElementById('tw-note-input').value = twSubmission.note || '';
+                }
+            }
+        }
+
+        function renderTwPitching() {
+            const block = document.getElementById('tw-pitching-block');
+            const infoEl = document.getElementById('tw-pitching-info');
+            const formEl = document.getElementById('tw-pitching-form');
+            const reasonWrap = document.getElementById('tw-pitching-reason-wrap');
+            const noteEl = document.getElementById('tw-pitching-readonly-note');
+
+            // Chỉ hiện khi BTC đã "mở" pitching day (đã đặt thời gian)
+            if (!twSettings.pitchingDatetime) {
+                block.style.display = 'none';
+                return;
+            }
+            block.style.display = 'block';
+
+            // Mỗi cá nhân tự xác nhận cho chính mình, không phải leader xác nhận thay cả team
+            const me = twTeam ? (twTeam.members || []).find(m => m.id === applicationData.id) : null;
+            const myStatus = me ? me.pitchingConfirm : null; // 'yes' | 'no' | undefined
+
+            let statusHtml = '<span class="tw-status-badge pending">Chưa xác nhận</span>';
+            if (myStatus === 'yes') statusHtml = '<span class="tw-status-badge submitted">Bạn đã xác nhận tham gia</span>';
+            if (myStatus === 'no') statusHtml = '<span class="tw-status-badge late">Bạn không tham gia' + (me.pitchingReason ? ' • Lý do: ' + me.pitchingReason : '') + '</span>';
+
+            infoEl.innerHTML = `
+                <p><b>Thời gian:</b> ${new Date(twSettings.pitchingDatetime).toLocaleString('vi-VN')}</p>
+                <p><b>Địa điểm:</b> ${twSettings.pitchingLocation || 'Chưa cập nhật'}</p>
+                <p><b>Trạng thái của bạn:</b> ${statusHtml}</p>
+            `;
+
+            if (!twTeam) {
+                formEl.style.display = 'none';
+                noteEl.style.display = 'block';
+                noteEl.textContent = 'Không tìm thấy thông tin team của bạn để xác nhận. Vui lòng liên hệ admin.';
+                return;
+            }
+
+            noteEl.style.display = 'none';
+
+            if (myStatus === 'yes' || myStatus === 'no') {
+                // Đã xác nhận rồi thì không cho sửa nữa, tránh đổi qua đổi lại gây khó kiểm soát
+                formEl.style.display = 'none';
+            } else {
+                formEl.style.display = 'block';
+                reasonWrap.style.display = 'none';
+            }
+        }
+
+        async function saveMyPitchingStatus(status, reason) {
+            if (!twTeam) return;
+            const newMembers = (twTeam.members || []).map(m =>
+                m.id === applicationData.id ? { ...m, pitchingConfirm: status, pitchingReason: status === 'no' ? (reason || '') : '' } : m
+            );
+            await db.collection(TW_TEAMS_COL).doc(twTeam.id).update({ members: newMembers });
+            twTeam.members = newMembers;
+            renderTwPitching();
+        }
+
+        document.getElementById('tw-pitching-yes-btn').addEventListener('click', async () => {
+            try {
+                await saveMyPitchingStatus('yes', '');
+                alert('Đã xác nhận tham gia Pitching Day!');
+            } catch (error) {
+                console.error('Error confirming pitching day:', error);
+                alert('Có lỗi xảy ra, vui lòng thử lại.');
+            }
+        });
+
+        document.getElementById('tw-pitching-no-btn').addEventListener('click', () => {
+            document.getElementById('tw-pitching-reason-wrap').style.display = 'block';
+        });
+
+        document.getElementById('tw-pitching-reason-save-btn').addEventListener('click', async () => {
+            const reason = document.getElementById('tw-pitching-reason-input').value.trim();
+            if (!reason) {
+                alert('Vui lòng nhập lý do không tham gia.');
+                return;
+            }
+            try {
+                await saveMyPitchingStatus('no', reason);
+                alert('Đã ghi nhận: bạn không tham gia Pitching Day.');
+            } catch (error) {
+                console.error('Error declining pitching day:', error);
+                alert('Có lỗi xảy ra, vui lòng thử lại.');
+            }
+        });
+
+        // Upload file lên Drive CLB thông qua Apps Script, trả về link file
+        async function uploadFileToDrive(file, meta) {
+            const ext = (file.name.split('.').pop() || '').toLowerCase();
+            if (!DRIVE_ALLOWED_EXTENSIONS.includes(ext)) {
+                throw new Error(`Định dạng .${ext} không được phép. Chỉ nhận: ${DRIVE_ALLOWED_EXTENSIONS.join(', ')}`);
+            }
+            if (file.size > DRIVE_MAX_FILE_SIZE) {
+                throw new Error('File vượt quá giới hạn 200MB.');
+            }
+
+            const formData = new FormData();
+            formData.append('secret', DRIVE_UPLOAD_SECRET);
+            formData.append('teamName', meta.teamName || '');
+            formData.append('file', file, file.name);
+
+            // Timeout dài hơn cho file lớn (tối đa 200MB)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 giây
+
+            let response;
+            try {
+                response = await fetch(DRIVE_UPLOAD_SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData,
+                    signal: controller.signal
+                });
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    throw new Error('Quá thời gian chờ phản hồi từ Drive (120s). Vui lòng kiểm tra mạng và thử lại, hoặc dùng link thay vì file.');
+                }
+                throw new Error('Không kết nối được tới Drive CLB. Vui lòng kiểm tra mạng và thử lại.');
+            } finally {
+                clearTimeout(timeoutId);
+            }
+
+            let result;
+            try {
+                result = await response.json();
+            } catch (err) {
+                throw new Error('Drive CLB phản hồi không hợp lệ. Vui lòng thử lại sau.');
+            }
+
+            if (!result || result.success !== true) {
+                throw new Error((result && result.error) || 'Upload thất bại, vui lòng thử lại.');
+            }
+            return result.fileUrl || result.downloadUrl;
+        }
+
+        document.getElementById('tw-submit-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('tw-submit-btn');
+            const fileInput = document.getElementById('tw-file-input');
+            const linkInput = document.getElementById('tw-link-input');
+            const noteInput = document.getElementById('tw-note-input');
+
+            const file = fileInput.files && fileInput.files[0];
+            const link = linkInput.value.trim();
+            const note = noteInput.value.trim();
+
+            if (!file && !link) {
+                alert('Vui lòng chọn file để tải lên hoặc dán link nộp bài.');
+                return;
+            }
+            if (!twTeam) {
+                alert('Không tìm thấy thông tin team của bạn. Vui lòng liên hệ admin.');
+                return;
+            }
+            if (twSettings.submissionDeadline && new Date(twSettings.submissionDeadline) < new Date()) {
+                if (!confirm('Đã quá hạn nộp bài. Bạn vẫn muốn nộp?')) return;
+            }
+
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = file
+                ? '<span>Đang tải file lên Drive... (có thể mất 10-30s)</span> <i class="fas fa-spinner fa-spin"></i>'
+                : '<span>Đang nộp...</span> <i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                let type, content;
+                if (file) {
+                    content = await uploadFileToDrive(file, {
+                        teamName: twTeam.name,
+                        submittedBy: applicationData.email
+                    });
+                    type = 'link'; // link Drive trả về từ Apps Script
+                } else {
+                    type = 'link';
+                    content = link;
+                }
+
+                await db.collection(TW_SUBMISSIONS_COL).doc(twTeam.id).set({
+                    type, content, note,
+                    submittedAt: new Date().toISOString(),
+                    submittedBy: applicationData.email
+                });
+
+                twSubmission = { type, content, note, submittedAt: new Date().toISOString(), submittedBy: applicationData.email };
+                fileInput.value = '';
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                renderTwSubmission();
+                alert('Nộp bài thành công!');
+            } catch (error) {
+                console.error('Error submitting teamwork assignment:', error);
+                alert(error.message || 'Có lỗi khi nộp bài. Vui lòng thử lại hoặc dùng link thay vì file.');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+
         // Event listeners
         document.getElementById('go-to-calendar-btn').addEventListener('click', async () => {
             try {
@@ -1902,6 +2460,11 @@
                 
                 if (!settingsDoc.exists || settingsDoc.data().enabled !== true) {
                     alert('Hệ thống feedback chưa được kích hoạt.');
+                    return;
+                }
+
+                if (!applicationData || applicationData.feedback_permission !== true) {
+                    alert('Bạn chưa được cấp quyền gửi feedback. Vui lòng liên hệ admin.');
                     return;
                 }
 

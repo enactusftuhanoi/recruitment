@@ -172,6 +172,68 @@
             flex-wrap: wrap;
         }
 
+        /* ======================== TOOLBAR (tìm kiếm + bộ lọc) ======================== */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1 1 220px;
+            min-width: 200px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            font-size: 13px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 9px 12px 9px 34px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            font-size: 13px;
+            font-family: inherit;
+            color: var(--gray-800);
+            transition: var(--transition);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(248, 243, 206, 0.3);
+        }
+
+        .toolbar-select {
+            width: auto;
+            min-width: 150px;
+            padding: 9px 12px;
+            font-size: 13px;
+        }
+
+        /* ======================== BULK ACTIONS BAR ======================== */
+        .bulk-bar {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            margin-bottom: 16px;
+            background: var(--info-light);
+            border: 1px solid var(--info);
+            border-radius: var(--border-radius);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
         /* ======================== CARD ======================== */
         .card {
             background: var(--white);
@@ -363,11 +425,75 @@
         </div>
     </div>
 
+    <div class="card" style="margin-bottom:16px;">
+        <div class="toolbar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input" placeholder="Tìm theo tên hoặc email..." oninput="applyFilters()">
+            </div>
+            <select class="form-select toolbar-select" id="filter-role" onchange="applyFilters()">
+                <option value="">Tất cả role</option>
+                <option value="superadmin">Super Admin</option>
+                <option value="admin">Admin</option>
+                <option value="member">Member</option>
+            </select>
+            <select class="form-select toolbar-select" id="filter-department" onchange="applyFilters()">
+                <option value="">Tất cả ban</option>
+                <option value="HR">Nhân sự</option>
+                <option value="MD">Truyền thông</option>
+                <option value="ER">Đối ngoại</option>
+                <option value="PD">Dự án</option>
+            </select>
+            <select class="form-select toolbar-select" id="filter-notification" onchange="applyFilters()">
+                <option value="">Nhận thông báo: Tất cả</option>
+                <option value="yes">Có nhận</option>
+                <option value="no">Không nhận</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="resetFilters()">
+                <i class="fas fa-rotate-left"></i> Xóa lọc
+            </button>
+        </div>
+    </div>
+
     <div class="card">
+        <div class="bulk-bar" id="bulk-bar">
+            <span id="bulk-count">0 đã chọn</span>
+            <div style="margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <select class="form-select toolbar-select" id="bulk-role-select" style="width:auto;">
+                    <option value="">Đổi role...</option>
+                    <option value="superadmin">Superadmin</option>
+                    <option value="admin">Admin</option>
+                    <option value="member">Member</option>
+                </select>
+                <button class="btn btn-ghost btn-sm" onclick="bulkChangeRole()">Áp dụng</button>
+
+                <select class="form-select toolbar-select" id="bulk-department-select" style="width:auto;">
+                    <option value="">Đổi ban...</option>
+                    <option value="HR">Nhân sự</option>
+                    <option value="MD">Truyền thông</option>
+                    <option value="ER">Đối ngoại</option>
+                    <option value="PD">Dự án</option>
+                </select>
+                <button class="btn btn-ghost btn-sm" onclick="bulkChangeDepartment()">Áp dụng</button>
+
+                <button class="btn btn-ghost btn-sm" onclick="bulkToggleNotification(true)">
+                    <i class="fas fa-bell"></i> Bật thông báo
+                </button>
+                <button class="btn btn-ghost btn-sm" onclick="bulkToggleNotification(false)">
+                    <i class="fas fa-bell-slash"></i> Tắt thông báo
+                </button>
+
+                <button class="btn btn-ghost btn-sm" onclick="clearSelection()">Bỏ chọn</button>
+                <button class="btn btn-danger btn-sm" onclick="bulkDeleteAccounts()">
+                    <i class="fas fa-trash"></i> Xóa đã chọn
+                </button>
+            </div>
+        </div>
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
+                        <th style="width:36px;"><input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)"></th>
                         <th>Họ tên (ID)</th>
                         <th>Email</th>
                         <th>Role</th>
@@ -379,7 +505,7 @@
                 </thead>
                 <tbody id="accounts-table-body">
                     <tr>
-                        <td colspan="6" style="text-align:center;padding:40px;color:var(--gray-400);">
+                        <td colspan="8" style="text-align:center;padding:40px;color:var(--gray-400);">
                             <i class="fas fa-spinner fa-spin" style="font-size:24px;display:block;margin-bottom:8px;"></i>
                             Đang tải danh sách...
                         </td>
@@ -459,12 +585,16 @@
 
 <script src="/script/config.js"></script>
 <script>
+// ===== State =====
+let allAccounts = [];
+let selectedIds = new Set();
+
 // ===== Load danh sách account =====
 async function loadAccounts() {
   const tbody = document.getElementById("accounts-table-body");
   tbody.innerHTML = `
     <tr>
-      <td colspan="7" style="text-align:center;padding:40px;color:var(--gray-400);">
+      <td colspan="8" style="text-align:center;padding:40px;color:var(--gray-400);">
         <i class="fas fa-spinner fa-spin" style="font-size:24px;display:block;margin-bottom:8px;"></i>
         Đang tải danh sách...
       </td>
@@ -473,71 +603,253 @@ async function loadAccounts() {
 
   try {
     const snapshot = await db.collection("account").get();
-    if (snapshot.empty) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="7" style="text-align:center;padding:40px;color:var(--gray-400);">
-            <i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:8px;"></i>
-            Chưa có tài khoản nào
-          </td>
-        </tr>
-      `;
-      return;
-    }
-
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const tr = document.createElement("tr");
-
-      const roleBadge = {
-        superadmin: 'badge-superadmin',
-        admin: 'badge-admin',
-        member: 'badge-member'
-      };
-
-      // Kiểm tra có được nhận thông báo không
-      const canReceiveNotification = data.canReceiveNotification !== false; // default true
-
-      tr.innerHTML = `
-        <td><strong>${doc.id}</strong></td>
-        <td>${data.email}</td>
-        <td><span class="badge ${roleBadge[data.role] || 'badge-member'}">${data.role}</span></td>
-        <td>${data.department || '—'}</td>
-        <td>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
-            <input type="checkbox" 
-                   class="notification-toggle" 
-                   data-id="${doc.id}"
-                   ${canReceiveNotification ? 'checked' : ''}
-                   onchange="toggleNotification('${doc.id}', this.checked)">
-            <span style="font-size:12px;color:var(--gray-500);">
-              ${canReceiveNotification ? 'Có' : 'Không'}
-            </span>
-          </label>
-        </td>
-        <td>${data.note || '—'}</td>
-        <td>
-          <button class="btn btn-ghost btn-sm" onclick="editAccount('${doc.id}')" title="Sửa">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn btn-danger btn-sm" onclick="deleteAccount('${doc.id}')" title="Xóa">
-            <i class="fas fa-trash"></i>
-          </button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
+    allAccounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    selectedIds.clear();
+    applyFilters();
   } catch (err) {
     console.error("Lỗi load accounts:", err);
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" style="text-align:center;padding:40px;color:var(--error);">
+        <td colspan="8" style="text-align:center;padding:40px;color:var(--error);">
           <i class="fas fa-exclamation-triangle" style="font-size:24px;display:block;margin-bottom:8px;"></i>
           Không thể tải danh sách tài khoản!
         </td>
       </tr>
     `;
+  }
+}
+
+// ===== Tìm kiếm + Bộ lọc =====
+function applyFilters() {
+  const searchText = (document.getElementById("search-input")?.value || "").trim().toLowerCase();
+  const roleFilter = document.getElementById("filter-role")?.value || "";
+  const deptFilter = document.getElementById("filter-department")?.value || "";
+  const notiFilter = document.getElementById("filter-notification")?.value || "";
+
+  const filtered = allAccounts.filter(acc => {
+    if (searchText) {
+      const haystack = `${acc.id || ""} ${acc.email || ""}`.toLowerCase();
+      if (!haystack.includes(searchText)) return false;
+    }
+    if (roleFilter && acc.role !== roleFilter) return false;
+    if (deptFilter && acc.department !== deptFilter) return false;
+    if (notiFilter) {
+      const canReceive = acc.canReceiveNotification !== false;
+      if (notiFilter === "yes" && !canReceive) return false;
+      if (notiFilter === "no" && canReceive) return false;
+    }
+    return true;
+  });
+
+  renderAccountsTable(filtered);
+}
+
+function resetFilters() {
+  document.getElementById("search-input").value = "";
+  document.getElementById("filter-role").value = "";
+  document.getElementById("filter-department").value = "";
+  document.getElementById("filter-notification").value = "";
+  applyFilters();
+}
+
+// ===== Render bảng (theo danh sách đã lọc) =====
+function renderAccountsTable(list) {
+  const tbody = document.getElementById("accounts-table-body");
+
+  if (list.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align:center;padding:40px;color:var(--gray-400);">
+          <i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+          Không tìm thấy tài khoản nào phù hợp
+        </td>
+      </tr>
+    `;
+    updateSelectAllState([]);
+    updateBulkBar();
+    return;
+  }
+
+  const roleBadge = {
+    superadmin: 'badge-superadmin',
+    admin: 'badge-admin',
+    member: 'badge-member'
+  };
+
+  tbody.innerHTML = "";
+  list.forEach(data => {
+    const tr = document.createElement("tr");
+
+    // Kiểm tra có được nhận thông báo không
+    const canReceiveNotification = data.canReceiveNotification !== false; // default true
+    const isChecked = selectedIds.has(data.id);
+
+    tr.innerHTML = `
+      <td><input type="checkbox" class="row-checkbox" data-id="${data.id}" ${isChecked ? 'checked' : ''} onchange="toggleSelectRow('${data.id}', this.checked)"></td>
+      <td><strong>${data.id}</strong></td>
+      <td>${data.email}</td>
+      <td><span class="badge ${roleBadge[data.role] || 'badge-member'}">${data.role}</span></td>
+      <td>${data.department || '—'}</td>
+      <td>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" 
+                 class="notification-toggle" 
+                 data-id="${data.id}"
+                 ${canReceiveNotification ? 'checked' : ''}
+                 onchange="toggleNotification('${data.id}', this.checked)">
+          <span style="font-size:12px;color:var(--gray-500);">
+            ${canReceiveNotification ? 'Có' : 'Không'}
+          </span>
+        </label>
+      </td>
+      <td>${data.note || '—'}</td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="editAccount('${data.id}')" title="Sửa">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="deleteAccount('${data.id}')" title="Xóa">
+          <i class="fas fa-trash"></i>
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  updateSelectAllState(list);
+  updateBulkBar();
+}
+
+// ===== Chọn nhiều =====
+function toggleSelectRow(id, checked) {
+  if (checked) selectedIds.add(id);
+  else selectedIds.delete(id);
+
+  const idsOnScreen = Array.from(document.querySelectorAll('.row-checkbox')).map(cb => ({ id: cb.dataset.id }));
+  updateSelectAllState(idsOnScreen);
+  updateBulkBar();
+}
+
+function toggleSelectAll(checked) {
+  const checkboxes = document.querySelectorAll('.row-checkbox');
+  checkboxes.forEach(cb => {
+    cb.checked = checked;
+    if (checked) selectedIds.add(cb.dataset.id);
+    else selectedIds.delete(cb.dataset.id);
+  });
+  updateBulkBar();
+}
+
+function clearSelection() {
+  selectedIds.clear();
+  document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+  const selectAll = document.getElementById("select-all-checkbox");
+  if (selectAll) { selectAll.checked = false; selectAll.indeterminate = false; }
+  updateBulkBar();
+}
+
+function updateSelectAllState(list) {
+  const selectAll = document.getElementById("select-all-checkbox");
+  if (!selectAll) return;
+  const idsOnScreen = list.map(item => item.id);
+  const allChecked = idsOnScreen.length > 0 && idsOnScreen.every(id => selectedIds.has(id));
+  const anyChecked = idsOnScreen.some(id => selectedIds.has(id));
+  selectAll.checked = allChecked;
+  selectAll.indeterminate = !allChecked && anyChecked;
+}
+
+function updateBulkBar() {
+  const bar = document.getElementById("bulk-bar");
+  const countEl = document.getElementById("bulk-count");
+  if (!bar || !countEl) return;
+  if (selectedIds.size > 0) {
+    bar.style.display = "flex";
+    countEl.textContent = `${selectedIds.size} đã chọn`;
+  } else {
+    bar.style.display = "none";
+  }
+}
+
+async function bulkDeleteAccounts() {
+  if (selectedIds.size === 0) return;
+  if (!confirm(`Bạn có chắc muốn xóa ${selectedIds.size} tài khoản đã chọn?`)) return;
+
+  try {
+    await Promise.all(Array.from(selectedIds).map(id => db.collection("account").doc(id).delete()));
+  } catch (err) {
+    console.error("Lỗi khi xóa hàng loạt:", err);
+    alert("Không thể xóa một số tài khoản!");
+  } finally {
+    selectedIds.clear();
+    loadAccounts();
+  }
+}
+
+// ===== Bulk: đổi role =====
+async function bulkChangeRole() {
+  const role = document.getElementById("bulk-role-select").value;
+  if (!role) { alert("Vui lòng chọn role muốn áp dụng!"); return; }
+  if (selectedIds.size === 0) return;
+  if (!confirm(`Đổi role thành "${role}" cho ${selectedIds.size} tài khoản đã chọn?`)) return;
+
+  try {
+    const batch = db.batch();
+    selectedIds.forEach(id => batch.update(db.collection("account").doc(id), { role }));
+    await batch.commit();
+    selectedIds.forEach(id => {
+      const acc = allAccounts.find(a => a.id === id);
+      if (acc) acc.role = role;
+    });
+    document.getElementById("bulk-role-select").value = "";
+    applyFilters();
+  } catch (err) {
+    console.error("Lỗi đổi role hàng loạt:", err);
+    alert("Không thể đổi role cho một số tài khoản!");
+    loadAccounts();
+  }
+}
+
+// ===== Bulk: đổi ban =====
+async function bulkChangeDepartment() {
+  const department = document.getElementById("bulk-department-select").value;
+  if (!department) { alert("Vui lòng chọn ban muốn áp dụng!"); return; }
+  if (selectedIds.size === 0) return;
+  if (!confirm(`Đổi ban thành "${department}" cho ${selectedIds.size} tài khoản đã chọn?`)) return;
+
+  try {
+    const batch = db.batch();
+    selectedIds.forEach(id => batch.update(db.collection("account").doc(id), { department }));
+    await batch.commit();
+    selectedIds.forEach(id => {
+      const acc = allAccounts.find(a => a.id === id);
+      if (acc) acc.department = department;
+    });
+    document.getElementById("bulk-department-select").value = "";
+    applyFilters();
+  } catch (err) {
+    console.error("Lỗi đổi ban hàng loạt:", err);
+    alert("Không thể đổi ban cho một số tài khoản!");
+    loadAccounts();
+  }
+}
+
+// ===== Bulk: bật/tắt thông báo =====
+async function bulkToggleNotification(enabled) {
+  if (selectedIds.size === 0) return;
+  if (!confirm(`${enabled ? 'Bật' : 'Tắt'} thông báo cho ${selectedIds.size} tài khoản đã chọn?`)) return;
+
+  try {
+    const batch = db.batch();
+    selectedIds.forEach(id => batch.update(db.collection("account").doc(id), { canReceiveNotification: enabled }));
+    await batch.commit();
+    selectedIds.forEach(id => {
+      const acc = allAccounts.find(a => a.id === id);
+      if (acc) acc.canReceiveNotification = enabled;
+    });
+    applyFilters();
+  } catch (err) {
+    console.error("Lỗi cập nhật thông báo hàng loạt:", err);
+    alert("Không thể cập nhật thông báo cho một số tài khoản!");
+    loadAccounts();
   }
 }
 
@@ -547,9 +859,13 @@ async function toggleNotification(id, checked) {
     await db.collection("account").doc(id).update({
       canReceiveNotification: checked
     });
-    
+
+    // Cập nhật dữ liệu trong bộ nhớ để bộ lọc luôn đúng
+    const acc = allAccounts.find(a => a.id === id);
+    if (acc) acc.canReceiveNotification = checked;
+
     // Cập nhật label
-    const row = document.querySelector(`input[data-id="${id}"]`).closest('tr');
+    const row = document.querySelector(`input.notification-toggle[data-id="${id}"]`).closest('tr');
     const label = row.querySelector('label span');
     label.textContent = checked ? 'Có' : 'Không';
     
@@ -558,7 +874,7 @@ async function toggleNotification(id, checked) {
     console.error("Lỗi cập nhật nhận thông báo:", err);
     alert("Không thể cập nhật!");
     // Revert checkbox
-    const checkbox = document.querySelector(`input[data-id="${id}"]`);
+    const checkbox = document.querySelector(`input.notification-toggle[data-id="${id}"]`);
     checkbox.checked = !checked;
   }
 }

@@ -578,7 +578,6 @@ select:focus, input:focus {
 .detail-sidebar .evaluation-section {
   position: sticky;
   top: 84px;
-  align-self: start;
 }
 
 @media (max-width: 900px) {
@@ -864,6 +863,8 @@ footer {
   color: var(--ink);
   border-left: 3px solid var(--ink-30);
 }
+
+.eval-box .eval-notes.eval-notes-empty { color: var(--ink-30); font-style: italic; }
 
 .eval-box .eval-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
 
@@ -1626,9 +1627,8 @@ function renderEvaluationSection(application, container) {
                 <span><span class="label">Người đánh giá</span> ${dept.by || '—'}</span>
                 <span><span class="label">Thời gian</span> ${dept.at ? formatDateValue(dept.at) : '—'}</span>
             </div>
-            ${dept.notes ? `<div class="eval-notes">${dept.notes}</div>` : ''}
+            <div class="eval-notes${dept.notes ? '' : ' eval-notes-empty'}">${dept.notes || 'Chưa có ghi chú'}</div>
             ${actionsHTML ? `<div class="eval-actions">${actionsHTML}</div>` : ''}
-            ${dept.by ? `<div class="eval-by"><i class="fas fa-user-check" style="font-size:11px;"></i> Đánh giá bởi ${dept.by}</div>` : ''}
         `;
         
         grid.appendChild(box);
@@ -2561,7 +2561,7 @@ function renderApplications() {
     }
   });
 
-  renderStats(filteredApplications);
+  renderStats(applications);
 
   // Clear list (không xóa #no-applications vì nó ở ngoài)
   applicationsList.innerHTML = "";
@@ -3638,7 +3638,7 @@ function renderInterviewSchedule(application, container) {
 
 // Ẩn view chi tiết
 function hideDetailView() {
-  document.getElementById("applications-list").style.display = "block";
+  document.getElementById("applications-list").style.display = "flex";
   document.getElementById("application-detail").style.display = "none";
   const statsSection = document.getElementById("stats-section");
   if (statsSection) statsSection.style.display = "";
