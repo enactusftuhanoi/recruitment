@@ -165,6 +165,19 @@ label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transfor
 .doc-item a:hover{text-decoration:underline}
 
 .empty-state{text-align:center;padding:44px 20px;color:var(--ink-30)}
+
+/* CHECK / DIAGNOSTICS */
+.check-group{margin-bottom:18px}
+.check-group:last-child{margin-bottom:0}
+.check-group-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-60);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:6px;font-size:13px}
+.check-item:last-child{margin-bottom:0}
+.check-item i{margin-top:2px;flex-shrink:0}
+.check-item.error{background:var(--error-bg);border-color:#F8C9C9;color:#9c1c1c}
+.check-item.warn{background:var(--warn-bg);border-color:#FBE3AE;color:#8a5b06}
+.check-item.info{background:var(--info-bg);border-color:#D6E0FF;color:#2e4bbd}
+.check-item.ok{background:var(--success-bg);border-color:#A7EED0;color:#0d6b48}
+.check-item b{font-weight:800}
 .empty-state i{font-size:36px;margin-bottom:10px;display:block;opacity:.5}
 
 /* Modal */
@@ -276,6 +289,7 @@ label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transfor
     <div class="tab active" data-tab="teams"><i class="fas fa-users"></i> Chia &amp; Quản lý Team</div>
     <div class="tab" data-tab="docs"><i class="fas fa-folder-open"></i> Tài liệu &amp; Nộp bài</div>
     <div class="tab" data-tab="pitching"><i class="fas fa-microphone"></i> Pitching Day</div>
+    <div class="tab" data-tab="check"><i class="fas fa-stethoscope"></i> Kiểm tra hệ thống</div>
   </div>
 
   <!-- TAB: TEAMS -->
@@ -300,13 +314,21 @@ label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transfor
 
     <div class="card">
       <div class="card-title"><span class="dot"></span> Deadline &amp; Yêu cầu nộp bài
-        <button class="btn sm" style="margin-left:auto;" id="edit-deadline-btn"><i class="fas fa-clock"></i> Chỉnh deadline</button>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:16px;">
+          <label id="submission-open-wrap" style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--ink-60);text-transform:none;letter-spacing:0;cursor:pointer;">
+            <span class="toggle-switch"><input type="checkbox" id="submission-open-toggle"><span class="toggle-slider"></span></span>
+            <span id="submission-open-label">Cho phép nộp bài</span>
+          </label>
+          <button class="btn sm" id="edit-deadline-btn"><i class="fas fa-clock"></i> Chỉnh deadline</button>
+        </div>
       </div>
       <div id="deadline-info"></div>
     </div>
 
     <div class="card">
-      <div class="card-title"><span class="dot"></span> Nộp bài của các team</div>
+      <div class="card-title"><span class="dot"></span> Nộp bài của các team
+        <button class="btn sm danger" style="margin-left:auto;" id="reset-submissions-btn" title="Xoá toàn bộ bài nộp của tất cả team (giữ nguyên team)"><i class="fas fa-rotate-left"></i> Xoá tất cả bài nộp</button>
+      </div>
       <div id="submissions-list"></div>
     </div>
   </div>
@@ -315,12 +337,20 @@ label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transfor
   <div class="tab-content" id="pitching-content">
     <div class="card">
       <div class="card-title"><span class="dot"></span> Thời gian &amp; Địa điểm chung
-        <button class="btn sm" style="margin-left:auto;" id="edit-pitching-info-btn"><i class="fas fa-pen"></i> Chỉnh sửa</button>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:16px;">
+          <label id="pitching-open-wrap" style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--ink-60);text-transform:none;letter-spacing:0;cursor:pointer;">
+            <span class="toggle-switch"><input type="checkbox" id="pitching-open-toggle"><span class="toggle-slider"></span></span>
+            <span id="pitching-open-label">Cho phép xác nhận</span>
+          </label>
+          <button class="btn sm" id="edit-pitching-info-btn"><i class="fas fa-pen"></i> Chỉnh sửa</button>
+        </div>
       </div>
       <div id="pitching-info"></div>
     </div>
     <div class="card">
-      <div class="card-title"><span class="dot"></span> Thống kê xác nhận tham gia (theo từng cá nhân)</div>
+      <div class="card-title"><span class="dot"></span> Thống kê xác nhận tham gia (theo từng cá nhân)
+        <button class="btn sm danger" style="margin-left:auto;" id="reset-pitching-btn" title="Xoá xác nhận tham gia của toàn bộ thành viên (giữ nguyên thứ tự pitching)"><i class="fas fa-rotate-left"></i> Reset xác nhận</button>
+      </div>
       <div id="pitching-stats" class="stats-summary"></div>
       <div id="pitching-absent-list" style="margin-top:14px;"></div>
     </div>
@@ -331,6 +361,20 @@ label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transfor
         <tbody id="pitching-tbody"></tbody>
       </table>
       <div id="pitching-empty" class="empty-state" style="display:none;"><i class="fas fa-microphone"></i>Chưa có team nào.</div>
+    </div>
+  </div>
+
+  <!-- TAB: KIỂM TRA HỆ THỐNG -->
+  <div class="tab-content" id="check-content">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span> Kiểm tra dữ liệu &amp; cấu hình
+        <button class="btn sm primary" style="margin-left:auto;" id="run-check-btn"><i class="fas fa-stethoscope"></i> Chạy kiểm tra</button>
+      </div>
+      <p style="font-size:12.5px;color:var(--ink-60);margin-bottom:14px;">
+        Rà soát dữ liệu team, ứng viên, bài nộp, Pitching Day và cấu hình hiện tại để phát hiện các bất thường (dữ liệu lệch, thiếu, trùng...). Chỉ đọc dữ liệu, không tự sửa gì cả.
+      </p>
+      <div id="check-summary" class="stats-summary" style="margin-bottom:16px;display:none;"></div>
+      <div id="check-results"></div>
     </div>
   </div>
 </div>
@@ -406,7 +450,7 @@ label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transfor
       <div><label class="f-label">Hạn nộp bài</label><input type="datetime-local" id="dl-datetime" /></div>
       <div><label class="f-label">Yêu cầu nộp bài</label><textarea id="dl-note" placeholder="VD: Nộp pitch deck (PDF) + video demo tối đa 3 phút"></textarea></div>
     </div>
-    <div class="modal-foot"><button class="btn" data-close="deadline-modal">Huỷ</button><button class="btn primary" id="dl-save-btn"><i class="fas fa-check"></i> Lưu</button></div>
+    <div class="modal-foot"><button class="btn" data-close="deadline-modal">Huỷ</button><button class="btn danger" id="dl-clear-btn"><i class="fas fa-eraser"></i> Xoá</button><button class="btn primary" id="dl-save-btn"><i class="fas fa-check"></i> Lưu</button></div>
   </div>
 </div>
 
@@ -438,7 +482,7 @@ label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transfor
       <div><label class="f-label">Ngày &amp; giờ</label><input type="datetime-local" id="pinfo-datetime" /></div>
       <div><label class="f-label">Địa điểm</label><input id="pinfo-location" placeholder="VD: Hội trường D201 - Trụ sở FTU" /></div>
     </div>
-    <div class="modal-foot"><button class="btn" data-close="pinfo-modal">Huỷ</button><button class="btn primary" id="pinfo-save-btn"><i class="fas fa-check"></i> Lưu</button></div>
+    <div class="modal-foot"><button class="btn" data-close="pinfo-modal">Huỷ</button><button class="btn danger" id="pinfo-clear-btn"><i class="fas fa-eraser"></i> Xoá</button><button class="btn primary" id="pinfo-save-btn"><i class="fas fa-check"></i> Lưu</button></div>
   </div>
 </div>
 
@@ -526,12 +570,25 @@ document.querySelectorAll(".modal-overlay").forEach((ov) => ov.addEventListener(
 const TEAMS_COL = "teamwork_teams";
 const SETTINGS_DOC = db.collection("teamwork_settings").doc("main");
 const SUBMISSIONS_COL = "teamwork_submissions";
+const AUDIT_COL = "teamwork_audit_log";
+
+async function logAudit(action, detail) {
+  try {
+    const actorName = (allAccounts.find((a) => a.email === userEmail) || {}).id || userEmail || "unknown";
+    await db.collection(AUDIT_COL).add({
+      action, detail,
+      actorEmail: userEmail || "",
+      actorName,
+      at: new Date().toISOString(),
+    });
+  } catch (e) { console.error("Audit log lỗi:", e); }
+}
 
 let teams = [];
 let candidates = []; // ứng viên đã pass vòng 2 / đang ở vòng 3, chưa gán vào team nào (id, name, email, dept)
 let allApplications = []; // toàn bộ applications (dùng cho thuật toán chia team tự động)
 let allAccounts = []; // nhân sự CLB { id(=fullname), email, role, department }
-let settings = { documents: [], submissionDeadline: null, submissionNote: "", pitchingDatetime: "", pitchingLocation: "" };
+let settings = { documents: [], submissionDeadline: null, submissionNote: "", pitchingDatetime: "", pitchingLocation: "", submissionOpen: true, pitchingConfirmOpen: true };
 let submissions = {}; // teamId -> submission
 
 async function loadAll() {
@@ -562,7 +619,7 @@ async function loadAll() {
   allAccounts = accSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
   const setData = setSnap.exists ? setSnap.data() : {};
-  settings = { documents: [], submissionDeadline: null, submissionNote: "", pitchingDatetime: "", pitchingLocation: "", ...setData };
+  settings = { documents: [], submissionDeadline: null, submissionNote: "", pitchingDatetime: "", pitchingLocation: "", submissionOpen: true, pitchingConfirmOpen: true, ...setData };
 
   submissions = {};
   subSnap.forEach((d) => (submissions[d.id] = d.data()));
@@ -1213,7 +1270,9 @@ document.getElementById("reset-teams-btn").addEventListener("click", async () =>
     await commitInChunks(ops);
 
     Swal.close();
-    notifySuccess(`Đã reset xong: xoá ${teams.length} team, ${subSnap.size} bài nộp, đưa hết ứng viên về pool.`);
+    const teamCountBefore = teams.length;
+    await logAudit("reset_all", `Reset TOÀN BỘ dữ liệu Teamwork: xoá ${teamCountBefore} team, ${subSnap.size} bài nộp.`);
+    notifySuccess(`Đã reset xong: xoá ${teamCountBefore} team, ${subSnap.size} bài nộp, đưa hết ứng viên về pool.`);
     await loadAll();
     renderEverything();
   } catch (e) {
@@ -1317,23 +1376,88 @@ function renderDocsTab() {
   dl.innerHTML = `
     <p style="font-size:13px;"><b>Hạn nộp bài:</b> ${settings.submissionDeadline ? new Date(settings.submissionDeadline).toLocaleString("vi-VN") : "Chưa đặt"}</p>
     ${settings.submissionNote ? `<p style="font-size:13px;margin-top:6px;color:var(--ink-60);"><b>Yêu cầu:</b> ${settings.submissionNote}</p>` : ""}
+    ${settings.submissionOpen === false ? `<p style="font-size:12.5px;margin-top:8px;color:var(--error);font-weight:700;"><i class="fas fa-lock"></i> Đang tạm đóng nộp bài — các team sẽ không thể nộp/nộp lại.</p>` : ""}
   `;
   document.getElementById("edit-deadline-btn").style.display = isSuperOrAdmin() ? "inline-flex" : "none";
 
+  const subOpenToggle = document.getElementById("submission-open-toggle");
+  subOpenToggle.checked = settings.submissionOpen !== false;
+  subOpenToggle.disabled = !isSuperOrAdmin();
+  document.getElementById("submission-open-label").textContent = settings.submissionOpen === false ? "Đang đóng nộp bài" : "Cho phép nộp bài";
+  document.getElementById("reset-submissions-btn").style.display = isSuperOrAdmin() ? "inline-flex" : "none";
+
   const subList = document.getElementById("submissions-list");
+  const submissionOpen = settings.submissionOpen !== false;
   subList.innerHTML = teams.length ? teams.map((t) => {
     const s = submissions[t.id];
-    const canSub = canSubmitFor(t);
+    const canSub = canSubmitFor(t) && submissionOpen;
+    const canReset = isSuperOrAdmin() && s;
     return `
     <div class="sub-item">
       <div>
         <b>${t.name}</b> ${statusBadge(submissionStatus(t.id))}
         ${s ? `<div style="font-size:12px;color:var(--ink-60);margin-top:4px;">${s.type === "link" ? `<a href="${s.content}" target="_blank" rel="noopener">${s.content}</a>` : s.content}${s.note ? " • " + s.note : ""}<br>Nộp lúc ${new Date(s.submittedAt).toLocaleString("vi-VN")} bởi ${s.submittedBy || ""}</div>` : `<div style="font-size:12px;color:var(--ink-30);margin-top:4px;">Chưa nộp bài</div>`}
       </div>
-      ${canSub ? `<button class="btn sm primary" onclick="openSubmitModal('${t.id}')"><i class="fas fa-upload"></i> ${s ? "Nộp lại" : "Nộp bài"}</button>` : ""}
+      <div style="display:flex;gap:8px;flex-shrink:0;">
+        ${canSub ? `<button class="btn sm primary" onclick="openSubmitModal('${t.id}')"><i class="fas fa-upload"></i> ${s ? "Nộp lại" : "Nộp bài"}</button>` : ""}
+        ${canReset ? `<button class="btn sm danger" onclick="resetSubmission('${t.id}', '${t.name.replace(/'/g, "\\'")}')" title="Xoá bài nộp của team này"><i class="fas fa-trash"></i></button>` : ""}
+      </div>
     </div>`;
   }).join("") : `<div class="empty-state"><i class="fas fa-inbox"></i>Chưa có team nào.</div>`;
 }
+
+document.getElementById("submission-open-toggle").addEventListener("change", async (e) => {
+  const val = e.target.checked;
+  try {
+    await SETTINGS_DOC.set({ submissionOpen: val }, { merge: true });
+    await logAudit(val ? "open_submission" : "close_submission", val ? "Mở nộp bài cho các team" : "Đóng nộp bài");
+    notifySuccess(val ? "Đã mở nộp bài cho các team" : "Đã đóng nộp bài");
+    await loadAll(); renderDocsTab(); renderTeamsGrid();
+  } catch (err) {
+    e.target.checked = !val;
+    notifyError("Lỗi: " + err.message);
+  }
+});
+
+window.resetSubmission = async (teamId, teamName) => {
+  const ok = await confirmDialog(`Xoá bài nộp của team "${teamName}"? Team sẽ cần nộp lại từ đầu.`, { title: "Xoá bài nộp?", confirmText: "Xoá" });
+  if (!ok) return;
+  try {
+    await db.collection(SUBMISSIONS_COL).doc(teamId).delete();
+    await logAudit("delete_submission", `Xoá bài nộp của team "${teamName}" (${teamId})`);
+    notifySuccess(`Đã xoá bài nộp của ${teamName}`);
+    await loadAll(); renderDocsTab(); renderTeamsGrid();
+  } catch (e) { notifyError("Lỗi: " + e.message); }
+};
+
+document.getElementById("reset-submissions-btn").addEventListener("click", async () => {
+  const { value: typed } = await Swal.fire({
+    title: "Xoá toàn bộ bài nộp?",
+    html: `<div style="text-align:left"><p>Sẽ xoá bài nộp của <b>tất cả team</b> (${Object.keys(submissions).length} bài đã nộp). Team và các dữ liệu khác giữ nguyên.</p><p>Gõ <b>XOA</b> để xác nhận:</p></div>`,
+    icon: "warning", input: "text", inputPlaceholder: "XOA",
+    showCancelButton: true, confirmButtonText: "Xoá hết", cancelButtonText: "Huỷ",
+    confirmButtonColor: "#c0392b", cancelButtonColor: "#6b7280", reverseButtons: true, focusCancel: true,
+    preConfirm: (val) => {
+      if ((val || "").trim().toUpperCase() !== "XOA") { Swal.showValidationMessage('Bạn cần gõ đúng "XOA" để xác nhận'); return false; }
+      return val;
+    },
+  });
+  if (!typed) return;
+  Swal.fire({ title: "Đang xoá bài nộp...", allowOutsideClick: false, allowEscapeKey: false, didOpen: () => Swal.showLoading() });
+  try {
+    const subSnap = await db.collection(SUBMISSIONS_COL).get();
+    const batch = db.batch();
+    subSnap.docs.forEach((d) => batch.delete(d.ref));
+    await batch.commit();
+    Swal.close();
+    await logAudit("reset_all_submissions", `Xoá toàn bộ ${subSnap.size} bài nộp.`);
+    notifySuccess(`Đã xoá ${subSnap.size} bài nộp.`);
+    await loadAll(); renderDocsTab(); renderTeamsGrid();
+  } catch (e) {
+    Swal.close();
+    notifyError("Lỗi khi xoá: " + e.message);
+  }
+});
 
 function openDocModal() {
   document.getElementById("doc-title").value = "";
@@ -1365,9 +1489,23 @@ document.getElementById("edit-deadline-btn").addEventListener("click", () => {
 });
 document.getElementById("dl-save-btn").addEventListener("click", async () => {
   const val = document.getElementById("dl-datetime").value;
-  if (!val) return notifyError("Vui lòng chọn thời gian");
-  await SETTINGS_DOC.set({ submissionDeadline: new Date(val).toISOString(), submissionNote: document.getElementById("dl-note").value.trim() }, { merge: true });
-  notifySuccess("Đã lưu deadline chung");
+  await SETTINGS_DOC.set({
+    submissionDeadline: val ? new Date(val).toISOString() : null,
+    submissionNote: document.getElementById("dl-note").value.trim(),
+  }, { merge: true });
+  await logAudit(val ? "edit_deadline" : "clear_deadline", val ? `Đặt deadline nộp bài: ${new Date(val).toLocaleString("vi-VN")}` : "Xoá deadline nộp bài (đặt về trống)");
+  notifySuccess(val ? "Đã lưu deadline chung" : "Đã xoá deadline (mục nộp bài sẽ ẩn khỏi trang cá nhân)");
+  closeModal("deadline-modal");
+  await loadAll(); renderDocsTab(); renderTeamsGrid();
+});
+document.getElementById("dl-clear-btn").addEventListener("click", async () => {
+  const ok = await confirmDialog("Xoá deadline nộp bài về trống? Mục nộp bài sẽ ẩn khỏi trang cá nhân của sinh viên cho tới khi bạn đặt deadline mới.", { title: "Xoá deadline?", confirmText: "Xoá" });
+  if (!ok) return;
+  document.getElementById("dl-datetime").value = "";
+  document.getElementById("dl-note").value = "";
+  await SETTINGS_DOC.set({ submissionDeadline: null, submissionNote: "" }, { merge: true });
+  await logAudit("clear_deadline", "Xoá deadline nộp bài (đặt về trống)");
+  notifySuccess("Đã xoá deadline nộp bài");
   closeModal("deadline-modal");
   await loadAll(); renderDocsTab(); renderTeamsGrid();
 });
@@ -1459,8 +1597,15 @@ function renderPitchingTab() {
   document.getElementById("pitching-info").innerHTML = `
     <p style="font-size:13px;"><b>Thời gian:</b> ${settings.pitchingDatetime ? new Date(settings.pitchingDatetime).toLocaleString("vi-VN") : "Chưa đặt"}</p>
     <p style="font-size:13px;margin-top:6px;"><b>Địa điểm:</b> ${settings.pitchingLocation || "Chưa đặt"}</p>
+    ${settings.pitchingConfirmOpen === false ? `<p style="font-size:12.5px;margin-top:8px;color:var(--error);font-weight:700;"><i class="fas fa-lock"></i> Đang tạm đóng xác nhận — thành viên chưa xác nhận sẽ không thấy nút xác nhận.</p>` : ""}
   `;
   document.getElementById("edit-pitching-info-btn").style.display = isSuperOrAdmin() ? "inline-flex" : "none";
+
+  const pitchOpenToggle = document.getElementById("pitching-open-toggle");
+  pitchOpenToggle.checked = settings.pitchingConfirmOpen !== false;
+  pitchOpenToggle.disabled = !isSuperOrAdmin();
+  document.getElementById("pitching-open-label").textContent = settings.pitchingConfirmOpen === false ? "Đang đóng xác nhận" : "Cho phép xác nhận";
+  document.getElementById("reset-pitching-btn").style.display = isSuperOrAdmin() ? "inline-flex" : "none";
 
   // ---- Thống kê theo từng cá nhân (không phải theo team) ----
   let totalMembers = 0, yesCount = 0, noCount = 0, pendingCount = 0;
@@ -1538,10 +1683,212 @@ document.getElementById("edit-pitching-info-btn").addEventListener("click", () =
 });
 document.getElementById("pinfo-save-btn").addEventListener("click", async () => {
   const val = document.getElementById("pinfo-datetime").value;
-  await SETTINGS_DOC.set({ pitchingDatetime: val ? new Date(val).toISOString() : "", pitchingLocation: document.getElementById("pinfo-location").value.trim() }, { merge: true });
+  const loc = document.getElementById("pinfo-location").value.trim();
+  await SETTINGS_DOC.set({ pitchingDatetime: val ? new Date(val).toISOString() : null, pitchingLocation: loc || null }, { merge: true });
+  await logAudit(val || loc ? "edit_pitching_info" : "clear_pitching_info", `Đặt thời gian/địa điểm Pitching Day: ${val ? new Date(val).toLocaleString("vi-VN") : "(trống)"} — ${loc || "(trống)"}`);
   notifySuccess("Đã lưu thời gian & địa điểm Pitching Day");
   closeModal("pinfo-modal");
   await loadAll(); renderPitchingTab();
+});
+document.getElementById("pinfo-clear-btn").addEventListener("click", async () => {
+  const ok = await confirmDialog("Xoá thời gian & địa điểm Pitching Day về trống? Mục Pitching Day sẽ ẩn khỏi trang cá nhân của sinh viên cho tới khi bạn đặt lại.", { title: "Xoá thông tin Pitching Day?", confirmText: "Xoá" });
+  if (!ok) return;
+  document.getElementById("pinfo-datetime").value = "";
+  document.getElementById("pinfo-location").value = "";
+  await SETTINGS_DOC.set({ pitchingDatetime: null, pitchingLocation: null }, { merge: true });
+  await logAudit("clear_pitching_info", "Xoá thời gian & địa điểm Pitching Day (đặt về trống)");
+  notifySuccess("Đã xoá thời gian & địa điểm Pitching Day");
+  closeModal("pinfo-modal");
+  await loadAll(); renderPitchingTab();
+});
+
+document.getElementById("pitching-open-toggle").addEventListener("change", async (e) => {
+  const val = e.target.checked;
+  try {
+    await SETTINGS_DOC.set({ pitchingConfirmOpen: val }, { merge: true });
+    notifySuccess(val ? "Đã mở xác nhận Pitching Day" : "Đã đóng xác nhận Pitching Day");
+    await loadAll(); renderPitchingTab();
+  } catch (err) {
+    e.target.checked = !val;
+    notifyError("Lỗi: " + err.message);
+  }
+});
+
+document.getElementById("reset-pitching-btn").addEventListener("click", async () => {
+  const totalConfirmed = teams.reduce((sum, t) => sum + (t.members || []).filter((m) => m.pitchingConfirm === "yes" || m.pitchingConfirm === "no").length, 0);
+  const ok = await confirmDialog(`Xoá xác nhận tham gia Pitching Day của toàn bộ ${totalConfirmed} thành viên đã xác nhận? Thứ tự pitching của team vẫn được giữ nguyên.`, { title: "Reset xác nhận Pitching Day?", confirmText: "Reset" });
+  if (!ok) return;
+  Swal.fire({ title: "Đang reset xác nhận...", allowOutsideClick: false, allowEscapeKey: false, didOpen: () => Swal.showLoading() });
+  try {
+    const batch = db.batch();
+    teams.forEach((t) => {
+      const newMembers = (t.members || []).map((m) => {
+        const { pitchingConfirm, pitchingReason, ...rest } = m;
+        return rest;
+      });
+      batch.update(db.collection(TEAMS_COL).doc(t.id), { members: newMembers });
+    });
+    await batch.commit();
+    Swal.close();
+    notifySuccess(`Đã reset xác nhận Pitching Day của ${totalConfirmed} thành viên.`);
+    await loadAll(); renderPitchingTab(); renderTeamsGrid();
+  } catch (e) {
+    Swal.close();
+    notifyError("Lỗi khi reset: " + e.message);
+  }
+});
+
+/* ============================= TAB: KIỂM TRA HỆ THỐNG ============================= */
+function runSystemCheck() {
+  const issues = []; // { level: 'error'|'warn'|'info', group, text }
+  const add = (level, group, text) => issues.push({ level, group, text });
+
+  const teamIds = new Set(teams.map((t) => t.id));
+  const teamNameCount = {};
+  const memberOwner = {}; // memberId -> teamId đầu tiên gặp
+
+  // ---- 1) Team ----
+  teams.forEach((t) => {
+    const label = `Team <b>${t.name || t.id}</b>`;
+    teamNameCount[t.name] = (teamNameCount[t.name] || 0) + 1;
+
+    if (!(t.members || []).length) add("warn", "team", `${label} chưa có thành viên nào.`);
+    if (!t.advisor) add("warn", "team", `${label} chưa có advisor.`);
+
+    (t.members || []).forEach((m) => {
+      if (!m.id) { add("error", "team", `${label} có thành viên thiếu ID (dữ liệu lỗi).`); return; }
+      if (!m.email) add("warn", "team", `${label}: thành viên <b>${m.name || m.id}</b> thiếu email.`);
+      if (!m.role) add("warn", "team", `${label}: thành viên <b>${m.name || m.id}</b> chưa có vai trò (leader/subleader/member).`);
+      if (memberOwner[m.id]) add("error", "team", `Ứng viên <b>${m.name || m.id}</b> đang bị gán vào cả 2 team: <b>${memberOwner[m.id]}</b> và <b>${t.name}</b>.`);
+      else memberOwner[m.id] = t.name || t.id;
+
+      const app = allApplications.find((a) => a.id === m.id);
+      if (app && app.round3 && app.round3.team && app.round3.team !== t.id) {
+        add("error", "team", `${label}: hồ sơ của <b>${m.name || m.id}</b> có round3.team = "${app.round3.team}" nhưng đang thực sự nằm trong team "${t.id}" (lệch dữ liệu, thử nút "Fix team cho ứng viên cũ").`);
+      }
+      if (!app) add("warn", "team", `${label}: thành viên <b>${m.name || m.id}</b> không tìm thấy hồ sơ ứng tuyển tương ứng (id "${m.id}" không khớp applications).`);
+    });
+
+    const leaders = (t.members || []).filter((m) => m.role === "leader").length;
+    if ((t.members || []).length > 0 && leaders === 0) add("warn", "team", `${label} chưa có Leader.`);
+    if (leaders > 1) add("warn", "team", `${label} có nhiều hơn 1 Leader (${leaders}).`);
+
+    (t.supporters || []).forEach((s) => {
+      if (!allAccounts.some((a) => a.id === s.id)) add("warn", "team", `${label}: supporter "${s.id}" không có trong danh sách nhân sự CLB (account).`);
+    });
+    if (t.advisor && !allAccounts.some((a) => a.id === t.advisor.id)) {
+      add("warn", "team", `${label}: advisor "${t.advisor.id}" không có trong danh sách nhân sự CLB (account).`);
+    }
+  });
+
+  Object.entries(teamNameCount).forEach(([name, count]) => {
+    if (count > 1) add("error", "team", `Có <b>${count}</b> team trùng tên "${name}".`);
+  });
+
+  // ---- 2) Ứng viên / applications ----
+  allApplications.forEach((a) => {
+    const inRound3Plus = ["round3", "round4", "success"].includes(a.current_round);
+    if (inRound3Plus && a.round3 && a.round3.team && !teamIds.has(a.round3.team)) {
+      add("error", "candidate", `Hồ sơ <b>${a.fullName || a.full_name || a.id}</b> có round3.team = "${a.round3.team}" nhưng team này không còn tồn tại (team đã bị xoá).`);
+    }
+  });
+
+  // ---- 3) Bài nộp (submissions) ----
+  Object.entries(submissions).forEach(([teamId, s]) => {
+    if (!teamIds.has(teamId)) add("warn", "submission", `Có bài nộp mồ côi (team "${teamId}" không còn tồn tại) — dữ liệu thừa, có thể xoá.`);
+    if (s && !s.content) add("warn", "submission", `Bài nộp của team "${teamId}" thiếu nội dung (content rỗng).`);
+    if (s && s.type === "link" && s.content && !/^https?:\/\//i.test(s.content)) {
+      add("warn", "submission", `Bài nộp của team "${teamId}" có link không hợp lệ: "${s.content}".`);
+    }
+  });
+  if (!settings.submissionDeadline && Object.keys(submissions).length > 0) {
+    add("info", "submission", `Đã có ${Object.keys(submissions).length} bài nộp nhưng hiện <b>chưa đặt deadline</b> — sinh viên sẽ không thấy mục nộp bài trên trang cá nhân.`);
+  }
+  if (settings.submissionDeadline && new Date(settings.submissionDeadline) < new Date() && settings.submissionOpen !== false) {
+    add("info", "submission", `Deadline nộp bài đã qua nhưng nộp bài vẫn đang <b>mở</b> — team vẫn nộp trễ được nếu bạn không chủ động đóng lại.`);
+  }
+
+  // ---- 4) Tài liệu chung ----
+  (settings.documents || []).forEach((d, i) => {
+    if (!d.url || !/^https?:\/\//i.test(d.url)) add("warn", "doc", `Tài liệu #${i + 1} "${d.title || "(không tên)"}" có link không hợp lệ: "${d.url || "(trống)"}".`);
+  });
+
+  // ---- 5) Pitching Day ----
+  if ((settings.pitchingDatetime && !settings.pitchingLocation) || (!settings.pitchingDatetime && settings.pitchingLocation)) {
+    add("warn", "pitching", `Pitching Day mới chỉ đặt <b>${settings.pitchingDatetime ? "thời gian" : "địa điểm"}</b>, thiếu ${settings.pitchingDatetime ? "địa điểm" : "thời gian"} — sinh viên sẽ chưa thấy mục Pitching Day trên trang cá nhân cho tới khi đủ cả hai.`);
+  }
+  if (settings.pitchingDatetime && settings.pitchingLocation && new Date(settings.pitchingDatetime) < new Date()) {
+    const pendingCount = teams.reduce((sum, t) => sum + (t.members || []).filter((m) => !m.pitchingConfirm).length, 0);
+    if (pendingCount > 0) add("info", "pitching", `Thời gian Pitching Day đã qua nhưng còn <b>${pendingCount}</b> thành viên chưa xác nhận tham gia.`);
+  }
+  const pitchOrders = teams.map((t) => t.pitchingOrder).filter((o) => o !== null && o !== undefined && o !== "");
+  const dupOrders = pitchOrders.filter((o, i) => pitchOrders.indexOf(o) !== i);
+  if (dupOrders.length) add("warn", "pitching", `Có thứ tự Pitching Day bị trùng: ${[...new Set(dupOrders)].join(", ")}.`);
+  teams.forEach((t) => {
+    (t.members || []).forEach((m) => {
+      if (m.pitchingConfirm === "no" && !m.pitchingReason) add("info", "pitching", `Team <b>${t.name}</b>: <b>${m.name || m.id}</b> báo không tham gia Pitching Day nhưng chưa ghi lý do.`);
+    });
+  });
+
+  // ---- 6) Nhân sự / account ----
+  const emailCount = {};
+  allAccounts.forEach((a) => { if (a.email) emailCount[a.email] = (emailCount[a.email] || 0) + 1; });
+  Object.entries(emailCount).forEach(([email, count]) => { if (count > 1) add("warn", "account", `Email "${email}" bị trùng ở nhiều tài khoản nhân sự.`); });
+
+  return issues;
+}
+
+function renderCheckResults(issues) {
+  const summaryEl = document.getElementById("check-summary");
+  const resultsEl = document.getElementById("check-results");
+
+  const counts = { error: 0, warn: 0, info: 0 };
+  issues.forEach((it) => counts[it.level]++);
+
+  summaryEl.style.display = "grid";
+  summaryEl.innerHTML = `
+    <div class="stat-pill"><div class="stat-num" style="color:${counts.error ? "#dc2626" : "inherit"};">${counts.error}</div><div class="stat-label">Lỗi cần xử lý</div></div>
+    <div class="stat-pill"><div class="stat-num" style="color:${counts.warn ? "#d97706" : "inherit"};">${counts.warn}</div><div class="stat-label">Cảnh báo</div></div>
+    <div class="stat-pill"><div class="stat-num" style="color:${counts.info ? "#4F7CFF" : "inherit"};">${counts.info}</div><div class="stat-label">Lưu ý</div></div>
+    <div class="stat-pill"><div class="stat-num">${teams.length}</div><div class="stat-label">Team đang kiểm tra</div></div>
+  `;
+
+  if (!issues.length) {
+    resultsEl.innerHTML = `<div class="check-item ok"><i class="fas fa-circle-check"></i> Không phát hiện bất thường nào — dữ liệu đang ổn.</div>`;
+    return;
+  }
+
+  const groupLabels = { team: "Team & thành viên", candidate: "Ứng viên / hồ sơ", submission: "Bài nộp", doc: "Tài liệu chung", pitching: "Pitching Day", account: "Nhân sự CLB" };
+  const iconMap = { error: "fa-circle-xmark", warn: "fa-triangle-exclamation", info: "fa-circle-info" };
+  const groups = {};
+  issues.forEach((it) => { (groups[it.group] = groups[it.group] || []).push(it); });
+
+  const levelOrder = { error: 0, warn: 1, info: 2 };
+  resultsEl.innerHTML = Object.entries(groups).map(([group, items]) => {
+    items.sort((a, b) => levelOrder[a.level] - levelOrder[b.level]);
+    return `
+    <div class="check-group">
+      <div class="check-group-title"><i class="fas fa-layer-group"></i> ${groupLabels[group] || group} (${items.length})</div>
+      ${items.map((it) => `<div class="check-item ${it.level}"><i class="fas ${iconMap[it.level]}"></i> <span>${it.text}</span></div>`).join("")}
+    </div>`;
+  }).join("");
+}
+
+document.getElementById("run-check-btn").addEventListener("click", async () => {
+  const btn = document.getElementById("run-check-btn");
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang kiểm tra...';
+  try {
+    await loadAll();
+    const issues = runSystemCheck();
+    renderCheckResults(issues);
+  } catch (e) {
+    notifyError("Lỗi khi kiểm tra: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = original;
+  }
 });
 
 /* ============================= TAB SWITCHING (chính) ============================= */

@@ -79,7 +79,13 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f6f9fc 0%, #edf2f7 100%);
+            background-color: #f7f9fc;
+            background-image:
+                linear-gradient(rgba(15, 23, 42, 0.045) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(15, 23, 42, 0.045) 1px, transparent 1px),
+                linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
+            background-size: 28px 28px, 28px 28px, 100% 100%;
+            background-attachment: fixed;
             color: var(--neutral-900);
             min-height: 100vh;
             line-height: 1.5;
@@ -201,9 +207,38 @@
 
         /* Main Content */
         .main-content {
-            max-width: 1200px;
+            max-width: 1320px;
             margin: 32px auto;
             padding: 0 24px;
+        }
+
+        /* Content Grid: cột chính (thông báo/teamwork) + cột phụ (timeline) */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1.65fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .content-main {
+            min-width: 0;
+        }
+
+        .content-sidebar {
+            min-width: 0;
+            position: sticky;
+            top: 88px;
+        }
+
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .content-sidebar {
+                position: static;
+                top: auto;
+            }
         }
 
         /* Notification Card */
@@ -696,53 +731,71 @@
 
         /* Timeline */
         .timeline {
-            margin-top: 32px;
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 22px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--neutral-200);
         }
 
         .timeline-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 24px;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--neutral-100);
         }
 
         .timeline-header h2 {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 600;
-            color: var(--neutral-900);
+            color: var(--neutral-800);
+            letter-spacing: -0.01em;
         }
 
-        .timeline-header i {
-            font-size: 24px;
+        .timeline-icon-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: var(--primary-600);
         }
 
+        .timeline-icon-box i {
+            font-size: 18px;
+        }
+
         .timeline-item {
-            background: white;
+            background: var(--neutral-50);
             border-radius: var(--radius-lg);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             border: 1px solid var(--neutral-200);
             overflow: hidden;
             transition: var(--transition);
         }
 
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
         .timeline-item:hover {
-            border-color: var(--primary-500);
-            box-shadow: var(--shadow-md);
+            border-color: var(--primary-400);
+            box-shadow: var(--shadow-sm);
+            background: white;
         }
 
         .timeline-header-item {
-            padding: 20px 24px;
+            padding: 16px 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            background: white;
+            background: transparent;
             transition: var(--transition);
         }
 
         .timeline-header-item:hover {
-            background: var(--neutral-50);
+            background: rgba(255, 255, 255, 0.6);
         }
 
         .timeline-title {
@@ -752,15 +805,18 @@
         }
 
         .timeline-dot {
-            width: 32px;
-            height: 32px;
-            background: var(--primary-100);
+            width: 30px;
+            height: 30px;
+            background: white;
+            border: 1.5px solid var(--primary-200);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--primary-700);
-            font-size: 14px;
+            font-size: 13px;
+            font-weight: 600;
+            flex-shrink: 0;
         }
 
         .timeline-title-text {
@@ -792,8 +848,8 @@
 
         .timeline-details {
             display: none;
-            padding: 24px;
-            background: var(--neutral-50);
+            padding: 18px;
+            background: white;
             border-top: 1px solid var(--neutral-200);
         }
 
@@ -1096,6 +1152,9 @@
                 </div>
             </div>
 
+            <div class="content-grid">
+            <div class="content-main">
+
             <!-- Interview Schedule Notification -->
             <div id="interview-notification" class="notification-card" style="display: none;">
                 <div class="notification-icon">
@@ -1181,7 +1240,7 @@
                 </div>
 
                 <!-- Nộp bài -->
-                <div class="tw-block">
+                <div class="tw-block" id="tw-submission-block" style="display:none;">
                     <div class="tw-block-title"><i class="fas fa-upload"></i> Nộp bài Teamwork</div>
                     <div id="tw-submission-info" class="tw-sub-info"></div>
                     <div id="tw-submission-form" style="display:none;">
@@ -1239,16 +1298,24 @@
                 </div>
             </div>
 
+            </div><!-- /content-main -->
+
+            <div class="content-sidebar">
             <!-- Timeline -->
             <div class="timeline">
                 <div class="timeline-header">
-                    <i class="fas fa-timeline"></i>
+                    <div class="timeline-icon-box">
+                        <i class="fas fa-route"></i>
+                    </div>
                     <h2>Quá trình ứng tuyển</h2>
                 </div>
                 <div id="rounds-list">
                     <!-- Rounds will be populated by JavaScript -->
                 </div>
             </div>
+            </div><!-- /content-sidebar -->
+
+            </div><!-- /content-grid -->
         </div>
 
         <div id="no-application" class="empty-state" style="display: none;">
@@ -2134,7 +2201,7 @@
                 ]);
 
                 twSettings = settingsSnap.exists ? settingsSnap.data() : {};
-                twSettings = { documents: [], submissionDeadline: null, submissionNote: '', pitchingDatetime: '', pitchingLocation: '', ...twSettings };
+                twSettings = { documents: [], submissionDeadline: null, submissionNote: '', pitchingDatetime: '', pitchingLocation: '', submissionOpen: true, pitchingConfirmOpen: true, ...twSettings };
 
                 if (teamSnap.empty) {
                     // Chưa đồng bộ team trong teamwork_teams, chỉ hiện tài liệu chung
@@ -2181,9 +2248,17 @@
         }
 
         function renderTwSubmission() {
+            const block = document.getElementById('tw-submission-block');
             const infoEl = document.getElementById('tw-submission-info');
             const formEl = document.getElementById('tw-submission-form');
             const readonlyEl = document.getElementById('tw-submission-readonly-note');
+
+            // Chỉ hiện khi BTC đã đặt deadline nộp bài
+            if (!twSettings.submissionDeadline) {
+                block.style.display = 'none';
+                return;
+            }
+            block.style.display = 'block';
 
             const status = twSubmissionStatus();
             const statusMap = {
@@ -2209,9 +2284,17 @@
             }
             infoEl.innerHTML = infoHtml;
 
-            const canSubmit = twMyRole === 'leader' || twMyRole === 'subleader';
+            const submissionOpen = twSettings.submissionOpen !== false;
+            const isLeaderRole = twMyRole === 'leader' || twMyRole === 'subleader';
+            const canSubmit = isLeaderRole && submissionOpen;
             formEl.style.display = canSubmit ? 'block' : 'none';
             readonlyEl.style.display = canSubmit ? 'none' : 'block';
+
+            if (isLeaderRole && !submissionOpen) {
+                readonlyEl.innerHTML = '<p style="color:var(--error-600);"><i class="fas fa-lock"></i> BTC đang tạm đóng nộp bài. Vui lòng chờ thông báo mới.</p>';
+            } else if (!isLeaderRole) {
+                readonlyEl.innerHTML = 'Chỉ Leader hoặc Sub Leader của team mới có thể nộp bài.';
+            }
 
             if (canSubmit) {
                 document.getElementById('tw-submit-btn-text').textContent = (twSubmission && twSubmission.content) ? 'Nộp lại' : 'Nộp bài';
@@ -2229,8 +2312,8 @@
             const reasonWrap = document.getElementById('tw-pitching-reason-wrap');
             const noteEl = document.getElementById('tw-pitching-readonly-note');
 
-            // Chỉ hiện khi BTC đã "mở" pitching day (đã đặt thời gian)
-            if (!twSettings.pitchingDatetime) {
+            // Chỉ hiện khi BTC đã "mở" pitching day (đã đặt đủ thời gian + địa điểm)
+            if (!twSettings.pitchingDatetime || !twSettings.pitchingLocation) {
                 block.style.display = 'none';
                 return;
             }
@@ -2259,9 +2342,15 @@
 
             noteEl.style.display = 'none';
 
+            const pitchingOpen = twSettings.pitchingConfirmOpen !== false;
+
             if (myStatus === 'yes' || myStatus === 'no') {
                 // Đã xác nhận rồi thì không cho sửa nữa, tránh đổi qua đổi lại gây khó kiểm soát
                 formEl.style.display = 'none';
+            } else if (!pitchingOpen) {
+                formEl.style.display = 'none';
+                noteEl.style.display = 'block';
+                noteEl.textContent = 'BTC đang tạm đóng xác nhận Pitching Day. Vui lòng chờ thông báo mới.';
             } else {
                 formEl.style.display = 'block';
                 reasonWrap.style.display = 'none';
@@ -2279,6 +2368,10 @@
         }
 
         document.getElementById('tw-pitching-yes-btn').addEventListener('click', async () => {
+            if (twSettings.pitchingConfirmOpen === false) {
+                alert('BTC đang tạm đóng xác nhận Pitching Day. Vui lòng chờ thông báo mới.');
+                return;
+            }
             try {
                 await saveMyPitchingStatus('yes', '');
                 alert('Đã xác nhận tham gia Pitching Day!');
@@ -2356,6 +2449,10 @@
         }
 
         document.getElementById('tw-submit-btn').addEventListener('click', async () => {
+            if (twSettings.submissionOpen === false) {
+                alert('BTC đang tạm đóng nộp bài. Vui lòng chờ thông báo mới.');
+                return;
+            }
             const btn = document.getElementById('tw-submit-btn');
             const fileInput = document.getElementById('tw-file-input');
             const linkInput = document.getElementById('tw-link-input');
