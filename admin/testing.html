@@ -844,12 +844,14 @@ function generateApplication(){
   if(type==='interview'){
     const poolR1=window._liveR1||FALLBACK_SLOTS_R1;
     if(poolR1.length){
-      const n=randInt(3,Math.min(6,poolR1.length));
+      const minN1=Math.min(3,poolR1.length);
+      const n=randInt(minN1,Math.min(6,poolR1.length));
       application_interview_slots=pick(poolR1,n);
     }
     const poolR24=window._liveR24||FALLBACK_SLOTS_R24;
     if(poolR24.length){
-      const m=randInt(3,Math.min(6,poolR24.length));
+      const minN24=Math.min(3,poolR24.length);
+      const m=randInt(minN24,Math.min(6,poolR24.length));
       interview_schedule=pick(poolR24,m);
     }
   }

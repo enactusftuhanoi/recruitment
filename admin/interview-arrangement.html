@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Interview | Enactus FTU Hanoi</title>
+  <title>Interview Arrangement | Enactus FTU Hanoi</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <!-- Firebase SDK -->
@@ -700,7 +700,7 @@
       <!-- Hint đổi ca → online (hiện khi ứng viên nằm trong kết quả đã xếp) -->
       <div id="slot-switch-online-hint" style="display:none;margin-top:8px;background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:var(--radius-sm);padding:8px 10px;font-size:11px;color:#1E40AF">
         <i class="fas fa-circle-info"></i>
-        <b>Đổi ca sang Online:</b> chọn "Online" ở trên, nhập link Meet/Zoom bên dưới, rồi bấm Lưu. Ca này sẽ chuyển thành ca online trong bảng kết quả — ứng viên đổi ca vẫn có thể tham gia từ xa. Ở Vòng 2, ca online có thể không đủ 4 ban (accepted).
+        <b>Đổi ca sang Online:</b> chọn "Online" ở trên, nhập link Meet/Zoom bên dưới, rồi bấm Lưu. Ca này sẽ chuyển thành ca online trong bảng kết quả — ứng viên đổi ca vẫn có thể tham gia từ xa. Ở Vòng 2, ca online có thể không đủ đại diện các ban.
       </div>
     </div>
 
@@ -748,9 +748,14 @@
       <label class="fl" id="edit-row-location-label">Địa điểm</label>
       <input class="fi" id="edit-row-location" placeholder="Phòng A3.02 — Tòa A, FTU" />
     </div>
-    <div class="form-group">
+    <div class="form-group" id="edit-row-interviewers-group">
       <label class="fl">Người phỏng vấn <span style="font-weight:400;color:var(--ink-30)">(cách nhau bởi dấu phẩy)</span></label>
       <input class="fi" id="edit-row-interviewers" placeholder="Nguyễn Văn A, Trần Thị B" />
+    </div>
+    <div class="form-group" id="edit-row-round2-note" style="display:none">
+      <div style="font-size:11px;color:var(--ink-60);background:var(--ink-10);padding:8px 10px;border-radius:var(--radius-sm)">
+        Ở Vòng 2, PV được gán theo từng ứng viên — kéo-thả trực tiếp trong Kéo-thả để đổi, không sửa ở đây. Thông tin bên dưới (hình thức/địa điểm/ghi chú) áp dụng cho <b>cả ca</b> (tất cả nhóm cùng ca).
+      </div>
     </div>
     <div class="form-group">
       <label class="fl">Ghi chú</label>
@@ -824,7 +829,7 @@ const ROUND_LABELS = {
 };
 const ROUND_INFO_TEXT = {
   round1: 'Vòng PVTĐ diễn ra <b>100% Online</b>. Mỗi ca có 1 <b>Host tổng ca</b> phụ trách waiting room và đẩy ứng viên vào breakout room theo ban, cùng <b>Interviewer</b> riêng từng ban. Ứng viên apply 2 ban sẽ phỏng vấn 2 lần.',
-  round2: 'Vòng phỏng vấn nhóm: <b>Offline là chính</b>, Online dùng cho bạn đổi ca (có thể không đủ 4 ban). 1 ca = 1 nhóm ứng viên đủ 4 ban, chia đều theo ca. Ứng viên apply 2 ban chỉ tham gia 1 lần.',
+  round2: 'Vòng phỏng vấn nhóm: <b>Offline là chính</b>, Online dùng cho bạn đổi ca. 1 ca tối đa <b>2 nhóm</b> (mỗi nhóm cố gắng đủ đại diện các ban, nhưng có thể trùng ban nếu cần để đủ chỗ) — tổng tối đa 8 người/ca. Ứng viên apply 2 ban chỉ tham gia 1 lần.',
   round4: 'Ca phỏng vấn được <b>đồng bộ tự động từ Calendar</b> (ngày + khung giờ ứng viên đã vote). SuperAdmin/Admin (HR) bấm vào từng ca để điền <b>hình thức / địa điểm / ghi chú</b>. Chọn <b>ứng viên</b> hoặc <b>Nhân sự</b> từ sidebar trái, sau đó click vào ô để đánh dấu ca rảnh. Ứng viên apply 2 ban sẽ được phỏng vấn 2 lần.',
 };
 // Vai trò "cứng" mặc định mỗi vòng — không xoá được, chỉ thêm role riêng (custom) ngoài danh sách này.
@@ -842,7 +847,9 @@ const BASE_ROLES = {
     { key:'checkin',     label:'Checkin',     scope:'slot', base:true },
   ],
   round4: [
-    { key:'interviewer', label:'Interviewer', scope:'dept', base:true },
+    { key:'host',        label:'Host tổng ca', scope:'slot', base:true },
+    { key:'interviewer', label:'Interviewer',   scope:'dept', base:true },
+    { key:'checkin',     label:'Checkin',       scope:'slot', base:true },
   ],
 };
 // Thứ tự ưu tiên khi đề xuất / tự xếp Interviewer: Alumni → Admin → các role khác (Member/SuperAdmin).
@@ -2565,10 +2572,32 @@ function arrangeRound1() {
     const candKey = candidate.email || candidate.name;
     const alreadyUsed = candidateAssignedSlots[candKey] || new Set();
     const ivList = ivByDept[dept] || [];
-    if (!ivList.length) { unmatched.push({ name:candidate.name, dept, reason:'Không có nhân sự cho ban này' }); return; }
     // Loại bỏ ca đã dùng cho lần phỏng vấn khác của cùng ứng viên (apply 2 ban)
     const eligibleSlots = (candidate.availableSlots||[]).filter(id => !alreadyUsed.has(id));
     if (!eligibleSlots.length) { unmatched.push({ name:candidate.name, dept, reason:'Chưa tick ca nào (hoặc tất cả ca đã dùng cho lần phỏng vấn ban kia)' }); return; }
+    if (!ivList.length) {
+      // Ban chưa có nhân sự nào trong hệ thống — vẫn ưu tiên xếp ỨNG VIÊN vào ca trước
+      const fbSlot = eligibleSlots[0];
+      if (!candidateAssignedSlots[candKey]) candidateAssignedSlots[candKey] = new Set();
+      candidateAssignedSlots[candKey].add(fbSlot);
+      const host3 = slotHost[fbSlot];
+      const sl3 = slotObj(fbSlot);
+      schedule.push({
+        round: 'round1',
+        slotId: fbSlot, slotName: sl3.name, day: sl3.day, time: sl3.time,
+        mode: 'online', location: sl3.location || '', note: sl3.note || '',
+        candidateName: candidate.name, candidateEmail: candidate.email || '',
+        candidateDept: dept,
+        candidateType: candidate.isSecond ? 'secondary' : 'priority',
+        roles: {
+          host: host3 ? [{ name:host3.name, email:host3.email||'', dept:host3.department||host3.dept||'', accountRole:host3.accountRole }] : [],
+          interviewer: [],
+        },
+        interviewers: [],
+        needsInterviewer: true,
+      });
+      return;
+    }
 
     let bestSlot = null, bestIVs = [], minScore = Infinity;
     eligibleSlots.forEach(slotId => {
@@ -2584,7 +2613,36 @@ function arrangeRound1() {
       if (score < minScore) { minScore = score; bestSlot = slotId; bestIVs = availIVs; }
     });
 
-    if (!bestSlot) { unmatched.push({ name:candidate.name, dept, reason:'Không tìm được ca chung với nhân sự (tất cả nhân sự cùng ban đều đang bận trong các ca ứng viên đã tick)' }); return; }
+    if (!bestSlot) {
+      // Ưu tiên xếp ỨNG VIÊN vào ca trước — nếu không tìm được ca có sẵn nhân sự rảnh,
+      // vẫn xếp vào 1 ca họ đã tick (ưu tiên ca ít bận nhất), để trống PV và đánh dấu
+      // needsInterviewer để admin bổ sung nhân sự thủ công sau — thay vì bỏ unmatched.
+      let fallbackSlot = null, fallbackBusy = Infinity;
+      eligibleSlots.forEach(slotId => {
+        const busyCount = (ivBusyInSlot[slotId] || new Set()).size;
+        if (busyCount < fallbackBusy) { fallbackBusy = busyCount; fallbackSlot = slotId; }
+      });
+      if (!fallbackSlot) { unmatched.push({ name:candidate.name, dept, reason:'Chưa tick ca nào hợp lệ' }); return; }
+      if (!candidateAssignedSlots[candKey]) candidateAssignedSlots[candKey] = new Set();
+      candidateAssignedSlots[candKey].add(fallbackSlot);
+      const host2 = slotHost[fallbackSlot];
+      const sl2 = slotObj(fallbackSlot);
+      schedule.push({
+        round: 'round1',
+        slotId: fallbackSlot, slotName: sl2.name, day: sl2.day, time: sl2.time,
+        mode: 'online', location: sl2.location || '', note: sl2.note || '',
+        candidateName: candidate.name, candidateEmail: candidate.email || '',
+        candidateDept: dept,
+        candidateType: candidate.isSecond ? 'secondary' : 'priority',
+        roles: {
+          host: host2 ? [{ name:host2.name, email:host2.email||'', dept:host2.department||host2.dept||'', accountRole:host2.accountRole }] : [],
+          interviewer: [],
+        },
+        interviewers: [],
+        needsInterviewer: true,
+      });
+      return;
+    }
 
     const pickedIVs = bestIVs.slice(0, 2);
     // Mark IVs as busy in this slot (already holding Interviewer role)
@@ -2620,7 +2678,7 @@ function arrangeRound1() {
 }
 
 // ─── VÒNG 2 — Phỏng vấn nhóm (Offline chính / Online dự phòng cho đổi ca) ──
-// 1 ca = 1 nhóm ứng viên, tối thiểu 3 ứng viên bất kỳ (cố gắng đủ 4 ban).
+// 1 ca tối đa 2 nhóm, mỗi nhóm tối thiểu 3 ứng viên bất kỳ (cố gắng đủ đại diện các ban, có thể trùng ban).
 // OUTPUT: 1 row trong schedule = 1 ca/nhóm, chứa mảng `group` (ứng viên từng ban).
 // Khác hoàn toàn với Round 1/4 (1 row = 1 ứng viên riêng lẻ).
 // Ứng viên apply 2 ban chỉ tham gia 1 lần (entry isSecond bị skip).
@@ -2628,9 +2686,14 @@ function arrangeRound1() {
 // gộp vào ca khác hoặc ứng viên còn lại bị xếp lại; nếu không thể → unmatched.
 function arrangeRound2() {
   const MIN_GROUP_SIZE = 3; // số ứng viên tối thiểu mỗi ca
+  const MAX_TEAMS_PER_SLOT = 2;                                // 1 ca tối đa 2 nhóm — CỨNG, không đổi
+  const DEPTS = ['MD','HR','PD','ER'];
+  const MAX_GROUP_SIZE_PER_SLOT = MAX_TEAMS_PER_SLOT * DEPTS.length; // trần tổng: 8 người/ca (2 nhóm × 4 "suất")
+  // Không còn ép mỗi ban tối đa 1 người/nhóm — 1 nhóm có thể có ≥2 người cùng ban nếu cần để
+  // đủ chỗ, miễn tổng số người trong ca không vượt trần ở trên (2 nhóm/ca vẫn là luật cứng).
+  const MAX_PER_DEPT_PER_SLOT = MAX_GROUP_SIZE_PER_SLOT;
   const schedule = [], unmatched = [];
   const ivCount = makeIVCount();
-  const DEPTS = ['MD','HR','PD','ER'];
 
   const ivByDept = {};
   S.interviewers.forEach(iv => {
@@ -2657,9 +2720,11 @@ function arrangeRound2() {
   }
 
   // Hàm nội bộ: thử xếp ứng viên chưa được xếp vào một slotId, trả về group entries mới
-  function tryFillSlot(slotId, assigned, ivBusyInSlotDept) {
+  function tryFillSlot(slotId, assigned, ivBusyInSlotDept, existingGroup) {
     const entries = [];
     DEPTS.forEach(dept => {
+      const alreadyInSlot = (existingGroup||[]).filter(g => g.dept === dept).length;
+      if (alreadyInSlot >= MAX_PER_DEPT_PER_SLOT) return; // (không còn giới hạn theo ban — chỉ còn chặn ở tổng 8 người/ca)
       const pool = (byDept[dept] || [])
         .filter(c => !assigned.has((c.email||c.name)+dept) && (c.availableSlots||[]).includes(slotId))
         .sort((a, b) => (a.availableSlots||[]).length - (b.availableSlots||[]).length);
@@ -2690,7 +2755,7 @@ function arrangeRound2() {
 
   slotsRanked.forEach(sl => {
     const slotId = sl.id;
-    const entries = tryFillSlot(slotId, assigned, ivBusyInSlotDept);
+    const entries = tryFillSlot(slotId, assigned, ivBusyInSlotDept, null);
     if (!entries.length) return;
 
     // Commit candidates & IVs
@@ -2743,18 +2808,23 @@ function arrangeRound2() {
     const candKey = (candidate.email||candidate.name)+dept;
     if (assigned.has(candKey)) return; // đã được xếp lại ở iteration trước
 
-    // Tìm ca phù hợp nhất: ưu tiên ca đã có group, candidate rảnh, có IV ban đó
+    // Tìm ca phù hợp nhất: ưu tiên ca đã có group còn CHỖ TRỐNG, candidate rảnh, có IV ban đó
     let bestSlotId = null, bestScore = -1;
     for (const slotId of allSlotsByExisting) {
       if (!(candidate.availableSlots||[]).includes(slotId)) continue;
+      const existing = slotDraft[slotId];
+      if (existing) {
+        if (existing.group.length >= MAX_GROUP_SIZE_PER_SLOT) continue;               // ca đã đầy (đủ 2 nhóm)
+        const deptCountInSlot = existing.group.filter(g => g.dept === dept).length;
+        if (deptCountInSlot >= MAX_PER_DEPT_PER_SLOT) continue;                        // (không còn giới hạn theo ban — chỉ còn chặn ở tổng 8 người/ca)
+      }
       const busyKey = slotId + '::' + dept;
       const busySet = ivBusyInSlotDept[busyKey] || new Set();
       const availIVs = (ivByDept[dept]||[]).filter(iv =>
         (iv.availableSlots||[]).includes(slotId) && !busySet.has(iv.name)
       );
       if (!availIVs.length) continue;
-      // Score: ca đã có group được ưu tiên (+10), ca nhiều người hơn được ưu tiên hơn
-      const existing = slotDraft[slotId];
+      // Score: ca đã có group được ưu tiên (+10), ca nhiều người hơn được ưu tiên hơn (nhưng đã bị chặn trần ở trên)
       const score = (existing ? 10 + existing.group.length : 0);
       if (score > bestScore) { bestScore = score; bestSlotId = slotId; }
     }
@@ -2799,28 +2869,124 @@ function arrangeRound2() {
     delete slotDraft[slotId];
   });
 
+  // ── PASS 4: ứng viên vẫn chưa xếp được sau PASS 1-2 — trước khi bỏ cuộc,
+  // thử lại một lần nữa xem có nhân sự ban đó còn RẢNH thật ở bất kỳ ca nào
+  // ứng viên đã tick hay không (PASS 1 chỉ lấy 1 ứng viên/ban/ca nên nhiều
+  // ứng viên hợp lệ bị bỏ sót dù nhân sự vẫn còn rảnh). Chỉ khi thực sự
+  // không còn nhân sự ban đó rảnh ở ca nào mới xếp "để trống" + đánh dấu
+  // needsInterviewer cho SuperAdmin bổ sung thủ công. ──────────────────────
+  primary.forEach(c => {
+    const dept = c.dept || c.department || '';
+    const candKey = (c.email||c.name) + dept;
+    if (assigned.has(candKey)) return;
+    const availSlots = (c.availableSlots || []).filter(sid => S.slots.some(s => s.id === sid));
+    if (!availSlots.length) return; // ứng viên không tick ca nào hợp lệ → để PASS cuối xử lý là unmatched thật sự
+
+    // 4a. Ưu tiên tìm ca có nhân sự ban đó THỰC SỰ còn rảnh (chưa bị busy) — vẫn phải tôn trọng trần 2 nhóm/ca
+    let bestSlotId = null, bestScore = -1, bestIVList = null;
+    availSlots.forEach(slotId => {
+      const existing = slotDraft[slotId];
+      if (existing) {
+        if (existing.group.length >= MAX_GROUP_SIZE_PER_SLOT) return;
+        if (existing.group.filter(g => g.dept === dept).length >= MAX_PER_DEPT_PER_SLOT) return;
+      }
+      const busyKey = slotId + '::' + dept;
+      const busySet = ivBusyInSlotDept[busyKey] || new Set();
+      const availIVs = sortIVsByPriority(
+        (ivByDept[dept]||[]).filter(iv => (iv.availableSlots||[]).includes(slotId) && !busySet.has(iv.name)),
+        ivCount
+      );
+      if (!availIVs.length) return;
+      const score = 1000 + (existing ? existing.group.length : 0);
+      if (score > bestScore) { bestScore = score; bestSlotId = slotId; bestIVList = availIVs; }
+    });
+
+    if (bestSlotId) {
+      // Có nhân sự thật → xếp bình thường như PASS 1/2
+      const sl = S.slots.find(s => s.id === bestSlotId) || { id: bestSlotId };
+      if (!slotDraft[bestSlotId]) slotDraft[bestSlotId] = { sl, group: [] };
+      assigned.add(candKey);
+      const busyKey = bestSlotId + '::' + dept;
+      if (!ivBusyInSlotDept[busyKey]) ivBusyInSlotDept[busyKey] = new Set();
+      const busySet = ivBusyInSlotDept[busyKey];
+      const pickedIVs = bestIVList.slice(0, 2);
+      pickedIVs.forEach(iv => { ivCount[iv.name] = (ivCount[iv.name]||0) + 1; busySet.add(iv.name); });
+      slotDraft[bestSlotId].group.push({
+        candidate: c, dept,
+        ivs: pickedIVs.map(iv => ({ name:iv.name, email:iv.email||'', dept:iv.department||iv.dept||'', accountRole:iv.accountRole })),
+      });
+      return;
+    }
+
+    // 4b. Thật sự không còn nhân sự ban đó rảnh ở ca nào → vẫn xếp ứng viên
+    // vào 1 ca họ rảnh (ưu tiên ca đã có sẵn nhóm còn chỗ), để trống phần PV.
+    let fallbackSlotId = null, fallbackScore = -1;
+    availSlots.forEach(slotId => {
+      const existing = slotDraft[slotId];
+      if (existing) {
+        if (existing.group.length >= MAX_GROUP_SIZE_PER_SLOT) return;
+        if (existing.group.filter(g => g.dept === dept).length >= MAX_PER_DEPT_PER_SLOT) return;
+      }
+      const score = existing ? 10 + existing.group.length : 0;
+      if (score > fallbackScore) { fallbackScore = score; fallbackSlotId = slotId; }
+    });
+    if (!fallbackSlotId) return; // hết chỗ thật sự (mọi ca đã đủ 2 nhóm) → để unmatched, không phá trần
+
+    const sl = S.slots.find(s => s.id === fallbackSlotId) || { id: fallbackSlotId };
+    if (!slotDraft[fallbackSlotId]) slotDraft[fallbackSlotId] = { sl, group: [] };
+    assigned.add(candKey);
+    slotDraft[fallbackSlotId].group.push({ candidate: c, dept, ivs: [], needsInterviewer: true });
+  });
+
   // ── BUILD schedule từ slotDraft ───────────────────────────────────────────
+  // Một ca (slot) có thể chứa rất nhiều ứng viên (do PASS 2 gộp ứng viên từ
+  // các ca bị giải tán vào). Nếu đủ người để lập ≥2 nhóm hoàn chỉnh (mỗi nhóm
+  // ≥ MIN_GROUP_SIZE), tách thành Nhóm 1 / Nhóm 2 thay vì gộp tất cả vào 1 team.
   Object.values(slotDraft).forEach(({ sl, group }) => {
     if (!group.length) return;
     const slotId = sl.id || sl;
     const slotObj2 = S.slots.find(s => s.id === slotId) || sl;
-    schedule.push({
-      round: 'round2',
-      slotId, slotName: slotObj2.name||slotId, day: slotObj2.day||'', time: slotObj2.time||'',
-      mode: slotObj2.mode || 'offline', location: slotObj2.location || '', note: slotObj2.note || '',
-      group,
-      roles: { interviewer: group.flatMap(g => g.ivs) },
-      candidateName: group.map(g => g.candidate.name).join(', '),
-      candidateEmail: '', candidateDept: '', candidateType: 'priority',
-      interviewers: group.flatMap(g => g.ivs),
+
+    const numTeams = group.length >= MIN_GROUP_SIZE * 2
+      ? Math.min(2, Math.floor(group.length / MIN_GROUP_SIZE)) // tối đa 2 nhóm / ca
+      : 1;
+
+    const teams = [];
+    if (numTeams <= 1) {
+      teams.push(group);
+    } else {
+      // Rải đều theo ban (round-robin) để mỗi team đều có đủ các ban thay vì
+      // team 1 lấy hết nguyên 1 ban rồi mới đến team 2.
+      const sorted = [...group].sort((a, b) => DEPTS.indexOf(a.dept) - DEPTS.indexOf(b.dept));
+      for (let i = 0; i < numTeams; i++) teams.push([]);
+      sorted.forEach((g, i) => teams[i % numTeams].push(g));
+    }
+
+    teams.forEach((teamGroup, tIdx) => {
+      if (!teamGroup.length) return;
+      const teamLabel = teams.length > 1 ? ` · Nhóm ${tIdx + 1}` : '';
+      schedule.push({
+        round: 'round2',
+        slotId, slotName: (slotObj2.name||slotId) + teamLabel, day: slotObj2.day||'', time: slotObj2.time||'',
+        mode: slotObj2.mode || 'offline', location: slotObj2.location || '', note: slotObj2.note || '',
+        group: teamGroup,
+        roles: { interviewer: teamGroup.flatMap(g => g.ivs) },
+        candidateName: teamGroup.map(g => g.candidate.name).join(', '),
+        candidateEmail: '', candidateDept: '', candidateType: 'priority',
+        interviewers: teamGroup.flatMap(g => g.ivs),
+      });
     });
   });
 
-  // Ứng viên hoàn toàn không được xếp (không tick ca nào / không có IV)
+  // Ứng viên hoàn toàn không được xếp
   primary.forEach(c => {
     const dept = c.dept || c.department || '';
     if (!assigned.has((c.email||c.name) + dept)) {
-      unmatched.push({ name:c.name, dept, reason:'Không có ca rảnh chung với nhân sự của ban' });
+      const availSlots = (c.availableSlots || []).filter(sid => S.slots.some(s => s.id === sid));
+      const reason = !availSlots.length
+        ? 'Không tick ca nào hợp lệ trong lịch hiện tại'
+        : `Mọi ca đã tick đều đã đủ ${MAX_TEAMS_PER_SLOT} nhóm (tối đa ${MAX_GROUP_SIZE_PER_SLOT} người/ca) — cần tick thêm ca khác hoặc admin xếp thủ công`;
+      unmatched.push({ name:c.name, dept, reason });
     }
   });
 
@@ -2856,11 +3022,29 @@ function arrangeRound4() {
     const candKey4 = candidate.email || candidate.name;
     const alreadyUsed4 = candidateAssignedSlots4[candKey4] || new Set();
     const ivList = ivByDept[dept] || [];
-    if (!ivList.length) { unmatched.push({ name:candidate.name, dept, reason:'Không có nhân sự cho ban này' }); return; }
     // Loại bỏ ca đã dùng cho lần phỏng vấn khác của cùng ứng viên (apply 2 ban)
     const eligibleSlots4 = (candidate.availableSlots||[]).filter(id => !alreadyUsed4.has(id));
     if (!eligibleSlots4.length) {
       unmatched.push({ name:candidate.name, dept, reason:'Chưa tick ca nào (hoặc tất cả ca đã dùng cho lần phỏng vấn ban kia)' }); return;
+    }
+    if (!ivList.length) {
+      // Ban chưa có nhân sự nào trong hệ thống — vẫn ưu tiên xếp ỨNG VIÊN vào ca trước
+      const fbSlot4 = eligibleSlots4[0];
+      if (!candidateAssignedSlots4[candKey4]) candidateAssignedSlots4[candKey4] = new Set();
+      candidateAssignedSlots4[candKey4].add(fbSlot4);
+      const sl4b = slotObj(fbSlot4);
+      schedule.push({
+        round: 'round4',
+        slotId: fbSlot4, slotName: sl4b.name, day: sl4b.day, time: sl4b.time,
+        mode: sl4b.mode || 'offline', location: sl4b.location || '', note: sl4b.note || '',
+        candidateName: candidate.name, candidateEmail: candidate.email || '',
+        candidateDept: dept,
+        candidateType: candidate.isSecond ? 'secondary' : 'priority',
+        roles: { interviewer: [] },
+        interviewers: [],
+        needsInterviewer: true,
+      });
+      return;
     }
 
     let bestSlot = null, bestIVs = [], minScore = Infinity;
@@ -2878,7 +3062,31 @@ function arrangeRound4() {
       if (score < minScore) { minScore = score; bestSlot = slotId; bestIVs = availIVs; }
     });
 
-    if (!bestSlot) { unmatched.push({ name:candidate.name, dept, reason:'Không tìm được ca chung với nhân sự (tất cả nhân sự cùng ban đều bận trong các ca ứng viên đã tick)' }); return; }
+    if (!bestSlot) {
+      // Ưu tiên xếp ỨNG VIÊN vào ca trước — không tìm được PV rảnh thì vẫn xếp vào
+      // ca ít bận nhất mà họ đã tick, đánh dấu needsInterviewer cho admin bổ sung sau.
+      let fallbackSlot4 = null, fallbackBusy4 = Infinity;
+      eligibleSlots4.forEach(slotId => {
+        const busyCount = (ivBusyInSlot[slotId] || new Set()).size;
+        if (busyCount < fallbackBusy4) { fallbackBusy4 = busyCount; fallbackSlot4 = slotId; }
+      });
+      if (!fallbackSlot4) { unmatched.push({ name:candidate.name, dept, reason:'Chưa tick ca nào hợp lệ' }); return; }
+      if (!candidateAssignedSlots4[candKey4]) candidateAssignedSlots4[candKey4] = new Set();
+      candidateAssignedSlots4[candKey4].add(fallbackSlot4);
+      const sl5 = slotObj(fallbackSlot4);
+      schedule.push({
+        round: 'round4',
+        slotId: fallbackSlot4, slotName: sl5.name, day: sl5.day, time: sl5.time,
+        mode: sl5.mode || 'offline', location: sl5.location || '', note: sl5.note || '',
+        candidateName: candidate.name, candidateEmail: candidate.email || '',
+        candidateDept: dept,
+        candidateType: candidate.isSecond ? 'secondary' : 'priority',
+        roles: { interviewer: [] },
+        interviewers: [],
+        needsInterviewer: true,
+      });
+      return;
+    }
 
     const pickedIVs = bestIVs.slice(0, 2);
     if (!ivBusyInSlot[bestSlot]) ivBusyInSlot[bestSlot] = new Set();
@@ -3063,16 +3271,19 @@ function renderTable(schedule, deptFilter) {
       ? `<span class="badge" style="background:#EFF6FF;color:#1D4ED8"><i class="fas fa-video" style="font-size:9px"></i> Online</span>`
       : `<span class="badge" style="background:#F0FDF4;color:#166534"><i class="fas fa-building" style="font-size:9px"></i> Offline</span>`;
 
-    // Show interviewers from s.roles if available (new format), fallback to s.interviewers
+    // Show interviewers from s.roles if available (new format), fallback to s.interviewers.
+    // Vai trò scope:'slot' (Host, Thư ký, Checkin...) được lưu ở S.slotRoles[slotId], không phải s.roles — phải đọc riêng.
     const rolesCols = roleDefs.map(rd => {
-      const people = s.roles && s.roles[rd.key]
-        ? s.roles[rd.key]
-        : (rd.key === 'interviewer' ? (s.interviewers||[]) : []);
+      const people = rd.scope === 'slot'
+        ? ((S.slotRoles[s.slotId] && S.slotRoles[s.slotId][rd.key]) || [])
+        : (s.roles && s.roles[rd.key]
+            ? s.roles[rd.key]
+            : (rd.key === 'interviewer' ? (s.interviewers||[]) : []));
       if (!people.length) return `<td><span style="color:var(--ink-30)">—</span></td>`;
       const html = people.map(p => {
         const pdc = DEPT_CLASS[p.dept] || 'b-md';
         const prio = rolePriorityRank(p.accountRole||'');
-        const star = prio === 0 ? ' 🎓' : prio === 1 ? ' ★' : '';
+        const star = prio === 1 ? ' ★' : '';
         return `<span class="badge ${pdc}" style="margin-right:3px;margin-bottom:2px">${ivDisplayName(p.name)}${star}</span>`;
       }).join('');
       return `<td>${html}</td>`;
@@ -3089,11 +3300,13 @@ function renderTable(schedule, deptFilter) {
 
     return `<tr data-dept="${s.candidateDept}">
       <td class="num">${i+1}</td>
-      <td><b>${s.slotName}</b></td>
       <td style="white-space:nowrap;font-size:12px">${s.day}</td>
-      <td style="white-space:nowrap;font-size:12px">${s.time}</td>
+      <td style="white-space:nowrap">
+        <b>${s.slotName}</b>
+        <div style="font-size:11px;color:var(--ink-60)">${s.time}</div>
+      </td>
       <td>
-        <div style="font-weight:600;font-size:13px">${s.candidateName}</div>
+        <div style="font-weight:600;font-size:13px">${s.candidateName}${s.needsInterviewer ? ` <span style="font-size:10px;font-weight:700;color:#B45309;background:#FEF3C7;padding:1px 6px;border-radius:20px">⚠ Chưa có PV</span>` : ''}</div>
         ${s.candidateEmail ? `<div style="font-size:10px;color:var(--ink-30)">${s.candidateEmail}</div>` : ''}
       </td>
       <td><span class="badge ${dc}">${DEPT_NAMES[s.candidateDept]||s.candidateDept}</span></td>
@@ -3109,7 +3322,7 @@ function renderTable(schedule, deptFilter) {
   const thead = document.querySelector('#result-body')?.closest('table')?.querySelector('thead tr');
   if (thead) {
     thead.innerHTML = `
-      <th>#</th><th>Ca phỏng vấn</th><th>Ngày</th><th>Thời gian</th>
+      <th>#</th><th>Ngày</th><th>Ca phỏng vấn</th>
       <th>Ứng viên</th><th>Ban</th>
       ${roleDefs.map(r => `<th>${r.label}</th>`).join('')}
       <th>Hình thức</th><th>Địa điểm / Link</th><th>Ghi chú</th><th>Hành động</th>`;
@@ -3128,57 +3341,106 @@ function renderTableRound2(schedule, deptFilter) {
     : schedule.filter(s => s.group && s.group.some(g => g.dept === deptFilter));
 
   if (!filtered.length) {
-    body.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fas fa-calendar-xmark"></i><p>Không có buổi phỏng vấn nào</p></div></td></tr>`;
-    // Rebuild thead
+    body.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fas fa-calendar-xmark"></i><p>Không có buổi phỏng vấn nào</p></div></td></tr>`;
     const thead = body.closest('table')?.querySelector('thead tr');
-    if (thead) thead.innerHTML = `<th>#</th><th>Ca</th><th>Ngày</th><th>Giờ</th><th>Hình thức</th><th>Địa điểm</th><th>Nhóm ứng viên (4 ban)</th><th>Hành động</th>`;
+    if (thead) thead.innerHTML = `<th>#</th><th>Ca phỏng vấn</th><th>Hình thức</th><th>Địa điểm</th><th>Nhóm ứng viên (theo ban)</th><th>Nhân sự</th><th>Hành động</th>`;
     return;
   }
 
   const DEPT_COLORS = { MD:'--md-color', HR:'--hr-color', PD:'--pd-color', ER:'--er-color' };
   const DEPT_BG    = { MD:'--md-bg',    HR:'--hr-bg',    PD:'--pd-bg',    ER:'--er-bg'    };
 
-  body.innerHTML = filtered.map((s, idx) => {
-    const i = S.schedule.indexOf(s);
-    const modeHtml = s.mode === 'online'
+  // Gộp các row cùng slotId (Nhóm 1 / Nhóm 2) thành 1 khối hiển thị — giữ đúng
+  // thứ tự Thứ/ngày/ca (đã được sortBySlotOrder sắp trước đó theo S.slots).
+  const bySlot = [];
+  const seen = new Map();
+  filtered.forEach(s => {
+    if (seen.has(s.slotId)) { seen.get(s.slotId).teams.push(s); return; }
+    const entry = { slotId: s.slotId, teams: [s] };
+    seen.set(s.slotId, entry);
+    bySlot.push(entry);
+  });
+
+  body.innerHTML = bySlot.map(({ teams }, rowIdx) => {
+    const first = teams[0];
+    const multi = teams.length > 1;
+    const modeHtml = first.mode === 'online'
       ? `<span class="badge" style="background:#EFF6FF;color:#1D4ED8"><i class="fas fa-video" style="font-size:9px"></i> Online</span>`
       : `<span class="badge" style="background:#F0FDF4;color:#166534"><i class="fas fa-building" style="font-size:9px"></i> Offline</span>`;
-    const locHtml = s.location
-      ? (s.mode === 'online'
-          ? `<a href="${s.location}" target="_blank" style="color:var(--md-color);font-size:12px">Link</a>`
-          : `<span style="font-size:12px">${s.location}</span>`)
+    const locHtml = first.location
+      ? (first.mode === 'online'
+          ? `<a href="${first.location}" target="_blank" style="color:var(--md-color);font-size:12px">Link</a>`
+          : `<span style="font-size:12px">${first.location}</span>`)
       : `<span style="color:var(--ink-30);font-size:11px">—</span>`;
 
-    // Render từng ban trong nhóm thành 1 khối mini
-    const groupHtml = (s.group || [])
-      .sort((a, b) => DEPT_ORDER.indexOf(a.dept) - DEPT_ORDER.indexOf(b.dept))
-      .map(g => {
-        const dc = DEPT_CLASS[g.dept] || 'b-md';
-        const ivNames = g.ivs.map(iv => {
-          const prio = rolePriorityRank(iv.accountRole||'');
-          const star = prio === 0 ? ' 🎓' : prio === 1 ? ' ★' : '';
-          return ivDisplayName(iv.name) + star;
-        }).join(', ');
-        return `<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px;flex-wrap:wrap">
-          <span class="badge ${dc}" style="flex-shrink:0">${DEPT_NAMES[g.dept]||g.dept}</span>
-          <span style="font-size:13px;font-weight:600">${g.candidate.name}</span>
-          ${ivNames ? `<span style="font-size:11px;color:var(--ink-60)">— PV: ${ivNames}</span>` : ''}
-        </div>`;
-      }).join('');
+    // Nhân sự: gồm 2 phần — (1) vai trò scope:'slot' (Host, Thư ký, Checkin...) dùng chung cho cả ca,
+    // (2) Interviewer scope:'dept' — tách riêng từng ban, 1 nhóm PV của ban nào thì phụ trách chung
+    // TẤT CẢ ứng viên ban đó trong ca này (không phải từng ứng viên riêng lẻ).
+    const slotScopeRoleDefs = getRoleDefs().filter(r => r.scope === 'slot');
+    const slotRolesHtml = slotScopeRoleDefs.map(rd => {
+      const people = (S.slotRoles[first.slotId] && S.slotRoles[first.slotId][rd.key]) || [];
+      if (!people.length) return '';
+      const names = people.map(p => ivDisplayName(p.name)).join(', ');
+      return `<div style="font-size:11px;margin-bottom:4px"><b>${rd.label}:</b> ${names}</div>`;
+    }).join('');
 
-    const canEdit = canCRUD();
-    const actionHtml = canEdit
-      ? `<button class="btn btn-ghost btn-xs" onclick="openEditRowModal(${i})" title="Sửa ca"><i class="fas fa-pen"></i></button>`
+    // Gom Interviewer theo ban (dept) cho cả ca — union tất cả nhóm/ứng viên cùng ban trong slot này
+    const ivByDept = {};
+    const missingByDept = {};
+    teams.forEach(s => (s.group || []).forEach(g => {
+      if (!ivByDept[g.dept]) ivByDept[g.dept] = new Map();
+      (g.ivs || []).forEach(iv => { if (!ivByDept[g.dept].has(iv.name)) ivByDept[g.dept].set(iv.name, iv); });
+      if (g.needsInterviewer) missingByDept[g.dept] = true;
+    }));
+    const interviewerHtml = DEPT_ORDER.filter(d => ivByDept[d]).map(d => {
+      const dc = DEPT_CLASS[d] || 'b-md';
+      const names = [...ivByDept[d].values()].map(iv => {
+        const prio = rolePriorityRank(iv.accountRole||'');
+        const star = prio === 1 ? ' ★' : '';
+        return ivDisplayName(iv.name) + star;
+      }).join(', ') || '<span style="color:var(--ink-30)">—</span>';
+      const missingTag = (missingByDept[d] && !ivByDept[d].size)
+        ? ` <span style="font-size:10px;font-weight:700;color:#B45309;background:#FEF3C7;padding:1px 6px;border-radius:20px">⚠ Chưa có PV</span>`
+        : '';
+      return `<div style="font-size:11px;margin-bottom:4px"><span class="badge ${dc}" style="font-size:9px;padding:1px 5px;margin-right:4px">${DEPT_NAMES[d]||d}</span>${names}${missingTag}</div>`;
+    }).join('');
+
+    const nhanSuHtml = (slotRolesHtml + interviewerHtml) || `<span style="color:var(--ink-30);font-size:11px">—</span>`;
+
+    const teamsHtml = teams.map((s, tIdx) => {
+      const groupHtml = (s.group || [])
+        .sort((a, b) => DEPT_ORDER.indexOf(a.dept) - DEPT_ORDER.indexOf(b.dept))
+        .map(g => {
+          const dc = DEPT_CLASS[g.dept] || 'b-md';
+          return `<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px;flex-wrap:wrap">
+            <span class="badge ${dc}" style="flex-shrink:0">${DEPT_NAMES[g.dept]||g.dept}</span>
+            <span style="font-size:13px;font-weight:600">${g.candidate.name}</span>
+          </div>`;
+        }).join('');
+
+      return `<div style="${multi ? 'padding:8px 0' : ''}">
+        ${multi ? `<div style="margin-bottom:4px">
+          <span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-60)">Nhóm ${tIdx+1}</span>
+        </div>` : ''}
+        ${groupHtml || '<span style="color:var(--ink-30)">—</span>'}
+      </div>`;
+    }).join(multi ? '<div style="border-top:1px dashed var(--border)"></div>' : '');
+
+    // Hành động: 1 nút sửa DÙNG CHUNG cho cả ca (áp dụng cho mọi nhóm cùng slotId — xem saveEditRow)
+    const actionHtml = canCRUD()
+      ? `<button class="btn btn-ghost btn-xs" onclick="openEditRowModal(${S.schedule.indexOf(first)})" title="Sửa ca (áp dụng cho tất cả nhóm)"><i class="fas fa-pen"></i> Sửa ca</button>`
       : `<span style="color:var(--ink-30)">—</span>`;
 
     return `<tr>
-      <td class="num">${idx+1}</td>
-      <td><b>${s.slotName}</b></td>
-      <td style="white-space:nowrap;font-size:12px">${s.day}</td>
-      <td style="white-space:nowrap;font-size:12px">${s.time}</td>
+      <td class="num">${rowIdx+1}</td>
+      <td style="white-space:nowrap">
+        <b>${first.slotName.replace(/\s*·\s*Nhóm\s*\d+$/,'')}</b>
+        <div style="font-size:11px;color:var(--ink-60)">${first.day} · ${first.time}</div>
+      </td>
       <td>${modeHtml}</td>
       <td>${locHtml}</td>
-      <td style="min-width:320px">${groupHtml || '<span style="color:var(--ink-30)">—</span>'}</td>
+      <td style="min-width:340px">${teamsHtml}</td>
+      <td style="min-width:150px">${nhanSuHtml}</td>
       <td>${actionHtml}</td>
     </tr>`;
   }).join('');
@@ -3186,7 +3448,7 @@ function renderTableRound2(schedule, deptFilter) {
   // Rebuild thead cho round2
   const thead = body.closest('table')?.querySelector('thead tr');
   if (thead) {
-    thead.innerHTML = `<th>#</th><th>Ca phỏng vấn</th><th>Ngày</th><th>Thời gian</th><th>Hình thức</th><th>Địa điểm</th><th>Nhóm ứng viên (theo ban)</th><th>Hành động</th>`;
+    thead.innerHTML = `<th>#</th><th>Ca phỏng vấn</th><th>Hình thức</th><th>Địa điểm</th><th>Nhóm ứng viên (theo ban)</th><th>Nhân sự</th><th>Hành động</th>`;
   }
 }
 
@@ -3432,22 +3694,21 @@ function renderBoardView() {
         // Round2: 1 row = 1 nhóm → render từng ứng viên trong group với chips kéo thả
         if (row.round === 'round2' && row.group && row.group.length) {
           html += `<div style="background:var(--bg);border-radius:var(--radius-sm);padding:8px 10px;border:1px solid var(--border)">`;
-          html += `<div style="font-size:10px;font-weight:700;color:var(--ink-60);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Nhóm phỏng vấn — ${row.group.length} ban</div>`;
-          row.group.forEach(g => {
+          html += `<div style="font-size:10px;font-weight:700;color:var(--ink-60);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Nhóm phỏng vấn — ${row.group.length} người</div>`;
+          row.group.forEach((g, mIdx) => {
             const dc = DEPT_CLASS[g.dept] || 'b-md';
             html += `<div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;margin-bottom:6px;background:var(--white)">
               <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
                 <span class="badge ${dc}" style="font-size:9px;padding:1px 5px">${DEPT_NAMES[g.dept]||g.dept}</span>
-                <span style="font-size:12px;font-weight:600">${g.candidate.name}</span>
+                ${chipCandHtmlGroup(g.candidate.name, g.dept, idx, mIdx)}
               </div>
-              <div style="display:flex;flex-wrap:wrap;gap:4px">
-                ${(g.ivs||[]).map(iv => {
-                  const prio = rolePriorityRank(iv.accountRole||'');
-                  const star = prio===0?' 🎓':prio===1?' ★':'';
-                  const colorStyle = `background:var(${DEPT_BG[iv.dept||g.dept]||'--ink-10'});color:var(${DEPT_COLORS[iv.dept||g.dept]||'--ink'});border-color:var(${DEPT_COLORS[iv.dept||g.dept]||'--border'})`;
-                  return `<div class="chip chip-iv" style="${colorStyle};cursor:default" title="${rolePriorityLabel(iv.accountRole||'')}">${ivDisplayName(iv.name)}${star}</div>`;
-                }).join('')}
-                ${!g.ivs||!g.ivs.length ? `<span style="font-size:11px;color:var(--ink-30)">Chưa có nhân sự</span>` : ''}
+              <div class="role-zone" id="rzone-grp-${idx}-${mIdx}"
+                ondragover="event.preventDefault();this.classList.add('drag-over')"
+                ondragleave="this.classList.remove('drag-over')"
+                ondrop="dropToGroupMember(event,${idx},${mIdx})"
+                style="display:flex;flex-wrap:wrap;gap:4px;min-height:22px">
+                ${(g.ivs||[]).map(iv => chipIVHtmlGroup(iv.name, iv.dept||g.dept, iv.accountRole||'', idx, mIdx)).join('')}
+                ${!g.ivs||!g.ivs.length ? `<span style="font-size:11px;color:var(--ink-30)">Kéo nhân sự vào đây</span>` : ''}
               </div>
             </div>`;
           });
@@ -3510,6 +3771,38 @@ function renderBoardView() {
   el.innerHTML = html;
 }
 
+function chipCandHtmlGroup(name, dept, rowIdx, memberIdx) {
+  const dragJson = JSON.stringify({ type:'candidate', name, dept, slotId:null, rowIdx, memberIdx });
+  const escapedJson = dragJson.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const xBtn = canCRUD()
+    ? `<button class="chip-x" onclick="event.stopPropagation();removeCandFromGroup(${rowIdx},${memberIdx})" title="Xoá khỏi ca"><i class="fas fa-xmark"></i></button>` : '';
+  return `<div class="chip chip-cand" draggable="true"
+    data-drag="${escapedJson}"
+    ondragstart="startDragFromAttr(event)"
+    ondragend="this.classList.remove('dragging')"
+    style="font-size:12px;font-weight:600;padding:2px 6px"
+    title="Kéo sang ca khác">
+    ${name}${xBtn}
+  </div>`;
+}
+
+function chipIVHtmlGroup(name, dept, accountRole, rowIdx, memberIdx) {
+  const prio = rolePriorityRank(accountRole);
+  const star = prio === 1 ? ' ★' : '';
+  const colorStyle = `background:var(${DEPT_BG[dept]||'--ink-10'});color:var(${DEPT_COLORS[dept]||'--ink'});border-color:var(${DEPT_COLORS[dept]||'--border'})`;
+  const dragJson = JSON.stringify({ type:'interviewer', name, dept, accountRole, slotId:null, roleKey:null, rowIdx:null });
+  const escapedJson = dragJson.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const xBtn = canCRUD()
+    ? `<button class="chip-x" onclick="event.stopPropagation();removeIVFromGroupMember(${rowIdx},${memberIdx},'${name.replace(/'/g,"\\'")}')" title="Xoá khỏi PV"><i class="fas fa-xmark"></i></button>` : '';
+  return `<div class="chip chip-iv" draggable="true" style="${colorStyle}"
+    data-drag="${escapedJson}"
+    ondragstart="startDragFromAttr(event)"
+    ondragend="this.classList.remove('dragging')"
+    title="${rolePriorityLabel(accountRole)}">
+    ${ivDisplayName(name)}${star}${xBtn}
+  </div>`;
+}
+
 function chipCandHtml(name, dept, slotId, rowIdx) {
   // Dùng data-drag attribute thay vì nhúng JSON inline để tránh lỗi với tên tiếng Việt có dấu
   const dragJson = JSON.stringify({ type:'candidate', name, dept, slotId, rowIdx });
@@ -3527,7 +3820,7 @@ function chipCandHtml(name, dept, slotId, rowIdx) {
 
 function chipIVHtml(name, dept, accountRole, slotId, roleKey, rowIdx) {
   const prio = rolePriorityRank(accountRole);
-  const star = prio === 0 ? ' 🎓' : prio === 1 ? ' ★' : '';
+  const star = prio === 1 ? ' ★' : '';
   const colorStyle = `background:var(${DEPT_BG[dept]||'--ink-10'});color:var(${DEPT_COLORS[dept]||'--ink'});border-color:var(${DEPT_COLORS[dept]||'--border'})`;
   // Dùng data-drag attribute — tránh lỗi JSON inline với tên/ký tự đặc biệt tiếng Việt
   const dragJson = JSON.stringify({ type:'interviewer', name, dept, accountRole, slotId, roleKey, rowIdx });
@@ -3828,14 +4121,171 @@ function _finishDropToRowRole(rowIdx, roleKey) {
   saveSchedule({ silent: true });
 }
 
+// Drop: IV → 1 ứng viên cụ thể bên trong nhóm (Vòng 2, row.group[memberIdx])
+function dropToGroupMember(event, rowIdx, memberIdx) {
+  event.currentTarget.classList.remove('drag-over');
+  if (!_drag || _drag.type !== 'interviewer' || !canCRUD()) { _drag = null; return; }
+  const row = S.schedule[rowIdx];
+  const member = row && row.group ? row.group[memberIdx] : null;
+  if (!member) { _drag = null; return; }
+
+  // Ban của nhân sự phải khớp ban của ứng viên (Vòng 2 chia PV theo ban)
+  const ivDeptOf = _drag.dept || (S.interviewers.find(iv => iv.name === _drag.name)||{}).department || '';
+  if (ivDeptOf && ivDeptOf !== member.dept) {
+    toast(`❌ ${_drag.name} thuộc ban ${DEPT_NAMES[ivDeptOf]||ivDeptOf}, không khớp ban ${DEPT_NAMES[member.dept]||member.dept} của ${member.candidate.name}.`, 'err');
+    _drag = null; return;
+  }
+
+  const ivObj = S.interviewers.find(iv => iv.name === _drag.name);
+  const nameInSlot = (nm) => {
+    if (S.slotRoles[row.slotId] && Object.values(S.slotRoles[row.slotId]).some(arr => arr && arr.find(p => p.name === nm))) return true;
+    return S.schedule.some(r => r.slotId === row.slotId && (
+      (r.roles && Object.values(r.roles).some(arr => arr && arr.find(p => p.name === nm))) ||
+      (r.group && r.group.some(g => (g.ivs||[]).some(iv => iv.name === nm)))
+    ));
+  };
+  const alreadyInThisSlot = nameInSlot(_drag.name);
+  if (ivObj && !alreadyInThisSlot && !(ivObj.availableSlots||[]).includes(row.slotId)) {
+    const slotDisplay = row.slotName ? `${row.slotName} (${row.time})` : row.slotId;
+    toast(`❌ ${_drag.name} chưa tick rảnh cho ca ${slotDisplay} — không thể phân công vào ca này.`, 'err');
+    _drag = null; return;
+  }
+
+  // Vòng 2: 1 nhóm nhân sự (Interviewer) của 1 ban sẽ phỏng vấn CHUNG tất cả ứng viên
+  // ban đó trong CA đó (không phải từng ứng viên riêng) — nên gán 1 người là tự động
+  // áp dụng cho mọi ứng viên cùng ban trong cùng ca (mọi nhóm/Nhóm 1, Nhóm 2... của ca đó).
+  const sameDeptMembers = [];
+  S.schedule.forEach(r => {
+    if (r.slotId !== row.slotId || !r.group) return;
+    r.group.forEach(g => { if (g.dept === member.dept) sameDeptMembers.push(g); });
+  });
+  if (!sameDeptMembers.length) sameDeptMembers.push(member);
+
+  const alreadyAssigned = sameDeptMembers.some(g => (g.ivs||[]).some(iv => iv.name === _drag.name));
+  if (alreadyAssigned) { _drag = null; return; }
+
+  sameDeptMembers.forEach(g => {
+    if (!g.ivs) g.ivs = [];
+    if (!g.ivs.find(iv => iv.name === _drag.name)) {
+      g.ivs.push({ name:_drag.name, email:_drag.email||'', dept:ivDeptOf, accountRole:_drag.accountRole||'' });
+    }
+    g.needsInterviewer = false;
+  });
+  _drag = null;
+  S.scheduleDirty = true;
+  syncResultViews();
+  saveSchedule({ silent: true });
+}
+
+function removeIVFromGroupMember(rowIdx, memberIdx, ivName) {
+  if (!canCRUD()) { toast('Bạn không có quyền', 'err'); return; }
+  const row = S.schedule[rowIdx];
+  const member = row && row.group ? row.group[memberIdx] : null;
+  if (!member) return;
+  // Nhân sự phỏng vấn chung cả ban trong ca — xoá thì xoá khỏi mọi ứng viên cùng ban, cùng ca
+  S.schedule.forEach(r => {
+    if (r.slotId !== row.slotId || !r.group) return;
+    r.group.forEach(g => {
+      if (g.dept === member.dept) g.ivs = (g.ivs||[]).filter(iv => iv.name !== ivName);
+    });
+  });
+  S.scheduleDirty = true;
+  syncResultViews();
+  saveSchedule({ silent: true });
+}
+
+function removeCandFromGroup(rowIdx, memberIdx) {
+  if (!canCRUD()) { toast('Bạn không có quyền', 'err'); return; }
+  const row = S.schedule[rowIdx];
+  if (!row || !row.group || !row.group[memberIdx]) return;
+  row.group.splice(memberIdx, 1);
+  if (!row.group.length) S.schedule.splice(rowIdx, 1);
+  S.scheduleDirty = true;
+  syncResultViews();
+  saveSchedule({ silent: true });
+}
+
+// Vòng 2: kéo ứng viên (đang nằm trong 1 nhóm, hoặc từ pool "chưa xếp") sang 1 ca khác.
+function dropToSlotRound2(event, slotId) {
+  const sl = slotObj(slotId);
+  const slotDisplay = sl ? `${sl.name} (${sl.time})` : slotId;
+  const dept = _drag.dept;
+
+  const candObj = S.candidates.find(c => c.name === _drag.name && (c.dept||c.department||'') === dept);
+  if (candObj && !(candObj.availableSlots||[]).includes(slotId)) {
+    toast(`❌ ${_drag.name} chưa tick rảnh cho ca ${slotDisplay} — không thể xếp vào ca này.`, 'err');
+    _drag = null; return;
+  }
+
+  // Nếu ứng viên đã ở trong 1 nhóm khác → gỡ ra trước
+  let oldRow = null, oldMemberIdx = -1;
+  if (_drag.rowIdx !== null && _drag.rowIdx !== undefined && _drag.memberIdx !== null && _drag.memberIdx !== undefined) {
+    oldRow = S.schedule[_drag.rowIdx];
+    if (oldRow && oldRow.group && oldRow.group[_drag.memberIdx]) {
+      if (oldRow.slotId === slotId) { _drag = null; return; } // kéo về ca cũ, bỏ qua
+      oldMemberIdx = _drag.memberIdx;
+    } else { oldRow = null; }
+  }
+
+  // Trần: 1 ca tối đa 2 nhóm (8 người) — không giới hạn theo ban nữa
+  const rowsInTarget = S.schedule.filter(r => r.slotId === slotId && r.group);
+  const totalInTarget = rowsInTarget.reduce((sum, r) => sum + r.group.length, 0);
+  if (totalInTarget >= 8) {
+    toast(`❌ Ca ${slotDisplay} đã đủ tối đa 2 nhóm (8 người) — không thể thêm nữa.`, 'err');
+    _drag = null; return;
+  }
+
+  // Không cho trùng: ứng viên đã có mặt ở ca đích chưa
+  const alreadyIn = S.schedule.some(r => r.slotId === slotId && r.group && r.group.some(g => g.candidate.name === _drag.name && g.dept === dept));
+  if (alreadyIn) {
+    toast(`${_drag.name} đã có mặt trong ca này rồi.`, 'warn');
+    _drag = null; return;
+  }
+
+  // Gỡ khỏi nhóm cũ (nếu có)
+  let movedMember = null;
+  if (oldRow) {
+    movedMember = oldRow.group[oldMemberIdx];
+    oldRow.group.splice(oldMemberIdx, 1);
+    if (!oldRow.group.length) {
+      const oldIdx = S.schedule.indexOf(oldRow);
+      if (oldIdx !== -1) S.schedule.splice(oldIdx, 1);
+    }
+  }
+
+  const candidateFull = candObj || { name:_drag.name, email:'' };
+  const newMember = movedMember
+    ? { ...movedMember, dept }
+    : { candidate: candidateFull, dept, ivs: [] };
+
+  // Tìm row cùng slotId đã có sẵn để gộp vào, không thì tạo row mới
+  let targetRow = S.schedule.find(r => r.round === 'round2' && r.slotId === slotId);
+  if (!targetRow) {
+    targetRow = {
+      round: 'round2', slotId, slotName: sl ? sl.name : slotId, day: sl ? sl.day : '', time: sl ? sl.time : '',
+      mode: sl ? (sl.mode || 'offline') : 'offline', location: sl ? (sl.location || '') : '', note: '',
+      group: [], roles: {}, candidateName: '', candidateEmail: '', candidateDept: '', candidateType: 'priority', interviewers: [],
+    };
+    S.schedule.push(targetRow);
+  }
+  targetRow.group.push(newMember);
+  targetRow.candidateName = targetRow.group.map(g => g.candidate.name).join(', ');
+
+  _drag = null;
+  S.scheduleDirty = true;
+  syncResultViews();
+  saveSchedule({ silent: true });
+  toast(`Đã chuyển ${newMember.candidate.name} sang ${slotDisplay}`, 'ok');
+}
+
 // Drop: ứng viên vào ca (tạo row mới cho ca đó)
 function dropToSlot(event, slotId) {
   event.currentTarget.classList.remove('drag-over');
   if (!_drag || _drag.type !== 'candidate' || !canCRUD()) { _drag = null; return; }
-  // Round2 dùng format group[] — không hỗ trợ kéo thả ứng viên trực tiếp vào slot
+
   if (S.activeRound === 'round2') {
-    toast('Vòng 2: Chỉnh sửa nhóm qua bảng Kết quả. Kéo-thả ứng viên không hỗ trợ cho format nhóm.', 'warn');
-    _drag = null; return;
+    dropToSlotRound2(event, slotId);
+    return;
   }
 
   const sl = slotObj(slotId);
@@ -3945,14 +4395,20 @@ function openEditRowModal(idx) {
   const row = S.schedule[idx];
   if (!row || !canEditRow(row)) { toast('Bạn không có quyền sửa ca này', 'err'); return; }
   document.getElementById('edit-row-index').value = idx;
-  const editSubLabel = (row.round === 'round2' && row.group && row.group.length)
-    ? `Nhóm ${row.group.length} ứng viên · ${row.slotName} · ${row.day} ${row.time}`
+  const isRound2 = row.round === 'round2' && row.group && row.group.length;
+  const editSubLabel = isRound2
+    ? `${row.slotName} · ${row.day} ${row.time}`
     : `${row.candidateName} · ${DEPT_NAMES[row.candidateDept]||row.candidateDept} · ${row.day} ${row.time}`;
   document.getElementById('edit-row-sub').textContent = editSubLabel;
   document.getElementById('edit-row-location').value = row.location || '';
   document.getElementById('edit-row-interviewers').value = (row.interviewers||[]).map(iv=>iv.name).join(', ');
   document.getElementById('edit-row-note').value = row.note || '';
   setEditRowMode(row.mode || 'offline');
+
+  // Vòng 2: PV gán theo từng ứng viên (kéo-thả), field text tự do không áp dụng — ẩn đi, hiện ghi chú thay thế
+  document.getElementById('edit-row-interviewers-group').style.display = isRound2 ? 'none' : 'block';
+  document.getElementById('edit-row-round2-note').style.display = isRound2 ? 'block' : 'none';
+
   document.getElementById('edit-row-overlay').classList.add('open');
 }
 
@@ -3974,23 +4430,37 @@ async function saveEditRow() {
   const idx = parseInt(document.getElementById('edit-row-index').value, 10);
   const row = S.schedule[idx];
   if (!row || !canEditRow(row)) { toast('Bạn không có quyền sửa ca này', 'err'); return; }
+  const isRound2 = row.round === 'round2' && row.group && row.group.length;
 
-  const namesRaw = document.getElementById('edit-row-interviewers').value.split(',').map(s=>s.trim()).filter(Boolean);
-  const interviewers = namesRaw.map(name => {
-    const match = S.interviewers.find(iv => iv.name.toLowerCase() === name.toLowerCase());
-    return { name, dept: match ? (match.department||match.dept||row.candidateDept) : row.candidateDept };
-  });
+  const mode = _editRowMode;
+  const location = document.getElementById('edit-row-location').value.trim();
+  const note = document.getElementById('edit-row-note').value.trim();
 
-  row.mode = _editRowMode;
-  row.location = document.getElementById('edit-row-location').value.trim();
-  row.note = document.getElementById('edit-row-note').value.trim();
-  row.interviewers = interviewers;
-  // Sync row.roles.interviewer để renderTable() đọc đúng
-  if (!row.roles) row.roles = {};
-  row.roles['interviewer'] = interviewers.map(iv => ({
-    name: iv.name, dept: iv.dept || '',
-    accountRole: (S.interviewers.find(x => x.name === iv.name) || {}).accountRole || ''
-  }));
+  if (isRound2) {
+    // Hình thức/địa điểm/ghi chú là thuộc tính của CẢ CA — áp dụng cho mọi nhóm cùng slotId,
+    // không chỉ nhóm đang mở modal (tránh Nhóm 1/Nhóm 2 lệch dữ liệu như trước).
+    S.schedule.forEach(r => {
+      if (r.slotId === row.slotId && r.round === 'round2') {
+        r.mode = mode; r.location = location; r.note = note;
+      }
+    });
+  } else {
+    const namesRaw = document.getElementById('edit-row-interviewers').value.split(',').map(s=>s.trim()).filter(Boolean);
+    const interviewers = namesRaw.map(name => {
+      const match = S.interviewers.find(iv => iv.name.toLowerCase() === name.toLowerCase());
+      return { name, dept: match ? (match.department||match.dept||row.candidateDept) : row.candidateDept };
+    });
+    row.mode = mode;
+    row.location = location;
+    row.note = note;
+    row.interviewers = interviewers;
+    // Sync row.roles.interviewer để renderTable() đọc đúng
+    if (!row.roles) row.roles = {};
+    row.roles['interviewer'] = interviewers.map(iv => ({
+      name: iv.name, dept: iv.dept || '',
+      accountRole: (S.interviewers.find(x => x.name === iv.name) || {}).accountRole || ''
+    }));
+  }
 
   closeEditRowModal();
   const activeTab = document.querySelector('.filter-tab.active');
@@ -4030,9 +4500,11 @@ function exportResult() {
 
   exportRows.forEach((s,i) => {
     const roleCols = roleDefs.map(rd => {
-      const people = s.roles && s.roles[rd.key]
-        ? s.roles[rd.key]
-        : (rd.key === 'interviewer' ? (s.interviewers||[]) : []);
+      const people = rd.scope === 'slot'
+        ? ((S.slotRoles[s.slotId] && S.slotRoles[s.slotId][rd.key]) || [])
+        : (s.roles && s.roles[rd.key]
+            ? s.roles[rd.key]
+            : (rd.key === 'interviewer' ? (s.interviewers||[]) : []));
       return people.map(p => {
         const prio = rolePriorityRank(p.accountRole||'');
         const badge = prio === 0 ? ' [Alumni]' : prio === 1 ? ' [Admin]' : '';

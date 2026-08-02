@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Interview Day · Enactus FTU</title>
+<title>Interview Day | Enactus FTU Hanoi</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
@@ -11,56 +11,62 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
-  /* === ENACTUS PALETTE === */
-  --ink:#1A1A18;--ink-60:#5C5C56;--ink-30:#ABABAA;--ink-10:#EBEBEA;
-  --bg:#F2F2EE;--white:#FFFFFF;--border:#DCDCD7;
+  /* === CLEAN LIGHT-GRAY PALETTE (minimal, no purple) === */
+  --ink:#18181B;--ink-60:#71717A;--ink-30:#A1A1AA;--ink-10:#F4F4F5;
+  --bg:#FAFAFA;--white:#FFFFFF;--border:#E4E4E7;
 
-  /* Primary: Enactus Gold */
-  --yellow:#E8C800;--yellow-soft:#FBF6D0;--yellow-mid:#F5E03A;
+  /* Primary accent: clean blue (no purple/indigo) */
+  --yellow:#2563EB;--yellow-soft:#EFF6FF;--yellow-mid:#3B82F6;
 
-  /* Accent: Charcoal panels */
-  --panel-bg:#222220;--panel-soft:#2E2E2B;
+  /* Near-black graphite — used sparingly for primary buttons / toast / active tab */
+  --panel-bg:#18181B;--panel-soft:#27272A;
 
   /* Semantic */
-  --green:#1DB954;--green-soft:#D1FAE5;
+  --green:#16A34A;--green-soft:#DCFCE7;
   --red:#E53E3E;--red-soft:#FEE2E2;
   --blue:#2563EB;--blue-soft:#DBEAFE;
   --orange:#D97706;--orange-soft:#FEF3C7;
-  --purple:#7C3AED;--purple-soft:#EDE9FE;
+  --purple:#0F766E;--purple-soft:#CCFBF1;
 
   /* Shape */
-  --r:8px;--r-lg:12px;--r-xl:16px;
-  --shadow:0 1px 4px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04);
-  --shadow-lg:0 4px 16px rgba(0,0,0,.10),0 12px 40px rgba(0,0,0,.08);
+  --r:10px;--r-lg:14px;--r-xl:18px;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);
+  --shadow-lg:0 4px 16px rgba(16,24,40,.08),0 12px 32px rgba(16,24,40,.10);
   --t:.15s ease;
+
+  /* Consistent spacing scale used across the app */
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:28px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.5;overflow-x:hidden}
 
 /* BOOT */
-#boot{position:fixed;inset:0;background:var(--panel-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px;transition:opacity .4s}
+#boot{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px;transition:opacity .4s}
 #boot.out{opacity:0;pointer-events:none}
-.boot-logo{font-size:28px;font-weight:800;color:#fff;letter-spacing:-1px;text-transform:uppercase}
-.boot-logo span{color:var(--yellow)}
-.boot-bar{width:200px;height:2px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden}
+.boot-logo{height:70px;width:auto;object-fit:contain}
+.boot-bar{width:200px;height:2px;background:var(--ink-10);border-radius:99px;overflow:hidden}
 .boot-fill{height:100%;width:0;background:var(--yellow);border-radius:99px;transition:width .4s ease}
-.boot-msg{font-size:12px;color:rgba(255,255,255,.35);font-family:'JetBrains Mono',monospace}
+.boot-msg{font-size:12px;color:var(--ink-30);font-family:'JetBrains Mono',monospace}
 
 /* APP */
 #app{display:none;min-height:100vh;flex-direction:column}
 #app.visible{display:flex}
+html.kiosk-mode #boot{background:var(--panel-bg)}
+html.kiosk-mode .boot-logo{filter:brightness(0) invert(1)}
+html.kiosk-mode .boot-msg{color:rgba(255,255,255,.4)}
+html.kiosk-mode .boot-bar{background:rgba(255,255,255,.12)}
+html.kiosk-mode #app.visible{display:none}
 
 /* TOPBAR */
-.topbar{position:sticky;top:0;z-index:200;background:var(--panel-bg);color:#fff;padding:0 20px;height:50px;display:flex;align-items:center;gap:12px;border-bottom:2px solid var(--yellow)}
-.topbar-logo{font-size:15px;font-weight:800;letter-spacing:-0.5px;flex-shrink:0;text-transform:uppercase}
-.topbar-logo span{color:var(--yellow)}
-.topbar-round{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:5px;padding:3px 10px;color:rgba(255,255,255,.55);flex-shrink:0}
+.topbar{position:sticky;top:0;z-index:200;background:var(--white);color:var(--ink);padding:0 20px;height:50px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.topbar-logo{height:26px;width:auto;object-fit:contain;flex-shrink:0}
+.topbar-round{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:var(--ink-10);border:1px solid var(--border);border-radius:5px;padding:3px 10px;color:var(--ink-60);flex-shrink:0}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px;flex-shrink:0}
 .topbar-clock{font-size:16px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--yellow);letter-spacing:.5px}
-.topbar-user{font-size:11px;color:rgba(255,255,255,.45);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topbar-user{font-size:11px;color:var(--ink-60);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .topbar-role-badge{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 8px;border-radius:4px}
-.role-superadmin{background:var(--yellow);color:var(--ink)}
-.role-admin-hr,.role-admin{background:#7C3AED;color:#fff}
+.role-superadmin{background:var(--yellow);color:#fff}
+.role-admin-hr,.role-admin{background:#334155;color:#fff}
 .role-host{background:#1D4ED8;color:#fff}
 .role-checkin{background:#166534;color:#fff}
 .role-alumni{background:#9A3412;color:#fff}
@@ -68,7 +74,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .role-pic{background:#0891B2;color:#fff}
 
 /* TICKER */
-.ticker{background:var(--yellow);color:var(--ink);padding:5px 20px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:10px;overflow:hidden;position:relative;border-bottom:1px solid rgba(0,0,0,.08)}
+.ticker{background:var(--yellow-soft);color:var(--ink);padding:5px 20px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:10px;overflow:hidden;position:relative;border-bottom:1px solid var(--border)}
 .ticker-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;font-weight:800;display:flex;align-items:center;gap:5px}
 .ticker-track{overflow:hidden;flex:1;position:relative;height:18px}
 .ticker-inner{display:flex;align-items:center;gap:40px;white-space:nowrap;position:absolute;animation:tickerScroll 35s linear infinite}
@@ -82,7 +88,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .progress-bar-fill{height:100%;background:var(--yellow);transition:width .6s ease;position:absolute;top:0;left:0}
 
 /* MAIN */
-.main{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:12px}
+.main{flex:1;width:100%;max-width:1440px;margin:0 auto;padding:20px 24px 32px;display:flex;flex-direction:column;gap:16px}
 
 /* CTRL BAR */
 .ctrl-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -92,7 +98,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .round-tab-btn:hover:not(.active):not(.activated){border-color:var(--ink);color:var(--ink)}
 .btn{padding:6px 14px;border-radius:7px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:var(--t);display:inline-flex;align-items:center;gap:6px;font-family:inherit;white-space:nowrap}
 .btn-primary{background:var(--panel-bg);color:#fff}.btn-primary:hover{background:var(--panel-soft)}
-.btn-yellow{background:var(--yellow);color:var(--ink);font-weight:700}.btn-yellow:hover{filter:brightness(.93)}
+.btn-yellow{background:var(--yellow);color:#fff;font-weight:700}.btn-yellow:hover{filter:brightness(1.1)}
 .btn-ghost{background:transparent;color:var(--ink-60);border:1px solid var(--border)}.btn-ghost:hover{border-color:var(--ink);color:var(--ink)}
 .btn-sm{padding:5px 11px;font-size:11px}
 .btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#C53030}
@@ -102,7 +108,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .btn:disabled{opacity:.4;cursor:not-allowed}
 
 /* ROUND ACTIVATION BANNER */
-.round-activate-banner{background:var(--white);border:2px dashed var(--border);border-radius:var(--r-lg);padding:24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+.round-activate-banner{background:var(--white);border:2px dashed var(--border);border-radius:var(--r-lg);padding:28px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:var(--shadow)}
 .round-activate-banner.active-round{background:var(--green-soft);border-color:var(--green);border-style:solid}
 .round-activate-icon{font-size:32px}
 .round-activate-title{font-size:16px;font-weight:800}
@@ -113,7 +119,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .pill-closed{background:var(--red-soft);color:var(--red)}
 
 /* SLOT BANNER */
-.slot-banner{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:10px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.slot-banner{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 18px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;box-shadow:var(--shadow)}
 .slot-banner-item{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--ink-60)}
 .slot-banner-item b{color:var(--ink)}
 .slot-banner-progress{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700}
@@ -137,29 +143,111 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .csd-action{flex-shrink:0;padding:4px 10px;border-radius:6px;background:var(--green-soft);color:var(--green);font-size:11px;font-weight:700;border:1.5px solid var(--green)}
 
 /* STATS ROW */
-.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:8px}
-.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px;transition:var(--t)}
-.stat-card:hover{border-color:var(--ink-30)}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;transition:var(--t);box-shadow:var(--shadow)}
+.stat-card:hover{border-color:var(--ink-30);box-shadow:var(--shadow-lg)}
 .stat-card .stat-num{font-size:24px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1}
-.stat-card .stat-label{font-size:9px;color:var(--ink-60);margin-top:5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-.stat-card.accent{background:var(--panel-bg);border-color:var(--panel-bg);color:#fff}.stat-card.accent .stat-label{color:rgba(255,255,255,.45)}.stat-card.accent .stat-num{color:var(--yellow)}
+.stat-card .stat-label{font-size:10px;color:var(--ink-60);margin-top:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.stat-card.accent{background:#1E3A8A;border-color:#1E3A8A;color:#fff}.stat-card.accent .stat-label{color:rgba(255,255,255,.65)}.stat-card.accent .stat-num{color:#93C5FD}
 .stat-card.good{border-color:var(--green)}.stat-card.good .stat-num{color:var(--green)}
 .stat-card.warn{background:var(--orange-soft);border-color:var(--orange)}
 .stat-card.danger{background:var(--red-soft);border-color:var(--red)}
 
 /* LAYOUT */
-.layout{display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start}
+.layout{display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start}
 @media(max-width:960px){.layout{grid-template-columns:1fr}}
 
 /* SECTIONS */
-.rooms-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:10px;border-bottom:2px solid var(--yellow)}
-.section-title{font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-60)}
+.rooms-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid var(--yellow)}
+.section-title{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-60)}
 .add-room-btn{background:var(--white);border:1px dashed var(--border);border-radius:6px;color:var(--ink-60);cursor:pointer;font-size:11px;font-weight:600;padding:4px 10px;transition:var(--t);display:inline-flex;align-items:center;gap:5px}
 .add-room-btn:hover{border-color:var(--yellow);color:var(--ink)}
-.rooms-grid{display:flex;flex-direction:column;gap:10px}
+.rooms-grid{display:flex;flex-direction:column;gap:16px}
 
 /* NO-ROOM WARNING BANNER */
-.no-room-banner{background:var(--orange-soft);border:1.5px solid var(--orange);border-radius:var(--r-lg);padding:10px 14px;display:flex;align-items:flex-start;gap:10px}
+.no-room-banner{background:var(--orange-soft);border:1.5px solid var(--orange);border-radius:var(--r-lg);padding:12px 16px;display:flex;align-items:flex-start;gap:10px;box-shadow:var(--shadow)}
+.table-timer{padding:4px 10px;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:5px;border-bottom:1px solid var(--border)}
+.table-timer.tt-normal{background:var(--blue-soft);color:var(--blue)}
+.table-timer.tt-warn{background:var(--orange-soft);color:var(--orange)}
+.table-timer.tt-over{background:var(--red-soft);color:var(--red);animation:pulsePause 1.5s ease-in-out infinite}
+
+/* KIOSK MODE — giao diện sáng */
+.kiosk-overlay{position:fixed;inset:0;z-index:5000;background:radial-gradient(circle at 50% 0%,#ffffff 0%,#F1F2F4 60%);color:var(--ink);display:flex;flex-direction:column;padding:26px 48px 30px}
+.kiosk-topbar{display:flex;align-items:center;gap:18px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.kiosk-brand{display:flex;align-items:center;gap:14px}
+.kiosk-logo{height:32px;width:auto;object-fit:contain}
+.kiosk-title{font-size:20px;font-weight:800;letter-spacing:2.5px;color:var(--yellow-mid);white-space:nowrap;display:flex;align-items:center;gap:9px}
+.kiosk-live-dot{width:7px;height:7px;border-radius:50%;background:#22C55E;flex-shrink:0;animation:liveDot 1.6s ease-in-out infinite}
+.kiosk-shift{font-size:12.5px;font-weight:600;color:var(--ink-60);padding:5px 12px;border:1px solid var(--border);border-radius:99px;white-space:nowrap;background:var(--white)}
+.kiosk-topbar-right{margin-left:auto;display:flex;align-items:center;gap:16px}
+.kiosk-datetime{text-align:right;line-height:1.25}
+.kiosk-clock{font-size:24px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--ink);letter-spacing:.5px}
+.kiosk-date{font-size:10.5px;font-weight:600;color:var(--ink-30);text-transform:capitalize}
+.kiosk-icon-btn{background:var(--white);border:1px solid var(--border);border-radius:9px;color:var(--ink);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:var(--t)}
+.kiosk-icon-btn:hover{background:var(--ink-10)}
+.kiosk-close{background:var(--white);border:1px solid var(--border);border-radius:9px;color:var(--ink);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.kiosk-close:hover{background:var(--ink-10)}
+
+.kiosk-stats{display:flex;gap:12px;margin-bottom:16px;flex-shrink:0}
+.kiosk-stat{flex:1;background:var(--white);border:1px solid var(--border);border-radius:14px;padding:12px 18px;display:flex;align-items:baseline;gap:9px;box-shadow:var(--shadow)}
+.kiosk-stat-num{font-size:26px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1}
+.kiosk-stat-label{font-size:11px;font-weight:600;color:var(--ink-30);text-transform:uppercase;letter-spacing:.4px}
+.kiosk-stat.st-wait .kiosk-stat-num{color:var(--orange)}
+.kiosk-stat.st-room .kiosk-stat-num{color:var(--yellow-mid)}
+.kiosk-stat.st-interview .kiosk-stat-num{color:var(--green)}
+
+/* HERO — "Xin mời vào phòng", full-width, không khung màu, chỉ chữ to + nảy nhẹ khi có người mới */
+.kiosk-hero{flex-shrink:0;text-align:center;padding:14px 10px 22px;border-bottom:1px solid var(--border);margin-bottom:18px}
+.kiosk-hero-label{font-size:13px;font-weight:800;letter-spacing:2px;color:var(--yellow-mid);text-transform:uppercase;margin-bottom:10px}
+.kiosk-hero-name{font-size:58px;font-weight:800;color:var(--ink);line-height:1.05;transform-origin:center}
+.kiosk-hero.bump .kiosk-hero-name{animation:kioskBump .7s ease}
+@keyframes kioskBump{0%{transform:scale(1)}30%{transform:scale(1.045)}60%{transform:scale(.99)}100%{transform:scale(1)}}
+.kiosk-hero-dest{font-size:22px;font-weight:700;color:var(--yellow-mid);margin-top:8px}
+.kiosk-hero-meta{font-size:13px;color:var(--ink-30);margin-top:6px;font-family:'JetBrains Mono',monospace}
+.kiosk-hero-empty{font-size:19px;color:var(--ink-30);padding:22px 0}
+.kiosk-hero-more{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.kiosk-hero-chip{background:var(--ink-10);border-radius:99px;padding:7px 16px;font-size:13px;font-weight:700;color:var(--ink-60);display:flex;align-items:center;gap:7px}
+.kiosk-hero-chip .chip-dest{color:var(--yellow-mid);font-weight:800}
+
+.kiosk-main{flex:1;display:flex;gap:24px;min-height:0}
+.kiosk-col{display:flex;flex-direction:column;min-height:0;flex:1}
+.kiosk-col-interview{border-left:1px solid var(--border);padding-left:24px}
+.kiosk-col-title{font-size:12.5px;font-weight:800;letter-spacing:1.5px;color:var(--ink-30);text-transform:uppercase;margin-bottom:14px;flex-shrink:0}
+.kiosk-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:9px}
+
+.kiosk-row{display:flex;align-items:center;gap:12px;background:var(--white);border:1px solid var(--border);border-radius:13px;padding:10px 14px;box-shadow:var(--shadow)}
+.kiosk-row .kiosk-avatar{width:38px;height:38px;font-size:14px}
+.kiosk-row .kiosk-name{font-size:16px}
+.kiosk-row .kiosk-dest{font-size:12.5px}
+.kiosk-row .kiosk-meta-row{margin-top:4px;gap:8px}
+.kiosk-avatar{width:46px;height:46px;border-radius:50%;background:var(--yellow-soft);color:var(--yellow-mid);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;flex-shrink:0}
+.kiosk-body{flex:1;min-width:0}
+.kiosk-name{font-size:20px;font-weight:800;line-height:1.2;color:var(--ink)}
+.kiosk-meta-row{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap}
+.kiosk-dest{font-size:14px;font-weight:700;color:var(--yellow-mid)}
+.kiosk-elapsed{font-size:12px;font-weight:600;color:var(--ink-30);font-family:'JetBrains Mono',monospace}
+.kiosk-empty{font-size:16px;color:var(--ink-30);text-align:center;margin-top:50px;line-height:1.6}
+
+/* Đếm ngược thời gian PV — tái dùng .table-timer, phóng to cho kiosk */
+.kiosk-row .table-timer{padding:4px 10px;border-radius:99px;font-size:11.5px;margin-top:1px;border-bottom:none;display:inline-flex}
+
+.kiosk-next-row{display:flex;align-items:center;gap:12px;background:var(--white);border:1px solid var(--border);border-radius:11px;padding:10px 14px}
+.kiosk-next-row.next-warn{background:var(--orange-soft);border-color:var(--orange)}
+.kiosk-next-row.next-alert{background:var(--red-soft);border-color:var(--red)}
+.kiosk-next-avatar{width:32px;height:32px;border-radius:50%;background:var(--ink-10);color:var(--ink-60);display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex-shrink:0}
+.kiosk-next-body{flex:1;min-width:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.kiosk-next-name{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.kiosk-next-wait{font-size:11px;font-weight:700;color:var(--ink-30);font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.kiosk-next-row.next-warn .kiosk-next-wait{color:var(--orange)}
+.kiosk-next-row.next-alert .kiosk-next-wait{color:var(--red)}
+
+/* Gesture layer — some browsers block requestFullscreen() unless triggered by a real click,
+   so the standalone kiosk tab shows this once until the user taps anywhere. */
+.kiosk-gesture-layer{position:fixed;inset:0;z-index:5100;background:rgba(0,0,0,.72);backdrop-filter:blur(2px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;cursor:pointer;color:#fff;text-align:center}
+.kiosk-gesture-layer.show{display:flex}
+.kiosk-gesture-icon{width:56px;height:56px;border:2px solid rgba(255,255,255,.5);border-radius:16px;display:flex;align-items:center;justify-content:center}
+.kiosk-gesture-text{font-size:16px;font-weight:700}
+.kiosk-gesture-sub{font-size:12px;color:rgba(255,255,255,.5)}
 .no-room-banner-icon{flex-shrink:0;color:var(--orange);margin-top:1px}
 .no-room-banner-body{flex:1;min-width:0}
 .no-room-banner-title{font-size:12px;font-weight:700;color:#92400E;margin-bottom:6px}
@@ -179,17 +267,18 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .room-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow)}
 .room-card.room-paused{border-color:var(--orange);opacity:.85}
 .room-card.room-closed{border-color:var(--red);opacity:.75}
-.room-header{padding:10px 14px;display:flex;align-items:center;gap:10px;background:var(--panel-bg);border-bottom:2px solid var(--yellow);flex-wrap:wrap;gap:8px}
+.room-header{padding:12px 16px;display:flex;align-items:center;gap:10px;background:var(--ink-10);border-bottom:1px solid var(--border);flex-wrap:wrap}
 .room-header.paused{background:var(--orange-soft);border-bottom-color:var(--orange)}
 .room-header.closed{background:var(--red-soft);border-bottom-color:var(--red)}
-.room-name{font-size:13px;font-weight:700;color:#fff}
+.room-name{font-size:13px;font-weight:700;color:var(--ink)}
 .room-header.paused .room-name,.room-header.closed .room-name{color:var(--ink)}
 .room-dept{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px}
 .room-actions{margin-left:auto;display:flex;gap:5px}
-.room-act-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:3px 8px;font-size:11px;font-weight:600;cursor:pointer;transition:var(--t);font-family:inherit;color:rgba(255,255,255,.7);display:inline-flex;align-items:center;gap:5px}
-.room-act-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+.room-act-btn{background:var(--white);border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:11px;font-weight:600;cursor:pointer;transition:var(--t);font-family:inherit;color:var(--ink-60);display:inline-flex;align-items:center;gap:5px}
+.room-act-btn:hover{background:var(--ink-10);color:var(--ink)}
 .room-act-btn.danger:hover{background:var(--red);border-color:var(--red);color:#fff}
-.tables-wrap{padding:8px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.tables-wrap{padding:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(max-width:640px){.tables-wrap{grid-template-columns:1fr}}
 
 /* TABLE CARD */
 .table-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color var(--t),box-shadow var(--t)}
@@ -200,11 +289,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .table-card.interviewing{border-color:var(--green);background:var(--green-soft)}
 .table-card.table-paused{border-color:var(--orange);opacity:.8}
 .table-card.drag-over{border-color:var(--yellow);background:var(--yellow-soft)}
-.table-header{padding:7px 10px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.table-header{padding:9px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
 .table-name-input{background:transparent;border:none;font-family:inherit;font-size:13px;font-weight:700;color:var(--ink);flex:1;min-width:0;cursor:pointer;outline:none;border-bottom:1.5px solid transparent;transition:border-color var(--t);padding:2px 0}
 .table-name-input:focus{border-bottom-color:var(--yellow);cursor:text}
 .table-pics{display:flex;gap:4px;flex-wrap:wrap;flex:1}
 .pic-chip{font-size:10px;font-weight:600;padding:2px 7px;border-radius:99px;background:var(--ink-10);color:var(--ink-60)}
+.team-assign-select{font-size:10px;font-weight:600;padding:3px 6px;border-radius:6px;border:1.5px solid var(--purple);background:var(--purple-soft);color:var(--purple);font-family:inherit;max-width:150px;flex-shrink:0;cursor:pointer}
+.team-assign-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;background:var(--purple-soft);color:var(--purple);flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
 .pic-chip.me{background:var(--yellow-soft);color:var(--ink);border:1px solid var(--yellow)}
 .table-manage-btn{background:none;border:none;color:var(--ink-30);cursor:pointer;padding:4px;border-radius:4px;transition:var(--t);display:inline-flex;align-items:center;justify-content:center}
 .table-manage-btn:hover{color:var(--ink);background:var(--ink-10)}
@@ -214,7 +305,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .kick-user-btn:hover{color:var(--red);background:var(--red-soft)}
 
 /* CANDIDATE SLOT */
-.cand-slot{padding:8px 10px;display:flex;align-items:flex-start;gap:8px;border-bottom:1px solid var(--ink-10);transition:background var(--t)}
+.cand-slot{padding:10px 12px;display:flex;align-items:flex-start;gap:10px;border-bottom:1px solid var(--ink-10);transition:background var(--t)}
+.cand-slot[draggable="true"]{cursor:grab}
+.cand-slot[draggable="true"]:active{cursor:grabbing}
 .cand-slot:last-child{border-bottom:none}
 .cand-slot.wait-warn{background:#FFFBEB}
 .cand-slot.wait-alert{background:#FEF2F2}
@@ -224,7 +317,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .cand-info{flex:1;min-width:0}
 .cand-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cand-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:3px}
-.cand-wait{font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--ink-30)}
+.cand-wait{font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--ink-30);white-space:nowrap}
 .cand-wait.warn{color:var(--orange)}
 .cand-wait.alert{color:var(--red)}
 .cand-note-text{font-size:10px;color:var(--ink-60);margin-top:2px;font-style:italic}
@@ -244,7 +337,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .status-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;white-space:nowrap}
 .s-wait{background:var(--ink-10);color:var(--ink-60)}
 .s-checkin{background:var(--blue-soft);color:var(--blue)}
-.s-room{background:var(--yellow-soft);color:#856A00}
+.s-room{background:var(--yellow-soft);color:#1D4ED8}
 .s-interview{background:var(--green-soft);color:#166534}
 .s-done{background:var(--green);color:#fff}
 .s-delay{background:var(--orange-soft);color:var(--orange)}
@@ -252,26 +345,27 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .s-drop{background:var(--red-soft);color:var(--red)}
 
 /* DEPT BADGE */
-.dept-badge{display:inline-flex;align-items:center;font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;text-transform:uppercase;letter-spacing:.4px}
+.dept-badge{display:inline-flex;align-items:center;font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
 .dept-MD{background:#DBEAFE;color:#1D4ED8}
 .dept-HR{background:#DCFCE7;color:#166534}
 .dept-PD{background:#FFFBEB;color:#92400E}
-.dept-ER{background:#F3E8FF;color:#7C3AED}
+.dept-ER{background:var(--purple-soft);color:var(--purple)}
 .dept-ALL{background:var(--ink-10);color:var(--ink-60)}
 
-/* QUEUE PANEL — fixed height sidebar, children scroll independently */
+/* QUEUE PANEL — sidebar, scrolls as a whole if stacked panels exceed viewport height */
 .queue-panel{
   display:flex;flex-direction:column;gap:8px;
   position:sticky;top:58px;
-  height:calc(100vh - 72px);
-  overflow:hidden; /* panel itself does NOT scroll */
+  max-height:calc(100vh - 72px);
+  overflow-y:auto; /* was overflow:hidden — was clipping/hiding stacked panels with no way to reach them */
+  padding-right:2px; /* room for scrollbar so content isn't obscured */
 }
 .panel-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;display:flex;flex-direction:column;flex-shrink:0}
 /* Checkin queue gets the remaining space and scrolls */
 .panel-card.queue-flex{flex:1 1 0;min-height:0}
 .panel-header{padding:9px 14px;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--ink-10);flex-shrink:0}
-.panel-header.dark{background:var(--panel-bg);color:#fff;border-bottom-color:rgba(255,255,255,.08)}
-.panel-count{background:var(--yellow);color:var(--ink);font-size:10px;font-weight:800;padding:1px 7px;border-radius:99px;margin-left:auto;line-height:18px}
+.panel-header.dark{background:var(--ink-10);color:var(--ink);border-bottom-color:var(--border)}
+.panel-count{background:var(--yellow);color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:99px;margin-left:auto;line-height:18px}
 .queue-list{padding:4px;overflow-y:auto;flex:1;min-height:0}
 .queue-item{padding:7px 8px;border-radius:7px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:var(--t);border:1px solid transparent}
 .queue-item:hover{background:var(--ink-10);border-color:var(--border)}
@@ -296,7 +390,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .suggest-item.pending-approval{border-color:var(--yellow);background:var(--yellow-soft)}
 .suggest-item.rejected{border-color:var(--red);background:var(--red-soft)}
 .suggest-approval-badge{font-size:9px;font-weight:800;padding:2px 7px;border-radius:99px;white-space:nowrap;display:inline-flex;align-items:center;gap:3px}
-.sab-pending{background:var(--yellow);color:var(--ink)}
+.sab-pending{background:var(--yellow);color:#fff}
 .sab-rejected{background:var(--red);color:#fff}
 .sab-approved{background:var(--green);color:#fff}
 /* Rejected badge in queue */
@@ -307,7 +401,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .pic-add-cand-header{padding:10px 14px;background:var(--blue);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px}
 .pic-add-cand-body{padding:10px 14px;display:flex;flex-direction:column;gap:8px}
 /* Suggest request overlay on table */
-.table-suggest-req{background:var(--yellow-soft);border-top:1px solid var(--yellow);padding:8px 10px;font-size:11px;font-weight:600;color:#856A00;display:flex;align-items:center;gap:6px}
+.table-suggest-req{background:var(--yellow-soft);border-top:1px solid var(--yellow);padding:8px 10px;font-size:11px;font-weight:600;color:#1D4ED8;display:flex;align-items:center;gap:6px}
 
 /* NOTIF LIST */
 .notif-list{max-height:160px;overflow-y:auto;flex:1;min-height:0}
@@ -362,7 +456,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .form-group{display:flex;flex-direction:column;gap:6px}
 .form-label{font-size:12px;font-weight:700;color:var(--ink-60)}
 .form-input,.form-select{width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border-color var(--t);background:var(--white)}
-.form-input:focus,.form-select:focus{border-color:var(--yellow);box-shadow:0 0 0 3px rgba(245,224,58,.15)}
+.form-input:focus,.form-select:focus{border-color:var(--yellow);box-shadow:0 0 0 3px rgba(37,99,235,.15)}
 .option-grid{display:flex;flex-wrap:wrap;gap:6px}
 .opt-chip{padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:12px;font-weight:600;transition:var(--t);color:var(--ink-60)}
 .opt-chip:hover{border-color:var(--ink)}
@@ -431,6 +525,30 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
 /* TOAST */
 .toast-wrap{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:9999;pointer-events:none}
+
+/* FLOATING CANDIDATE LIST BUTTON + PANEL */
+.fcl-btn{position:fixed;bottom:20px;right:20px;z-index:850;display:flex;align-items:center;gap:8px;padding:11px 16px;border-radius:99px;border:none;background:var(--panel-bg);color:#fff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;box-shadow:var(--shadow-lg);transition:var(--t)}
+.fcl-btn:hover{background:var(--panel-soft)}
+.fcl-btn.open{background:var(--yellow)}
+.fcl-btn-count{background:rgba(255,255,255,.22);border-radius:99px;padding:1px 8px;font-family:'JetBrains Mono',monospace;font-size:11px}
+.fcl-panel{position:fixed;bottom:74px;right:20px;width:290px;max-height:60vh;background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);z-index:840;display:none;flex-direction:column;overflow:hidden}
+.fcl-panel.open{display:flex}
+.fcl-header{padding:10px 8px 10px 14px;display:flex;align-items:center;gap:8px;background:var(--ink-10);border-bottom:1px solid var(--border);flex-shrink:0}
+.fcl-header-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;flex:1}
+.fcl-header-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-60)}
+.fcl-close{width:22px;height:22px;border-radius:6px;border:none;background:transparent;color:var(--ink-60);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fcl-close:hover{background:var(--ink-10);color:var(--ink)}
+.fcl-search{border:none;border-bottom:1px solid var(--border);padding:8px 14px;font-size:12px;font-family:inherit;outline:none;flex-shrink:0}
+.fcl-search:focus{background:var(--yellow-soft)}
+.fcl-list{overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:4px}
+.fcl-item{padding:7px 8px;border-radius:7px;display:flex;align-items:center;gap:8px;border:1px solid transparent;transition:var(--t)}
+.fcl-item[draggable="true"]{cursor:grab}
+.fcl-item[draggable="true"]:active{cursor:grabbing}
+.fcl-item:hover{background:var(--ink-10)}
+.fcl-item.dragging-source{opacity:.4}
+.fcl-item-name{flex:1;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fcl-item-loc{font-size:9px;color:var(--ink-30);max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
+.fcl-empty{padding:20px 14px;text-align:center;font-size:12px;color:var(--ink-30)}
 .toast{background:var(--panel-bg);color:#fff;padding:10px 14px;border-radius:8px;font-size:12px;font-weight:500;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;animation:toastIn .2s ease;pointer-events:auto;max-width:300px;border-left:3px solid var(--yellow)}
 .toast.ok{background:#064E3B;border-left-color:var(--green)}
 .toast.err{background:#7F1D1D;border-left-color:var(--red)}
@@ -459,13 +577,35 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 /* NOTIFICATION PERMISSION BANNER */
 .notif-permission-bar{background:var(--blue-soft);border:1.5px solid var(--blue);border-radius:var(--r-lg);padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:12px;color:#1E40AF}
 .notif-permission-bar button{background:var(--blue);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+
+/* CHAT (room-level + table-level) */
+.chat-btn{background:none;border:none;color:var(--ink-30);cursor:pointer;padding:4px;border-radius:4px;transition:var(--t);display:inline-flex;align-items:center;justify-content:center;position:relative}
+.chat-btn:hover{color:var(--blue);background:var(--blue-soft)}
+.chat-btn .chat-dot{position:absolute;top:2px;right:2px;width:7px;height:7px;border-radius:50%;background:var(--red);display:none}
+.chat-btn.has-new .chat-dot{display:block}
+.chat-msg-list{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.chat-msg{max-width:80%;padding:7px 11px;border-radius:12px;font-size:12.5px;line-height:1.4;background:var(--white);border:1px solid var(--border);align-self:flex-start}
+.chat-msg.me{align-self:flex-end;background:var(--blue);color:#fff;border-color:var(--blue)}
+.chat-msg-sender{font-size:10px;font-weight:700;margin-bottom:2px;color:var(--ink-60)}
+.chat-msg.me .chat-msg-sender{color:rgba(255,255,255,.8)}
+.chat-msg-time{font-size:9px;color:var(--ink-30);margin-top:3px;text-align:right}
+.chat-msg.me .chat-msg-time{color:rgba(255,255,255,.65)}
+.chat-input-row{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border);background:var(--white);flex-shrink:0}
+.chat-empty{text-align:center;color:var(--ink-30);font-size:12px;padding:30px 10px}
 </style>
 </head>
 <body>
+<script>
+(function(){
+  var isKiosk=new URLSearchParams(location.search).get('kiosk')==='1';
+  if(isKiosk)sessionStorage.setItem('kioskMode','1'); // sống sót qua redirect login.html vì cùng tab
+  if(isKiosk||sessionStorage.getItem('kioskMode')==='1')document.documentElement.classList.add('kiosk-mode');
+})();
+</script>
 
 <!-- BOOT SCREEN -->
 <div id="boot">
-  <div class="boot-logo">Enactus <span>FTU</span></div>
+  <img class="boot-logo" src="/assets/logo_den.webp" alt="Enactus FTU"/>
   <div class="boot-bar"><div class="boot-fill" id="boot-fill"></div></div>
   <div class="boot-msg" id="boot-msg">Khởi động...</div>
 </div>
@@ -475,13 +615,20 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="topbar-logo">Enactus <span>FTU</span></div>
+    <img class="topbar-logo" src="/assets/logo_den.webp" alt="Enactus FTU"/>
     <div class="topbar-round" id="tb-round">—</div>
     <div class="topbar-right">
+      <select id="tb-viewas" style="display:none;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;border:1.5px solid var(--orange);background:var(--orange-soft);color:var(--orange);font-family:inherit;cursor:pointer" onchange="setViewAsRole(this.value)"></select>
       <div class="topbar-clock" id="tb-clock">00:00:00</div>
       <div class="topbar-user" id="tb-user">—</div>
       <div class="topbar-role-badge" id="tb-role-badge">—</div>
     </div>
+  </div>
+
+  <!-- VIEW-AS BANNER (chỉ hiện khi SuperAdmin đang bật chế độ xem thử role khác) -->
+  <div id="viewas-banner" style="display:none;background:var(--orange);color:#fff;padding:5px 20px;font-size:11px;font-weight:700;align-items:center;gap:10px">
+    🧪 Đang XEM THỬ giao diện như: <span id="viewas-banner-role"></span> — dữ liệu vẫn thật, chỉ giao diện/quyền thay đổi để test.
+    <button class="btn btn-sm" style="margin-left:auto;background:rgba(255,255,255,.25);color:#fff" onclick="setViewAsRole('')">Thoát chế độ xem thử</button>
   </div>
 
   <!-- TICKER (scrolling alerts) -->
@@ -546,6 +693,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         <span id="si-mode"></span>
       </div>
       <div class="slot-banner-item"><span class="room-status-badge" id="si-room-status"></span></div>
+      <button class="btn btn-ghost btn-sm" onclick="refreshSlotMeta()" title="Nếu bên Sắp xếp lịch vừa đổi địa điểm/hình thức của ca này, bấm để lấy thông tin mới nhất">
+        <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+        Làm mới ca
+      </button>
       <div class="slot-banner-progress">
         <span class="prog-num" id="si-done">0</span><span class="prog-total" id="si-total">/ 0</span>
         <span style="font-size:11px;color:var(--ink-60);font-weight:500">hoàn thành</span>
@@ -599,6 +750,14 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Xuất Excel
       </button>
+      <button class="btn btn-ghost btn-sm" onclick="setDefaultTimerMinutes()" title="Đặt thời gian phỏng vấn mặc định cho cả ca (từng bàn có thể tự chỉnh riêng)">
+        <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Thời lượng PV
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="openKioskTab()" title="Mở màn hình Kiosk ở tab riêng, toàn màn hình — chỉ hiện ai đang được gọi vào bàn nào">
+        <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Kiosk
+      </button>
       <button class="btn btn-ghost btn-sm" onclick="syncNow()">
         <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
         Đồng bộ
@@ -628,6 +787,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           </div>
         </div>
         <div id="no-room-warning" style="display:none"></div>
+        <div id="room-congestion-warning" style="display:none"></div>
         <div class="rooms-grid" id="rooms-grid">
           <div class="empty-state"><p>Chọn ca để bắt đầu</p></div>
         </div>
@@ -707,6 +867,72 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
 <!-- TOAST -->
 <div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- FLOATING CANDIDATE LIST -->
+<button class="fcl-btn" id="fcl-btn" onclick="toggleFloatCandPanel()">
+  <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+  DS ứng viên ca này
+  <span class="fcl-btn-count" id="fcl-btn-count">0</span>
+</button>
+<div class="fcl-panel" id="fcl-panel">
+  <div class="fcl-header" id="fcl-header">
+    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+    <span class="fcl-header-title">Ứng viên ca này</span>
+    <span class="fcl-header-count" id="fcl-header-count">0</span>
+    <button class="fcl-close" onclick="closeFloatCandPanel()" title="Đóng">
+      <svg class="svg-icon" style="width:12px;height:12px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <input class="fcl-search" id="fcl-search" placeholder="Tìm tên / MSSV..." oninput="renderFloatCandList()"/>
+  <div class="fcl-list" id="fcl-list"></div>
+</div>
+
+<!-- KIOSK MODE — màn hình lớn cho khu vực chờ, không có nút bấm -->
+<div class="kiosk-overlay" id="kiosk-overlay" style="display:none">
+  <div class="kiosk-topbar">
+    <div class="kiosk-brand">
+      <img class="kiosk-logo" src="/assets/logo_den.webp" alt="Enactus FTU"/>
+      <div class="kiosk-title"><span class="kiosk-live-dot"></span>MÀN HÌNH CHỜ</div>
+    </div>
+    <div class="kiosk-shift" id="kiosk-shift">—</div>
+    <div class="kiosk-topbar-right">
+      <div class="kiosk-datetime">
+        <div class="kiosk-clock" id="kiosk-clock">00:00:00</div>
+        <div class="kiosk-date" id="kiosk-date">—</div>
+      </div>
+      <button class="kiosk-icon-btn" onclick="toggleKioskFullscreen()" title="Toàn màn hình">
+        <svg class="svg-icon" style="width:17px;height:17px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+      </button>
+      <button class="kiosk-close" id="kiosk-close-btn" onclick="toggleKiosk()" title="Thoát chế độ Kiosk">
+        <svg class="svg-icon" style="width:18px;height:18px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="kiosk-stats" id="kiosk-stats"></div>
+  <div class="kiosk-hero" id="kiosk-hero">
+    <div class="kiosk-hero-label">Xin mời vào phòng</div>
+    <div class="kiosk-hero-empty">Chưa có ai được mời vào phòng</div>
+  </div>
+  <div class="kiosk-main">
+    <div class="kiosk-col kiosk-col-wait">
+      <div class="kiosk-col-title">Đang chờ</div>
+      <div class="kiosk-list" id="kiosk-next-list"></div>
+    </div>
+    <div class="kiosk-col kiosk-col-interview">
+      <div class="kiosk-col-title">Đang phỏng vấn</div>
+      <div class="kiosk-list" id="kiosk-interview-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Lớp yêu cầu 1 cú chạm để vào toàn màn hình (trình duyệt chặn requestFullscreen tự động khi mở tab mới) -->
+<div class="kiosk-gesture-layer" id="kiosk-gesture-layer" onclick="enterKioskFullscreenFromGesture()">
+  <div class="kiosk-gesture-icon">
+    <svg class="svg-icon" style="width:26px;height:26px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+  </div>
+  <div class="kiosk-gesture-text">Chạm để vào chế độ toàn màn hình</div>
+  <div class="kiosk-gesture-sub">Màn hình Kiosk sẽ tự động cập nhật</div>
+</div>
 
 <!-- FLOATING ANNOUNCEMENT MODAL -->
 <div class="announce-overlay" id="float-announce-overlay">
@@ -893,7 +1119,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 <div class="modal-bg" id="modal-status">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="mstatus-name">Cập nhật ứng viên</div>
+      <div>
+        <div class="modal-title" id="mstatus-name">Cập nhật ứng viên</div>
+        <div id="mstatus-teammates" style="font-size:11px;color:var(--ink-60);margin-top:2px"></div>
+      </div>
       <button class="modal-close" onclick="closeModal('modal-status')">
         <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
@@ -945,6 +1174,25 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-pic')">Đóng</button>
       <button class="btn btn-primary" onclick="savePicModal()">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CHAT (dùng chung cho chat theo Phòng và chat theo Bàn) -->
+<div class="modal-bg" id="modal-chat">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <div class="modal-title" id="chat-modal-title">Chat</div>
+      <button class="modal-close" onclick="closeChatModal()">
+        <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding:0;display:flex;flex-direction:column;height:420px">
+      <div id="chat-msg-list" class="chat-msg-list"></div>
+      <div class="chat-input-row">
+        <input class="form-input" id="chat-msg-input" placeholder="Nhập tin nhắn..." onkeydown="if(event.key==='Enter')sendChatMsg()"/>
+        <button class="btn btn-primary btn-sm" onclick="sendChatMsg()">Gửi</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1088,6 +1336,12 @@ const ALL_STATUSES=[
 const STATUS_PROGRESSION={wait:'checkin',checkin:'room',room:'interview',interview:'done'};
 const WAIT_WARN_MS=15*60*1000;
 const WAIT_ALERT_MS=30*60*1000;
+// Auto no-show: ứng viên vẫn ở trạng thái 'wait' (chưa check-in) sau ngần này kể từ lúc CA
+// được mở thì tự chuyển 'drop' + note. 30 phút là mặc định hợp lý cho hầu hết ca — chỉnh ở đây nếu cần.
+const NOSHOW_THRESHOLD_MS=30*60*1000;
+const NOSHOW_NOTE_MARK='[Tự động: không đến]';
+// Timer đếm ngược mỗi buổi PV — 15 phút là mặc định, có thể set riêng theo bàn qua table.timerMinutes.
+const DEFAULT_INTERVIEW_MINUTES=15;
 const IDAY_COLLECTION='iday_sessions';
 
 // ALL PERMISSIONS in interview
@@ -1114,6 +1368,7 @@ const S={
   activeSlot:'',
   rooms:[],candidates:[],
   paused:false,pauseReason:'',
+  defaultTimerMinutes:DEFAULT_INTERVIEW_MINUTES,
   announcements:[],
   suggestRequests:[],  // {id, candId, roomId, tableId, status:'pending'|'accepted'|'rejected', from:'host'|'checkin', toEmails:[], createdAt, respondedAt, respondedBy, note}
   sessionDocId:null,unsubscribe:null,
@@ -1121,6 +1376,13 @@ const S={
   _notifSent:{},
   permissions:{},
   _pendingSuggestions:[],
+  // === SuperAdmin "xem thử giao diện role khác" (test only, không đổi quyền thật trong DB) ===
+  _realRole:undefined,_realSessionRole:undefined,viewAsRole:null,
+  // === Panel nổi: danh sách ứng viên ca hiện tại ===
+  fclOpen:false,
+  sessionCreatedAt:null, // thời điểm ca hiện tại được mở — mốc tham chiếu cho auto no-show
+  kioskOpen:false,
+  kioskStandalone:new URLSearchParams(location.search).get('kiosk')==='1'||sessionStorage.getItem('kioskMode')==='1',
 };
 
 let allSlotsByRound={round1:[],round2:[],round4:[]};
@@ -1133,6 +1395,10 @@ let _permEdits={};
 // ══════════════════════════════════════════════════
 //  PERMISSION HELPERS
 // ══════════════════════════════════════════════════
+// isRealSuperAdmin(): quyền THẬT của tài khoản (không đổi khi bật "xem thử role khác").
+// Dùng để hiện nút bật/tắt + banner chế độ xem thử — luôn hiện cho SuperAdmin thật, kể cả khi
+// đang giả lập làm role thấp hơn (lúc đó isSuperAdmin() bên dưới sẽ trả về false, đúng như role đang test).
+function isRealSuperAdmin(){return S._realRole==='superadmin';}
 function isSuperAdmin(){return S.role==='superadmin';}
 function isAdmin(){return ['superadmin','admin-hr','admin'].includes(S.role);}
 function canManageRound(){return isSuperAdmin();}
@@ -1149,6 +1415,9 @@ function canCheckinCandidates(){
 function canActOnTable(table){
   if(canManageRooms())return true;
   if(S.sessionRole!=='pic')return false;
+  // Đang XEM THỬ (SuperAdmin giả lập PIC) — email thật của SuperAdmin không gắn với bàn nào cả,
+  // nên bỏ qua bước khớp email, coi như PIC của MỌI bàn để test được thao tác thật sự.
+  if(S.viewAsRole==='pic')return checkPerm('act_table');
   const myEmail=(S.userEmail||'').toLowerCase();
   const myName=S.userName||'';
   const isMyCandidate=c=>!['done','drop'].includes(c.status)&&(c.interviewers||[]).some(iv=>
@@ -1172,6 +1441,7 @@ function canSeeAll(){
 function canBroadcast(){return canManageRooms()||S.sessionRole==='host'||checkPerm('broadcast');}
 function canPauseRoom(room){
   if(canManageRooms())return true;
+  if(S.viewAsRole==='pic')return checkPerm('pause_room'); // xem thử PIC -> coi như PIC mọi phòng
   if(room&&room.tables.some(t=>(t.picEmails||[]).includes(S.userEmail)))return checkPerm('pause_room');
   return false;
 }
@@ -1196,6 +1466,7 @@ async function initApp(){
   try{window.db=window.db||firebase.firestore();}catch(e){}
   setBootMsg('Xác thực...',20);
   try{await resolveAuth();}catch(e){setBootMsg('Lỗi: '+e.message,100);return;}
+  S._realRole=S.role;S._realSessionRole=S.sessionRole; // lưu quyền THẬT trước khi có thể bị giả lập
   setBootMsg('Tải lịch sắp xếp...',50);
   await loadArrangedSchedule();
   setBootMsg('Tải phân quyền...',70);
@@ -1211,6 +1482,7 @@ async function initApp(){
     document.getElementById('boot').classList.add('out');
     document.getElementById('app').classList.add('visible');
     setTimeout(()=>document.getElementById('boot').remove(),500);
+    if(S.kioskStandalone)enterKioskStandalone();
   },400);
 }
 
@@ -1238,7 +1510,7 @@ function sendBrowserNotif(title,body,forceShow=false){
 // ══════════════════════════════════════════════════
 //  AUTH
 // ══════════════════════════════════════════════════
-function goLogin(){window.location.href='login.html';}
+function goLogin(){window.location.href='login.html'+(S.kioskStandalone?'?kiosk=1':'');}
 async function resolveAuth(){
   return new Promise((res,rej)=>{
     if(typeof auth==='undefined'){goLogin();return;}
@@ -1431,7 +1703,10 @@ async function loadArrangedSchedule(){
 //  BUILD UI
 // ══════════════════════════════════════════════════
 function buildUI(){
+  resetRoleControlledUI();
+  populateViewAsSelect();
   document.getElementById('tb-user').textContent=S.userName;
+  document.getElementById('tb-user').title=S.userName;
   const rb=document.getElementById('tb-role-badge');
   const displayRole=S.sessionRole||S.role;
   rb.textContent=roleDisplayName(displayRole).toUpperCase();
@@ -1463,9 +1738,87 @@ function buildUI(){
   }
   else renderRoundActivationArea();
   renderStats();
+  applyRoleLayout();
+}
+// Sắp xếp lại thứ tự ưu tiên các khối trong .main theo vai trò đang đăng nhập,
+// để mỗi role thấy ngay phần việc của mình lên trên, đỡ phải cuộn/tìm.
+function applyRoleLayout(){
+  const role=S.sessionRole||S.role;
+  const order={
+    'checkin-area':0,'slot-nav-bar':0,
+    'round-tabs':1,'round-activation-area':1,
+    'admin-controls':2,
+    'slot-banner':3,
+    'notif-perm-bar':4,'pause-banner':4,
+    'main-layout':5,
+  };
+  if(role==='checkin'){
+    Object.assign(order,{'checkin-area':-2,'slot-nav-bar':-1});
+  }else if(role==='pic'){
+    Object.assign(order,{'main-layout':-2,'slot-banner':-1});
+  }else if(canManageRooms()){
+    Object.assign(order,{'admin-controls':-2,'round-tabs':-1});
+  }
+  Object.entries(order).forEach(([id,ord])=>{
+    const el=document.getElementById(id);
+    if(el)el.style.order=ord;
+  });
 }
 function roleDisplayName(r){
   return ROLE_DISPLAY[r]||r;
+}
+
+// ══════════════════════════════════════════════════
+//  SUPERADMIN — "XEM THỬ" GIAO DIỆN THEO ROLE KHÁC (chỉ để test, không đổi quyền thật trong DB)
+// ══════════════════════════════════════════════════
+// Ẩn hết các control chỉ dành riêng cho role cao (superadmin/admin/host...) trước khi render lại
+// theo role đang được chọn — để buildUI() luôn idempotent, gọi lại bao nhiêu lần cũng đúng quyền hiện tại.
+function resetRoleControlledUI(){
+  ['admin-controls','checkin-area','announce-bar'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display='none';
+  });
+  ['btn-perm','btn-reset','add-room-btn'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display='none';
+  });
+}
+function populateViewAsSelect(){
+  const sel=document.getElementById('tb-viewas');
+  if(!sel)return;
+  if(!isRealSuperAdmin()){sel.style.display='none';return;}
+  sel.style.display='';
+  const opts=[
+    {v:'',label:'👁 Xem thử vai trò...'},
+    {v:'admin',label:'→ Admin'},
+    {v:'host',label:'→ Host Tổng'},
+    {v:'checkin',label:'→ Check-in'},
+    {v:'pic',label:'→ PIC Bàn'},
+  ];
+  sel.innerHTML=opts.map(o=>`<option value="${o.v}" ${((S.viewAsRole||'')===o.v)?'selected':''}>${o.label}</option>`).join('');
+}
+function setViewAsRole(role){
+  if(!isRealSuperAdmin())return; // chặn cứng — chỉ SuperAdmin THẬT mới được bật/tắt chế độ này
+  role=role||null;
+  S.viewAsRole=role;
+  if(!role){
+    // Thoát chế độ xem thử — khôi phục đúng quyền thật
+    S.role=S._realRole;S.sessionRole=S._realSessionRole;
+  }else if(role==='admin'){
+    S.role='admin';S.sessionRole='host';
+  }else{
+    // host / checkin / pic — mô phỏng 1 nhân sự thường (không phải admin) được gán role đó cho ca này
+    S.role='member';S.sessionRole=role;
+  }
+  const banner=document.getElementById('viewas-banner');
+  if(role){
+    banner.style.display='flex';
+    document.getElementById('viewas-banner-role').textContent=roleDisplayName(role);
+    toast(`Đang xem thử giao diện như: ${roleDisplayName(role)}`,'warn');
+  }else{
+    banner.style.display='none';
+    toast('Đã thoát chế độ xem thử — quay lại quyền SuperAdmin','ok');
+  }
+  buildUI();
+  renderAll();
 }
 function buildRoundTabs(){
   const el=document.getElementById('round-tabs');
@@ -1701,6 +2054,12 @@ async function doActivateRound(){
 async function doCloseRound(){
   const round=S.activeRound;
   showConfirm('Đóng vòng phỏng vấn?',`Đóng "${ROUNDS.find(r=>r.key===round)?.label||round}"? Nhân sự sẽ không vào được nữa.`,async()=>{
+    // Xuất báo cáo tự động trước khi đóng — gộp TẤT CẢ các ca đã có dữ liệu trong vòng này,
+    // không chỉ ca đang mở, vì SuperAdmin đóng vòng có thể không đứng ở ca cuối cùng.
+    try{
+      const ok=await exportRoundReport(round,true);
+      if(ok)toast('Đã tự động xuất báo cáo tổng kết trước khi đóng vòng','ok');
+    }catch(e){console.warn('auto export err',e);}
     await saveRoundStatus(round,'closed');
     closeModal('modal-activate');
     buildRoundTabs();
@@ -1718,6 +2077,25 @@ async function reopenRound(round){
 // ══════════════════════════════════════════════════
 //  SESSION
 // ══════════════════════════════════════════════════
+function sanitizeSlotKey(slotId){return String(slotId).replace(/[^\w]/g,'_');}
+async function refreshSlotMeta(silent){
+  if(!window.db||!S.activeSlot)return;
+  try{
+    const doc=await window.db.collection('system').doc('interview_schedule').get();
+    const data=doc.exists?doc.data():{};
+    const metaKey=sanitizeSlotKey(S.activeSlot);
+    const meta=(data.slotMeta||{})[metaKey];
+    const cur=allSlotsByRound[S.activeRound].find(s=>s.id===S.activeSlot);
+    if(!meta){if(!silent)toast('Ca này chưa có cấu hình riêng (slotMeta) bên Sắp xếp lịch — đang dùng thông tin từ lịch đã lưu','info');return;}
+    if(cur){
+      cur.mode=meta.mode||cur.mode;
+      cur.location=meta.location||'';
+      cur.note=meta.note||'';
+    }
+    updateSlotBanner(cur);
+    if(!silent)toast('Đã cập nhật địa điểm/hình thức ca mới nhất','ok');
+  }catch(e){if(!silent)toast('Lỗi làm mới ca: '+e.message,'err');}
+}
 function sessionDocId(round,slot){
   return (round+'__'+slot).replace(/[^\w]/g,'_').substring(0,80);
 }
@@ -1735,6 +2113,7 @@ async function onSlotChange(slotId){
   }
   const slotMeta=allSlotsByRound[S.activeRound].find(s=>s.id===slotId);
   updateSlotBanner(slotMeta);
+  refreshSlotMeta(true);
   document.getElementById('rooms-slot-label').textContent=slotMeta?slotMeta.label:'';
   document.getElementById('main-layout').style.display='';
   document.getElementById('slot-banner').style.display='';
@@ -1777,18 +2156,45 @@ function getInterviewersForRow(row,slotId){
 async function bootstrapSession(docId,slotId){
   const rows=arrangedByRound[S.activeRound].filter(r=>r.slotId===slotId);
   if(!rows.length){toast(`Ca "${slotId}" chưa có ứng viên — có thể chưa import hoặc ban không có ca này`,'warn');}
-  const cands=rows.map(row=>({
-    id:uid(),
-    name:row.candidateName||'',
-    email:row.candidateEmail||'',
-    dept:row.candidateDept||'',
-    mssv:row.candidateMSSV||'',
-    interviewers:getInterviewersForRow(row,slotId),
-    slotId:slotId,
-    status:'wait',
-    checkInAt:null,roomAt:null,interviewAt:null,doneAt:null,
-    note:'',tableId:null,
-  }));
+
+  const cands=[];
+  rows.forEach((row,rowIdx)=>{
+    if(row.round==='round2'&&Array.isArray(row.group)&&row.group.length){
+      // Vòng 2: 1 row = 1 nhóm (nhiều ứng viên khác nhau) — phải tách từng ứng viên
+      // thành 1 candidate riêng để check-in độc lập, nhưng vẫn gắn groupId chung để
+      // biết ai cùng nhóm/cùng bàn với ai (phỏng vấn nhóm ngồi chung 1 bàn).
+      const groupId=`${slotId}::g${rowIdx}`;
+      row.group.forEach(g=>{
+        cands.push({
+          id:uid(),
+          name:g.candidate?.name||'',
+          email:g.candidate?.email||'',
+          dept:g.dept||'',
+          mssv:g.candidate?.mssv||'',
+          interviewers:(g.ivs||[]).map(iv=>({name:iv.name||'',email:iv.email||''})).filter(iv=>iv.name||iv.email),
+          slotId:slotId,
+          groupId:groupId,
+          status:'wait',
+          checkInAt:null,roomAt:null,interviewAt:null,doneAt:null,
+          note:'',tableId:null,
+        });
+      });
+    }else{
+      cands.push({
+        id:uid(),
+        name:row.candidateName||'',
+        email:row.candidateEmail||'',
+        dept:row.candidateDept||'',
+        mssv:row.candidateMSSV||'',
+        interviewers:getInterviewersForRow(row,slotId),
+        slotId:slotId,
+        groupId:null,
+        status:'wait',
+        checkInAt:null,roomAt:null,interviewAt:null,doneAt:null,
+        note:'',tableId:null,
+      });
+    }
+  });
 
   // Load room layout đã lưu theo vòng (không tạo mới tự động)
   let rooms=[];
@@ -1805,8 +2211,9 @@ async function bootstrapSession(docId,slotId){
         status:'open',
         tables:(r.tables||[]).map(t=>({
           ...t,
-          id:uid(),         // table id mới — không bị lẫn candidate giữa các ca
+          id:uid(),              // table id mới — không bị lẫn candidate giữa các ca
           status:'open',
+          assignedGroupId:null,  // gán nhóm là theo TỪNG ca — ca mới thì gán lại từ đầu
         })),
       }));
       toast(`Tải cấu trúc ${rooms.length} phòng / ${rooms.reduce((s,r)=>s+(r.tables||[]).length,0)} bàn`,'ok');
@@ -1832,20 +2239,40 @@ function applySessionData(data){
   S.candidates=data.candidates||[];
   S.paused=data.paused||false;
   S.pauseReason=data.pauseReason||'';
+  S.defaultTimerMinutes=data.defaultTimerMinutes||DEFAULT_INTERVIEW_MINUTES;
   S.announcements=data.announcements||[];
   S.suggestRequests=data.suggestRequests||[];
-  // Thông báo nổi
+  // Mốc thời gian ca mở — Firestore serverTimestamp có thể null ngay lúc vừa ghi (chưa round-trip),
+  // giữ lại giá trị cũ trong trường hợp đó để không làm hỏng mốc tham chiếu no-show.
+  // Lưu dưới dạng epoch ms để toMs() dùng lại được ngay (Timestamp object không parse được qua new Date()).
+  if(data.createdAt)S.sessionCreatedAt=data.createdAt.toMillis?data.createdAt.toMillis():toMs(data.createdAt);
+  // Thông báo nổi — CHỈ dành cho nhân sự, không hiện trên màn hình Kiosk công khai.
   const lastAnn=S.announcements[S.announcements.length-1];
   if(lastAnn&&lastAnn.id!==_lastAnnouncementId){
     _lastAnnouncementId=lastAnn.id;
-    showFloatAnnouncement(lastAnn.title||'Thông báo',lastAnn.body||lastAnn.text||'',lastAnn.time);
-    addNotif('warn','Thông báo mới: '+(lastAnn.title||lastAnn.text||''));
-    sendBrowserNotif(lastAnn.title||'Thông báo',lastAnn.body||lastAnn.text||'');
+    if(!S.kioskOpen&&!S.kioskStandalone){
+      showFloatAnnouncement(lastAnn.title||'Thông báo',lastAnn.body||lastAnn.text||'',lastAnn.time);
+      addNotif('warn','Thông báo mới: '+(lastAnn.title||lastAnn.text||''));
+      sendBrowserNotif(lastAnn.title||'Thông báo',lastAnn.body||lastAnn.text||'');
+    }
   }
   // Update interviewer động theo ca+ban
   S.candidates.forEach(c=>{
-    const row=arrangedByRound[S.activeRound].find(r=>r.slotId===c.slotId&&r.candidateEmail===c.email&&r.candidateDept===c.dept);
-    if(row){c.interviewers=getInterviewersForRow(row,c.slotId);}
+    const rowsInSlot=arrangedByRound[S.activeRound].filter(r=>r.slotId===c.slotId);
+    let ivs=null;
+    let needsIv=false;
+    for(const row of rowsInSlot){
+      if(row.round==='round2'&&Array.isArray(row.group)&&row.group.length){
+        const member=row.group.find(g=>(g.candidate?.email||'')===c.email&&g.dept===c.dept);
+        if(member){ivs=(member.ivs||[]).map(iv=>({name:iv.name||'',email:iv.email||''})).filter(iv=>iv.name||iv.email);needsIv=!!member.needsInterviewer;break;}
+      }else if(row.candidateEmail===c.email&&row.candidateDept===c.dept){
+        ivs=getInterviewersForRow(row,c.slotId);needsIv=!!row.needsInterviewer;break;
+      }
+    }
+    if(ivs)c.interviewers=ivs;
+    // Badge "Chưa có PV" — lấy trực tiếp từ arrangement (needsInterviewer), không tự suy luận
+    // để tránh lệch với dữ liệu SuperAdmin đã bổ sung thủ công bên interview-arrangement.
+    c.needsInterviewer=needsIv;
   });
   renderAll();
   // Auto-suggest: tìm ứng viên đã check-in và phòng open phù hợp
@@ -1939,6 +2366,20 @@ function computeAutoSuggestions(){
   const pending=S.candidates.filter(c=>c.status==='checkin'&&!c.tableId);
   const suggestions=[];
   pending.forEach(cand=>{
+    // Vòng 2: nếu bàn đã được gán trước cho nhóm này → luôn gợi ý đúng bàn đó trước tiên
+    if(S.activeRound==='round2'&&cand.groupId){
+      const preAssigned=findTableByGroupId(cand.groupId);
+      if(preAssigned){suggestions.push({cand,room:preAssigned.room,table:preAssigned.table});return;}
+    }
+    // Vòng 2: nếu đã có thành viên CÙNG NHÓM ngồi sẵn 1 bàn → luôn gợi ý đúng bàn đó trước
+    if(S.activeRound==='round2'&&cand.groupId){
+      const teammateSeated=S.candidates.find(c=>c.groupId===cand.groupId&&c.id!==cand.id&&c.tableId&&!['done','drop'].includes(c.status));
+      if(teammateSeated){
+        const table=S.rooms.flatMap(r=>r.tables).find(t=>t.id===teammateSeated.tableId);
+        const room=S.rooms.find(r=>r.tables.some(t=>t.id===teammateSeated.tableId));
+        if(table&&room){suggestions.push({cand,room,table});return;}
+      }
+    }
     const openRooms=S.rooms.filter(room=>{
       if(room.status!=='open')return false;
       // Phòng có ít nhất 1 bàn phù hợp ban ứng viên
@@ -2410,11 +2851,14 @@ function renderAll(){
   renderStats();
   renderRooms();
   renderNoRoomWarning();
+  renderCongestionWarning();
   renderQueue();
   renderPauseBanner();
   updateTicker();
   updateProgressBar();
   renderPicAddPanel();
+  renderFloatCandList();
+  if(S.kioskOpen)renderKiosk();
 }
 function updateProgressBar(){
   const total=S.candidates.length;
@@ -2434,16 +2878,19 @@ function renderStats(){
   const dropped=S.candidates.filter(c=>c.status==='drop').length;
   const delayed=S.candidates.filter(c=>c.status==='delay').length;
   const lateWait=S.candidates.filter(c=>c.checkInAt&&c.status==='checkin'&&(Date.now()-toMs(c.checkInAt))>WAIT_WARN_MS).length;
+  const durStats=buildTableDurationStats();
+  const overallAvgMs=durStats.length?durStats.reduce((s,d)=>s+d.avgMs*d.count,0)/durStats.reduce((s,d)=>s+d.count,0):0;
   document.getElementById('stats-row').innerHTML=`
-    <div class="stat-card accent"><div class="stat-num">${total}</div><div class="stat-label">Tổng UV</div></div>
+    <div class="stat-card accent"><div class="stat-num">${total}</div><div class="stat-label">Tổng ứng viên</div></div>
     <div class="stat-card"><div class="stat-num">${wait}</div><div class="stat-label">Chưa đến</div></div>
     <div class="stat-card ${checkin>0?'good':''}"><div class="stat-num">${checkin}</div><div class="stat-label">Check in</div></div>
     <div class="stat-card ${inRoom>0?'warn':''}"><div class="stat-num">${inRoom}</div><div class="stat-label">Vào phòng</div></div>
-    <div class="stat-card ${interviewing>0?'good':''}"><div class="stat-num">${interviewing}</div><div class="stat-label">Đang PV</div></div>
+    <div class="stat-card ${interviewing>0?'good':''}"><div class="stat-num">${interviewing}</div><div class="stat-label">Đang phỏng vấn</div></div>
     <div class="stat-card ${done>0?'good':''}"><div class="stat-num">${done}</div><div class="stat-label">Hoàn thành</div></div>
     ${dropped?`<div class="stat-card danger"><div class="stat-num">${dropped}</div><div class="stat-label">Drop</div></div>`:''}
     ${delayed?`<div class="stat-card warn"><div class="stat-num">${delayed}</div><div class="stat-label">Delay</div></div>`:''}
-    ${lateWait?`<div class="stat-card danger"><div class="stat-num">${lateWait}</div><div class="stat-label">Chờ >15ph</div></div>`:''}
+    ${lateWait?`<div class="stat-card danger"><div class="stat-num">${lateWait}</div><div class="stat-label">Chờ hơn 15 phút</div></div>`:''}
+    ${durStats.length?`<div class="stat-card" title="Tính từ lúc vào phòng đến lúc hoàn thành, trung bình mọi bàn đã có ca xong"><div class="stat-num">${fmtDurMin(overallAvgMs)}</div><div class="stat-label">TB / lượt PV</div></div>`:''}
   `;
 }
 
@@ -2495,6 +2942,50 @@ function renderNoRoomWarning(){
       </div>
     </div>`;
 }
+// ── ROOM CONGESTION WARNING ───────────────────────
+// Bàn nào có ứng viên đang chờ trong phòng (đã vào phòng, chưa xong) lâu bất thường
+// so với các bàn khác CÙNG PHÒNG — báo hiệu bàn đó có thể cần thêm người / đang tắc.
+const CONGESTION_RATIO=1.6;       // lâu hơn 1.6x trung bình các bàn cùng phòng
+const CONGESTION_MIN_MS=8*60*1000; // và tối thiểu 8 phút, để tránh báo giả lúc mới bắt đầu
+function getCongestedTables(){
+  const flagged=new Map(); // tableId -> {room,table,cand,waitMs,avgMs}
+  S.rooms.forEach(room=>{
+    if((room.status||'open')==='close')return;
+    const tableWaits=[];
+    room.tables.forEach(table=>{
+      if((table.status||'open')==='close')return;
+      const cand=S.candidates.find(c=>c.tableId===table.id&&['room','interview'].includes(c.status)&&c.roomAt);
+      if(cand)tableWaits.push({table,cand,waitMs:Date.now()-toMs(cand.roomAt)});
+    });
+    if(tableWaits.length<2)return; // cần ≥2 bàn đang có người mới có cơ sở so sánh
+    const avgMs=tableWaits.reduce((s,t)=>s+t.waitMs,0)/tableWaits.length;
+    tableWaits.forEach(t=>{
+      if(t.waitMs>avgMs*CONGESTION_RATIO&&t.waitMs>CONGESTION_MIN_MS){
+        flagged.set(t.table.id,{room,table:t.table,cand:t.cand,waitMs:t.waitMs,avgMs});
+      }
+    });
+  });
+  return flagged;
+}
+function renderCongestionWarning(){
+  const el=document.getElementById('room-congestion-warning');
+  if(!el)return;
+  const flagged=getCongestedTables();
+  if(!flagged.size||!(canManageRooms()||canSeeAll())){el.style.display='none';return;}
+  el.style.display='';
+  el.innerHTML=`
+    <div class="no-room-banner" style="border-color:var(--red);background:var(--red-soft)">
+      <svg class="no-room-banner-icon svg-icon" style="width:16px;height:16px;color:var(--red)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <div class="no-room-banner-body">
+        <div class="no-room-banner-title" style="color:#991B1B">⚠ Bàn có dấu hiệu nghẽn — chờ lâu hơn hẳn các bàn khác cùng phòng</div>
+        ${[...flagged.values()].map(f=>`
+          <div class="no-room-dept-row">
+            <span class="dept-badge dept-${f.table.dept||'ALL'}">${escHtml(f.room.name)} · ${escHtml(f.table.name)}</span>
+            <span class="no-room-cands">${escHtml(f.cand.name||f.cand.email||'')} đã ${fmtDurMin(f.waitMs)} trong phòng (TB các bàn khác: ${fmtDurMin(f.avgMs)})</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
 async function quickAddRoomForDept(dept){
   const roomName=`Phòng ${DEPT_NAMES[dept]||dept}`;
   const newRoom={
@@ -2527,7 +3018,7 @@ function renderRooms(){
       :'<div class="empty-state"><p>Chưa có phòng nào được thiết lập.</p></div>';
     return;
   }
-  const visible=canSeeAll()?S.rooms:S.rooms.filter(room=>{
+  const visible=(canSeeAll()||S.viewAsRole)?S.rooms:S.rooms.filter(room=>{
     if(room.dept==='ALL')return true;
     if(room.dept===S.userDept)return true;
     if(room.tables.some(t=>(t.picEmails||[]).includes(S.userEmail)))return true;
@@ -2557,6 +3048,10 @@ function buildRoomCard(room){
       <span class="room-status-badge ${rs==='open'?'rs-open':rs==='pause'?'rs-pause':'rs-close'}">
         ${rs==='open'?'Open':rs==='pause'?'Pause':'Close'}
       </span>
+      <button class="chat-btn" onclick="openChatModal('room','${room.id}','Chat phòng: ${escHtml(room.name)}')" title="Chat chung của phòng">
+        <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        <span class="chat-dot"></span>
+      </button>
       ${canPauseRoom(room)?`
       <div class="room-actions">
         <button class="room-act-btn" onclick="openRoomStatusModal('${room.id}')">
@@ -2600,17 +3095,46 @@ function buildTableCard(room,table){
         ${canManageRooms()?'':'readonly'}
         onblur="onTableNameChange(this)" onkeydown="if(event.key==='Enter')this.blur()" title="Click để đổi tên bàn"/>
       ${table.dept&&table.dept!=='ALL'?`<span class="dept-badge dept-${table.dept}" style="flex-shrink:0">${DEPT_NAMES[table.dept]||table.dept}</span>`:''}
+      ${S.activeRound==='round2'?renderGroupAssignControl(room,table):''}
       ${isOverflow?`<span class="table-overflow-badge"><svg style="width:9px;height:9px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> ${tableCands.length} người!</span>`:''}
+      ${getCongestedTables().has(table.id)?`<span style="font-size:9px;font-weight:700;color:#991B1B;background:var(--red-soft);padding:1px 6px;border-radius:20px;flex-shrink:0" title="Chờ lâu hơn hẳn các bàn khác cùng phòng">🐢 Nghẽn</span>`:''}
       <div class="table-pics">${picHtml||'<span style="font-size:9px;color:var(--ink-30)">Chưa có PIC</span>'}</div>
+      <button class="chat-btn" onclick="openChatModal('table','${table.id}','Chat bàn: ${escHtml(room.name)} · ${escHtml(table.name)}')" title="Chat riêng của bàn">
+        <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        <span class="chat-dot"></span>
+      </button>
+      <button class="table-manage-btn" onclick="openPicModal('${room.id}','${table.id}')" title="Thêm người thay thế / quản lý nhân sự bàn">
+        <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
       ${canManageRooms()?`
-        <button class="table-manage-btn" onclick="openPicModal('${room.id}','${table.id}')" title="Quản lý nhân sự">
-          <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        </button>
+        <button class="table-manage-btn" onclick="setTableTimer('${room.id}','${table.id}')" title="Đặt thời gian phỏng vấn riêng cho bàn này (hiện tại: ${table.timerMinutes||S.defaultTimerMinutes||DEFAULT_INTERVIEW_MINUTES} phút)">
+          <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </button>`:''}
+      ${canManageRooms()?`
         <button class="kick-user-btn" onclick="kickUserFromTable('${room.id}','${table.id}')" title="Kick nhân sự ra khỏi bàn (nhỡ assign nhầm)">
           <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>
         </button>`:''}
     </div>
   `;
+  // Timer đếm ngược cho ứng viên đang PV (status 'interview')
+  const interviewingCand=S.candidates.find(c=>c.tableId===table.id&&c.status==='interview'&&c.interviewAt);
+  if(interviewingCand){
+    const minutes=table.timerMinutes||S.defaultTimerMinutes||DEFAULT_INTERVIEW_MINUTES;
+    const targetMs=toMs(interviewingCand.interviewAt)+minutes*60000;
+    const timerDiv=document.createElement('div');
+    timerDiv.className='table-timer tt-normal';
+    timerDiv.dataset.target=targetMs;
+    timerDiv.innerHTML='<svg class="svg-icon" style="width:11px;height:11px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span class="tt-text">--:--</span>';
+    div.appendChild(timerDiv);
+  }
+  // Thời lượng PV trung bình riêng của bàn này (nếu đã có ít nhất 1 ca xong)
+  const myDurStat=buildTableDurationStats().find(d=>d.name===table.name);
+  if(myDurStat){
+    const durDiv=document.createElement('div');
+    durDiv.style.cssText='padding:3px 10px;font-size:9px;color:var(--ink-60);background:var(--ink-10);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:4px';
+    durDiv.innerHTML=`<svg class="svg-icon" style="width:9px;height:9px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>TB ${fmtDurMin(myDurStat.avgMs)}/lượt (${myDurStat.count} ca xong)`;
+    div.appendChild(durDiv);
+  }
   // Interviewer cho ca này (dynamic)
   const slotInterviewers=getTableInterviewersForSlot(room,table);
   if(slotInterviewers.length){
@@ -2624,7 +3148,19 @@ function buildTableCard(room,table){
   if(!allTableCands.length){
     const empty=document.createElement('div');
     empty.className='cand-slot empty';
-    empty.innerHTML='Kéo ứng viên vào đây';
+    const nextCand=canAct?pickNextCandidateForTable(room,table):null;
+    if(nextCand){
+      empty.innerHTML=`
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+          <span>Kéo ứng viên vào đây</span>
+          <button class="btn btn-blue btn-sm" onclick="callNextToTable('${room.id}','${table.id}')" title="Tự động mời ${escHtml(nextCand.name||nextCand.email||'')} — người chờ lâu nhất phù hợp bàn này">
+            <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            Gọi tiếp theo (${escHtml(nextCand.name||nextCand.email||'?')})
+          </button>
+        </div>`;
+    }else{
+      empty.innerHTML='Kéo ứng viên vào đây';
+    }
     div.appendChild(empty);
   }else{
     allTableCands.forEach(c=>div.appendChild(buildCandSlot(c,room,table,canAct)));
@@ -2653,6 +3189,104 @@ function getTableInterviewersForSlot(room,table){
   }
   return [...ivNames].slice(0,4);
 }
+// ══════════════════════════════════════════════════
+//  VÒNG 2 — GÁN TRƯỚC TEAM (NHÓM) → BÀN
+// ══════════════════════════════════════════════════
+function getRound2Groups(){
+  const map=new Map();
+  S.candidates.forEach(c=>{
+    if(!c.groupId)return;
+    if(!map.has(c.groupId))map.set(c.groupId,[]);
+    map.get(c.groupId).push(c);
+  });
+  return [...map.entries()].map(([groupId,members])=>({
+    groupId,members,
+    label:members.map(m=>m.name||m.email||'?').join(', '),
+  }));
+}
+function findTableByGroupId(groupId){
+  if(!groupId)return null;
+  for(const room of S.rooms){
+    const table=room.tables.find(t=>t.assignedGroupId===groupId);
+    if(table)return{room,table};
+  }
+  return null;
+}
+function renderGroupAssignControl(room,table){
+  const groups=getRound2Groups();
+  if(!canManageRooms()){
+    if(!table.assignedGroupId)return'';
+    const g=groups.find(x=>x.groupId===table.assignedGroupId);
+    return`<span class="team-assign-badge" title="${escHtml(g?g.label:'')}">👥 ${escHtml(g?g.label:'Nhóm đã gán')}</span>`;
+  }
+  const options=groups.map(g=>{
+    const takenElsewhere=findTableByGroupId(g.groupId);
+    const takenHere=takenElsewhere&&takenElsewhere.table.id===table.id;
+    const label=takenElsewhere&&!takenHere?`${g.label} (đã ở ${takenElsewhere.table.name})`:g.label;
+    return`<option value="${g.groupId}" ${table.assignedGroupId===g.groupId?'selected':''}>${escHtml(label)}</option>`;
+  }).join('');
+  return`<select class="team-assign-select" title="Gán nhóm cố định cho bàn này — check-in nhóm sẽ tự vào đúng bàn"
+      onchange="onAssignGroupToTable(this,'${room.id}','${table.id}')" onclick="event.stopPropagation()">
+      <option value="">— Gán nhóm —</option>
+      ${options}
+    </select>`;
+}
+async function onAssignGroupToTable(selectEl,roomId,tableId){
+  const groupId=selectEl.value||null;
+  const room=S.rooms.find(r=>r.id===roomId);if(!room)return;
+  const table=room.tables.find(t=>t.id===tableId);if(!table)return;
+  // 1 nhóm chỉ được gán 1 bàn — bỏ gán khỏi bàn khác nếu có
+  if(groupId){
+    S.rooms.forEach(r=>r.tables.forEach(t=>{
+      if(t.id!==tableId&&t.assignedGroupId===groupId)t.assignedGroupId=null;
+    }));
+  }
+  table.assignedGroupId=groupId;
+  try{
+    const layoutKey=`roomLayout_${S.activeRound}`;
+    await window.db.collection('system').doc('interview_schedule').set({[layoutKey]:S.rooms},{merge:true});
+  }catch(e){console.warn('save layout err',e);}
+  await patchSession({rooms:S.rooms,updatedAt:fTs()});
+  if(groupId){
+    const g=getRound2Groups().find(x=>x.groupId===groupId);
+    addLog(`Gán nhóm "${g?g.label:groupId}" → ${table.name}`);
+    toast(`Đã gán nhóm vào ${table.name}. Check-in ai trong nhóm cũng sẽ tự vào bàn này.`,'ok');
+    // Nếu trong nhóm đã có người check-in mà chưa có bàn -> tự xếp luôn cho khỏi phải kéo tay
+    await autoSeatGroupIfAssigned(groupId);
+  }else{
+    addLog(`Bỏ gán nhóm khỏi ${table.name}`);
+    toast(`Đã bỏ gán nhóm khỏi ${table.name}`,'ok');
+  }
+  renderAll();
+}
+// Tự động xếp các thành viên đã check-in (hoặc đang chờ) của 1 nhóm vào đúng bàn đã được gán trước
+async function autoSeatGroupIfAssigned(groupId){
+  if(!groupId||S.activeRound!=='round2')return;
+  const found=findTableByGroupId(groupId);
+  if(!found)return;
+  const {room,table}=found;
+  if((room.status||'open')==='close')return;
+  // CHỈ xếp bàn cho người ĐÃ check-in thật (status='checkin') — người còn 'wait' nghĩa là
+  // chưa tới, không được tự động đánh dấu check-in chỉ vì host vừa gán bàn cho cả nhóm.
+  const members=S.candidates.filter(c=>c.groupId===groupId&&!c.tableId&&c.status==='checkin');
+  for(const m of members){
+    // Dùng seatCandidateAtTable (chỉ gán bàn, GIỮ NGUYÊN trạng thái 'checkin' = đang chờ)
+    // — KHÔNG dùng assignCandidateToTable vì hàm đó tự nhảy thẳng qua 'room' (vào phòng),
+    // trong khi tự-xếp-bàn lúc check-in chỉ nên là "đã có chỗ ngồi", chưa phải "đã vào phòng".
+    await seatCandidateAtTable(m.id,room.id,table.id);
+  }
+}
+// Gán tableId cho ứng viên nhưng KHÔNG đổi status — dùng khi tự động xếp bàn theo nhóm đã gán trước.
+// Việc chính thức "vào phòng" (status='room') vẫn phải qua bước riêng (nút/hành động "Vào phòng").
+async function seatCandidateAtTable(candId,roomId,tableId){
+  const idx=S.candidates.findIndex(c=>c.id===candId);if(idx<0)return;
+  S.candidates[idx].tableId=tableId;
+  await patchSession({candidates:S.candidates,updatedAt:fTs()});
+  const c=S.candidates[idx];
+  const table=S.rooms.flatMap(r=>r.tables).find(t=>t.id===tableId);
+  addLog(`${c.name} → ${table?.name||tableId} (đã có chỗ, chờ vào phòng)`);
+  renderAll();
+}
 function buildCandSlot(c,room,table,canAct){
   const div=document.createElement('div');
   const now=Date.now();
@@ -2667,11 +3301,12 @@ function buildCandSlot(c,room,table,canAct){
   const deptBadge=c.dept?`<span class="dept-badge dept-${c.dept}">${DEPT_NAMES[c.dept]||c.dept}</span>`:'';
   const ivNames=(c.interviewers||[]).map(iv=>iv.name||iv).join(', ');
   div.innerHTML=`
-    <div class="cand-avatar" ${canAct?'draggable="true"':''} data-cid="${c.id}">${initOf(c.name)}</div>
+    <div class="cand-avatar" data-cid="${c.id}">${initOf(c.name)}</div>
     <div class="cand-info">
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        <div class="cand-name">${escHtml(c.name||c.email||'—')}</div>
+        <div class="cand-name" title="${escHtml(c.name||c.email||'')}">${escHtml(c.name||c.email||'—')}</div>
         <span class="status-badge ${status.cls}"><svg class="svg-icon" style="width:9px;height:9px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${status.svgPath}</svg> ${status.label}</span>
+        ${c.needsInterviewer?'<span style="font-size:10px;font-weight:700;color:#B45309;background:#FEF3C7;padding:1px 6px;border-radius:20px;flex-shrink:0" title="Ca này chưa được gán đủ phỏng vấn viên khi xếp lịch">⚠ Chưa có PV</span>':''}
       </div>
       <div class="cand-meta">
         ${deptBadge}
@@ -2710,10 +3345,14 @@ function buildCandSlot(c,room,table,canAct){
       </button>`:''}
     </div>`:''}
   `;
-  const avatar=div.querySelector('.cand-avatar');
-  if(avatar&&canAct){
-    avatar.addEventListener('dragstart',e=>{e.dataTransfer.setData('candId',c.id);div.classList.add('dragging-source');});
-    avatar.addEventListener('dragend',()=>div.classList.remove('dragging-source'));
+  if(canAct){
+    div.draggable=true;
+    div.addEventListener('dragstart',e=>{
+      if(e.target.closest('.cand-actions')){e.preventDefault();return;}
+      e.dataTransfer.setData('candId',c.id);
+      div.classList.add('dragging-source');
+    });
+    div.addEventListener('dragend',()=>div.classList.remove('dragging-source'));
   }
   return div;
 }
@@ -2756,6 +3395,7 @@ function renderQueue(){
       <span class="dept-badge dept-${c.dept||'ALL'}">${DEPT_NAMES[c.dept]||c.dept||'—'}</span>
       <span class="status-badge ${status.cls}" style="font-size:9px">${status.label}</span>
       ${sugBadge}
+      ${c.needsInterviewer?'<span style="font-size:9px;font-weight:700;color:#B45309;background:#FEF3C7;padding:1px 6px;border-radius:20px;flex-shrink:0" title="Ca này chưa được gán đủ phỏng vấn viên khi xếp lịch">⚠ Chưa có PV</span>':''}
       ${isOrphan?`<svg style="width:12px;height:12px;flex-shrink:0;color:var(--orange)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`:''}
       <div class="q-wait ${waitCls}">${c.checkInAt?elapsedStr(c.checkInAt):'—'}</div>
     `;
@@ -2764,6 +3404,68 @@ function renderQueue(){
     qList.appendChild(div);
   });
 }
+// ══════════════════════════════════════════════════
+//  FLOATING CANDIDATE LIST (nút nổi — không tự thu vào)
+// ══════════════════════════════════════════════════
+function toggleFloatCandPanel(){
+  S.fclOpen=!S.fclOpen;
+  document.getElementById('fcl-panel').classList.toggle('open',S.fclOpen);
+  document.getElementById('fcl-btn').classList.toggle('open',S.fclOpen);
+  if(S.fclOpen)renderFloatCandList();
+}
+function closeFloatCandPanel(){
+  S.fclOpen=false;
+  document.getElementById('fcl-panel').classList.remove('open');
+  document.getElementById('fcl-btn').classList.remove('open');
+}
+function renderFloatCandList(){
+  const btnCount=document.getElementById('fcl-btn-count');
+  const hdrCount=document.getElementById('fcl-header-count');
+  btnCount.textContent=S.candidates.length;
+  hdrCount.textContent=S.candidates.length;
+  if(!S.fclOpen)return; // không render danh sách khi đang đóng, đỡ tốn công
+  const listEl=document.getElementById('fcl-list');
+  const q=(document.getElementById('fcl-search').value||'').trim().toLowerCase();
+  let cands=[...S.candidates];
+  if(q)cands=cands.filter(c=>(c.name||'').toLowerCase().includes(q)||(c.mssv||'').toLowerCase().includes(q));
+  cands.sort((a,b)=>(a.checkInAt?toMs(a.checkInAt):Date.now())-(b.checkInAt?toMs(b.checkInAt):Date.now()));
+  if(!cands.length){
+    listEl.innerHTML='<div class="fcl-empty">Không có ứng viên nào khớp</div>';
+    return;
+  }
+  const canDrag=canCheckinCandidates();
+  listEl.innerHTML='';
+  cands.forEach(c=>{
+    const status=ALL_STATUSES.find(s=>s.key===c.status)||ALL_STATUSES[0];
+    const table=c.tableId?S.rooms.flatMap(r=>r.tables).find(t=>t.id===c.tableId):null;
+    const room=table?S.rooms.find(r=>r.tables.some(t=>t.id===table.id)):null;
+    const loc=table?`${room?room.name+' · ':''}${table.name}`:'Hàng chờ';
+    const div=document.createElement('div');
+    div.className='fcl-item';
+    div.innerHTML=`
+      <span class="status-badge ${status.cls}" style="font-size:9px;flex-shrink:0">${status.label}</span>
+      <span class="fcl-item-name" title="${escHtml(c.name)}">${escHtml(c.name||c.email||'—')}</span>
+      <span class="fcl-item-loc" title="${escHtml(loc)}">${escHtml(loc)}</span>
+    `;
+    if(canDrag){
+      div.draggable=true;
+      div.addEventListener('dragstart',e=>{
+        e.dataTransfer.setData('candId',c.id);
+        div.classList.add('dragging-source');
+      });
+      div.addEventListener('dragend',()=>div.classList.remove('dragging-source'));
+    }
+    listEl.appendChild(div);
+  });
+}
+// Đóng panel khi bấm ra ngoài (không bấm vào panel hoặc nút mở)
+document.addEventListener('mousedown',e=>{
+  if(!S.fclOpen)return;
+  const panel=document.getElementById('fcl-panel');
+  const btn=document.getElementById('fcl-btn');
+  if(panel.contains(e.target)||btn.contains(e.target))return;
+  closeFloatCandPanel();
+});
 function renderPauseBanner(){
   const b=document.getElementById('pause-banner');
   b.style.display=S.paused?'':'none';
@@ -2865,6 +3567,38 @@ async function onTableNameChange(input){
   addLog(`Đổi tên bàn → "${newName}"`);
 }
 
+// THỜI GIAN PHỎNG VẤN — mặc định 15 phút/lượt, có thể chỉnh chung cho cả ca hoặc riêng từng bàn.
+// Ưu tiên: table.timerMinutes (riêng bàn) > S.defaultTimerMinutes (chung cả ca) > DEFAULT_INTERVIEW_MINUTES.
+async function setDefaultTimerMinutes(){
+  const cur=S.defaultTimerMinutes||DEFAULT_INTERVIEW_MINUTES;
+  const input=prompt('Thời gian phỏng vấn mặc định cho CẢ CA này (phút):',cur);
+  if(input===null)return;
+  const minutes=parseInt(input);
+  if(!minutes||minutes<=0){toast('Số phút không hợp lệ','warn');return;}
+  S.defaultTimerMinutes=minutes;
+  await patchSession({defaultTimerMinutes:minutes,updatedAt:fTs()});
+  addLog(`Đặt thời gian PV mặc định cả ca → ${minutes} phút`);
+  toast(`Đã đặt mặc định ${minutes} phút/lượt cho cả ca`,'ok');
+  renderAll();
+}
+async function setTableTimer(roomId,tableId){
+  const room=S.rooms.find(r=>r.id===roomId);if(!room)return;
+  const table=room.tables.find(t=>t.id===tableId);if(!table)return;
+  const cur=table.timerMinutes||S.defaultTimerMinutes||DEFAULT_INTERVIEW_MINUTES;
+  const input=prompt(`Thời gian phỏng vấn riêng cho ${room.name} · ${table.name} (phút).\nĐể trống để dùng lại mặc định chung của cả ca:`,cur);
+  if(input===null)return;
+  if(input.trim()===''){delete table.timerMinutes;}
+  else{
+    const minutes=parseInt(input);
+    if(!minutes||minutes<=0){toast('Số phút không hợp lệ','warn');return;}
+    table.timerMinutes=minutes;
+  }
+  await patchSession({rooms:S.rooms,updatedAt:fTs()});
+  addLog(`Đặt thời gian PV bàn ${table.name} → ${table.timerMinutes?table.timerMinutes+' phút':'dùng mặc định chung'}`);
+  toast('Đã lưu thời gian phỏng vấn cho bàn','ok');
+  renderAll();
+}
+
 // ADD TABLE
 async function addTableToRoom(roomId){
   const room=S.rooms.find(r=>r.id===roomId);if(!room)return;
@@ -2885,15 +3619,47 @@ async function addTableToRoom(roomId){
 // ══════════════════════════════════════════════════
 //  ASSIGN CANDIDATE — guard ban + room status
 // ══════════════════════════════════════════════════
+// Chọn ứng viên phù hợp bàn này, đã check-in, chờ lâu nhất — dùng cho nút "Gọi tiếp theo"
+function pickNextCandidateForTable(room,table){
+  if((room.status||'open')!=='open'||(table.status||'open')!=='open')return null;
+  const effectiveDept=table.dept&&table.dept!=='ALL'?table.dept:(room.dept||'ALL');
+  const candidates=S.candidates.filter(c=>
+    c.status==='checkin'&&!c.tableId&&
+    (effectiveDept==='ALL'||!c.dept||c.dept===effectiveDept)
+  );
+  if(!candidates.length)return null;
+  candidates.sort((a,b)=>(a.checkInAt?toMs(a.checkInAt):Date.now())-(b.checkInAt?toMs(b.checkInAt):Date.now()));
+  return candidates[0];
+}
+async function callNextToTable(roomId,tableId){
+  const room=S.rooms.find(r=>r.id===roomId);if(!room)return;
+  const table=room.tables.find(t=>t.id===tableId);if(!table)return;
+  const cand=pickNextCandidateForTable(room,table);
+  if(!cand){toast('Không có ứng viên phù hợp đang chờ để gọi','warn');return;}
+  await attemptAssignCandidateToTable(cand.id,roomId,tableId);
+  toast(`Đã mời ${cand.name||cand.email} vào ${table.name}`,'ok');
+}
 async function attemptAssignCandidateToTable(candId,roomId,tableId){
   const cand=S.candidates.find(c=>c.id===candId);if(!cand)return;
   const room=S.rooms.find(r=>r.id===roomId);if(!room)return;
   const table=room.tables.find(t=>t.id===tableId);if(!table)return;
   if((room.status||'open')==='close'){toast('Phòng đã đóng — không thể thêm ứng viên','err');return;}
   if((room.status||'open')==='pause'){toast('Phòng đang tạm dừng — không thể thêm ứng viên','warn');return;}
-  // Guard: 1 bàn chỉ 1 ứng viên đang active
+  // Guard: 1 bàn chỉ 1 ứng viên đang active — riêng Vòng 2 (phỏng vấn nhóm) cho phép
+  // nhiều ứng viên CÙNG NHÓM (groupId) ngồi chung 1 bàn, chỉ chặn nếu là nhóm khác.
   const activeCands=S.candidates.filter(c=>c.tableId===tableId&&!['done','drop'].includes(c.status)&&c.id!==candId);
-  if(activeCands.length>0){toast(`${table.name} đang có người — 1 bàn chỉ 1 ứng viên một lúc!`,'warn');return;}
+  if(activeCands.length>0){
+    const isSameGroup=S.activeRound==='round2'&&cand.groupId&&activeCands.every(c=>c.groupId===cand.groupId);
+    if(!isSameGroup){toast(`${table.name} đang có người — 1 bàn chỉ 1 ứng viên một lúc!`,'warn');return;}
+  }
+  // Guard: nhóm đã được gán bàn cố định trước — cảnh báo nếu kéo sang bàn khác
+  if(S.activeRound==='round2'&&cand.groupId){
+    const preAssigned=findTableByGroupId(cand.groupId);
+    if(preAssigned&&preAssigned.table.id!==tableId){
+      toast(`Nhóm này đã được gán sẵn ${preAssigned.table.name} (${preAssigned.room.name}) — xếp nhầm bàn rồi!`,'warn');
+      return;
+    }
+  }
   // Guard ban — ưu tiên table.dept, fallback room.dept
   const effectiveDept=table.dept&&table.dept!=='ALL'?table.dept:room.dept;
   if(effectiveDept!=='ALL'&&cand.dept&&cand.dept!==effectiveDept){
@@ -2914,6 +3680,9 @@ async function assignCandidateToTable(candId,roomId,tableId){
     S.candidates[idx].status='room';
     if(!S.candidates[idx].roomAt)S.candidates[idx].roomAt=new Date().toISOString();
   }
+  // (Đã bỏ đoạn tự kéo CẢ NHÓM kể cả người còn 'wait' — nó là nguyên nhân check-in 1 người
+  // mà cả team bị đánh dấu check-in oan. Vòng 2 giờ chỉ tự xếp bàn cho người ĐÃ check-in
+  // thật, qua autoSeatGroupIfAssigned() — gọi từ setCandidateStatus khi status→'checkin'.)
   await patchSession({candidates:S.candidates,updatedAt:fTs()});
   const c=S.candidates[idx];
   const table=S.rooms.flatMap(r=>r.tables).find(t=>t.id===tableId);
@@ -2947,6 +3716,13 @@ function openStatusModal(candId){
   const c=S.candidates.find(x=>x.id===candId);if(!c)return;
   _statusModalCandId=candId;
   document.getElementById('mstatus-name').textContent=c.name||c.email||'Ứng viên';
+  const teammatesEl=document.getElementById('mstatus-teammates');
+  if(c.groupId){
+    const mates=S.candidates.filter(x=>x.groupId===c.groupId&&x.id!==c.id).map(x=>x.name).filter(Boolean);
+    teammatesEl.textContent=mates.length?`Cùng nhóm với: ${mates.join(', ')}`:'';
+  }else{
+    teammatesEl.textContent='';
+  }
   const opts=document.getElementById('status-opts');
   opts.innerHTML='';
   ALL_STATUSES.forEach(s=>{
@@ -2982,6 +3758,242 @@ async function progressStatus(candId){
   const next=STATUS_PROGRESSION[c.status];
   if(next)await setCandidateStatus(candId,next,'');
 }
+// ── KIOSK MODE ─────────────────────────────────────
+// Mở màn hình Kiosk ở TAB RIÊNG (?kiosk=1) — tab đó tự ẩn giao diện quản lý,
+// chỉ hiện overlay Kiosk toàn màn hình, để cắm vào TV/màn hình rời ở khu vực chờ.
+function openKioskTab(){
+  const url=new URL(location.href);
+  url.search='';url.searchParams.set('kiosk','1');
+  window.open(url.toString(),'_blank','noopener');
+}
+// Toggle nhanh trong CÙNG tab (vd. để xem trước) — Esc / nút X sẽ thoát hẳn ở đây.
+function toggleKiosk(){
+  if(S.kioskStandalone){window.close();return;} // Tab kiosk riêng → nút X = đóng tab
+  S.kioskOpen=!S.kioskOpen;
+  const el=document.getElementById('kiosk-overlay');
+  el.style.display=S.kioskOpen?'flex':'none';
+  if(S.kioskOpen){
+    kioskUnlockAudio();
+    renderKiosk();updateKioskClock();
+    if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{});
+  }else if(document.fullscreenElement){
+    document.exitFullscreen().catch(()=>{});
+  }
+}
+// Vào chế độ Kiosk toàn màn hình, đứng riêng — gọi từ initApp khi phát hiện ?kiosk=1
+function enterKioskStandalone(){
+  S.kioskOpen=true;
+  if(location.search.indexOf('kiosk=1')===-1)history.replaceState(null,'',location.pathname+'?kiosk=1');
+  document.getElementById('app').style.display='none';
+  document.getElementById('kiosk-overlay').style.display='flex';
+  document.getElementById('kiosk-close-btn').style.display='none'; // tab riêng thì không cần nút thoát overlay
+  renderKiosk();updateKioskClock();
+  document.documentElement.requestFullscreen?.().catch(()=>{
+    document.getElementById('kiosk-gesture-layer').classList.add('show');
+  });
+}
+// Trình duyệt chặn requestFullscreen() khi không có thao tác chạm trực tiếp của người dùng
+// (mở tab mới không tính) — lớp phủ này bắt cú chạm đầu tiên để kích hoạt toàn màn hình.
+function enterKioskFullscreenFromGesture(){
+  kioskUnlockAudio();
+  document.documentElement.requestFullscreen?.().catch(()=>{}).then(()=>{
+    document.getElementById('kiosk-gesture-layer').classList.remove('show');
+  });
+  document.getElementById('kiosk-gesture-layer').classList.remove('show');
+}
+function toggleKioskFullscreen(){
+  kioskUnlockAudio();
+  if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
+  else document.documentElement.requestFullscreen?.().catch(()=>{
+    document.getElementById('kiosk-gesture-layer').classList.add('show');
+  });
+}
+function updateKioskClock(){
+  const clockEl=document.getElementById('kiosk-clock');
+  const dateEl=document.getElementById('kiosk-date');
+  const shiftEl=document.getElementById('kiosk-shift');
+  if(!clockEl)return;
+  const now=new Date();
+  clockEl.textContent=now.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  if(dateEl)dateEl.textContent=now.toLocaleDateString('vi-VN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+  if(shiftEl){
+    const slotMeta=allSlotsByRound[S.activeRound]?.find(s=>s.id===S.activeSlot);
+    shiftEl.textContent=slotMeta?.label||ROUNDS.find(r=>r.key===S.activeRound)?.label||'—';
+  }
+}
+// Âm báo khi có ứng viên MỚI được gọi — Web Audio API, không cần file mp3.
+// Trình duyệt yêu cầu AudioContext được tạo/resume từ một thao tác chạm thật của người dùng,
+// nên ta khởi tạo nó ngay tại các điểm đã có cú chạm (vào fullscreen / bấm nút Kiosk).
+let _kioskAudioCtx=null;
+let _kioskLastTopId=null;
+function kioskUnlockAudio(){
+  try{
+    _kioskAudioCtx=_kioskAudioCtx||new(window.AudioContext||window.webkitAudioContext)();
+    if(_kioskAudioCtx.state==='suspended')_kioskAudioCtx.resume();
+  }catch(e){}
+}
+function kioskChime(){
+  if(!_kioskAudioCtx)return;
+  try{
+    const ctx=_kioskAudioCtx;
+    [880,1320].forEach((freq,i)=>{
+      const o=ctx.createOscillator();const g=ctx.createGain();
+      o.type='sine';o.frequency.value=freq;
+      o.connect(g);g.connect(ctx.destination);
+      const t=ctx.currentTime+i*0.14;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(.18,t+.02);
+      g.gain.exponentialRampToValueAtTime(.001,t+.32);
+      o.start(t);o.stop(t+.34);
+    });
+  }catch(e){}
+}
+function renderKiosk(){
+  const heroEl=document.getElementById('kiosk-hero');
+  const ivList=document.getElementById('kiosk-interview-list');
+  if(!heroEl||!ivList)return;
+
+  // "Xin mời vào phòng" = vừa được xếp bàn, chưa bắt đầu phỏng vấn.
+  const inRoom=S.candidates.filter(c=>c.status==='room'&&c.tableId);
+  inRoom.sort((a,b)=>toMs(b.roomAt||0)-toMs(a.roomAt||0));
+  // "Đang phỏng vấn" = đã bắt đầu, chưa xong.
+  const interviewing=S.candidates.filter(c=>c.status==='interview'&&c.tableId);
+  interviewing.sort((a,b)=>toMs(a.interviewAt||0)-toMs(b.interviewAt||0));
+
+  // Bảng tổng quan nhanh — hữu ích để cả khu vực chờ biết tiến độ chung của ca.
+  const statsEl=document.getElementById('kiosk-stats');
+  if(statsEl){
+    const waiting=S.candidates.filter(c=>c.status==='checkin'&&!c.tableId).length;
+    statsEl.innerHTML=`
+      <div class="kiosk-stat st-wait"><div class="kiosk-stat-num">${waiting}</div><div class="kiosk-stat-label">Đang chờ</div></div>
+      <div class="kiosk-stat st-room"><div class="kiosk-stat-num">${inRoom.length}</div><div class="kiosk-stat-label">Xin mời vào phòng</div></div>
+      <div class="kiosk-stat st-interview"><div class="kiosk-stat-num">${interviewing.length}</div><div class="kiosk-stat-label">Đang phỏng vấn</div></div>
+    `;
+  }
+
+  const destOf=c=>{
+    const table=c.tableId?S.rooms.flatMap(r=>r.tables).find(t=>t.id===c.tableId):null;
+    const room=table?S.rooms.find(r=>r.tables.some(t=>t.id===table.id)):null;
+    return {table,room,label:[room?.name,table?.name].filter(Boolean).join(' · ')||'—'};
+  };
+
+  // Âm báo + nảy nhẹ khi có ứng viên MỚI được mời vào phòng
+  const topId=inRoom[0]?.id||null;
+  const isNewTop=topId&&topId!==_kioskLastTopId&&_kioskLastTopId!==null;
+  if(isNewTop)kioskChime();
+  _kioskLastTopId=topId;
+
+  // HERO — "Xin mời vào phòng": chỉ chữ to trên nền trơn, không khung màu.
+  if(!inRoom.length){
+    heroEl.innerHTML='<div class="kiosk-hero-label">Xin mời vào phòng</div><div class="kiosk-hero-empty">Chưa có ai được mời vào phòng</div>';
+  }else{
+    const top=inRoom[0];
+    const {label}=destOf(top);
+    const more=inRoom.slice(1,6).map(c=>{
+      const {label:l}=destOf(c);
+      return `<div class="kiosk-hero-chip">${escHtml(c.name||c.email||'—')} <span class="chip-dest">→ ${escHtml(l)}</span></div>`;
+    }).join('');
+    heroEl.innerHTML=`
+      <div class="kiosk-hero-label">Xin mời vào phòng</div>
+      <div class="kiosk-hero-name">${escHtml(top.name||top.email||'—')}</div>
+      <div class="kiosk-hero-dest">→ ${escHtml(label)}</div>
+      ${top.roomAt?`<div class="kiosk-hero-meta kiosk-countup" data-since="${toMs(top.roomAt)}">--:--</div>`:''}
+      ${more?`<div class="kiosk-hero-more">${more}</div>`:''}
+    `;
+  }
+  if(isNewTop){
+    heroEl.classList.remove('bump');
+    void heroEl.offsetWidth; // ép reflow để animation chạy lại được
+    heroEl.classList.add('bump');
+  }
+
+  // "Đang phỏng vấn" — kèm đếm ngược thời gian dự kiến còn lại (tái dùng .table-timer global tick).
+  if(!interviewing.length){
+    ivList.innerHTML='<div class="kiosk-empty">Chưa có ai đang phỏng vấn</div>';
+  }else{
+    ivList.innerHTML=interviewing.slice(0,14).map(c=>{
+      const {table,label}=destOf(c);
+      const minutes=table?.timerMinutes||S.defaultTimerMinutes||DEFAULT_INTERVIEW_MINUTES;
+      const targetMs=c.interviewAt?toMs(c.interviewAt)+minutes*60000:null;
+      return `<div class="kiosk-row">
+        <div class="kiosk-avatar">${initOf(c.name)}</div>
+        <div class="kiosk-body">
+          <div class="kiosk-name">${escHtml(c.name||c.email||'—')}</div>
+          <div class="kiosk-meta-row">
+            <span class="kiosk-dest">→ ${escHtml(label)}</span>
+            ${c.dept?`<span class="dept-badge dept-${c.dept}">${DEPT_NAMES[c.dept]||c.dept}</span>`:''}
+            ${targetMs?`<span class="table-timer tt-normal" data-target="${targetMs}"><svg class="svg-icon" style="width:11px;height:11px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span class="tt-text">--:--</span></span>`:''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // "Đang chờ" — ứng viên đã check-in, chưa được xếp bàn, chờ lâu nhất lên đầu.
+  const nextList=document.getElementById('kiosk-next-list');
+  if(nextList){
+    const upcoming=S.candidates.filter(c=>c.status==='checkin'&&!c.tableId);
+    upcoming.sort((a,b)=>(a.checkInAt?toMs(a.checkInAt):Date.now())-(b.checkInAt?toMs(b.checkInAt):Date.now()));
+    if(!upcoming.length){
+      nextList.innerHTML='<div class="kiosk-empty">Không còn ai đang chờ</div>';
+    }else{
+      nextList.innerHTML=upcoming.slice(0,14).map(c=>{
+        const waitMs=c.checkInAt?(Date.now()-toMs(c.checkInAt)):0;
+        const cls=waitMs>WAIT_ALERT_MS?'next-alert':waitMs>WAIT_WARN_MS?'next-warn':'';
+        return `<div class="kiosk-next-row ${cls}">
+          <div class="kiosk-next-avatar">${initOf(c.name)}</div>
+          <div class="kiosk-next-body">
+            <span class="kiosk-next-name">${escHtml(c.name||c.email||'—')}</span>
+            ${c.dept?`<span class="dept-badge dept-${c.dept}">${DEPT_NAMES[c.dept]||c.dept}</span>`:''}
+          </div>
+          <div class="kiosk-next-wait">${c.checkInAt?elapsedStr(c.checkInAt):'—'}</div>
+        </div>`;
+      }).join('');
+    }
+  }
+  tickInterviewTimers();
+  tickKioskCountups();
+}
+// Đếm xuôi thời gian đã ở "Xin mời vào phòng" (chưa có target cố định nên đếm lên, không đếm ngược).
+// Chạy độc lập mỗi giây, KHÔNG rebuild lại HTML của renderKiosk() để tránh giật/nháy màn hình.
+function tickKioskCountups(){
+  document.querySelectorAll('.kiosk-countup[data-since]').forEach(el=>{
+    const since=Number(el.dataset.since);
+    if(!since)return;
+    const ms=Math.max(0,Date.now()-since);
+    const mm=String(Math.floor(ms/60000)).padStart(2,'0');
+    const ss=String(Math.floor((ms%60000)/1000)).padStart(2,'0');
+    el.textContent=mm+':'+ss+' chờ vào bàn';
+  });
+}
+document.addEventListener('fullscreenchange',()=>{
+  if(!document.fullscreenElement&&S.kioskOpen){
+    // Người dùng thoát fullscreen bằng Esc — vẫn giữ overlay hiển thị (không tự đóng).
+    // Ở tab Kiosk riêng, hiện lại lớp "chạm để vào toàn màn hình" để bật lại dễ dàng.
+    if(S.kioskStandalone)document.getElementById('kiosk-gesture-layer').classList.add('show');
+  }
+});
+// ── AUTO NO-SHOW ───────────────────────────────────
+// Ứng viên chưa check-in (còn 'wait') quá NOSHOW_THRESHOLD_MS kể từ lúc CA mở → tự chuyển 'drop'.
+// Chỉ chạy từ client có quyền check-in để tránh nhiều tab cùng ghi trùng, và bỏ qua nếu
+// chưa xác định được mốc giờ mở ca (sessionCreatedAt chưa kịp round-trip từ Firestore).
+function autoFlagNoShows(){
+  if(!canCheckinCandidates())return;
+  if(!S.sessionCreatedAt)return;
+  const openedMs=S.sessionCreatedAt;
+  if(!openedMs||Date.now()-openedMs<NOSHOW_THRESHOLD_MS)return;
+  const toFlag=S.candidates.filter(c=>c.status==='wait'&&!c.checkInAt);
+  if(!toFlag.length)return;
+  toFlag.forEach(c=>{
+    c.status='drop';
+    c.tableId=null;
+    c.note=(c.note?c.note+' ':'')+NOSHOW_NOTE_MARK;
+  });
+  patchSession({candidates:S.candidates,updatedAt:fTs()});
+  addLog(`Tự động đánh dấu ${toFlag.length} ứng viên không đến (quá ${Math.round(NOSHOW_THRESHOLD_MS/60000)} phút chưa check-in)`);
+  toast(`Đã tự động đánh dấu ${toFlag.length} ứng viên "không đến"`,'warn');
+  renderAll();
+}
 async function setCandidateStatus(candId,status,note){
   const idx=S.candidates.findIndex(c=>c.id===candId);if(idx<0)return;
   const now=new Date();
@@ -3004,7 +4016,12 @@ async function setCandidateStatus(candId,status,note){
   await patchSession({candidates:S.candidates,updatedAt:fTs()});
   addLog(`${cand.name}: ${ALL_STATUSES.find(s=>s.key===prevStatus)?.label||prevStatus} → ${statusLabel}`);
   addNotif(status==='drop'?'err':status==='done'?'ok':'info',`${cand.name} → ${statusLabel}`);
-  if(status==='checkin')computeAutoSuggestions();
+  if(status==='checkin'){
+    if(S.activeRound==='round2'&&cand.groupId&&!cand.tableId){
+      await autoSeatGroupIfAssigned(cand.groupId);
+    }
+    computeAutoSuggestions();
+  }
   renderAll();
 }
 
@@ -3032,7 +4049,7 @@ function onCheckinSearch(q){
     item.innerHTML=`
       <div class="csd-avatar">${initOf(c.name)}</div>
       <div class="csd-info">
-        <div class="csd-name">${escHtml(c.name)}</div>
+        <div class="csd-name" title="${escHtml(c.name)}">${escHtml(c.name)}</div>
         <div class="csd-sub">${c.email||''} · <span class="dept-badge dept-${c.dept}">${DEPT_NAMES[c.dept]||c.dept||'—'}</span></div>
       </div>
       <div class="csd-action">${actionLabel}</div>
@@ -3065,6 +4082,7 @@ function openCandDetail(candId){
   const status=ALL_STATUSES.find(s=>s.key===c.status)||ALL_STATUSES[0];
   const table=c.tableId?S.rooms.flatMap(r=>r.tables).find(t=>t.id===c.tableId):null;
   const ivNames=(c.interviewers||[]).map(iv=>iv.name||iv.email||iv).join(', ')||'Chưa có';
+  const canEdit=canActOnTable(table)||canCheckinCandidates();
   const steps=[
     {label:'Chưa check in',key:'wait',time:null,done:true},
     {label:'Đã check in',key:'checkin',time:c.checkInAt},
@@ -3095,10 +4113,15 @@ function openCandDetail(candId){
       <div class="detail-icon"><svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
       <div class="detail-val">${c.email||'—'}</div>
     </div>
-    ${c.mssv?`<div class="detail-row">
+    <div class="detail-row">
       <div class="detail-icon"><svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
-      <div class="detail-val">${c.mssv}</div>
-    </div>`:''}
+      <div class="detail-val">
+        <div class="detail-label">MSSV ${!c.mssv?'<span style="color:var(--orange);font-weight:600">(chưa có — hồ sơ ứng tuyển không thu MSSV)</span>':''}</div>
+        ${canEdit
+          ?`<input value="${escHtml(c.mssv||'')}" placeholder="Nhập MSSV..." style="border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;width:160px" onblur="saveCandMSSV('${c.id}',this.value)" onkeydown="if(event.key==='Enter')this.blur()"/>`
+          :(c.mssv||'—')}
+      </div>
+    </div>
     <div class="detail-row">
       <div class="detail-icon"><svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
       <div class="detail-val"><div class="detail-label">Người phỏng vấn (ca này)</div>${escHtml(ivNames)}</div>
@@ -3118,6 +4141,14 @@ function openCandDetail(candId){
   detailBtn.style.display=canAct?'':'none';
   detailBtn.onclick=()=>{closeModal('modal-cand-detail');openStatusModal(candId);};
   openModal('modal-cand-detail');
+}
+async function saveCandMSSV(candId,val){
+  const c=S.candidates.find(x=>x.id===candId);if(!c)return;
+  const v=(val||'').trim();
+  if(c.mssv===v)return;
+  c.mssv=v;
+  await patchSession({candidates:S.candidates,updatedAt:fTs()});
+  renderFloatCandList();
 }
 function fmtTime(iso){
   try{const d=new Date(iso);return d.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});}catch{return'';}
@@ -3139,8 +4170,14 @@ function renderPicModal(){
   const arr=_picModalData.picEmails;
   const suggestEmails=new Set();
   const room=S.rooms.find(r=>r.id===_picModalData.roomId);
-  arrangedByRound[S.activeRound].filter(r=>r.slotId===S.activeSlot&&(room?.dept==='ALL'||r.candidateDept===room?.dept)).forEach(row=>{
-    getInterviewersForRow(row,S.activeSlot).forEach(iv=>{if(iv.email)suggestEmails.add(iv.email);});
+  arrangedByRound[S.activeRound].filter(r=>r.slotId===S.activeSlot).forEach(row=>{
+    if(row.round==='round2'&&Array.isArray(row.group)&&row.group.length){
+      row.group.filter(g=>room?.dept==='ALL'||g.dept===room?.dept).forEach(g=>{
+        (g.ivs||[]).forEach(iv=>{if(iv.email)suggestEmails.add(iv.email);});
+      });
+    }else if(room?.dept==='ALL'||row.candidateDept===room?.dept){
+      getInterviewersForRow(row,S.activeSlot).forEach(iv=>{if(iv.email)suggestEmails.add(iv.email);});
+    }
   });
   const unused=[...suggestEmails].filter(e=>!arr.includes(e));
   document.getElementById('modal-pic-body').innerHTML=`
@@ -3384,7 +4421,16 @@ function openSetupWizard(){
   if(S.rooms.length){
     S.rooms.forEach(room=>container.appendChild(buildWizardRoomEl(room)));
   }else{
-    const depts=[...new Set(arrangedByRound[S.activeRound].filter(r=>r.slotId===S.activeSlot).map(r=>r.candidateDept).filter(Boolean))];
+    const rowsHere=arrangedByRound[S.activeRound].filter(r=>r.slotId===S.activeSlot);
+    const deptSet=new Set();
+    rowsHere.forEach(r=>{
+      if(r.round==='round2'&&Array.isArray(r.group)&&r.group.length){
+        r.group.forEach(g=>{if(g.dept)deptSet.add(g.dept);});
+      }else if(r.candidateDept){
+        deptSet.add(r.candidateDept);
+      }
+    });
+    const depts=[...deptSet];
     if(depts.length){
       depts.forEach(dept=>{
         container.appendChild(buildWizardRoomEl({
@@ -3692,40 +4738,200 @@ async function syncNow(){
 }
 
 // ══════════════════════════════════════════════════
+//  CHAT (theo Phòng — mọi bàn trong phòng cùng thấy — và theo Bàn — riêng tư cho bàn đó)
+//  Chỉ lưu tạm trong bộ nhớ trình duyệt (KHÔNG lưu Firestore) — tắt tab/trình duyệt là mất, đúng yêu cầu.
+// ══════════════════════════════════════════════════
+S._chatMsgs=S._chatMsgs||{};
+let _chatState={scope:null,id:null};
+function chatKey(scope,id){return `${scope}_${id}`;}
+function openChatModal(scope,id,title){
+  _chatState={scope,id};
+  document.getElementById('chat-modal-title').textContent=title;
+  openModal('modal-chat');
+  renderChatMsgs(S._chatMsgs[chatKey(scope,id)]||[]);
+}
+function closeChatModal(){
+  _chatState={scope:null,id:null};
+  closeModal('modal-chat');
+}
+function renderChatMsgs(msgs){
+  const el=document.getElementById('chat-msg-list');
+  if(!msgs.length){el.innerHTML='<div class="chat-empty">Chưa có tin nhắn nào. Hãy bắt đầu cuộc trò chuyện!<br><span style="font-size:10px">(Chat chỉ lưu tạm trên trình duyệt này, tắt tab là mất)</span></div>';return;}
+  const myEmail=(S.userEmail||'').toLowerCase();
+  el.innerHTML=msgs.map(m=>{
+    const isMe=(m.senderEmail||'').toLowerCase()===myEmail;
+    const t=timeStr(new Date(m.ts));
+    return `<div class="chat-msg${isMe?' me':''}">
+      ${isMe?'':`<div class="chat-msg-sender">${escHtml(m.senderName||m.senderEmail||'Ẩn danh')}</div>`}
+      <div>${escHtml(m.text)}</div>
+      <div class="chat-msg-time">${t}</div>
+    </div>`;
+  }).join('');
+  el.scrollTop=el.scrollHeight;
+}
+function sendChatMsg(){
+  const input=document.getElementById('chat-msg-input');
+  const text=input.value.trim();
+  if(!text||!_chatState.scope)return;
+  input.value='';
+  const key=chatKey(_chatState.scope,_chatState.id);
+  if(!S._chatMsgs[key])S._chatMsgs[key]=[];
+  S._chatMsgs[key].push({text,senderName:S.userName||'',senderEmail:S.userEmail||'',ts:Date.now()});
+  renderChatMsgs(S._chatMsgs[key]);
+}
+document.getElementById('modal-chat').addEventListener('click',e=>{
+  if(e.target===document.getElementById('modal-chat'))closeChatModal();
+});
+
+// ══════════════════════════════════════════════════
 //  EXPORT EXCEL
 // ══════════════════════════════════════════════════
-function exportExcel(){
-  if(typeof XLSX==='undefined'){toast('Thư viện XLSX chưa tải','err');return;}
-  const headers=['#','Họ tên','Email','MSSV','Ban','Người PV (ca này)','Trạng thái','Bàn','Check in','Vào phòng','Bắt đầu PV','Hoàn thành','Ghi chú'];
-  const rows=[headers];
-  S.candidates.forEach((c,i)=>{
+function buildTableDurationStats(){
+  // Thời lượng PV mỗi bàn = doneAt - roomAt (lúc vào phòng tới lúc xong), tính trung bình theo TÊN bàn
+  // (gộp theo tên vì table.id đổi mới mỗi ca — xem bootstrapSession).
+  const byName={};
+  S.candidates.forEach(c=>{
+    if(!c.roomAt||!c.doneAt||c.status!=='done')return;
     const table=c.tableId?S.rooms.flatMap(r=>r.tables).find(t=>t.id===c.tableId):null;
-    const status=ALL_STATUSES.find(s=>s.key===c.status)?.label||c.status;
-    const ivNames=(c.interviewers||[]).map(iv=>iv.name||iv.email||iv).join('; ');
-    rows.push([
-      i+1,c.name||'',c.email||'',c.mssv||'',DEPT_NAMES[c.dept]||c.dept||'',
-      ivNames,status,table?.name||'',
-      c.checkInAt?fmtTime(c.checkInAt):'',c.roomAt?fmtTime(c.roomAt):'',
-      c.interviewAt?fmtTime(c.interviewAt):'',c.doneAt?fmtTime(c.doneAt):'',c.note||'',
-    ]);
+    const name=table?.name||'(Không rõ bàn)';
+    const dur=toMs(c.doneAt)-toMs(c.roomAt);
+    if(dur<=0)return;
+    if(!byName[name])byName[name]={sum:0,count:0};
+    byName[name].sum+=dur;byName[name].count++;
+  });
+  return Object.entries(byName).map(([name,{sum,count}])=>({name,count,avgMs:sum/count}));
+}
+function fmtDurMin(ms){return Math.round(ms/60000)+' phút';}
+function buildTableDurationStatsFor(candidates,rooms){
+  const byName={};
+  candidates.forEach(c=>{
+    if(!c.roomAt||!c.doneAt||c.status!=='done')return;
+    const table=c.tableId?rooms.flatMap(r=>r.tables).find(t=>t.id===c.tableId):null;
+    const name=table?.name||'(Không rõ bàn)';
+    const dur=toMs(c.doneAt)-toMs(c.roomAt);
+    if(dur<=0)return;
+    if(!byName[name])byName[name]={sum:0,count:0};
+    byName[name].sum+=dur;byName[name].count++;
+  });
+  return Object.entries(byName).map(([name,{sum,count}])=>({name,count,avgMs:sum/count}));
+}
+// Gộp workbook (bảng chi tiết + sheet tổng kết) từ 1 hoặc nhiều "ca" (mỗi ca = {candidates, rooms, slotLabel})
+function buildReportWorkbook(sessions,scopeLabel){
+  const headers=['#','Họ tên','Email','MSSV','Ban','Người PV (ca này)','Trạng thái','Bàn','Ca','Check in','Vào phòng','Bắt đầu PV','Hoàn thành','Ghi chú'];
+  const rows=[headers];
+  let idx=0;
+  const allCands=[];
+  sessions.forEach(({candidates,rooms,slotLabel})=>{
+    candidates.forEach(c=>{
+      idx++;
+      const table=c.tableId?rooms.flatMap(r=>r.tables).find(t=>t.id===c.tableId):null;
+      const status=ALL_STATUSES.find(s=>s.key===c.status)?.label||c.status;
+      const ivNames=(c.interviewers||[]).map(iv=>iv.name||iv.email||iv).join('; ');
+      rows.push([
+        idx,c.name||'',c.email||'',c.mssv||'',DEPT_NAMES[c.dept]||c.dept||'',
+        ivNames,status,table?.name||'',slotLabel||'',
+        c.checkInAt?fmtTime(c.checkInAt):'',c.roomAt?fmtTime(c.roomAt):'',
+        c.interviewAt?fmtTime(c.interviewAt):'',c.doneAt?fmtTime(c.doneAt):'',c.note||'',
+      ]);
+      allCands.push({...c,_rooms:rooms});
+    });
   });
   const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[4,22,24,10,14,24,14,10,8,8,8,8,20].map(wch=>({wch}));
+  ws['!cols']=[4,22,24,10,14,24,14,10,14,8,8,8,8,20].map(wch=>({wch}));
   const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'Session');
+  XLSX.utils.book_append_sheet(wb,ws,'Chi tiết');
+
+  const total=allCands.length;
+  const done=allCands.filter(c=>c.status==='done').length;
+  const dropped=allCands.filter(c=>c.status==='drop').length;
+  const notDone=total-done-dropped;
+  // Tính thời lượng TB gộp theo tên bàn trên toàn bộ các ca được chọn
+  const byName={};
+  sessions.forEach(({candidates,rooms})=>{
+    buildTableDurationStatsFor(candidates,rooms).forEach(d=>{
+      if(!byName[d.name])byName[d.name]={sum:0,count:0};
+      byName[d.name].sum+=d.avgMs*d.count;byName[d.name].count+=d.count;
+    });
+  });
+  const durStats=Object.entries(byName).map(([name,{sum,count}])=>({name,count,avgMs:sum/count}));
+  const overallAvg=durStats.length?durStats.reduce((s,d)=>s+d.avgMs*d.count,0)/durStats.reduce((s,d)=>s+d.count,0):0;
+  const sumRows=[
+    ['Tổng kết',scopeLabel||'',new Date().toLocaleString('vi-VN')],
+    [],
+    ['Tổng ứng viên',total],
+    ['Hoàn thành',done],
+    ['Drop',dropped],
+    ['Chưa xong khi đóng',notDone],
+    ['Thời lượng PV trung bình (tất cả bàn)',durStats.length?fmtDurMin(overallAvg):'—'],
+    [],
+    ['Bàn','Số ca PV đã xong','Thời lượng PV trung bình'],
+    ...durStats.map(d=>[d.name,d.count,fmtDurMin(d.avgMs)]),
+  ];
+  const ws2=XLSX.utils.aoa_to_sheet(sumRows);
+  ws2['!cols']=[26,16,22].map(wch=>({wch}));
+  XLSX.utils.book_append_sheet(wb,ws2,'Tổng kết');
+  return wb;
+}
+function exportExcel(silent){
+  if(typeof XLSX==='undefined'){if(!silent)toast('Thư viện XLSX chưa tải','err');return false;}
+  const slotMeta=allSlotsByRound[S.activeRound]?.find(s=>s.id===S.activeSlot);
+  const wb=buildReportWorkbook([{candidates:S.candidates,rooms:S.rooms,slotLabel:slotMeta?.label||S.activeSlot}],slotMeta?.label||S.activeSlot);
   XLSX.writeFile(wb,`IDay_${S.activeRound}_${new Date().toISOString().split('T')[0]}.xlsx`);
-  toast('Đã xuất Excel','ok');
+  if(!silent)toast('Đã xuất Excel','ok');
+  return true;
+}
+// Xuất gộp TẤT CẢ các ca trong 1 vòng — dùng khi đóng vòng, vì 1 vòng có thể có nhiều ca
+// và người đóng vòng có thể không đang đứng ở ca cuối cùng.
+async function exportRoundReport(round,silent){
+  if(typeof XLSX==='undefined'){if(!silent)toast('Thư viện XLSX chưa tải','err');return false;}
+  try{
+    const snap=await window.db.collection(IDAY_COLLECTION).where('round','==',round).get();
+    if(snap.empty)return false;
+    const sessions=[];
+    snap.forEach(doc=>{
+      const d=doc.data();
+      if(!d.candidates||!d.candidates.length)return;
+      const slotMeta=allSlotsByRound[round]?.find(s=>s.id===d.slot);
+      sessions.push({candidates:d.candidates,rooms:d.rooms||[],slotLabel:slotMeta?.label||d.slot});
+    });
+    if(!sessions.length)return false;
+    const roundLabel=ROUNDS.find(r=>r.key===round)?.label||round;
+    const wb=buildReportWorkbook(sessions,roundLabel);
+    XLSX.writeFile(wb,`IDay_${round}_TongKet_${new Date().toISOString().split('T')[0]}.xlsx`);
+    if(!silent)toast('Đã xuất báo cáo tổng kết vòng','ok');
+    return true;
+  }catch(e){console.warn('export round report err',e);if(!silent)toast('Lỗi xuất báo cáo: '+e.message,'err');return false;}
 }
 
 // ══════════════════════════════════════════════════
 //  CLOCK
 // ══════════════════════════════════════════════════
+function tickInterviewTimers(){
+  document.querySelectorAll('.table-timer[data-target]').forEach(el=>{
+    const target=Number(el.dataset.target);
+    if(!target)return;
+    const remainMs=target-Date.now();
+    const overtime=remainMs<0;
+    const absMs=Math.abs(remainMs);
+    const mm=String(Math.floor(absMs/60000)).padStart(2,'0');
+    const ss=String(Math.floor((absMs%60000)/1000)).padStart(2,'0');
+    const textEl=el.querySelector('.tt-text');
+    if(textEl)textEl.textContent=(overtime?'+':'')+mm+':'+ss;
+    el.classList.remove('tt-normal','tt-warn','tt-over');
+    if(overtime)el.classList.add('tt-over');
+    else if(remainMs<3*60000)el.classList.add('tt-warn');
+    else el.classList.add('tt-normal');
+  });
+}
 function startClock(){
   const el=document.getElementById('tb-clock');
   setInterval(()=>{
     const now=new Date();
     el.textContent=now.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     if(now.getSeconds()%20===0)renderAll();
+    if(now.getSeconds()%60===0)autoFlagNoShows();
+    tickInterviewTimers();
+    if(S.kioskOpen){updateKioskClock();tickKioskCountups();}
   },1000);
 }
 
