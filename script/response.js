@@ -65,10 +65,12 @@ async function loadInterviewAndQuestions() {
             banQuestions = {
                 "MD-Design": raw["MD-Design"] || raw["md-design"] || [],
                 "MD-Content": raw["MD-Content"] || raw["md-content"] || [],
+                "MD-General": raw["MD-General"] || raw["md-general"] || [],
                 HR: raw.HR || raw.hr || [],
                 ER: raw.ER || raw.er || [],
                 PD: raw.PD || raw.pd || [],
                 MD: {
+                    General: raw["MD-General"] || raw["md-general"] || [],
                     Design: raw["MD-Design"] || raw["md-design"] || [],
                     Content: raw["MD-Content"] || raw["md-content"] || []
                 }
@@ -82,6 +84,7 @@ async function loadInterviewAndQuestions() {
             banQuestions: {
                 'MD-Design': banQuestions['MD-Design']?.length,
                 'MD-Content': banQuestions['MD-Content']?.length,
+                'MD-General': banQuestions['MD-General']?.length,
                 HR: banQuestions.HR?.length,
                 ER: banQuestions.ER?.length,
                 PD: banQuestions.PD?.length,
@@ -150,170 +153,6 @@ function buildInterviewFromSlots(slots) {
     });
 
     return [question];
-}
-
-// ============================================================
-// HIỂN THỊ THÔNG TIN ỨNG TUYỂN - THEO TẦNG
-// ============================================================
-
-function renderApplicationInfo(application, container) {
-    const section = document.createElement("div");
-    section.className = "detail-section";
-    
-    let html = `
-        <h3><i class="fas fa-briefcase"></i> Thông tin ứng tuyển</h3>
-        <div class="app-info-grid">
-            <!-- Dòng 1: Hình thức + Trạng thái tổng -->
-            <div class="app-info-row">
-                <div class="app-info-item">
-                    <span class="app-label">Hình thức ứng tuyển</span>
-                    <span class="app-value">${application.application_type === "form" ? "Điền đơn" : "Phỏng vấn"}</span>
-                </div>
-                <div class="app-info-item">
-                    <span class="app-label">Trạng thái tổng</span>
-                    <span class="status-indicator ${getStatusInfo(computeOverallStatus(application)).class}">
-                        ${getStatusInfo(computeOverallStatus(application)).text}
-                    </span>
-                </div>
-            </div>
-    `;
-    
-    // === BAN ƯU TIÊN ===
-    if (application.priority_position && application.priority_position !== "None") {
-        const priorityStatus = getDepartmentStatus(application, "priority");
-        const deptName = getDepartmentName(application.priority_position);
-        const subDisplay = application.priority_position === "MD" 
-            ? (application.md_sub_departments || []).join(", ") 
-            : "";
-        
-        html += `
-            <div class="app-info-divider"></div>
-            <div class="app-info-row">
-                <div class="app-info-item">
-                    <span class="app-label">Ban ưu tiên</span>
-                    <span class="app-value dept-name priority">
-                        <i class="fas fa-star" style="font-size:12px;color:#3b82f6;"></i>
-                        ${deptName} ${subDisplay ? `(${subDisplay})` : ''}
-                    </span>
-                </div>
-                <div class="app-info-item">
-                    <span class="app-label">Trạng thái</span>
-                    <span class="dept-status ${priorityStatus.class}">${priorityStatus.text}</span>
-                </div>
-                ${priorityStatus.reason ? `
-                    <div class="app-info-item full-width">
-                        <span class="app-label">Lý do</span>
-                        <span class="app-value reason">${priorityStatus.reason}</span>
-                    </div>
-                ` : ''}
-            </div>
-        `;
-    }
-    
-    // === BAN DỰ BỊ ===
-    if (application.secondary_position && application.secondary_position !== "None") {
-        const secondaryStatus = getDepartmentStatus(application, "secondary");
-        const deptName = getDepartmentName(application.secondary_position);
-        const subDisplay = application.secondary_position === "MD" 
-            ? (application.md_sub_departments_secondary || []).join(", ") 
-            : "";
-        
-        html += `
-            <div class="app-info-divider"></div>
-            <div class="app-info-row">
-                <div class="app-info-item">
-                    <span class="app-label">Ban dự bị</span>
-                    <span class="app-value dept-name secondary">
-                        <i class="fas fa-clock" style="font-size:12px;color:#f59e0b;"></i>
-                        ${deptName} ${subDisplay ? `(${subDisplay})` : ''}
-                    </span>
-                </div>
-                <div class="app-info-item">
-                    <span class="app-label">Trạng thái</span>
-                    <span class="dept-status ${secondaryStatus.class}">${secondaryStatus.text}</span>
-                </div>
-                ${secondaryStatus.reason ? `
-                    <div class="app-info-item full-width">
-                        <span class="app-label">Lý do</span>
-                        <span class="app-value reason">${secondaryStatus.reason}</span>
-                    </div>
-                ` : ''}
-            </div>
-        `;
-    }
-    
-    // === BAN ĐƯỢC CHẤP NHẬN ===
-    const accepted = getAcceptedDepartments(application);
-    html += `
-        <div class="app-info-divider"></div>
-        <div class="app-info-row">
-            <div class="app-info-item full-width">
-                <span class="app-label">Ban được chấp nhận</span>
-                <span class="app-value accepted">${accepted || "Chưa có"}</span>
-            </div>
-        </div>
-    `;
-    
-    // === GHI CHÚ CHUNG (nếu có) ===
-    if (application.note) {
-        html += `
-            <div class="app-info-divider"></div>
-            <div class="app-info-row">
-                <div class="app-info-item full-width">
-                    <span class="app-label">Ghi chú chung</span>
-                    <span class="app-value note">${application.note}</span>
-                </div>
-            </div>
-        `;
-    }
-    
-    html += `</div>`;
-    section.innerHTML = html;
-    container.appendChild(section);
-}
-
-// ============================================================
-// LẤY TRẠNG THÁI CỦA TỪNG BAN
-// ============================================================
-
-function getDepartmentStatus(application, type) {
-    const isPriority = type === "priority";
-    const accepted = isPriority ? application.priorityAccepted : application.secondaryAccepted;
-    const rejected = isPriority ? application.priorityRejected : application.secondaryRejected;
-    const reason = isPriority ? application.priorityRejectionReason : application.secondaryRejectionReason;
-    
-    if (accepted) {
-        return { text: "Đã chấp nhận", class: "status-passed", reason: null };
-    } else if (rejected) {
-        return { text: "Đã từ chối", class: "status-failed", reason: reason || "Không có lý do" };
-    }
-    return { text: "Chưa đánh giá", class: "status-pending", reason: null };
-}
-
-// ============================================================
-// KIỂM TRA QUYỀN XEM/ĐÁNH GIÁ BAN
-// ============================================================
-
-function canViewDepartment(application, deptType) {
-    if (!application) return false;
-    if (userRole === "superadmin") return true;
-    if (userRole === "admin" || userRole === "member") {
-        const deptCode = deptType === "priority" 
-            ? application.priority_position 
-            : application.secondary_position;
-        return deptCode === userDept;
-    }
-    return false;
-}
-
-function canViewAnyDepartment(application) {
-    if (!application) return false;
-    if (userRole === "superadmin") return true;
-    if (userRole === "admin" || userRole === "member") {
-        return application.priority_position === userDept || 
-               application.secondary_position === userDept;
-    }
-    return false;
 }
 
 // ============================================================
@@ -1064,19 +903,6 @@ function renderUserInfoBox(fullname) {
       </div>
     </div>
   `;
-}
-
-function canActOnDepartment(application, departmentType) {
-  if (!application) return false;
-  if (userRole === "superadmin") return true;
-  if (userRole === "admin") {
-    const deptCode =
-      departmentType === "priority"
-        ? application.priority_position
-        : application.secondary_position;
-    return deptCode === userDept;
-  }
-  return false;
 }
 
 function applyRoleUIRules() {
@@ -2333,106 +2159,7 @@ function renderInterviewSchedule(application, container) {
   container.appendChild(interviewSection);
 }
 
-// Hàm hiển thị câu trả lời đặc thù của từng ban
-function renderBanSpecificAnswers(application, type, container) {
-  const banCode =
-    type === "priority"
-      ? application.priority_position
-      : application.secondary_position;
-  if (!banCode || banCode === "None") return;
-
-  // ── Helper resolve answer với index fallback ──────────────────────────────
-  function resolveByIndex(app, prefix, question, index, banCodeArg, subArg) {
-    // 1. Thử id trực tiếp
-    const direct = getAnswer(app, prefix, question.id, subArg);
-    if (direct !== undefined && direct !== null && direct !== "") return direct;
-
-    // 2. Collect keys liên quan theo prefix + ban
-    const banLower  = (banCodeArg || "").toLowerCase();
-    const subLower  = (subArg || "").toLowerCase();
-    const systemSuf = new Set([
-      `${prefix}_status`, `${prefix}_position`,
-      `${prefix}_interview_notes`, `${prefix}_accepted`, `${prefix}_rejected`
-    ]);
-    const knownBans = ["hr", "er", "pd", "md", "design", "content"];
-
-    const candidates = Object.keys(app)
-      .filter(k => {
-        if (!k.startsWith(prefix + "_")) return false;
-        if (systemSuf.has(k)) return false;
-        const kl = k.toLowerCase();
-        const hasKnownBan = knownBans.some(
-          b => kl.includes(`_${b}_`) || kl.endsWith(`_${b}`)
-        );
-        if (hasKnownBan) {
-          // key cũ kiểu priority_hr_qs1 → chỉ giữ nếu khớp ban/sub
-          return kl.includes(`_${banLower}`) || (subLower && kl.includes(`_${subLower}`));
-        }
-        // key random (không chứa tên ban) → giữ lại
-        return true;
-      })
-      .sort();
-
-    return candidates[index] !== undefined ? app[candidates[index]] : undefined;
-  }
-  // ──────────────────────────────────────────────────────────────────────────
-
-  if (banCode === "MD") {
-    const subDepartments =
-      type === "priority"
-        ? application.md_sub_departments || []
-        : application.md_sub_departments_secondary || [];
-
-    if (!banQuestions["MD"]) {
-        console.warn('[Response] banQuestions["MD"] chưa được load');
-        return;
-    }
-
-    subDepartments.forEach((sub) => {
-      const questions = banQuestions["MD"][sub] || [];
-      questions.forEach((q, idx) => {
-        const raw = resolveByIndex(application, type, q, idx, "MD", sub);
-        const answer = (raw !== undefined && raw !== null && raw !== "")
-          ? raw : "Chưa trả lời";
-        const questionItem = document.createElement("div");
-        questionItem.className = "question-item";
-        let html = `<div class="question-text">${q.text || q.question || ""}</div>`;
-        if (q.media && q.media.type === "image") {
-          html += `<div class="question-media"><img src="${q.media.url}" alt="${
-            q.media.alt || ""
-          }"></div>`;
-        }
-        html += `<div class="answer-text">${formatAnswer(answer, q.type)}</div>`;
-        questionItem.innerHTML = html;
-        container.appendChild(questionItem);
-      });
-    });
-    return;
-  }
-
-  const questions = banQuestions[banCode] || [];
-  questions.forEach((q, idx) => {
-    const raw = resolveByIndex(application, type, q, idx, banCode, null);
-    const answer = (raw !== undefined && raw !== null && raw !== "")
-      ? raw : "Chưa trả lời";
-    const questionItem = document.createElement("div");
-    questionItem.className = "question-item";
-    questionItem.innerHTML = `
-            <div class="question-text">${q.text || q.question || ""}</div>
-            <div class="answer-text">${formatAnswer(answer, q.type)}</div>
-        `;
-    container.appendChild(questionItem);
-  });
-}
-
-// Hàm định dạng câu trả lời
-function formatAnswer(answer, type) {
-  if (Array.isArray(answer)) {
-    return answer.join(", ");
-  }
-
-  return answer;
-}
+// (Đã gộp renderBanSpecificAnswers vào bản định nghĩa phía dưới — bản này từng bị trùng tên hàm nên không có hiệu lực, đã xoá để tránh nhầm lẫn)
 
 // Ẩn view chi tiết
 function hideDetailView() {
@@ -2558,17 +2285,6 @@ async function rejectDepartment(departmentType) {
     console.error(err);
     Swal.fire("Lỗi", "Không thể cập nhật trạng thái: " + err.message, "error");
   }
-}
-
-function getAcceptedDepartments(app) {
-  const accepted = [];
-  if (app.priorityAccepted) {
-    accepted.push(getDepartmentName(app.priority_position) + " (Ưu tiên)");
-  }
-  if (app.secondaryAccepted) {
-    accepted.push(getDepartmentName(app.secondary_position) + " (Dự bị)");
-  }
-  return accepted.length > 0 ? accepted.join(" / ") : "Chưa có";
 }
 
 // Lấy tên ban từ mã
@@ -2955,6 +2671,15 @@ function normalizeApplicationForExport(app, index = 0) {
   if (app.priority_position) {
     const code = app.priority_position;
     if (code === "MD") {
+      // Câu hỏi chung của ban Truyền thông — luôn xuất kèm, không phụ thuộc tiểu ban
+      const generalQList = (banQuestions["MD"] && banQuestions["MD"]["General"]) || [];
+      generalQList.forEach((q) => {
+        const val = getAnswer(app, "priority", q.id, "General");
+        data[`Ưu tiên MD chung - ${q.question}`] = Array.isArray(val)
+          ? val.join("; ")
+          : val ?? "";
+      });
+
       const subs = app.md_sub_departments || [];
       subs.forEach((sub) => {
         const qList = (banQuestions["MD"] && banQuestions["MD"][sub]) || [];
@@ -2980,6 +2705,15 @@ function normalizeApplicationForExport(app, index = 0) {
   if (app.secondary_position && app.secondary_position !== "None") {
     const code = app.secondary_position;
     if (code === "MD") {
+      // Câu hỏi chung của ban Truyền thông — luôn xuất kèm, không phụ thuộc tiểu ban
+      const generalQList = (banQuestions["MD"] && banQuestions["MD"]["General"]) || [];
+      generalQList.forEach((q) => {
+        const val = getAnswer(app, "secondary", q.id, "General");
+        data[`Dự bị MD chung - ${q.question}`] = Array.isArray(val)
+          ? val.join("; ")
+          : val ?? "";
+      });
+
       const subs = app.md_sub_departments_secondary || [];
       subs.forEach((sub) => {
         const qList = (banQuestions["MD"] && banQuestions["MD"][sub]) || [];
@@ -3085,8 +2819,39 @@ function renderBanSpecificAnswers(application, type, container) {
       return;
     }
 
+    // CÂU HỎI CHUNG CỦA BAN TRUYỀN THÔNG — hiện luôn, không phụ thuộc tiểu ban đã chọn
+    const generalQuestionsMD = banQuestions["MD"]["General"] || [];
+    if (generalQuestionsMD.length > 0) {
+      const generalTitle = document.createElement("div");
+      generalTitle.className = "sub-section";
+      generalTitle.innerHTML = `<h3>Câu hỏi chung - Ban Truyền thông</h3>`;
+      container.appendChild(generalTitle);
+
+      generalQuestionsMD.forEach((q) => {
+        const raw = getAnswerFlexible(application, type, q.id, q.text || q.question || '', 'General');
+        const answer = (raw !== undefined && raw !== null && raw !== "") ? raw : "Chưa trả lời";
+
+        const questionItem = document.createElement("div");
+        questionItem.className = "question-item";
+        let html = `<div class="question-text">${q.text || q.question || ""}</div>`;
+        if (q.media && q.media.type === "image") {
+          html += `<div class="question-media"><img src="${q.media.url}" alt="${q.media.alt || ""}"></div>`;
+        }
+        html += `<div class="answer-text">${formatAnswer(answer, q.type)}</div>`;
+        questionItem.innerHTML = html;
+        container.appendChild(questionItem);
+      });
+    }
+
     subDepartments.forEach((sub) => {
       const questions = banQuestions["MD"][sub] || [];
+      if (!questions.length) return;
+
+      const subTitle = document.createElement("div");
+      subTitle.className = "sub-section";
+      subTitle.innerHTML = `<h3>Tiểu ban ${sub}</h3>`;
+      container.appendChild(subTitle);
+
       questions.forEach((q) => {
         // Lấy câu trả lời với fallback
         const raw = getAnswerFlexible(application, type, q.id, q.text || q.question || '', sub);

@@ -80,7 +80,9 @@ async function initFormData() {
             banQuestions = {
                 "MD-Design": raw["MD-Design"] || raw["md-design"] || [],
                 "MD-Content": raw["MD-Content"] || raw["md-content"] || [],
+                "MD-General": raw["MD-General"] || raw["md-general"] || [],
                 MD: {
+                    General: raw["MD-General"] || raw["md-general"] || [],
                     Design: raw["MD-Design"] || raw["md-design"] || [],
                     Content: raw["MD-Content"] || raw["md-content"] || []
                 },
@@ -908,6 +910,23 @@ function renderBanQuestions(banCode, type) {
         if (selected.length === 0) {
             questionsContainer.innerHTML = '<p class="no-questions">Vui lòng chọn tiểu ban Design hoặc Content để hiển thị câu hỏi.</p>';
             return;
+        }
+
+        // CÂU HỎI CHUNG CỦA BAN TRUYỀN THÔNG — hiện luôn, bất kể chọn tiểu ban Design/Content nào
+        const mdGeneralQuestions = (banQuestions.MD && banQuestions.MD.General) || banQuestions['MD-General'] || [];
+        if (mdGeneralQuestions.length > 0) {
+            const generalSubtitle = document.createElement('div');
+            generalSubtitle.className = 'sub-section';
+            generalSubtitle.innerHTML = `<h3>Câu hỏi chung - Ban Truyền thông</h3>`;
+            questionsContainer.appendChild(generalSubtitle);
+
+            mdGeneralQuestions.forEach(q => {
+                // Dùng CHUNG pattern "type_general_qid" như Design/Content (type_design_qid)
+                // để response.js (getAnswer) tự khớp được theo sub="General".
+                const prefixedId = `${type}_general_${q.id}`;
+                const questionDiv = buildQuestionDiv(q, prefixedId, type === 'secondary');
+                questionsContainer.appendChild(questionDiv);
+            });
         }
 
         selected.forEach(sub => {
