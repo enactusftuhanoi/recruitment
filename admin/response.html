@@ -1219,6 +1219,9 @@ footer {
                 <button class="export-btn" id="publish-all-results-btn" style="display:none; background:#16a34a; color:#fff; border-color:#16a34a;" onclick="publishAllResults()">
                     <i class="fas fa-bullhorn"></i> Công bố kết quả (hàng loạt)
                 </button>
+                <button class="export-btn" id="revoke-all-results-btn" style="display:none; background:#fff; color:#dc2626; border-color:#fecaca;" onclick="revokeAllResults()">
+                    <i class="fas fa-rotate-left"></i> Thu hồi kết quả (hàng loạt)
+                </button>
             </div>
 
             <div class="search-box">
@@ -2652,20 +2655,29 @@ function renderApplications() {
     bulkBtn.style.display = (userRole === "superadmin" && publishable.length > 0) ? "inline-flex" : "none";
     bulkBtn.innerHTML = `<i class="fas fa-bullhorn"></i> Công bố kết quả (${publishable.length} ứng viên)`;
   }
+
+  // Cập nhật hiển thị nút thu hồi hàng loạt
+  const revokeBulkBtn = document.getElementById("revoke-all-results-btn");
+  if (revokeBulkBtn) {
+    const revocable = filteredApplications.filter(canRevokeResult);
+    revokeBulkBtn.style.display = (userRole === "superadmin" && revocable.length > 0) ? "inline-flex" : "none";
+    revokeBulkBtn.innerHTML = `<i class="fas fa-rotate-left"></i> Thu hồi kết quả (${revocable.length} ứng viên)`;
+  }
 }
 
-// ===== Công bố kết quả cuối cùng (dựa trên round4_priority_status / round4_secondary_status) =====
-function getFinalMergedStatus(app) {
+// ===== Công bố / Thu hồi kết quả Vòng 1 (dựa trên priorityAccepted/priorityRejected, secondaryAccepted/secondaryRejected) =====
+function getRound1FinalStatus(app) {
   const hasPriority = app.priority_position && app.priority_position !== "None";
   const hasSecondary = app.secondary_position && app.secondary_position !== "None";
-  const p = hasPriority ? app.round4_priority_status : null;
-  const s = hasSecondary ? app.round4_secondary_status : null;
+
+  const p = hasPriority ? (app.priorityAccepted ? "pass" : (app.priorityRejected ? "not-pass" : "pending")) : null;
+  const s = hasSecondary ? (app.secondaryAccepted ? "pass" : (app.secondaryRejected ? "not-pass" : "pending")) : null;
 
   if (p === "pass" || s === "pass") return "pass";
 
   const priorityDone = !hasPriority || p === "not-pass";
   const secondaryDone = !hasSecondary || s === "not-pass";
-  if (priorityDone && secondaryDone && (p === "not-pass" || s === "not-pass")) return "not-pass";
+  if (priorityDone && secondaryDone && ((hasPriority && p === "not-pass") || (hasSecondary && s === "not-pass"))) return "not-pass";
 
   return "pending";
 }
@@ -2673,22 +2685,30 @@ function getFinalMergedStatus(app) {
 // Đã có kết quả quyết định (pass hoặc not-pass ở ít nhất 1 ban) và chưa công bố
 function canPublishResult(app) {
   if (userRole !== "superadmin") return false;
-  if (app.result_published) return false;
-  const status = getFinalMergedStatus(app);
+  if (app.round1_published) return false;
+  const status = getRound1FinalStatus(app);
   return status === "pass" || status === "not-pass";
+}
+
+function canRevokeResult(app) {
+  if (userRole !== "superadmin") return false;
+  return !!app.round1_published;
 }
 
 function renderPublishResultButtonHTML(app) {
   if (userRole !== "superadmin") return "";
-  if (app.result_published) {
-    return `<div class="detail-item" style="margin-top:8px;">
-      <span class="detail-value" style="color:#16a34a;"><i class="fas fa-circle-check"></i> Đã công bố kết quả cho ứng viên</span>
+  if (app.round1_published) {
+    return `<div class="detail-item" style="margin-top:8px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <span class="detail-value" style="color:#16a34a;"><i class="fas fa-circle-check"></i> Đã công bố kết quả Vòng 1 cho ứng viên</span>
+      <button class="export-btn" style="background:#fff; color:#dc2626; border-color:#fecaca;" onclick="event.stopPropagation(); revokeResult('${app.id}')">
+        <i class="fas fa-rotate-left"></i> Thu hồi
+      </button>
     </div>`;
   }
   if (canPublishResult(app)) {
     return `<div class="detail-item" style="margin-top:8px;">
       <button class="export-btn" style="background:#16a34a; color:#fff; border-color:#16a34a;" onclick="event.stopPropagation(); publishResult('${app.id}')">
-        <i class="fas fa-bullhorn"></i> Công bố kết quả cho ứng viên
+        <i class="fas fa-bullhorn"></i> Công bố kết quả Vòng 1 cho ứng viên
       </button>
     </div>`;
   }
@@ -2696,26 +2716,77 @@ function renderPublishResultButtonHTML(app) {
 }
 
 async function publishResult(appId) {
-  if (userRole !== "superadmin") { alert("Chỉ SuperAdmin mới có quyền công bố kết quả."); return; }
+  if (userRole !== "superadmin") {
+    Swal.fire({ icon: "warning", title: "Không có quyền", text: "Chỉ SuperAdmin mới có quyền công bố kết quả." });
+    return;
+  }
   const app = applications.find((a) => a.id === appId);
   if (!app || !canPublishResult(app)) return;
-  if (!confirm(`Công bố kết quả cho ${app.fullname || app.email}? Ứng viên sẽ thấy kết quả ngay trên trang Profile.`)) return;
+
+  const result = await Swal.fire({
+    icon: "question",
+    title: "Công bố kết quả Vòng 1?",
+    html: `Công bố kết quả cho <b>${app.fullname || app.email}</b>?<br>Ứng viên sẽ thấy kết quả ngay trên trang Profile.`,
+    showCancelButton: true,
+    confirmButtonText: "Công bố",
+    cancelButtonText: "Hủy",
+  });
+  if (!result.isConfirmed) return;
+
   try {
     await db.collection("applications").doc(appId).update({
-      result_published: true,
-      result_published_at: new Date().toISOString(),
-      result_published_by: userEmail || "",
+      round1_published: true,
+      round1_published_at: new Date().toISOString(),
+      round1_published_by: userEmail || "",
     });
-    app.result_published = true;
+    app.round1_published = true;
     renderApplications();
+    Swal.fire({ icon: "success", title: "Đã công bố!", text: `Kết quả Vòng 1 của ${app.fullname || app.email} đã được công bố.`, timer: 1800, showConfirmButton: false });
   } catch (error) {
     console.error("Error publishing result:", error);
-    alert("Có lỗi khi công bố kết quả. Vui lòng thử lại.");
+    Swal.fire({ icon: "error", title: "Có lỗi xảy ra", text: "Không thể công bố kết quả. Vui lòng thử lại." });
+  }
+}
+
+async function revokeResult(appId) {
+  if (userRole !== "superadmin") {
+    Swal.fire({ icon: "warning", title: "Không có quyền", text: "Chỉ SuperAdmin mới có quyền thu hồi kết quả." });
+    return;
+  }
+  const app = applications.find((a) => a.id === appId);
+  if (!app || !canRevokeResult(app)) return;
+
+  const result = await Swal.fire({
+    icon: "warning",
+    title: "Thu hồi kết quả Vòng 1?",
+    html: `Ứng viên <b>${app.fullname || app.email}</b> sẽ <b>không còn thấy</b> kết quả Vòng 1 trên trang Profile nữa cho đến khi bạn công bố lại.`,
+    showCancelButton: true,
+    confirmButtonText: "Thu hồi",
+    cancelButtonText: "Hủy",
+    confirmButtonColor: "#dc2626",
+  });
+  if (!result.isConfirmed) return;
+
+  try {
+    await db.collection("applications").doc(appId).update({
+      round1_published: false,
+      round1_revoked_at: new Date().toISOString(),
+      round1_revoked_by: userEmail || "",
+    });
+    app.round1_published = false;
+    renderApplications();
+    Swal.fire({ icon: "success", title: "Đã thu hồi!", text: `Kết quả Vòng 1 của ${app.fullname || app.email} đã được thu hồi.`, timer: 1800, showConfirmButton: false });
+  } catch (error) {
+    console.error("Error revoking result:", error);
+    Swal.fire({ icon: "error", title: "Có lỗi xảy ra", text: "Không thể thu hồi kết quả. Vui lòng thử lại." });
   }
 }
 
 async function publishAllResults() {
-  if (userRole !== "superadmin") { alert("Chỉ SuperAdmin mới có quyền công bố kết quả."); return; }
+  if (userRole !== "superadmin") {
+    Swal.fire({ icon: "warning", title: "Không có quyền", text: "Chỉ SuperAdmin mới có quyền công bố kết quả." });
+    return;
+  }
   const publishable = applications.filter(canPublishResult);
   // Chỉ công bố những ứng viên đang hiển thị theo bộ lọc hiện tại
   const departmentFilter = document.getElementById("filter-department")?.value;
@@ -2725,8 +2796,20 @@ async function publishAllResults() {
     if (typeFilter && app.application_type !== typeFilter) return false;
     return true;
   });
-  if (!list.length) { alert("Không có ứng viên nào đủ điều kiện công bố trong danh sách hiện tại."); return; }
-  if (!confirm(`Công bố kết quả cho ${list.length} ứng viên đang hiển thị? Ứng viên sẽ thấy kết quả ngay trên trang Profile.`)) return;
+  if (!list.length) {
+    Swal.fire({ icon: "info", title: "Không có ứng viên phù hợp", text: "Không có ứng viên nào đủ điều kiện công bố trong danh sách hiện tại." });
+    return;
+  }
+
+  const result = await Swal.fire({
+    icon: "question",
+    title: "Công bố kết quả hàng loạt?",
+    html: `Công bố kết quả Vòng 1 cho <b>${list.length}</b> ứng viên đang hiển thị?<br>Ứng viên sẽ thấy kết quả ngay trên trang Profile.`,
+    showCancelButton: true,
+    confirmButtonText: "Công bố tất cả",
+    cancelButtonText: "Hủy",
+  });
+  if (!result.isConfirmed) return;
 
   const btn = document.getElementById("publish-all-results-btn");
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang công bố...'; }
@@ -2735,11 +2818,11 @@ async function publishAllResults() {
   for (const app of list) {
     try {
       await db.collection("applications").doc(app.id).update({
-        result_published: true,
-        result_published_at: new Date().toISOString(),
-        result_published_by: userEmail || "",
+        round1_published: true,
+        round1_published_at: new Date().toISOString(),
+        round1_published_by: userEmail || "",
       });
-      app.result_published = true;
+      app.round1_published = true;
       ok++;
     } catch (error) {
       console.error(`Error publishing result for ${app.email}:`, error);
@@ -2748,7 +2831,60 @@ async function publishAllResults() {
 
   if (btn) { btn.disabled = false; }
   renderApplications();
-  alert(`Đã công bố kết quả cho ${ok}/${list.length} ứng viên.`);
+  Swal.fire({ icon: "success", title: "Hoàn tất!", text: `Đã công bố kết quả cho ${ok}/${list.length} ứng viên.`, timer: 2200, showConfirmButton: false });
+}
+
+async function revokeAllResults() {
+  if (userRole !== "superadmin") {
+    Swal.fire({ icon: "warning", title: "Không có quyền", text: "Chỉ SuperAdmin mới có quyền thu hồi kết quả." });
+    return;
+  }
+  const revocable = applications.filter(canRevokeResult);
+  // Chỉ thu hồi những ứng viên đang hiển thị theo bộ lọc hiện tại
+  const departmentFilter = document.getElementById("filter-department")?.value;
+  const typeFilter = document.getElementById("filter-type")?.value;
+  const list = revocable.filter((app) => {
+    if (departmentFilter && app.priority_position !== departmentFilter && app.secondary_position !== departmentFilter) return false;
+    if (typeFilter && app.application_type !== typeFilter) return false;
+    return true;
+  });
+  if (!list.length) {
+    Swal.fire({ icon: "info", title: "Không có ứng viên phù hợp", text: "Không có ứng viên nào đã công bố trong danh sách hiện tại." });
+    return;
+  }
+
+  const result = await Swal.fire({
+    icon: "warning",
+    title: "Thu hồi kết quả hàng loạt?",
+    html: `<b>${list.length}</b> ứng viên đang hiển thị sẽ <b>không còn thấy</b> kết quả Vòng 1 trên trang Profile nữa cho đến khi bạn công bố lại.`,
+    showCancelButton: true,
+    confirmButtonText: "Thu hồi tất cả",
+    cancelButtonText: "Hủy",
+    confirmButtonColor: "#dc2626",
+  });
+  if (!result.isConfirmed) return;
+
+  const btn2 = document.getElementById("revoke-all-results-btn");
+  if (btn2) { btn2.disabled = true; btn2.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang thu hồi...'; }
+
+  let ok2 = 0;
+  for (const app of list) {
+    try {
+      await db.collection("applications").doc(app.id).update({
+        round1_published: false,
+        round1_revoked_at: new Date().toISOString(),
+        round1_revoked_by: userEmail || "",
+      });
+      app.round1_published = false;
+      ok2++;
+    } catch (error) {
+      console.error(`Error revoking result for ${app.email}:`, error);
+    }
+  }
+
+  if (btn2) { btn2.disabled = false; }
+  renderApplications();
+  Swal.fire({ icon: "success", title: "Hoàn tất!", text: `Đã thu hồi kết quả của ${ok2}/${list.length} ứng viên.`, timer: 2200, showConfirmButton: false });
 }
 
 // Hàm lấy thông tin trạng thái
