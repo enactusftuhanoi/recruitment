@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Testing | Enactus FTU Hanoi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="/script/config.js"></script>
+  <style>
+    :root {
+      --yellow:#F5E642; --yellow-light:#FEFCE8; --yellow-mid:#FDE047; --yellow-dark:#F9A825;
+      --bg:#F8F8F6; --white:#FFFFFF;
+      --ink:#0F0F0E; --ink-60:#5A5A58; --ink-30:#BDBDBB; --ink-10:#F0F0EE;
+      --border:#E4E4E0;
+      --radius-sm:8px; --radius:12px; --radius-lg:18px;
+      --shadow-sm:0 1px 3px rgba(0,0,0,.07);
+      --success:#10B981; --success-bg:#ECFDF5; --success-border:#A7F3D0;
+      --error:#EF4444;  --error-bg:#FEF2F2;  --error-border:#FECACA;
+      --warn:#F59E0B;   --warn-bg:#FFFBEB;   --warn-border:#FDE68A;
+      --info:#3B82F6;   --info-bg:#EFF6FF;   --info-border:#BFDBFE;
+      --t:.18s ease;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.5}
+
+    /* HEADER */
+    .hdr{background:var(--white);border-bottom:1px solid var(--border);padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm)}
+    .hdr-left{display:flex;align-items:center;gap:12px}
+    .hdr-brand{font-size:15px;font-weight:800;letter-spacing:-.3px}
+    .hdr-divider{width:1px;height:22px;background:var(--border)}
+    .hdr-title{font-size:13px;font-weight:600;color:var(--ink-60);display:flex;align-items:center;gap:6px}
+    .badge-dev{background:#FEF3C7;color:#92400E;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.3px}
+
+    /* LAYOUT */
+    .wrap{max-width:920px;margin:0 auto;padding:32px 24px 80px}
+    .section-title{font-size:18px;font-weight:800;letter-spacing:-.4px;margin-bottom:4px}
+    .section-sub{font-size:13px;color:var(--ink-60);margin-bottom:24px}
+
+    /* CARD */
+    .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:16px;overflow:hidden}
+    .card-header{padding:16px 20px;border-bottom:1px solid var(--ink-10);display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .card-header-left{display:flex;align-items:center;gap:10px}
+    .card-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .card-icon.yellow{background:var(--yellow-light)}
+    .card-icon.blue{background:var(--info-bg)}
+    .card-icon.green{background:var(--success-bg)}
+    .card-icon.purple{background:#F5F3FF}
+    .card-label{font-size:13.5px;font-weight:700;color:var(--ink)}
+    .card-sub-label{font-size:11.5px;color:var(--ink-60);margin-top:1px}
+    .card-body{padding:20px}
+
+    /* CONFIG SOURCE TABS */
+    .cfg-tabs{display:flex;gap:0;background:var(--ink-10);border-radius:10px;padding:3px;margin-bottom:20px;max-width:340px}
+    .cfg-tab{flex:1;padding:8px 14px;border:none;background:transparent;border-radius:8px;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--ink-60);cursor:pointer;transition:var(--t);text-align:center;display:flex;align-items:center;justify-content:center;gap:6px}
+    .cfg-tab.active{background:var(--white);color:var(--ink);box-shadow:var(--shadow-sm)}
+
+    /* PANELS */
+    .cfg-panel{display:none}
+    .cfg-panel.active{display:block}
+
+    /* INFO BOX */
+    .info-box{background:var(--info-bg);border:1px solid var(--info-border);border-radius:var(--radius-sm);padding:10px 14px;font-size:12.5px;color:#1E40AF;display:flex;align-items:flex-start;gap:8px;margin-bottom:16px}
+    .warn-box{background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:var(--radius-sm);padding:10px 14px;font-size:12.5px;color:#92400E;display:flex;align-items:flex-start;gap:8px;margin-bottom:16px}
+
+    /* FORM */
+    .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .form-label{display:block;font-size:11px;font-weight:700;color:var(--ink-60);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px}
+    .form-input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;background:var(--white);transition:var(--t);outline:none;color:var(--ink)}
+    .form-input:focus{border-color:var(--yellow-dark);box-shadow:0 0 0 3px rgba(245,230,66,.2)}
+
+    /* OPTIONS GRID */
+    .options-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:18px}
+    .opt-item{border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:var(--t);user-select:none;position:relative}
+    .opt-item:hover{border-color:var(--yellow-dark);background:var(--yellow-light)}
+    .opt-item.selected{border-color:var(--yellow-dark);background:var(--yellow-light)}
+    .opt-item-label{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px;display:flex;align-items:center;gap:6px}
+    .opt-item-sub{font-size:11.5px;color:var(--ink-60)}
+    .opt-check{width:16px;height:16px;border-radius:50%;background:var(--yellow-dark);display:none;align-items:center;justify-content:center;float:right;margin-top:2px;flex-shrink:0}
+    .opt-check svg{width:9px;height:9px;stroke:white;fill:none;stroke-width:2.5}
+    .opt-item.selected .opt-check{display:flex}
+
+    /* SLIDER */
+    .slider-row{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+    .slider-label{font-size:12.5px;font-weight:600;color:var(--ink-60);min-width:160px}
+    .slider-wrap{flex:1}
+    input[type=range]{width:100%;accent-color:var(--yellow-dark);height:4px;border-radius:4px;cursor:pointer}
+    .slider-val{font-size:13px;font-weight:700;min-width:36px;text-align:right}
+
+    /* SUMMARY GRID */
+    .summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+    .sum-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+    .sum-val{font-size:22px;font-weight:800;line-height:1;margin-bottom:4px}
+    .sum-label{font-size:11px;color:var(--ink-60);font-weight:500}
+    .sum-val.yellow{color:var(--yellow-dark)}
+    .sum-val.blue{color:var(--info)}
+    .sum-val.green{color:var(--success)}
+    .sum-val.red{color:var(--error)}
+    .sum-val.purple{color:#8B5CF6}
+
+    /* STATUS */
+    .status-row{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius-sm);font-size:12.5px;font-weight:600}
+    .status-row.connected{background:var(--success-bg);color:#065F46;border:1px solid var(--success-border)}
+    .status-row.disconnected{background:var(--error-bg);color:#991B1B;border:1px solid var(--error-border)}
+    .status-row.connecting{background:var(--warn-bg);color:#92400E;border:1px solid var(--warn-border)}
+    .status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+    .status-dot.ok{background:var(--success)}
+    .status-dot.err{background:var(--error)}
+    .status-dot.warn{background:var(--warn);animation:pulse 1.2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+    /* TABS for data type */
+    .dtype-tabs{display:flex;gap:0;border-bottom:1.5px solid var(--border);margin-bottom:20px}
+    .dtype-tab{padding:9px 20px;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink-60);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:var(--t);display:flex;align-items:center;gap:7px}
+    .dtype-tab.active{color:var(--ink);border-bottom-color:var(--ink)}
+    .dtype-panel{display:none}
+    .dtype-panel.active{display:block}
+
+    /* BUTTONS */
+    .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:var(--t);white-space:nowrap}
+    .btn svg{width:15px;height:15px;flex-shrink:0}
+    .btn-primary{background:var(--ink);color:var(--white)}
+    .btn-primary:hover{background:#333}
+    .btn-primary:disabled{background:#888;cursor:not-allowed}
+    .btn-yellow{background:var(--yellow);color:var(--ink)}
+    .btn-yellow:hover{background:var(--yellow-mid)}
+    .btn-ghost{background:var(--ink-10);color:var(--ink-60)}
+    .btn-ghost:hover{background:var(--border);color:var(--ink)}
+    .btn-danger{background:var(--error-bg);color:var(--error);border:1px solid var(--error-border)}
+    .btn-danger:hover{background:#FEE2E2}
+    .btn-sm{padding:7px 12px;font-size:12.5px}
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+    /* PROGRESS */
+    .progress-wrap{background:var(--ink-10);border-radius:20px;height:8px;overflow:hidden;margin:12px 0 4px}
+    .progress-bar{height:100%;background:var(--yellow-dark);border-radius:20px;transition:width .3s ease}
+    .progress-text{font-size:12px;color:var(--ink-60);text-align:center}
+
+    /* LOG */
+    .log-box{background:#0F0F0E;border-radius:var(--radius);padding:16px;max-height:260px;overflow-y:auto;font-family:monospace;font-size:12px;line-height:1.7}
+    .log-line{display:flex;gap:10px}
+    .log-time{color:#555;flex-shrink:0}
+    .log-msg{color:#ccc}
+    .log-msg.ok{color:#34D399}
+    .log-msg.err{color:#F87171}
+    .log-msg.warn{color:#FCD34D}
+    .log-msg.info{color:#60A5FA}
+    .log-empty{color:#444;font-style:italic;text-align:center;padding:20px 0}
+
+    /* PREVIEW TABLE */
+    .preview-scroll{overflow-x:auto}
+    table.preview{width:100%;border-collapse:collapse;font-size:12.5px}
+    table.preview th{background:var(--ink-10);color:var(--ink-60);font-weight:700;padding:8px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--border);white-space:nowrap}
+    table.preview td{padding:9px 12px;border-bottom:1px solid var(--ink-10);vertical-align:top}
+    table.preview tr:last-child td{border-bottom:none}
+    table.preview tr:hover td{background:var(--bg)}
+
+    /* BADGES */
+    .s-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+    .s-badge.new{background:#EFF6FF;color:#1E40AF}
+    .s-badge.reviewed{background:#F3E8FF;color:#7C3AED}
+    .s-badge.accepted{background:var(--success-bg);color:#065F46}
+    .s-badge.rejected{background:var(--error-bg);color:#991B1B}
+    .dept-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:700;letter-spacing:.2px}
+    .dept-MD{background:#EFF6FF;color:#1E40AF}
+    .dept-HR{background:#ECFDF5;color:#065F46}
+    .dept-ER{background:#F5F3FF;color:#6D28D9}
+    .dept-PD{background:#FFFBEB;color:#92400E}
+    .type-badge{font-size:10.5px;background:var(--ink-10);color:var(--ink-60);padding:2px 7px;border-radius:20px;font-weight:600}
+    .role-badge{font-size:10.5px;padding:2px 8px;border-radius:20px;font-weight:700}
+    .role-member{background:#EFF6FF;color:#1E40AF}
+    .role-admin{background:#FFFBEB;color:#92400E}
+    .role-superadmin{background:#FEF2F2;color:#991B1B}
+    .role-alumni{background:#ECFDF5;color:#065F46}
+
+    /* DIVIDER */
+    hr.div{border:none;border-top:1px solid var(--border);margin:20px 0}
+
+    /* SECTION LABEL */
+    .slabel{font-size:11px;font-weight:700;color:var(--ink-60);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px}
+
+    @media(max-width:600px){
+      .config-grid,.summary-grid{grid-template-columns:1fr 1fr}
+      .options-grid{grid-template-columns:1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+
+<!-- SVG ICON DEFS (inline, tái sử dụng qua <use>) -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="ic-grid" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></symbol>
+  <symbol id="ic-info" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 7v4M8 5v.5"/></symbol>
+  <symbol id="ic-warn-tri" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 2L1.5 13.5h13L8 2z"/><path d="M8 7v3M8 11.5v.5"/></symbol>
+  <symbol id="ic-arrow-right" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h10M8 3l5 5-5 5"/></symbol>
+  <symbol id="ic-plus" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 1v14M1 8h14"/></symbol>
+  <symbol id="ic-file" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8h6M5 5h6M5 11h4"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></symbol>
+  <symbol id="ic-eye" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="8" cy="8" rx="6" ry="4"/><circle cx="8" cy="8" r="1.8"/></symbol>
+  <symbol id="ic-upload" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 1v10M4 7l4-6 4 6"/><path d="M2 13h12"/></symbol>
+  <symbol id="ic-refresh" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 8A6 6 0 1 1 8 2M14 2v4h-4"/></symbol>
+  <symbol id="ic-trash" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 4h12M6 4V2h4v2M5 4l1 10h4l1-10"/></symbol>
+  <symbol id="ic-clock" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></symbol>
+  <symbol id="ic-fire" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 14s-5-3-5-7a5 5 0 0 1 10 0c0 4-5 7-5 7z"/><path d="M8 10s-2-1.5-2-3a2 2 0 0 1 4 0c0 1.5-2 3-2 3z"/></symbol>
+  <symbol id="ic-settings" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.22 3.22l1.42 1.42M11.36 11.36l1.42 1.42M3.22 12.78l1.42-1.42M11.36 4.64l1.42-1.42"/></symbol>
+  <symbol id="ic-users" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="5" r="2.5"/><path d="M1 13c0-2.76 2.24-5 5-5s5 2.24 5 5"/><circle cx="12" cy="5" r="2"/><path d="M15 13c0-2.21-1.34-4-3-4"/></symbol>
+  <symbol id="ic-vote" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M5 8l2 2 4-4"/></symbol>
+  <symbol id="ic-shuffle" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 5h9l3 3-3 3H2"/><path d="M2 11h5"/><path d="M7 5l3-3 3 3M7 11l3 3 3-3"/></symbol>
+  <symbol id="ic-key" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="7" r="3"/><path d="M8.5 9.5l5 5M11 11l2-2"/></symbol>
+  <symbol id="ic-shield" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 2L3 4.5v4C3 11.5 5.5 14 8 15c2.5-1 5-3.5 5-6.5v-4L8 2z"/></symbol>
+  <symbol id="ic-person" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.31 2.69-6 6-6s6 2.69 6 6"/></symbol>
+  <symbol id="ic-mic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5.5" y="1" width="5" height="8" rx="2.5"/><path d="M3 8c0 2.76 2.24 5 5 5s5-2.24 5-5M8 13v2"/></symbol>
+  <symbol id="ic-office" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="14" height="10" rx="1"/><path d="M5 4V2h6v2"/><path d="M1 9h14"/></symbol>
+  <symbol id="ic-doc" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6L9 2z"/><path d="M9 2v4h4"/><path d="M5 9h6M5 12h4"/></symbol>
+  <symbol id="ic-new" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 5v6M5 8h6"/></symbol>
+  <symbol id="ic-x" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l8 8M12 4l-8 8"/></symbol>
+  <symbol id="ic-handshake" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 9l3-3 3 3 4-4 3 3"/><path d="M7 9l2 2 2-2"/></symbol>
+  <symbol id="ic-bulb" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 2a4 4 0 0 1 2 7.46V11H6V9.46A4 4 0 0 1 8 2z"/><path d="M6 13h4M7 15h2"/></symbol>
+</svg>
+
+<div class="hdr">
+  <div class="hdr-left">
+    <span class="hdr-brand">Enactus FTU Hanoi</span>
+    <div class="hdr-divider"></div>
+    <span class="hdr-title">
+      <svg width="14" height="14"><use href="#ic-grid"/></svg>
+      Seed Data Generator
+      <span class="badge-dev">DEV TOOL</span>
+    </span>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="section-title">Tạo dữ liệu test</div>
+  <p class="section-sub">Tạo đơn ứng tuyển và vote lịch phỏng vấn giả để kiểm tra hệ thống. Chỉ dùng với môi trường development.</p>
+
+  <!-- STEP 1: FIREBASE CONFIG -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="card-icon yellow">
+          <svg width="16" height="16"><use href="#ic-fire"/></svg>
+        </div>
+        <div>
+          <div class="card-label">Bước 1 — Kết nối Firebase</div>
+          <div class="card-sub-label">Chọn nguồn config để kết nối Firestore</div>
+        </div>
+      </div>
+      <div id="conn-status" class="status-row disconnected">
+        <span class="status-dot err"></span> Chưa kết nối
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="cfg-tabs">
+        <button class="cfg-tab active" id="tab-system" onclick="switchCfgTab('system')">
+          <svg width="13" height="13"><use href="#ic-grid"/></svg>
+          Dùng config hệ thống
+        </button>
+        <button class="cfg-tab" id="tab-manual" onclick="switchCfgTab('manual')">
+          <svg width="13" height="13"><use href="#ic-doc"/></svg>
+          Nhập thủ công
+        </button>
+      </div>
+
+      <div class="cfg-panel active" id="panel-system">
+        <div class="info-box">
+          <svg width="15" height="15" style="flex-shrink:0;margin-top:1px"><use href="#ic-info"/></svg>
+          <span>File này phải nằm cùng thư mục với <strong>/script/config.js</strong> của hệ thống để dùng được chế độ này. Config.js sẽ tự khởi tạo <code>window.db</code> và <code>window.auth</code>.</span>
+        </div>
+        <div class="warn-box">
+          <svg width="15" height="15" style="flex-shrink:0;margin-top:1px"><use href="#ic-warn-tri"/></svg>
+          <span>Nếu mở file từ <strong>trình duyệt trực tiếp</strong> (file://…), script cross-origin sẽ bị chặn. Hãy chạy qua local server (vd: <code>npx serve .</code> hoặc Live Server trên VS Code).</span>
+        </div>
+        <button class="btn btn-yellow" onclick="connectViaSystemConfig()">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><use href="#ic-arrow-right"/></svg>
+          Kết nối qua config.js
+        </button>
+      </div>
+
+      <div class="cfg-panel" id="panel-manual">
+        <div class="config-grid">
+          <div><label class="form-label">API Key</label><input class="form-input" id="cfg-apiKey" placeholder="AIzaSy..." autocomplete="off"></div>
+          <div><label class="form-label">Auth Domain</label><input class="form-input" id="cfg-authDomain" placeholder="your-app.firebaseapp.com"></div>
+          <div><label class="form-label">Project ID</label><input class="form-input" id="cfg-projectId" placeholder="your-project-id"></div>
+          <div><label class="form-label">Storage Bucket</label><input class="form-input" id="cfg-storageBucket" placeholder="your-app.appspot.com"></div>
+          <div><label class="form-label">Messaging Sender ID</label><input class="form-input" id="cfg-messagingSenderId" placeholder="123456789"></div>
+          <div><label class="form-label">App ID</label><input class="form-input" id="cfg-appId" placeholder="1:123...:web:abc..."></div>
+        </div>
+        <div class="btn-row" style="margin-top:16px">
+          <button class="btn btn-yellow" onclick="connectManual()">
+            <svg width="15" height="15"><use href="#ic-plus"/></svg>
+            Kết nối Firebase
+          </button>
+          <button class="btn btn-ghost" onclick="loadSavedConfig()">
+            <svg width="15" height="15"><use href="#ic-file"/></svg>
+            Tải config đã lưu
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="saveConfig()">Lưu config</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- STEP 2: DATA TYPE & CONFIG -->
+  <div class="card" id="step2" style="opacity:.4;pointer-events:none">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="card-icon blue">
+          <svg width="16" height="16"><use href="#ic-settings"/></svg>
+        </div>
+        <div>
+          <div class="card-label">Bước 2 — Chọn loại dữ liệu &amp; cấu hình</div>
+          <div class="card-sub-label">Đơn ứng tuyển, vote phỏng vấn, hoặc cả hai</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="dtype-tabs">
+        <button class="dtype-tab active" id="dtab-applications" onclick="switchDTab('applications',this)">
+          <svg width="14" height="14"><use href="#ic-doc"/></svg>
+          Đơn ứng tuyển
+        </button>
+        <button class="dtype-tab" id="dtab-votes" onclick="switchDTab('votes',this)">
+          <svg width="14" height="14"><use href="#ic-vote"/></svg>
+          Vote phỏng vấn
+        </button>
+        <button class="dtype-tab" id="dtab-both" onclick="switchDTab('both',this)">
+          <svg width="14" height="14"><use href="#ic-shuffle"/></svg>
+          Cả hai
+        </button>
+      </div>
+
+      <!-- PANEL: DON UNG TUYEN -->
+      <div class="dtype-panel active" id="dpanel-applications">
+        <div class="slabel">Số lượng &amp; hình thức</div>
+        <div class="slider-row">
+          <span class="slider-label">Tổng số đơn ứng tuyển</span>
+          <div class="slider-wrap"><input type="range" min="5" max="150" value="50" id="sl-total" oninput="updateSummary()"></div>
+          <span class="slider-val" id="sv-total">50</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Tỉ lệ phỏng vấn</span>
+          <div class="slider-wrap"><input type="range" min="0" max="100" value="40" id="sl-interview" oninput="updateSummary()"></div>
+          <span class="slider-val" id="sv-interview">40%</span>
+        </div>
+        <hr class="div">
+        <div class="slabel">Ban ứng tuyển</div>
+        <div class="options-grid">
+          <div class="opt-item selected" data-dept="MD" onclick="toggleDept(this)">
+            <div class="opt-check"><svg viewBox="0 0 12 12"><use href="#ic-check"/></svg></div>
+            <div class="opt-item-label">
+              <svg width="13" height="13"><use href="#ic-mic"/></svg>
+              Truyền thông (MD)
+            </div>
+            <div class="opt-item-sub">MD-Design &amp; MD-Content</div>
+          </div>
+          <div class="opt-item selected" data-dept="HR" onclick="toggleDept(this)">
+            <div class="opt-check"><svg viewBox="0 0 12 12"><use href="#ic-check"/></svg></div>
+            <div class="opt-item-label">
+              <svg width="13" height="13"><use href="#ic-users"/></svg>
+              Nhân sự (HR)
+            </div>
+            <div class="opt-item-sub">Human Resources</div>
+          </div>
+          <div class="opt-item selected" data-dept="ER" onclick="toggleDept(this)">
+            <div class="opt-check"><svg viewBox="0 0 12 12"><use href="#ic-check"/></svg></div>
+            <div class="opt-item-label">
+              <svg width="13" height="13"><use href="#ic-handshake"/></svg>
+              Đối ngoại (ER)
+            </div>
+            <div class="opt-item-sub">External Relations</div>
+          </div>
+          <div class="opt-item selected" data-dept="PD" onclick="toggleDept(this)">
+            <div class="opt-check"><svg viewBox="0 0 12 12"><use href="#ic-check"/></svg></div>
+            <div class="opt-item-label">
+              <svg width="13" height="13"><use href="#ic-bulb"/></svg>
+              Dự án (PD)
+            </div>
+            <div class="opt-item-sub">Project Development</div>
+          </div>
+        </div>
+        <hr class="div">
+        <div class="slabel">Trạng thái đơn</div>
+        <div class="options-grid">
+          <div class="opt-item selected" data-status="new" onclick="toggleStatus(this)">
+            <div class="opt-check"><svg viewBox="0 0 12 12"><use href="#ic-check"/></svg></div>
+            <div class="opt-item-label"><svg width="13" height="13"><use href="#ic-new"/></svg> Mới</div>
+            <div class="opt-item-sub">Chưa xem</div>
+          </div>
+          <div class="opt-item selected" data-status="reviewed" onclick="toggleStatus(this)">
+            <div class="opt-check"><svg viewBox="0 0 12 12"><use href="#ic-check"/></svg></div>
+            <div class="opt-item-label"><svg width="13" height="13"><use href="#ic-eye"/></svg> Đã xem</div>
+            <div class="opt-item-sub">Reviewed</div>
+          </div>
+          <div class="opt-item selected" data-status="accepted" onclick="toggleStatus(this)">
+            <div class="opt-check"><svg viewBox="0 0 12 12"><use href="#ic-check"/></svg></div>
+            <div class="opt-item-label"><svg width="13" height="13"><use href="#ic-vote"/></svg> Chấp nhận</div>
+            <div class="opt-item-sub">Accepted</div>
+          </div>
+          <div class="opt-item selected" data-status="rejected" onclick="toggleStatus(this)">
+            <div class="opt-check"><svg viewBox="0 0 12 12"><use href="#ic-check"/></svg></div>
+            <div class="opt-item-label"><svg width="13" height="13"><use href="#ic-x"/></svg> Từ chối</div>
+            <div class="opt-item-sub">Rejected</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL: VOTE PHONG VAN -->
+      <div class="dtype-panel" id="dpanel-votes">
+        <div class="slabel">Số người vote</div>
+        <div class="slider-row">
+          <span class="slider-label">Số nhân sự (Staff) vote</span>
+          <div class="slider-wrap"><input type="range" min="3" max="60" value="12" id="sl-core" oninput="updateSummary()"></div>
+          <span class="slider-val" id="sv-core">12</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Số Alumni vote</span>
+          <div class="slider-wrap"><input type="range" min="3" max="30" value="6" id="sl-alumni" oninput="updateSummary()"></div>
+          <span class="slider-val" id="sv-alumni">6</span>
+        </div>
+        <hr class="div">
+        <div class="slabel">Vòng phỏng vấn</div>
+        <div class="options-grid">
+          <div class="opt-item selected" data-round="round1" onclick="toggleRound(this)">
+            <div class="opt-check"><svg viewBox="0 0 12 12"><use href="#ic-check"/></svg></div>
+            <div class="opt-item-label"><svg width="13" height="13"><use href="#ic-mic"/></svg> Vòng 1 · PVTD</div>
+            <div class="opt-item-sub">Online — Ca từ Form</div>
+          </div>
+          <div class="opt-item selected" data-round="round2" onclick="toggleRound(this)">
+            <div class="opt-check"><svg viewBox="0 0 12 12"><use href="#ic-check"/></svg></div>
+            <div class="opt-item-label"><svg width="13" height="13"><use href="#ic-office"/></svg> Vòng 2 · PV nhóm</div>
+            <div class="opt-item-sub">Offline + Online dự phòng</div>
+          </div>
+          <div class="opt-item selected" data-round="round4" onclick="toggleRound(this)">
+            <div class="opt-check"><svg viewBox="0 0 12 12"><use href="#ic-check"/></svg></div>
+            <div class="opt-item-label"><svg width="13" height="13"><use href="#ic-person"/></svg> Vòng 4 · PV cá nhân</div>
+            <div class="opt-item-sub">Offline + Online dự phòng</div>
+          </div>
+        </div>
+        <hr class="div">
+        <div class="slabel">Role của nhân sự</div>
+        <div class="options-grid">
+          <div class="opt-item selected" data-core-role="member" onclick="toggleCoreRole(this)">
+            <div class="opt-check"><svg viewBox="0 0 12 12"><use href="#ic-check"/></svg></div>
+            <div class="opt-item-label"><svg width="13" height="13"><use href="#ic-person"/></svg> Member</div>
+            <div class="opt-item-sub">Thành viên</div>
+          </div>
+          <div class="opt-item selected" data-core-role="admin" onclick="toggleCoreRole(this)">
+            <div class="opt-check"><svg viewBox="0 0 12 12"><use href="#ic-check"/></svg></div>
+            <div class="opt-item-label"><svg width="13" height="13"><use href="#ic-key"/></svg> Admin</div>
+            <div class="opt-item-sub">Trưởng/phó ban</div>
+          </div>
+          <div class="opt-item selected" data-core-role="superadmin" onclick="toggleCoreRole(this)">
+            <div class="opt-check"><svg viewBox="0 0 12 12"><use href="#ic-check"/></svg></div>
+            <div class="opt-item-label"><svg width="13" height="13"><use href="#ic-shield"/></svg> SuperAdmin</div>
+            <div class="opt-item-sub">BTC</div>
+          </div>
+        </div>
+        <div class="info-box" style="margin-top:4px">
+          <svg width="14" height="14" style="flex-shrink:0;margin-top:1px"><use href="#ic-info"/></svg>
+          <span>Vote của nhân sự ghi vào <code>interview_votes/{sanitize(name)}</code>. Vote của Alumni ghi vào <code>interview_votes/alumni_{index}</code> với <code>source:"alumni"</code>. Mỗi người vote tối thiểu 3 ca/vòng. Cần có ít nhất 1 ca trong <code>system/interview_schedule</code> hoặc <code>system/interview_settings</code> để slots không rỗng.</span>
+        </div>
+      </div>
+
+      <!-- PANEL: CA HAI -->
+      <div class="dtype-panel" id="dpanel-both">
+        <div class="info-box">
+          <svg width="14" height="14" style="flex-shrink:0;margin-top:1px"><use href="#ic-info"/></svg>
+          <span>Chế độ này sẽ dùng cấu hình từ cả tab "Đơn ứng tuyển" và "Vote phỏng vấn" để tạo cùng lúc. Cấu hình ở 2 tab kia trước rồi quay lại đây nhé.</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost btn-sm" onclick="switchDTab('applications', document.getElementById('dtab-applications'))">
+            <svg width="13" height="13"><use href="#ic-doc"/></svg>
+            Cấu hình đơn ứng tuyển
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="switchDTab('votes', document.getElementById('dtab-votes'))">
+            <svg width="13" height="13"><use href="#ic-vote"/></svg>
+            Cấu hình vote
+          </button>
+        </div>
+      </div>
+
+      <!-- SUMMARY -->
+      <hr class="div">
+      <div class="summary-grid">
+        <div class="sum-card"><div class="sum-val yellow" id="s-apps">50</div><div class="sum-label">Đơn ứng tuyển</div></div>
+        <div class="sum-card"><div class="sum-val blue" id="s-form">30</div><div class="sum-label">Điền đơn</div></div>
+        <div class="sum-card"><div class="sum-val green" id="s-intv">20</div><div class="sum-label">Phỏng vấn</div></div>
+        <div class="sum-card"><div class="sum-val purple" id="s-core">12</div><div class="sum-label">Nhân sự vote</div></div>
+        <div class="sum-card"><div class="sum-val green" id="s-alum">6</div><div class="sum-label">Alumni vote</div></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="generatePreview()">
+          <svg width="15" height="15"><use href="#ic-clock"/></svg>
+          Xem trước dữ liệu
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: PREVIEW & PUSH -->
+  <div class="card" id="step3" style="opacity:.4;pointer-events:none">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="card-icon green">
+          <svg width="16" height="16"><use href="#ic-eye"/></svg>
+        </div>
+        <div>
+          <div class="card-label">Bước 3 — Xem trước &amp; Push</div>
+          <div class="card-sub-label">Kiểm tra dữ liệu trước khi ghi vào Firestore</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div id="preview-apps-wrap">
+        <div class="slabel" style="margin-bottom:8px;display:flex;align-items:center;gap:6px">
+          <svg width="13" height="13"><use href="#ic-doc"/></svg>
+          Đơn ứng tuyển
+        </div>
+        <div class="preview-scroll">
+          <table class="preview">
+            <thead><tr>
+              <th>#</th><th>Họ tên</th><th>MSSV</th><th>Email</th><th>Ban</th><th>Hình thức</th><th>Trạng thái</th>
+            </tr></thead>
+            <tbody id="preview-apps-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="preview-votes-wrap" style="margin-top:20px">
+        <div class="slabel" style="margin-bottom:8px;display:flex;align-items:center;gap:6px">
+          <svg width="13" height="13"><use href="#ic-vote"/></svg>
+          Vote phỏng vấn
+        </div>
+        <div class="preview-scroll">
+          <table class="preview">
+            <thead><tr>
+              <th>#</th><th>Họ tên</th><th>Loại</th><th>Role / Gen</th><th>Ban</th><th>Vòng vote</th><th>Số ca mỗi vòng</th>
+            </tr></thead>
+            <tbody id="preview-votes-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <hr class="div">
+
+      <div class="progress-wrap" id="progress-wrap" style="display:none">
+        <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+      </div>
+      <div class="progress-text" id="progress-text" style="display:none"></div>
+
+      <div class="btn-row" style="margin-top:16px">
+        <button class="btn btn-yellow" id="btn-push" onclick="pushAll()">
+          <svg width="15" height="15"><use href="#ic-upload"/></svg>
+          Push tất cả lên Firestore
+        </button>
+        <button class="btn btn-ghost" onclick="generatePreview()">
+          <svg width="15" height="15"><use href="#ic-refresh"/></svg>
+          Tạo lại
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="clearTestData()">
+          <svg width="14" height="14"><use href="#ic-trash"/></svg>
+          Xóa toàn bộ test data
+        </button>
+      </div>
+
+      <div style="margin-top:20px">
+        <div style="font-size:12px;font-weight:700;color:var(--ink-60);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+          <span>LOG</span>
+          <button class="btn btn-ghost btn-sm" onclick="clearLog()" style="padding:3px 10px;font-size:11px">Xóa log</button>
+        </div>
+        <div class="log-box" id="log-box">
+          <div class="log-empty">Log sẽ hiển thị ở đây...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+// ══════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════
+let _db = null;
+let _firebaseApp = null;
+let _cfgMode = 'system';
+let _activeDataTab = 'applications';
+let generatedApps = [];
+let generatedVotes = [];
+
+// ── SLOT POOLS (fallback) ──
+const FALLBACK_SLOTS_R1 = [
+  'Ca 1 (08:00 - 09:00) - Thứ 2, 14/07/2025',
+  'Ca 2 (09:00 - 10:00) - Thứ 2, 14/07/2025',
+  'Ca 3 (14:00 - 15:00) - Thứ 3, 15/07/2025',
+  'Ca 4 (15:00 - 16:00) - Thứ 3, 15/07/2025',
+  'Ca 1 (08:00 - 09:00) - Thứ 4, 16/07/2025',
+  'Ca 2 (10:00 - 11:00) - Thứ 5, 17/07/2025',
+  'Ca 3 (14:00 - 15:00) - Thứ 6, 18/07/2025',
+  'Ca 4 (09:00 - 10:00) - Thứ 7, 19/07/2025',
+];
+const FALLBACK_SLOTS_R24 = [
+  '14/07/2025_08:00','14/07/2025_09:00','14/07/2025_10:00',
+  '15/07/2025_14:00','15/07/2025_15:00','15/07/2025_16:00',
+  '16/07/2025_08:00','16/07/2025_10:00','16/07/2025_14:00',
+  '17/07/2025_09:00','17/07/2025_11:00','17/07/2025_15:00',
+];
+
+// ── FAKE DATA POOLS ──
+const HO=['Nguyễn','Trần','Lê','Phạm','Hoàng','Vũ','Đặng','Bùi','Đỗ','Hồ','Ngô','Dương','Lý','Phan','Trịnh','Đinh','Lưu','Hà','Cao','Tô'];
+const TEN_DEM=['Thị','Văn','Đức','Minh','Thành','Quang','Anh','Thanh','Hồng','Mai','Thu','Xuân','Hải','Ngọc','Bảo','Trung','Việt','Kim','Phú','Gia'];
+const TEN=['An','Bình','Chi','Dũng','Em','Giang','Hà','Hiệp','Khoa','Lan','Linh','Long','Mai','Minh','Nam','Nhi','Phúc','Quân','Sơn','Tâm','Thanh','Thu','Tuấn','Uyên','Vinh','Yến','Huy','Khánh','Lộc','Thảo','Trang','Duy','Phong','Đạt','Kiên','Nhung','Phương','Trung','Hưng','Châu'];
+const KHOAs=['QH','QT','TC','KT','AV','NH'];
+const NAMs=['22','23','24','25'];
+const PROVINCES=['Hà Nội','TP. Hồ Chí Minh','Đà Nẵng','Hải Phòng','Cần Thơ','Nghệ An','Thanh Hóa','Bình Dương','Đồng Nai','Hà Tĩnh'];
+const STRENGTHS=['Kỹ năng giao tiếp tốt','Khả năng làm việc nhóm','Tư duy sáng tạo','Quản lý thời gian hiệu quả','Học hỏi nhanh','Kiên nhẫn và tỉ mỉ','Khả năng lãnh đạo','Tinh thần trách nhiệm cao'];
+const WEAKNESSES=['Đôi khi quá cầu toàn','Khó từ chối người khác','Thiếu kinh nghiệm thực tế','Hay lo lắng quá mức','Đôi khi thiếu quyết đoán','Chưa tự tin khi nói trước đám đông'];
+const WHY=['Muốn phát triển kỹ năng mềm','Tìm kiếm môi trường năng động','Muốn tạo ảnh hưởng xã hội tích cực','Xây dựng network chuyên nghiệp','Học hỏi từ các anh chị đi trước','Đam mê kinh doanh xã hội'];
+const HOBBIES=['Đọc sách','Xem phim','Nghe nhạc','Chơi game','Thể thao','Nấu ăn','Vẽ tranh','Du lịch','Nhiếp ảnh','Yoga'];
+const DEPT_ANSWERS={
+  MD:['Mình có 1 năm kinh nghiệm làm graphic design cho CLB, thành thạo Canva và đang học Figma.','Mình biết dùng Photoshop, Illustrator, Canva và After Effects cơ bản.','Mình đã thiết kế bộ nhận diện thương hiệu cho dự án khởi nghiệp của lớp.','Mình có portfolio Behance với 5 dự án thiết kế và fanpage 500 followers.'],
+  HR:['Mình đã tổ chức Freshers Party 200 người với vai trò trưởng ban tổ chức.','Mình có kinh nghiệm tuyển thành viên mới cho CLB, đã qua 3 vòng tuyển dụng.','Mình lắng nghe cả hai phía, tìm điểm chung và đề xuất giải pháp win-win.','Mình tin con người là tài sản quý nhất, HR là cầu nối giữa cá nhân và tổ chức.'],
+  ER:['Mình đã tham gia bộ phận tài trợ, tiếp xúc 5 DN và huy động được 15 triệu đồng.','Mình có IELTS 7.0, đọc viết tiếng Trung HSK3 và đang học tiếng Nhật.','Mình đã làm việc với nhà tài trợ cuộc thi Startup của trường, phụ trách follow-up.','Mình luôn nghiên cứu đối tác trước, tìm điểm chung về giá trị và đề xuất win-win.'],
+  PD:['Mình đã tham gia dự án GreenBox về tái chế với vai trò project coordinator.','Mình dùng Agile, Trello để quản lý, biết cơ bản về OKR và Gantt chart.','Mình xác định tasks ưu tiên, giao tiếp rõ ràng và đề xuất điều chỉnh scope sớm.','Mình muốn phát triển dự án kết nối sinh viên khó khăn với học bổng và việc làm.'],
+};
+const GENERAL_QS=['Giới thiệu bản thân.','Tại sao muốn tham gia Enactus?','Điểm mạnh lớn nhất?','Điểm yếu cần cải thiện?','Mục tiêu khi tham gia?','Sở thích ngoài học tập?','Có thể dành bao nhiêu giờ/tuần?'];
+
+// Nhân sự CLB — đầy đủ họ tên (pool lớn để tránh trùng khi count cao)
+const CORE_NAMES=[
+  'Nguyễn Minh Anh','Trần Quang Huy','Lê Thu Linh','Phạm Bảo Nam','Hoàng Thanh Hà',
+  'Vũ Đức Khoa','Đặng Ngọc Lan','Bùi Văn Tâm','Đỗ Hồng Sơn','Hồ Uyên Phương',
+  'Ngô Lâm Tuấn','Dương Kim Chi','Lý Trọng Nghĩa','Phan Mai Phương','Trịnh Khánh Vy',
+  'Đinh Dương Minh','Lưu Hải Long','Hà Bích Ngọc','Cao Văn Đức','Tô Thúy Linh',
+  'Nguyễn Trung Kiên','Trần Phương Thảo','Lê Anh Tuấn','Phạm Ngọc Huyền','Hoàng Tiến Đạt',
+  'Vũ Hà Nguyên','Đặng Thu Hương','Bùi Đình Khoa','Đỗ Lan Chi','Hồ Minh Tú',
+  'Ngô Bảo Châu','Dương Quốc Huy','Lý Yến Nhi','Phan Đức Thành','Trịnh Việt Anh',
+  'Đinh Kim Oanh','Lưu Gia Phú','Hà Xuân Dũng','Cao Thị Phương','Tô Minh Đức',
+  'Nguyễn Hải Đăng','Trần Kim Ngân','Lê Hoàng Long','Phạm Thị Trang','Hoàng Gia Huy',
+  'Vũ Minh Châu','Đặng Thu Trang','Bùi Quang Vinh','Đỗ Thị Hoa','Hồ Văn Phong',
+];
+
+// Alumni — đầy đủ họ tên
+const ALUMNI_NAMES=[
+  'Nguyễn Hà Nguyên','Trần Tiến Đạt','Lê Phương Thảo','Phạm Trung Kiên','Hoàng Ngọc Huyền',
+  'Vũ Anh Tuấn','Đặng Thu Hương','Bùi Đình Khoa','Đỗ Lan Chi','Hồ Vũ Cường',
+  'Ngô Minh Tú','Dương Bảo Châu','Lý Quốc Huy','Phan Yến Nhi','Trịnh Đức Thành',
+  'Đinh Việt Hà','Lưu Thanh Tùng','Hà Khánh Linh','Cao Đức Minh','Tô Thị Nhung',
+];
+
+function rand(a){return a[Math.floor(Math.random()*a.length)]}
+function randInt(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+function pick(a,n){return [...a].sort(()=>Math.random()-.5).slice(0,Math.min(n,a.length))}
+function removeDiacritics(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[đĐ]/g,c=>c==='đ'?'d':'D').replace(/\s+/g,'')}
+function sanitizeKey(s){return String(s).replace(/[^\w]/g,'_').toLowerCase()}
+
+// ══════════════════════════════════════════════════
+//  UI HELPERS
+// ══════════════════════════════════════════════════
+function switchCfgTab(mode){
+  _cfgMode=mode;
+  ['system','manual'].forEach(m=>{
+    document.getElementById('tab-'+m).classList.toggle('active',m===mode);
+    document.getElementById('panel-'+m).classList.toggle('active',m===mode);
+  });
+}
+
+function switchDTab(tab, btn){
+  _activeDataTab=tab;
+  document.querySelectorAll('.dtype-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.dtype-panel').forEach(p=>p.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.getElementById('dpanel-'+tab).classList.add('active');
+  updateSummary();
+}
+
+function toggleDept(el){el.classList.toggle('selected');updateSummary()}
+function toggleStatus(el){el.classList.toggle('selected');updateSummary()}
+function toggleRound(el){el.classList.toggle('selected');updateSummary()}
+function toggleCoreRole(el){el.classList.toggle('selected');updateSummary()}
+
+function updateSummary(){
+  const total=parseInt(document.getElementById('sl-total')?.value)||0;
+  const intPct=parseInt(document.getElementById('sl-interview')?.value)||0;
+  const coreN=parseInt(document.getElementById('sl-core')?.value)||0;
+  const alumN=parseInt(document.getElementById('sl-alumni')?.value)||0;
+  document.getElementById('sv-total').textContent=total;
+  document.getElementById('sv-interview').textContent=intPct+'%';
+  document.getElementById('sv-core').textContent=coreN;
+  document.getElementById('sv-alumni').textContent=alumN;
+  const intv=Math.round(total*intPct/100);
+  document.getElementById('s-apps').textContent=total;
+  document.getElementById('s-form').textContent=total-intv;
+  document.getElementById('s-intv').textContent=intv;
+  document.getElementById('s-core').textContent=coreN;
+  document.getElementById('s-alum').textContent=alumN;
+}
+
+function setStatus(s){
+  const el=document.getElementById('conn-status');
+  const dots={connected:'status-dot ok',disconnected:'status-dot err',connecting:'status-dot warn'};
+  const labels={connected:'Đã kết nối Firebase',disconnected:'Chưa kết nối',connecting:'Đang kết nối...'};
+  const cls={connected:'status-row connected',disconnected:'status-row disconnected',connecting:'status-row connecting'};
+  el.className=cls[s];
+  el.innerHTML=`<span class="${dots[s]}"></span> ${labels[s]}`;
+}
+
+function enableStep(id){
+  const el=document.getElementById(id);
+  el.style.opacity='1';
+  el.style.pointerEvents='auto';
+}
+
+function log(msg,type='msg'){
+  const box=document.getElementById('log-box');
+  const empty=box.querySelector('.log-empty');
+  if(empty)empty.remove();
+  const now=new Date().toLocaleTimeString('vi-VN');
+  const line=document.createElement('div');
+  line.className='log-line';
+  line.innerHTML=`<span class="log-time">${now}</span><span class="log-msg ${type}">${msg}</span>`;
+  box.appendChild(line);
+  box.scrollTop=box.scrollHeight;
+}
+
+function clearLog(){
+  document.getElementById('log-box').innerHTML='<div class="log-empty">Log sẽ hiển thị ở đây...</div>';
+}
+
+// ══════════════════════════════════════════════════
+//  FIREBASE CONNECT
+// ══════════════════════════════════════════════════
+function connectViaSystemConfig(){
+  setStatus('connecting');
+  log('Đang kết nối qua config hệ thống (/script/config.js)...','warn');
+  const check=()=>{
+    if(window.db){
+      _db=window.db;
+      _db.collection('_ping').doc('_seed').set({ts:new Date()},{merge:true})
+        .then(()=>{
+          setStatus('connected');
+          log('Kết nối thành công qua config.js!','ok');
+          enableStep('step2');
+          updateSummary();
+        })
+        .catch(e=>{
+          setStatus('disconnected');
+          log('Lỗi ping Firestore: '+e.message,'err');
+        });
+    } else {
+      setStatus('disconnected');
+      log('window.db chưa khả dụng. Đảm bảo file này được serve cùng thư mục với /script/config.js và đã đăng nhập.','err');
+    }
+  };
+  if(window.db){
+    check();
+  } else {
+    let waited=0;
+    const t=setInterval(()=>{
+      waited+=200;
+      if(window.db){clearInterval(t);check();}
+      else if(waited>=5000){
+        clearInterval(t);
+        setStatus('disconnected');
+        log('Timeout: window.db không khả dụng sau 5 giây. Kiểm tra config.js đã load chưa.','err');
+      }
+    },200);
+  }
+}
+
+function connectManual(){
+  const cfg={
+    apiKey:v('cfg-apiKey'),authDomain:v('cfg-authDomain'),
+    projectId:v('cfg-projectId'),storageBucket:v('cfg-storageBucket'),
+    messagingSenderId:v('cfg-messagingSenderId'),appId:v('cfg-appId'),
+  };
+  if(!cfg.apiKey||!cfg.projectId){alert('Nhập ít nhất API Key và Project ID!');return;}
+  setStatus('connecting');
+  log('Đang khởi tạo Firebase (manual)...','warn');
+  try{
+    if(_firebaseApp)_firebaseApp.delete().catch(()=>{});
+    _firebaseApp=firebase.initializeApp(cfg,'seed-'+Date.now());
+    _db=_firebaseApp.firestore();
+    _db.collection('_ping').doc('_seed').set({ts:new Date()},{merge:true})
+      .then(()=>{
+        setStatus('connected');
+        log('Kết nối thành công! Project: '+cfg.projectId,'ok');
+        enableStep('step2');updateSummary();
+      })
+      .catch(e=>{setStatus('disconnected');log('Lỗi kết nối: '+e.message,'err');});
+  }catch(e){setStatus('disconnected');log('Lỗi khởi tạo: '+e.message,'err');}
+}
+
+function v(id){return document.getElementById(id)?.value?.trim()||''}
+function saveConfig(){
+  const cfg={apiKey:v('cfg-apiKey'),authDomain:v('cfg-authDomain'),projectId:v('cfg-projectId'),storageBucket:v('cfg-storageBucket'),messagingSenderId:v('cfg-messagingSenderId'),appId:v('cfg-appId')};
+  try{localStorage.setItem('enactus_firebase_cfg',JSON.stringify(cfg));alert('Đã lưu config');}
+  catch(e){alert('Lưu config cần chạy qua local server.');}
+}
+function loadSavedConfig(){
+  try{
+    const saved=localStorage.getItem('enactus_firebase_cfg');
+    if(!saved){alert('Chưa có config được lưu.');return;}
+    const cfg=JSON.parse(saved);
+    Object.keys(cfg).forEach(k=>{const el=document.getElementById('cfg-'+k);if(el)el.value=cfg[k];});
+    alert('Đã tải config đã lưu');
+  }catch(e){alert('Không tìm thấy config đã lưu.');}
+}
+
+// ══════════════════════════════════════════════════
+//  GENERATE APPLICATION
+// ══════════════════════════════════════════════════
+function generateApplication(){
+  const ho=rand(HO),tendem=rand(TEN_DEM),ten=rand(TEN);
+  const fullName=`${ho} ${tendem} ${ten}`;
+  const khoa=rand(KHOAs),nam=rand(NAMs);
+  const mssv=`${khoa}${nam}${randInt(100000,199999)}`;
+  const emailName=removeDiacritics(ten.toLowerCase())+removeDiacritics(ho.toLowerCase())+randInt(10,99);
+  const email=emailName+'@sv.ftu.edu.vn';
+  const phone='0'+['3','5','7','8','9'][randInt(0,4)]+String(randInt(10000000,99999999));
+
+  const depts=Array.from(document.querySelectorAll('.opt-item[data-dept].selected')).map(el=>el.dataset.dept);
+  const statuses=Array.from(document.querySelectorAll('.opt-item[data-status].selected')).map(el=>el.dataset.status);
+  if(!depts.length||!statuses.length)return null;
+
+  const dept=rand(depts);
+  const status=rand(statuses);
+  const intPct=parseInt(document.getElementById('sl-interview').value);
+  const type=Math.random()*100<intPct?'interview':'form';
+
+  const today=new Date();
+
+  // Vòng 1 (PVTD): application_interview_slots — tối thiểu 3 ca
+  // Vòng 2+4 (calendar): interview_schedule — tối thiểu 3 ca
+  let application_interview_slots=null;
+  let interview_schedule=null;
+  if(type==='interview'){
+    const poolR1=window._liveR1||FALLBACK_SLOTS_R1;
+    if(poolR1.length){
+      const minN1=Math.min(3,poolR1.length);
+      const n=randInt(minN1,Math.min(6,poolR1.length));
+      application_interview_slots=pick(poolR1,n);
+    }
+    const poolR24=window._liveR24||FALLBACK_SLOTS_R24;
+    if(poolR24.length){
+      const minN24=Math.min(3,poolR24.length);
+      const m=randInt(minN24,Math.min(6,poolR24.length));
+      interview_schedule=pick(poolR24,m);
+    }
+  }
+
+  const answers={};
+  GENERAL_QS.forEach((q,i)=>{
+    const key=`q_general_${i}`;
+    if(i===0) answers[key]=`Mình là ${fullName}, sinh viên năm ${randInt(1,4)} ngành ${khoa} tại FTU Hà Nội. Đến từ ${rand(PROVINCES)}.`;
+    else if(i===1) answers[key]=rand(WHY);
+    else if(i===2) answers[key]=rand(STRENGTHS);
+    else if(i===3) answers[key]=rand(WEAKNESSES);
+    else if(i===5) answers[key]=pick(HOBBIES,randInt(2,4)).join(', ');
+    else if(i===6) answers[key]=`${randInt(5,20)} giờ/tuần`;
+    else answers[key]='Mình đang trong quá trình tìm hiểu và xác định hướng đi phù hợp.';
+  });
+  (DEPT_ANSWERS[dept]||[]).forEach((a,i)=>{answers[`q_${dept.toLowerCase()}_${i}`]=a;});
+
+  const createdAt=new Date(today.getTime()-randInt(0,30)*86400000-randInt(0,86400000));
+  const DEPTS_ALL=['MD','HR','ER','PD'];
+  const dept2=Math.random()<0.4?rand(DEPTS_ALL.filter(d=>d!==dept)):'';
+
+  return{
+    _preview:{fullName,mssv,email,dept,type,status},
+    fullname:fullName,
+    email,phone,
+    priority_position:dept,
+    secondary_position:dept2,
+    all_departments:dept2?[dept,dept2]:[dept],
+    application_type:type,
+    personalInfo:{fullName,mssv,email,phone,province:rand(PROVINCES)},
+    department:dept,type,status,answers,
+    application_interview_slots,
+    interview_schedule,
+    createdAt,updatedAt:createdAt,isTestData:true,
+  };
+}
+
+// ══════════════════════════════════════════════════
+//  GENERATE VOTE
+// ══════════════════════════════════════════════════
+function generateVoteDoc(personName, isAlumni, opts={}){
+  const rounds=['round1','round2','round4'];
+  let selectedRounds=Array.from(document.querySelectorAll('.opt-item[data-round].selected')).map(el=>el.dataset.round);
+  if(!selectedRounds.length) selectedRounds=['round1','round2','round4'];
+
+  const payload={name:personName,isTestData:true};
+
+  if(isAlumni){
+    payload.source='alumni';
+    payload.phone='0'+['3','5','7','8','9'][randInt(0,4)]+String(randInt(10000000,99999999));
+    payload.email=removeDiacritics(personName.replace(/\s+/g,'').toLowerCase())+randInt(10,99)+'@gmail.com';
+    payload.department=rand(['MD','HR','ER','PD']);
+    const genOptions=['1.0','1.5','2.0','2.5','3.0','3.5','4.0','4.5','5.0','5.5','6.0','6.5','7.0','7.5','8.0','8.5','9.0','9.5','10.0'];
+    payload.gen=rand(genOptions);
+    payload.role='alumni';
+  } else {
+    payload.source='staff';
+    const roles=Array.from(document.querySelectorAll('.opt-item[data-core-role].selected')).map(el=>el.dataset.coreRole);
+    payload.role=roles.length?rand(roles):'member';
+    payload.department=rand(['MD','HR','ER','PD']);
+    payload.email=removeDiacritics(personName.replace(/\s+/g,'').toLowerCase())+randInt(10,99)+'@ftu.edu.vn';
+    payload.gen='';
+  }
+
+  // Tối thiểu 3 ca mỗi vòng được chọn
+  const MIN_SLOTS_PER_ROUND = 3;
+  const voteRoundSummary=[];
+  rounds.forEach(round=>{
+    const field=round==='round4'?'availableSlots':`availableSlots_${round}`;
+    if(!selectedRounds.includes(round)){
+      payload[field]=[];
+      return;
+    }
+    const fallback=round==='round1'?FALLBACK_SLOTS_R1:FALLBACK_SLOTS_R24;
+    const livePool=(round==='round1'?window._liveR1:window._liveR24)||fallback;
+    // Guard: nếu pool rỗng vì lý do gì, dùng fallback cứng
+    const safePool=(livePool&&livePool.length>0)?livePool:fallback;
+    const minN=Math.min(MIN_SLOTS_PER_ROUND,safePool.length);
+    const maxN=safePool.length;
+    if(maxN===0){
+      payload[field]=[];
+      console.warn(`[vote gen] Pool rỗng cho ${round}, bỏ qua`);
+      return;
+    }
+    const numSlots=randInt(minN,Math.min(maxN, minN+3));
+    payload[field]=pick(safePool,numSlots);
+    voteRoundSummary.push(`${round}:${numSlots}ca`);
+  });
+
+  payload.updatedAt=new Date();
+
+  const docKey=isAlumni?`alumni_${opts.index||0}`:sanitizeKey(personName);
+  return{
+    _key:docKey,
+    _preview:{
+      name:personName,
+      type:isAlumni?'Alumni':'Core',
+      roleOrGen:isAlumni?`G${payload.gen}`:(payload.role||'member'),
+      dept:payload.department,
+      rounds:voteRoundSummary.join(', ')||'—',
+      totalSlots:selectedRounds.reduce((s,r)=>{
+        const f=r==='round4'?'availableSlots':`availableSlots_${r}`;
+        return s+(payload[f]||[]).length;
+      },0),
+    },
+    payload,
+  };
+}
+
+// ══════════════════════════════════════════════════
+//  LOAD LIVE SLOTS from Firestore (best-effort)
+// ══════════════════════════════════════════════════
+async function loadLiveSlots(){
+  window._liveR1=null;
+  window._liveR24=null;
+  if(!_db)return;
+  try{
+    const r24doc=await _db.collection('system').doc('interview_schedule').get();
+    if(r24doc.exists){
+      const d=r24doc.data();
+      const slots=[];
+      (d.schedule||[]).forEach(day=>{
+        (day.slots||[]).forEach(slot=>{
+          // slot có thể là string '08:00' hoặc object {time:'08:00'} hoặc {startTime:'08:00'}
+          const timeStr=typeof slot==='string'?slot:(slot.time||slot.startTime||slot.label||'');
+          if(timeStr) slots.push(`${day.date}_${timeStr}`);
+        });
+      });
+      if(slots.length){window._liveR24=slots;log(`Tải ${slots.length} ca R2/R4 từ Firestore`,'info');}
+      else log('interview_schedule tồn tại nhưng không có slot hợp lệ → dùng fallback R2/R4','warn');
+    }
+  }catch(e){log('Không tải được ca R2/R4 (dùng fallback)','warn');}
+  try{
+    const r1doc=await _db.collection('system').doc('interview_settings').get();
+    if(r1doc.exists){
+      const rawSlots=(r1doc.data().slots)||[];
+      const FORM_WD=['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'];
+      const byDate={};
+      rawSlots.forEach(sl=>{
+        try{
+          const d=new Date(sl.dateTime);
+          const dd=String(d.getDate()).padStart(2,'0');
+          const mm=String(d.getMonth()+1).padStart(2,'0');
+          const yyyy=d.getFullYear();
+          const dateKey=`${FORM_WD[d.getDay()]}, ${dd}/${mm}/${yyyy}`;
+          if(!byDate[dateKey])byDate[dateKey]={dateKey,slots:[]};
+          byDate[dateKey].slots.push({...sl,_dateKey:dateKey});
+        }catch(e){}
+      });
+      const r1slots=[];
+      Object.values(byDate).forEach(({dateKey,slots})=>{
+        slots.sort((a,b)=>(a.startTime||'')<(b.startTime||'')?-1:1);
+        slots.forEach((sl,idx)=>{
+          const timeStr=(sl.startTime&&sl.endTime)?`${sl.startTime} - ${sl.endTime}`:(sl.startTime||'');
+          r1slots.push(timeStr?`Ca ${idx+1} (${timeStr}) - ${dateKey}`:`Ca ${idx+1} - ${dateKey}`);
+        });
+      });
+      if(r1slots.length){window._liveR1=r1slots;log(`Tải ${r1slots.length} ca R1 từ Firestore`,'info');}
+    }
+  }catch(e){log('Không tải được ca R1 (dùng fallback)','warn');}
+}
+
+// ══════════════════════════════════════════════════
+//  GENERATE PREVIEW
+// ══════════════════════════════════════════════════
+async function generatePreview(){
+  if(!_db){alert('Chưa kết nối Firebase!');return;}
+  const doApps=_activeDataTab==='applications'||_activeDataTab==='both';
+  const doVotes=_activeDataTab==='votes'||_activeDataTab==='both';
+
+  if(doVotes) await loadLiveSlots();
+
+  generatedApps=[];
+  generatedVotes=[];
+
+  // Generate applications
+  if(doApps){
+    const total=parseInt(document.getElementById('sl-total').value);
+    const depts=Array.from(document.querySelectorAll('.opt-item[data-dept].selected')).map(el=>el.dataset.dept);
+    const statuses=Array.from(document.querySelectorAll('.opt-item[data-status].selected')).map(el=>el.dataset.status);
+    if(!depts.length){alert('Chọn ít nhất 1 ban!');return;}
+    if(!statuses.length){alert('Chọn ít nhất 1 trạng thái!');return;}
+    for(let i=0;i<total;i++){const a=generateApplication();if(a)generatedApps.push(a);}
+  }
+
+  // Generate votes — đảm bảo không trùng tên cho Core (dùng pool đủ lớn)
+  if(doVotes){
+    const coreN=parseInt(document.getElementById('sl-core').value);
+    const alumN=parseInt(document.getElementById('sl-alumni').value);
+
+    // Nếu coreN > pool, lặp lại pool với index suffix để tránh trùng doc key
+    const usedCoreNames=new Set();
+    for(let i=0;i<coreN;i++){
+      let name;
+      let attempt=0;
+      do{
+        name=CORE_NAMES[i % CORE_NAMES.length];
+        // Nếu tên đã dùng, thêm suffix phân biệt vào doc key
+        if(usedCoreNames.has(name)) name=name+` (${Math.floor(i/CORE_NAMES.length)+1})`;
+        attempt++;
+      }while(usedCoreNames.has(name)&&attempt<100);
+      usedCoreNames.add(name);
+      generatedVotes.push(generateVoteDoc(name,false,{index:i}));
+    }
+    for(let i=0;i<alumN;i++){
+      generatedVotes.push(generateVoteDoc(ALUMNI_NAMES[i % ALUMNI_NAMES.length],true,{index:i}));
+    }
+    // Diagnostic: log tổng slot thực tế
+    const totalSlots=generatedVotes.reduce((s,v)=>s+v._preview.totalSlots,0);
+    log(`Vote slots: ${totalSlots} tổng (${coreN} staff + ${alumN} alumni) — liveR1:${(window._liveR1||[]).length}ca, liveR24:${(window._liveR24||[]).length}ca`,'info');
+    if(totalSlots===0) log('⚠️ Toàn bộ vote ra 0 slot — kiểm tra Firestore có data system/interview_schedule và system/interview_settings không, hoặc fallback pool bị lỗi.','err');
+  }
+
+  // Render preview
+  const appsWrap=document.getElementById('preview-apps-wrap');
+  const votesWrap=document.getElementById('preview-votes-wrap');
+  appsWrap.style.display=doApps?'block':'none';
+  votesWrap.style.display=doVotes?'block':'none';
+
+  if(doApps){
+    const tbody=document.getElementById('preview-apps-body');
+    tbody.innerHTML='';
+    generatedApps.forEach((a,i)=>{
+      const p=a._preview;
+      tbody.innerHTML+=`<tr>
+        <td style="color:var(--ink-60);font-size:11px">${i+1}</td>
+        <td style="font-weight:600">${p.fullName}</td>
+        <td style="font-size:12px;color:var(--ink-60)">${p.mssv}</td>
+        <td style="font-size:12px;color:var(--ink-60)">${p.email}</td>
+        <td><span class="dept-badge dept-${p.dept}">${p.dept}</span></td>
+        <td><span class="type-badge">${p.type==='interview'?'PV':'Form'}</span></td>
+        <td><span class="s-badge ${p.status}">${{new:'Mới',reviewed:'Đã xem',accepted:'Chấp nhận',rejected:'Từ chối'}[p.status]}</span></td>
+      </tr>`;
+    });
+  }
+
+  if(doVotes){
+    const tbody=document.getElementById('preview-votes-body');
+    tbody.innerHTML='';
+    generatedVotes.forEach((v,i)=>{
+      const p=v._preview;
+      const roleClass=p.type==='Alumni'?'role-alumni':p.roleOrGen==='superadmin'?'role-superadmin':p.roleOrGen==='admin'?'role-admin':'role-member';
+      tbody.innerHTML+=`<tr>
+        <td style="color:var(--ink-60);font-size:11px">${i+1}</td>
+        <td style="font-weight:600">${p.name}</td>
+        <td><span class="type-badge">${p.type}</span></td>
+        <td><span class="role-badge ${roleClass}">${p.roleOrGen}</span></td>
+        <td><span class="dept-badge dept-${p.dept}">${p.dept}</span></td>
+        <td style="font-size:12px;color:var(--ink-60)">${p.rounds||'—'}</td>
+        <td style="font-size:12px;text-align:center">${p.totalSlots}</td>
+      </tr>`;
+    });
+  }
+
+  enableStep('step3');
+  document.getElementById('step3').scrollIntoView({behavior:'smooth',block:'start'});
+  log(`Đã tạo ${generatedApps.length} đơn ứng tuyển + ${generatedVotes.length} vote để preview`,'ok');
+}
+
+// ══════════════════════════════════════════════════
+//  PUSH ALL
+// ══════════════════════════════════════════════════
+async function pushAll(){
+  if(!_db){alert('Chưa kết nối Firebase!');return;}
+  const btn=document.getElementById('btn-push');
+  btn.disabled=true;btn.textContent='Đang push...';
+
+  const pwrap=document.getElementById('progress-wrap');
+  const pbar=document.getElementById('progress-bar');
+  const ptxt=document.getElementById('progress-text');
+  pwrap.style.display='block';ptxt.style.display='block';
+
+  const acceptedCount=generatedApps.filter(a=>a.status==='accepted'&&a.email).length;
+  const totalDocs=generatedApps.length+generatedVotes.length+acceptedCount;
+  if(!totalDocs){
+    alert('Chưa có dữ liệu! Hãy bấm "Xem trước" trước.');
+    btn.disabled=false;
+    btn.innerHTML='<svg width="15" height="15"><use href="#ic-upload"/></svg> Push tất cả lên Firestore';
+    return;
+  }
+
+  log(`Bắt đầu push ${totalDocs} documents...`,'info');
+  let done=0,fail=0;
+  const update=()=>{
+    const pct=Math.round(done/totalDocs*100);
+    pbar.style.width=pct+'%';
+    ptxt.textContent=`${done}/${totalDocs} (${pct}%)`;
+  };
+
+  // Push applications
+  for(let i=0;i<generatedApps.length;i++){
+    const app={...generatedApps[i]};
+    delete app._preview;
+    try{
+      app.createdAt=firebase.firestore.Timestamp.fromDate(app.createdAt);
+      app.updatedAt=firebase.firestore.Timestamp.fromDate(app.updatedAt);
+    }catch(e){}
+    try{await _db.collection('applications').add(app);done++;}
+    catch(e){fail++;log(`App #${i+1}: ${e.message}`,'err');}
+    update();
+  }
+
+  // Push votes
+  for(let i=0;i<generatedVotes.length;i++){
+    const vDoc=generatedVotes[i];
+    const payload={...vDoc.payload};
+    try{payload.updatedAt=firebase.firestore.Timestamp.fromDate(payload.updatedAt);}catch(e){}
+    try{
+      await _db.collection('interview_votes').doc(vDoc._key).set(payload,{merge:true});
+      done++;
+      log(`Vote "${payload.name}" (${payload.source}) → doc: ${vDoc._key}`,'info');
+    }catch(e){fail++;log(`Vote #${i+1} (${payload.name}): ${e.message}`,'err');}
+    update();
+  }
+
+  // Push voting_candidates
+  const acceptedApps=generatedApps.filter(a=>a.status==='accepted'&&a.email);
+  if(acceptedApps.length){
+    log(`Push ${acceptedApps.length} voting_candidates (ứng viên accepted)...`,'info');
+    for(const a of acceptedApps){
+      try{
+        await _db.collection('voting_candidates').add({
+          email:a.email,
+          name:a.fullname||a.personalInfo?.fullName||'',
+          priority_position:a.priority_position||a.department||'',
+          secondary_position:a.secondary_position||'',
+          status:'accepted',
+          isTestData:true,
+        });
+        done++;
+      }catch(e){fail++;log(`voting_candidates (${a.email}): ${e.message}`,'err');}
+      update();
+    }
+    log(`voting_candidates: ${acceptedApps.length} docs`,'ok');
+  } else {
+    log('Không có ứng viên "accepted" nào → voting_candidates bỏ qua. Chọn thêm trạng thái "Chấp nhận" để test Vòng 2/4.','warn');
+  }
+
+  btn.disabled=false;
+  btn.innerHTML='<svg width="15" height="15"><use href="#ic-upload"/></svg> Push tất cả lên Firestore';
+  ptxt.textContent=`${done-fail} thành công${fail?`, ${fail} thất bại`:''}`;
+  if(!fail){
+    log(`Hoàn thành! ${generatedApps.length} đơn → "applications" | ${generatedVotes.length} vote → "interview_votes" | ${acceptedApps.length} → "voting_candidates"`,'ok');
+  } else {
+    log(`Hoàn thành có lỗi: ${done-fail} thành công, ${fail} thất bại`,'warn');
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  CLEAR TEST DATA
+// ══════════════════════════════════════════════════
+async function clearTestData(){
+  if(!_db){alert('Chưa kết nối Firebase!');return;}
+  if(!confirm('Xóa toàn bộ document có isTestData=true trong "applications", "interview_votes" và "voting_candidates"?\n\nKhông thể hoàn tác!'))return;
+  log('Đang xóa test data...','warn');
+  let totalDeleted=0;
+  const colls=['applications','interview_votes','voting_candidates'];
+  for(const coll of colls){
+    try{
+      const snap=await _db.collection(coll).where('isTestData','==',true).get();
+      if(snap.empty){log(`"${coll}": không có test data`,'info');continue;}
+      const batch=_db.batch();
+      snap.docs.forEach(d=>batch.delete(d.ref));
+      await batch.commit();
+      totalDeleted+=snap.size;
+      log(`"${coll}": xóa ${snap.size} documents`,'ok');
+    }catch(e){log(`Lỗi xóa "${coll}": ${e.message}`,'err');}
+  }
+  log(`Đã xóa tổng cộng ${totalDeleted} test documents`,'ok');
+}
+
+// INIT
+updateSummary();
+</script>
+</body>
+</html>
