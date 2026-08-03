@@ -397,11 +397,19 @@
         }
 
         .tw-block {
-            padding: 16px;
-            background: var(--neutral-50);
+            padding: 20px 22px;
+            background: rgba(255,255,255,.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid var(--neutral-200);
-            border-radius: var(--radius);
+            border-radius: var(--radius-lg);
             margin-bottom: 14px;
+            box-shadow: var(--shadow-xs);
+            transition: var(--transition);
+        }
+
+        .tw-block:hover {
+            box-shadow: var(--shadow-sm);
         }
 
         .tw-block:last-child {
@@ -409,13 +417,25 @@
         }
 
         .tw-block-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--neutral-800);
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--neutral-500);
+            text-transform: uppercase;
+            letter-spacing: .5px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 9px;
+            margin-bottom: 14px;
+        }
+
+        .tw-block-title::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+            box-shadow: 0 0 0 4px var(--primary-50);
+            flex-shrink: 0;
         }
 
         .tw-block-title i {
@@ -490,6 +510,14 @@
             font-family: inherit;
             font-size: 13px;
             background: white;
+            transition: var(--transition);
+        }
+
+        .tw-field input[type="text"]:focus,
+        .tw-field textarea:focus {
+            outline: none;
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px var(--primary-50);
         }
 
         .tw-field textarea {
@@ -522,16 +550,55 @@
         }
 
         .tw-status-badge {
-            display: inline-block;
-            padding: 3px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
             border-radius: 100px;
-            font-size: 12px;
-            font-weight: 500;
+            font-size: 11.5px;
+            font-weight: 700;
+        }
+
+        .tw-status-badge::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
         }
 
         .tw-status-badge.submitted { background: var(--success-100); color: var(--success-700); }
         .tw-status-badge.pending { background: var(--warning-100); color: var(--warning-700); }
         .tw-status-badge.late { background: var(--error-100); color: var(--error-700); }
+
+        .tw-asg-card {
+            background: var(--neutral-50);
+            border: 1px solid var(--neutral-200);
+            border-left: 3px solid var(--neutral-300);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            margin-top: 12px;
+            transition: var(--transition);
+        }
+
+        .tw-asg-card:first-child { margin-top: 0; }
+        .tw-asg-card.st-submitted { border-left-color: var(--success-500); }
+        .tw-asg-card.st-late { border-left-color: var(--error-500); }
+        .tw-asg-card.st-pending, .tw-asg-card.st-none { border-left-color: var(--warning-500); }
+
+        .tw-asg-submitted-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .tw-resubmit-btn {
+            padding: 8px 16px;
+            font-size: 12.5px;
+            flex-shrink: 0;
+        }
 
         /* Profile Card */
         .profile-card {
@@ -1079,9 +1146,51 @@
                 gap: 8px;
             }
         }
+        /* Toast thông báo góc màn hình (thay cho alert) */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 340px;
+        }
+        .app-toast {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 13px 15px;
+            box-shadow: 0 8px 24px rgba(20,22,31,.14);
+            border-left: 4px solid #4F7CFF;
+            font-size: 13px;
+            font-weight: 500;
+            color: #14161F;
+            animation: toastIn .25s ease;
+            line-height: 1.45;
+        }
+        .app-toast.success { border-left-color: #10B981; }
+        .app-toast.error { border-left-color: #EF4444; }
+        .app-toast.warn { border-left-color: #F59E0B; }
+        .app-toast i.toast-icon { margin-top: 1px; flex-shrink: 0; }
+        .app-toast.success i.toast-icon { color: #10B981; }
+        .app-toast.error i.toast-icon { color: #EF4444; }
+        .app-toast.warn i.toast-icon { color: #F59E0B; }
+        .app-toast.info i.toast-icon { color: #4F7CFF; }
+        .app-toast .toast-close { margin-left: auto; cursor: pointer; color: #A8AABC; flex-shrink: 0; }
+        .app-toast.hide { animation: toastOut .2s ease forwards; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(24px); } }
+        @media (max-width: 480px) {
+            #toast-container { left: 12px; right: 12px; bottom: 12px; max-width: none; }
+        }
     </style>
 </head>
 <body>
+<div id="toast-container"></div>
     <!-- Header -->
     <div class="header">
         <div class="logo">
@@ -1154,6 +1263,54 @@
 
             <div class="content-grid">
             <div class="content-main">
+
+            <!-- Final Result Card (chỉ hiện khi SuperAdmin đã công bố) -->
+            <div id="result-card" class="status-card" style="display: none;">
+                <div class="status-icon" id="result-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="status-content">
+                    <h3 id="result-title">Kết quả tuyển chọn</h3>
+                    <p id="result-desc">Đang cập nhật.</p>
+                </div>
+                <span class="status-badge" id="result-badge">—</span>
+            </div>
+
+            <!-- Round 1 Info Card -->
+            <div id="round1-card" class="notification-card" style="display: none;">
+                <div class="notification-icon">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <div class="notification-content">
+                    <h3>Vòng 1 · Đơn ứng tuyển</h3>
+                    <p>Trạng thái hiện tại: <span id="round1-status-text">—</span></p>
+                    <p>Hình thức: <span id="round1-type-text">—</span></p>
+                    <p>Thời gian nộp: <span id="round1-time-text">—</span></p>
+                    <div class="notification-actions">
+                        <button class="btn btn-secondary" id="round1-view-btn">
+                            <i class="fas fa-eye"></i>
+                            <span>Xem lại đơn của tôi</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Round 2 Interview Info Card -->
+            <div id="round2-interview-card" class="notification-card" style="display: none;">
+                <div class="notification-icon">
+                    <i class="fas fa-people-group"></i>
+                </div>
+                <div class="notification-content">
+                    <h3>Vòng 2 · Phỏng vấn nhóm</h3>
+                    <div id="round2-interview-body"></div>
+                    <div class="notification-actions">
+                        <button class="btn btn-secondary" id="round2-view-calendar-btn">
+                            <i class="fas fa-calendar"></i>
+                            <span>Xem lịch phỏng vấn</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <!-- Interview Schedule Notification -->
             <div id="interview-notification" class="notification-card" style="display: none;">
@@ -1231,41 +1388,19 @@
                     <h2>Teamwork - Vòng 3</h2>
                 </div>
 
-                <!-- Tài liệu chung -->
+                <!-- Tài liệu -->
                 <div class="tw-block">
-                    <div class="tw-block-title"><i class="fas fa-folder-open"></i> Tài liệu chung</div>
+                    <div class="tw-block-title"><i class="fas fa-folder-open"></i> Tài liệu</div>
                     <div id="tw-documents-list" class="tw-doc-list">
                         <div class="tw-empty">Đang tải...</div>
                     </div>
                 </div>
 
-                <!-- Nộp bài -->
+                <!-- Nộp bài (nhiều đầu mục) -->
                 <div class="tw-block" id="tw-submission-block" style="display:none;">
                     <div class="tw-block-title"><i class="fas fa-upload"></i> Nộp bài Teamwork</div>
-                    <div id="tw-submission-info" class="tw-sub-info"></div>
-                    <div id="tw-submission-form" style="display:none;">
-                        <div class="tw-field">
-                            <label>Nộp file (tải lên Drive CLB)</label>
-                            <input type="file" id="tw-file-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,.png,.jpg,.jpeg">
-                            <div class="tw-hint">Định dạng: PDF, Word, PowerPoint, Excel, ZIP/RAR, PNG/JPG • Tối đa 200MB</div>
-                        </div>
-                        <div class="tw-field-or">hoặc</div>
-                        <div class="tw-field">
-                            <label>Dán link (Google Slide/Drive/YouTube...)</label>
-                            <input type="text" id="tw-link-input" placeholder="https://...">
-                        </div>
-                        <div class="tw-field">
-                            <label>Ghi chú (không bắt buộc)</label>
-                            <textarea id="tw-note-input" rows="2" placeholder="Ghi chú thêm cho bài nộp..."></textarea>
-                        </div>
-                        <button class="btn btn-primary" id="tw-submit-btn">
-                            <span id="tw-submit-btn-text">Nộp bài</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
-                    <div id="tw-submission-readonly-note" class="tw-readonly-note" style="display:none;">
-                        Chỉ Leader hoặc Sub Leader của team mới có thể nộp bài.
-                    </div>
+                    <div id="tw-deadline-info" class="tw-sub-info"></div>
+                    <div id="tw-assignments-container"></div>
                 </div>
 
                 <!-- Pitching Day -->
@@ -1295,6 +1430,23 @@
                     </div>
 
                     <div id="tw-pitching-readonly-note" class="tw-readonly-note" style="display:none;"></div>
+                </div>
+            </div>
+
+            <!-- Round 4 Interview Info Card -->
+            <div id="round4-interview-card" class="notification-card" style="display: none;">
+                <div class="notification-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="notification-content">
+                    <h3>Vòng 4 · Phỏng vấn cá nhân</h3>
+                    <div id="round4-interview-body"></div>
+                    <div class="notification-actions">
+                        <button class="btn btn-secondary" id="round4-view-calendar-btn">
+                            <i class="fas fa-calendar"></i>
+                            <span>Xem lịch phỏng vấn</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1409,7 +1561,7 @@
                     }
                 } catch (error) {
                     console.error('Error checking application:', error);
-                    alert('Có lỗi xảy ra khi kiểm tra thông tin ứng viên');
+                    toastError('Có lỗi xảy ra khi kiểm tra thông tin ứng viên');
                 }
             } else {
                 // User is not signed in, redirect to login
@@ -1500,6 +1652,129 @@
             
             // Render rounds
             renderRounds();
+
+            // Render các card bên trái theo từng vòng
+            renderRound1Card();
+            renderInterviewInfoCard('round2');
+            renderInterviewInfoCard('round4');
+            renderResultCard();
+        }
+
+        // ===== Round 1 Info Card =====
+        function renderRound1Card() {
+            const card = document.getElementById('round1-card');
+            if (!card || !applicationData) return;
+
+            const currentRound = applicationData.current_round || 'round1';
+            if (currentRound !== 'round1') {
+                card.style.display = 'none';
+                return;
+            }
+
+            const p = getRound1Status('priority');
+            const s = applicationData.secondary_position ? getRound1Status('secondary') : null;
+            const overall = s ? mergeStatus(p, s) : p;
+            document.getElementById('round1-status-text').textContent = getStatusText(overall);
+            document.getElementById('round1-type-text').textContent =
+                applicationData.application_type === 'interview' ? 'Phỏng vấn thay đơn' : 'Điền đơn';
+
+            let ts = 'Không xác định';
+            if (applicationData.timestamp) {
+                try {
+                    let date;
+                    if (applicationData.timestamp.toDate && typeof applicationData.timestamp.toDate === 'function') {
+                        date = applicationData.timestamp.toDate();
+                    } else if (applicationData.timestamp.seconds) {
+                        date = new Date(applicationData.timestamp.seconds * 1000);
+                    } else if (typeof applicationData.timestamp === 'string') {
+                        date = new Date(applicationData.timestamp);
+                    } else if (typeof applicationData.timestamp === 'number') {
+                        date = new Date(applicationData.timestamp);
+                    }
+                    if (date) ts = date.toLocaleString('vi-VN');
+                } catch (error) {
+                    console.error('Error parsing timestamp:', error);
+                }
+            }
+            document.getElementById('round1-time-text').textContent = ts;
+
+            card.style.display = 'flex';
+        }
+
+        // ===== Round 2 / Round 4 Interview Info Card =====
+        function renderInterviewInfoCard(roundId) {
+            const cardId = roundId === 'round2' ? 'round2-interview-card' : 'round4-interview-card';
+            const bodyId = roundId === 'round2' ? 'round2-interview-body' : 'round4-interview-body';
+            const card = document.getElementById(cardId);
+            const body = document.getElementById(bodyId);
+            if (!card || !body || !applicationData) return;
+
+            const currentRound = applicationData.current_round || 'round1';
+            const roundObj = applicationData[roundId] || {};
+
+            const parts = [];
+            ['priority', 'secondary'].forEach(type => {
+                if (isEliminatedBefore(type, roundId === 'round2' ? 2 : 4)) return;
+                const dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
+                if (!dept) return;
+                const data = roundObj[type] || {};
+                if (!data.time && !data.location && !data.note && !data.interviewer) return; // chưa có gì để hiện
+
+                let html = `<p style="margin-top:8px;"><b>Ban ${getDepartmentName(dept)}</b></p>`;
+                if (data.time) html += `<p>Thời gian: ${data.time}</p>`;
+                if (data.location) html += `<p>Địa điểm: ${data.location}</p>`;
+                if (data.interviewer) html += `<p>Người phỏng vấn: ${data.interviewer}</p>`;
+                if (data.method) html += `<p>Hình thức: ${data.method === 'online' ? 'Online' : 'Offline'}</p>`;
+                if (data.note) html += `<p>Ghi chú: ${data.note}</p>`;
+                parts.push(html);
+            });
+
+            // Chỉ hiện card khi đang ở đúng vòng đó VÀ đã có dữ liệu được công bố
+            if (currentRound !== roundId || parts.length === 0) {
+                card.style.display = 'none';
+                return;
+            }
+
+            body.innerHTML = parts.join('');
+            card.style.display = 'flex';
+        }
+
+        // ===== Final Result Card =====
+        function renderResultCard() {
+            const card = document.getElementById('result-card');
+            if (!card || !applicationData) return;
+
+            if (applicationData.result_published !== true) {
+                card.style.display = 'none';
+                return;
+            }
+
+            const p = applicationData.round4_priority_status;
+            const s = applicationData.secondary_position ? applicationData.round4_secondary_status : null;
+            const finalStatus = s ? mergeStatus(p, s) : (p || 'pending');
+
+            const icon = document.getElementById('result-icon');
+            const badge = document.getElementById('result-badge');
+            const desc = document.getElementById('result-desc');
+
+            badge.textContent = getStatusText(finalStatus);
+            if (finalStatus === 'pass') {
+                icon.style.background = 'var(--success-100)';
+                icon.style.color = 'var(--success-600)';
+                icon.innerHTML = '<i class="fas fa-trophy"></i>';
+                badge.style.background = 'var(--success-100)';
+                badge.style.color = 'var(--success-600)';
+                desc.textContent = 'Chúc mừng! Bạn đã trở thành thành viên chính thức của Enactus FTU Hanoi.';
+            } else {
+                icon.style.background = 'var(--neutral-100)';
+                icon.style.color = 'var(--neutral-600)';
+                icon.innerHTML = '<i class="fas fa-heart"></i>';
+                badge.style.background = 'var(--neutral-100)';
+                badge.style.color = 'var(--neutral-600)';
+                desc.textContent = 'Cảm ơn bạn đã tham gia và đồng hành cùng chương trình tuyển thành viên.';
+            }
+
+            card.style.display = 'flex';
         }
 
         // Check if eliminated before
@@ -1754,7 +2029,15 @@
             }
 
             if (roundId === 'success') {
-                const finalRow = createDetailRow('Kết quả', getStatusText(applicationData.final_status || 'pending'));
+                if (applicationData.result_published !== true) {
+                    const waitingRow = createDetailRow('Kết quả', 'Đang chờ BTC công bố');
+                    frag.appendChild(waitingRow);
+                    return frag;
+                }
+                const p = applicationData.round4_priority_status;
+                const s = applicationData.secondary_position ? applicationData.round4_secondary_status : null;
+                const finalStatus = s ? mergeStatus(p, s) : (p || 'pending');
+                const finalRow = createDetailRow('Kết quả', getStatusText(finalStatus));
                 frag.appendChild(finalRow);
                 return frag;
             }
@@ -1800,12 +2083,13 @@
                 { id: 'round1', title: 'Vòng 1: Đơn ứng tuyển' },
                 { id: 'round2', title: 'Vòng 2: Phỏng vấn nhóm' },
                 { id: 'round3', title: 'Vòng 3: Teamwork' },
-                { id: 'round4', title: 'Vòng 4: Phỏng vấn cá nhân' }
+                { id: 'round4', title: 'Vòng 4: Phỏng vấn cá nhân' },
+                { id: 'success', title: 'Kết quả' }
             ];
 
             const currentRound = applicationData.current_round || 'round1';
-            const roundIndex = { round1: 1, round2: 2, round3: 3, round4: 4 };
-            const maxIndex = roundIndex[currentRound];
+            const roundIndex = { round1: 1, round2: 2, round3: 3, round4: 4, success: 5 };
+            const maxIndex = roundIndex[currentRound] || 4;
 
             for (let i = 0; i < roundDefs.length; i++) {
                 const round = roundDefs[i];
@@ -1827,6 +2111,14 @@
                     const p = getRound1Status('priority');
                     const s = getRound1Status('secondary');
                     roundStatus = mergeStatus(p, s);
+                } else if (round.id === 'success') {
+                    if (applicationData.result_published === true) {
+                        const p = applicationData.round4_priority_status;
+                        const s = applicationData.secondary_position ? applicationData.round4_secondary_status : null;
+                        roundStatus = s ? mergeStatus(p, s) : (p || 'pending');
+                    } else {
+                        roundStatus = 'pending';
+                    }
                 } else {
                     const p = applicationData[round.id + '_priority_status'];
                     const s = applicationData[round.id + '_secondary_status'];
@@ -2174,14 +2466,39 @@
         const DRIVE_MAX_FILE_SIZE = 200 * 1024 * 1024; // 200MB
         const DRIVE_ALLOWED_EXTENSIONS = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'zip', 'rar', 'png', 'jpg', 'jpeg'];
 
+        /* Popup thông báo ở góc màn hình, dùng thay cho alert() */
+        function showToast(message, type) {
+            type = type || 'info';
+            const iconMap = { success: 'fa-circle-check', error: 'fa-circle-xmark', warn: 'fa-triangle-exclamation', info: 'fa-circle-info' };
+            const container = document.getElementById('toast-container');
+            if (!container) { console.log(message); return; }
+            const el = document.createElement('div');
+            el.className = `app-toast ${type}`;
+            el.innerHTML = `<i class="fas ${iconMap[type] || iconMap.info} toast-icon"></i><span>${message}</span><i class="fas fa-xmark toast-close"></i>`;
+            container.appendChild(el);
+            const remove = () => { el.classList.add('hide'); setTimeout(() => el.remove(), 200); };
+            el.querySelector('.toast-close').addEventListener('click', remove);
+            setTimeout(remove, type === 'error' ? 5000 : 3500);
+        }
+        const toastSuccess = (m) => showToast(m, 'success');
+        const toastError = (m) => showToast(m, 'error');
+        const toastWarn = (m) => showToast(m, 'warn');
+        const toastInfo = (m) => showToast(m, 'info');
+
         const TW_TEAMS_COL = 'teamwork_teams';
         const TW_SETTINGS_DOC = db.collection('teamwork_settings').doc('main');
         const TW_SUBMISSIONS_COL = 'teamwork_submissions';
 
         let twTeam = null;        // team doc hiện tại của ứng viên
         let twSettings = null;    // teamwork_settings/main
-        let twSubmission = null;  // teamwork_submissions/{teamId}
+        let twSubmissions = {};   // "teamId__assignmentId" -> submission
+        let twResubmitOpenIds = new Set(); // assignmentId đang mở lại form để nộp lại
         let twMyRole = null;      // 'leader' | 'subleader' | 'member' | null
+
+        function twSubKey(teamId, assignmentId) { return `${teamId}__${assignmentId}`; }
+        function twSubKeyMember(teamId, assignmentId, email) { return `${teamId}__${assignmentId}__${(email || '').toLowerCase()}`; }
+        function twIsEveryoneScope(a) { return a && a.submitterScope === 'everyone'; }
+        function twEffectiveDeadline(a) { return (a && a.deadline) ? a.deadline : twSettings.submissionDeadline; }
 
         async function loadTeamworkSection() {
             try {
@@ -2201,7 +2518,7 @@
                 ]);
 
                 twSettings = settingsSnap.exists ? settingsSnap.data() : {};
-                twSettings = { documents: [], submissionDeadline: null, submissionNote: '', pitchingDatetime: '', pitchingLocation: '', submissionOpen: true, pitchingConfirmOpen: true, ...twSettings };
+                twSettings = { documents: [], assignments: [], submissionDeadline: null, submissionNote: '', pitchingDatetime: '', pitchingLocation: '', submissionOpen: true, pitchingConfirmOpen: true, ...twSettings };
 
                 if (teamSnap.empty) {
                     // Chưa đồng bộ team trong teamwork_teams, chỉ hiện tài liệu chung
@@ -2212,8 +2529,18 @@
                     const me = (twTeam.members || []).find(m => m.id === applicationData.id);
                     twMyRole = me ? (me.role || 'member') : null;
 
-                    const subSnap = await db.collection(TW_SUBMISSIONS_COL).doc(twTeam.id).get();
-                    twSubmission = subSnap.exists ? subSnap.data() : null;
+                    twSubmissions = {};
+                    if ((twSettings.assignments || []).length) {
+                        const docIds = twSettings.assignments.map(a =>
+                            twIsEveryoneScope(a) ? twSubKeyMember(twTeam.id, a.id, applicationData.email) : twSubKey(twTeam.id, a.id)
+                        );
+                        const subSnaps = await Promise.all(
+                            docIds.map(id => db.collection(TW_SUBMISSIONS_COL).doc(id).get())
+                        );
+                        subSnaps.forEach((snap, i) => {
+                            if (snap.exists) twSubmissions[docIds[i]] = snap.data();
+                        });
+                    }
                 }
 
                 document.getElementById('teamwork-card').style.display = 'block';
@@ -2227,9 +2554,10 @@
 
         function renderTwDocuments() {
             const el = document.getElementById('tw-documents-list');
-            const docs = (twSettings && twSettings.documents) || [];
+            const allDocs = (twSettings && twSettings.documents) || [];
+            const docs = allDocs.filter(d => !d.teamIds || !d.teamIds.length || (twTeam && d.teamIds.includes(twTeam.id)));
             if (!docs.length) {
-                el.innerHTML = '<div class="tw-empty">Chưa có tài liệu chung nào.</div>';
+                el.innerHTML = '<div class="tw-empty">Chưa có tài liệu nào.</div>';
                 return;
             }
             el.innerHTML = docs.map(d => `
@@ -2240,27 +2568,55 @@
             `).join('');
         }
 
-        function twSubmissionStatus() {
-            if (twSubmission && twSubmission.content) return 'submitted';
-            if (twSettings.submissionDeadline && new Date(twSettings.submissionDeadline) < new Date()) return 'late';
-            if (twSettings.submissionDeadline) return 'pending';
+        function twGetMySubmission(assignmentId) {
+            if (!twTeam) return null;
+            const a = (twSettings.assignments || []).find(x => x.id === assignmentId);
+            const key = twIsEveryoneScope(a) ? twSubKeyMember(twTeam.id, assignmentId, applicationData.email) : twSubKey(twTeam.id, assignmentId);
+            return twSubmissions[key] || null;
+        }
+
+        function twSubmissionStatus(assignmentId) {
+            const a = (twSettings.assignments || []).find(x => x.id === assignmentId);
+            const s = twGetMySubmission(assignmentId);
+            const dl = twEffectiveDeadline(a);
+            if (s && s.content) return 'submitted';
+            if (dl && new Date(dl) < new Date()) return 'late';
+            if (dl) return 'pending';
             return 'none';
         }
 
+        const TW_TYPE_LABEL = { link: 'Link', text: 'Văn bản', file: 'File' };
+
         function renderTwSubmission() {
             const block = document.getElementById('tw-submission-block');
-            const infoEl = document.getElementById('tw-submission-info');
-            const formEl = document.getElementById('tw-submission-form');
-            const readonlyEl = document.getElementById('tw-submission-readonly-note');
+            const dlEl = document.getElementById('tw-deadline-info');
+            const container = document.getElementById('tw-assignments-container');
+            const assignments = (twSettings && twSettings.assignments) || [];
 
-            // Chỉ hiện khi BTC đã đặt deadline nộp bài
-            if (!twSettings.submissionDeadline) {
+            // Chỉ hiện khi có ít nhất 1 đầu mục VÀ (có hạn chung hoặc có ít nhất 1 đầu mục có hạn riêng)
+            const anyDeadline = twSettings.submissionDeadline || assignments.some(a => a.deadline);
+            if (!anyDeadline || !assignments.length) {
                 block.style.display = 'none';
                 return;
             }
             block.style.display = 'block';
 
-            const status = twSubmissionStatus();
+            let dlHtml = twSettings.submissionDeadline
+                ? `<p><b>Hạn nộp chung:</b> ${new Date(twSettings.submissionDeadline).toLocaleString('vi-VN')}</p>`
+                : `<p><b>Hạn nộp:</b> tuỳ theo từng đầu mục (xem chi tiết bên dưới)</p>`;
+            if (twSettings.submissionNote) dlHtml += `<p><b>Yêu cầu chung:</b> ${twSettings.submissionNote}</p>`;
+            if (twSettings.submissionOpen === false) dlHtml += '<p style="color:var(--error-600);"><i class="fas fa-lock"></i> BTC đang tạm đóng nộp bài.</p>';
+            dlEl.innerHTML = dlHtml;
+
+            const submissionOpen = twSettings.submissionOpen !== false;
+            const isLeaderRole = twMyRole === 'leader' || twMyRole === 'subleader';
+            const isTeamMember = !!twMyRole; // có mặt trong team (bất kỳ vai trò nào)
+            function canSubmitAssignment(a) {
+                if (!twTeam || !submissionOpen) return false;
+                if (a.submitterScope === 'all_members' || a.submitterScope === 'everyone') return isTeamMember;
+                return isLeaderRole;
+            }
+
             const statusMap = {
                 submitted: '<span class="tw-status-badge submitted">Đã nộp</span>',
                 pending: '<span class="tw-status-badge pending">Chưa nộp</span>',
@@ -2268,41 +2624,92 @@
                 none: '<span class="tw-status-badge pending">Chưa có deadline</span>'
             };
 
-            let infoHtml = `<p><b>Trạng thái:</b> ${statusMap[status]}</p>`;
-            if (twSettings.submissionDeadline) {
-                infoHtml += `<p><b>Hạn nộp:</b> ${new Date(twSettings.submissionDeadline).toLocaleString('vi-VN')}</p>`;
-            }
-            if (twSettings.submissionNote) {
-                infoHtml += `<p><b>Yêu cầu:</b> ${twSettings.submissionNote}</p>`;
-            }
-            if (twSubmission && twSubmission.content) {
-                const contentHtml = twSubmission.type === 'link'
-                    ? `<a href="${twSubmission.content}" target="_blank" rel="noopener">${twSubmission.content}</a>`
-                    : twSubmission.content;
-                infoHtml += `<p><b>Bài đã nộp:</b> ${contentHtml}${twSubmission.note ? ' • ' + twSubmission.note : ''}</p>`;
-                infoHtml += `<p style="font-size:12px;color:var(--neutral-500);">Nộp lúc ${new Date(twSubmission.submittedAt).toLocaleString('vi-VN')} bởi ${twSubmission.submittedBy || ''}</p>`;
-            }
-            infoEl.innerHTML = infoHtml;
+            container.innerHTML = assignments.map(a => {
+                const s = twGetMySubmission(a.id);
+                const status = twSubmissionStatus(a.id);
+                const hasSubmission = !!(s && s.content);
+                const canSubmit = canSubmitAssignment(a);
+                const showForm = canSubmit && (!hasSubmission || twResubmitOpenIds.has(a.id));
+                const myDeadline = twEffectiveDeadline(a);
 
-            const submissionOpen = twSettings.submissionOpen !== false;
-            const isLeaderRole = twMyRole === 'leader' || twMyRole === 'subleader';
-            const canSubmit = isLeaderRole && submissionOpen;
-            formEl.style.display = canSubmit ? 'block' : 'none';
-            readonlyEl.style.display = canSubmit ? 'none' : 'block';
+                let infoHtml = `<p><b>${a.title}</b> ${statusMap[status]}${a.submitterScope === 'everyone' ? ' <span class="tw-status-badge pending" style="background:#FDECEC;color:#EF4444;">Mỗi người tự nộp</span>' : ''}</p>`;
+                if (a.note) infoHtml += `<p style="font-size:12.5px;color:var(--neutral-500);">Yêu cầu: ${a.note}</p>`;
+                if (a.deadline) infoHtml += `<p style="font-size:12.5px;color:var(--neutral-500);">Hạn riêng cho đầu mục này: <b>${new Date(a.deadline).toLocaleString('vi-VN')}</b></p>`;
 
-            if (isLeaderRole && !submissionOpen) {
-                readonlyEl.innerHTML = '<p style="color:var(--error-600);"><i class="fas fa-lock"></i> BTC đang tạm đóng nộp bài. Vui lòng chờ thông báo mới.</p>';
-            } else if (!isLeaderRole) {
-                readonlyEl.innerHTML = 'Chỉ Leader hoặc Sub Leader của team mới có thể nộp bài.';
-            }
-
-            if (canSubmit) {
-                document.getElementById('tw-submit-btn-text').textContent = (twSubmission && twSubmission.content) ? 'Nộp lại' : 'Nộp bài';
-                if (twSubmission) {
-                    document.getElementById('tw-link-input').value = twSubmission.type === 'link' ? (twSubmission.content || '') : '';
-                    document.getElementById('tw-note-input').value = twSubmission.note || '';
+                let summaryHtml = '';
+                if (hasSubmission) {
+                    const contentHtml = (s.type === 'link' || s.type === 'file')
+                        ? `<a href="${s.content}" target="_blank" rel="noopener">${s.content}</a>`
+                        : s.content;
+                    summaryHtml = `
+                        <p><b>Bài đã nộp:</b> ${contentHtml}${s.note ? ' • ' + s.note : ''}</p>
+                        <p style="font-size:12px;color:var(--neutral-500);">Nộp lúc ${new Date(s.submittedAt).toLocaleString('vi-VN')} bởi ${s.submittedByName || applicationData.fullname || s.submittedBy || ''}</p>`;
                 }
-            }
+
+                let formHtml = '';
+                if (showForm) {
+                    if (a.type === 'file') {
+                        formHtml = `
+                        <div class="tw-field">
+                            <label>Nộp file (tải lên Drive CLB, folder riêng của team)</label>
+                            <input type="file" id="tw-file-input-${a.id}" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,.png,.jpg,.jpeg">
+                            <div class="tw-hint">Định dạng: PDF, Word, PowerPoint, Excel, ZIP/RAR, PNG/JPG • Tối đa 200MB</div>
+                        </div>`;
+                    } else {
+                        formHtml = `
+                        <div class="tw-field">
+                            <label>${a.type === 'text' ? 'Nội dung' : 'Dán link (Google Slide/Drive/YouTube...)'}</label>
+                            ${a.type === 'text'
+                                ? `<textarea id="tw-content-input-${a.id}" rows="3" placeholder="Nhập nội dung..."></textarea>`
+                                : `<input type="text" id="tw-content-input-${a.id}" placeholder="https://...">`}
+                        </div>`;
+                    }
+                    formHtml += `
+                        <div class="tw-field">
+                            <label>Ghi chú (không bắt buộc)</label>
+                            <textarea id="tw-note-input-${a.id}" rows="2" placeholder="Ghi chú thêm cho bài nộp..."></textarea>
+                        </div>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button class="btn btn-primary tw-submit-btn" data-assignment-id="${a.id}" data-assignment-type="${a.type}">
+                                <span class="tw-submit-btn-text">${hasSubmission ? 'Nộp lại' : 'Nộp bài'}</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                            ${hasSubmission ? `<button class="btn btn-secondary tw-cancel-resubmit-btn" data-assignment-id="${a.id}">Huỷ</button>` : ''}
+                        </div>`;
+                } else if (canSubmit && hasSubmission) {
+                    formHtml = `
+                        <div class="tw-asg-submitted-summary">
+                            <span style="font-size:12.5px;color:var(--success-700);"><i class="fas fa-circle-check"></i> Đã nộp bài này</span>
+                            <button class="btn btn-secondary tw-resubmit-btn tw-open-resubmit-btn" data-assignment-id="${a.id}"><i class="fas fa-rotate"></i> Nộp lại</button>
+                        </div>`;
+                }
+
+                return `<div class="tw-asg-card st-${status}">
+                    <div class="tw-sub-info">${infoHtml}${summaryHtml}</div>
+                    ${formHtml}
+                    ${!canSubmit ? `<div class="tw-readonly-note">${!twTeam ? 'Chưa xác định được team của bạn.' : (!submissionOpen ? 'BTC đang tạm đóng nộp bài. Vui lòng chờ thông báo mới.' : ((a.submitterScope === 'all_members' || a.submitterScope === 'everyone') ? 'Bạn cần là thành viên của team này mới có thể nộp.' : 'Chỉ Leader hoặc Sub Leader của team mới có thể nộp bài.'))}</div>` : ''}
+                </div>`;
+            }).join('');
+
+            container.querySelectorAll('.tw-submit-btn').forEach(btn => {
+                btn.addEventListener('click', () => submitTwAssignment(btn.dataset.assignmentId, btn.dataset.assignmentType));
+            });
+            container.querySelectorAll('.tw-open-resubmit-btn').forEach(btn => {
+                btn.addEventListener('click', () => { twResubmitOpenIds.add(btn.dataset.assignmentId); renderTwSubmission(); });
+            });
+            container.querySelectorAll('.tw-cancel-resubmit-btn').forEach(btn => {
+                btn.addEventListener('click', () => { twResubmitOpenIds.delete(btn.dataset.assignmentId); renderTwSubmission(); });
+            });
+
+            // Điền lại nội dung đã nộp (link/text) vào ô nhập nếu có
+            assignments.forEach(a => {
+                if (a.type === 'file') return;
+                const s = twGetMySubmission(a.id);
+                const input = document.getElementById(`tw-content-input-${a.id}`);
+                if (input && s) input.value = s.content || '';
+                const noteInput = document.getElementById(`tw-note-input-${a.id}`);
+                if (noteInput && s) noteInput.value = s.note || '';
+            });
         }
 
         function renderTwPitching() {
@@ -2342,7 +2749,7 @@
 
             noteEl.style.display = 'none';
 
-            const pitchingOpen = twSettings.pitchingConfirmOpen !== false;
+            const pitchingOpen = twSettings.pitchingConfirmOpen !== false || !!(twTeam && twTeam.pitchingConfirmOverride);
 
             if (myStatus === 'yes' || myStatus === 'no') {
                 // Đã xác nhận rồi thì không cho sửa nữa, tránh đổi qua đổi lại gây khó kiểm soát
@@ -2368,16 +2775,16 @@
         }
 
         document.getElementById('tw-pitching-yes-btn').addEventListener('click', async () => {
-            if (twSettings.pitchingConfirmOpen === false) {
-                alert('BTC đang tạm đóng xác nhận Pitching Day. Vui lòng chờ thông báo mới.');
+            if (twSettings.pitchingConfirmOpen === false && !(twTeam && twTeam.pitchingConfirmOverride)) {
+                toastWarn('BTC đang tạm đóng xác nhận Pitching Day. Vui lòng chờ thông báo mới.');
                 return;
             }
             try {
                 await saveMyPitchingStatus('yes', '');
-                alert('Đã xác nhận tham gia Pitching Day!');
+                toastSuccess('Đã xác nhận tham gia Pitching Day!');
             } catch (error) {
                 console.error('Error confirming pitching day:', error);
-                alert('Có lỗi xảy ra, vui lòng thử lại.');
+                toastError('Có lỗi xảy ra, vui lòng thử lại.');
             }
         });
 
@@ -2388,20 +2795,34 @@
         document.getElementById('tw-pitching-reason-save-btn').addEventListener('click', async () => {
             const reason = document.getElementById('tw-pitching-reason-input').value.trim();
             if (!reason) {
-                alert('Vui lòng nhập lý do không tham gia.');
+                toastWarn('Vui lòng nhập lý do không tham gia.');
                 return;
             }
             try {
                 await saveMyPitchingStatus('no', reason);
-                alert('Đã ghi nhận: bạn không tham gia Pitching Day.');
+                toastSuccess('Đã ghi nhận: bạn không tham gia Pitching Day.');
             } catch (error) {
                 console.error('Error declining pitching day:', error);
-                alert('Có lỗi xảy ra, vui lòng thử lại.');
+                toastError('Có lỗi xảy ra, vui lòng thử lại.');
             }
         });
 
-        // Upload file lên Drive CLB thông qua Apps Script, trả về link file
-        async function uploadFileToDrive(file, meta) {
+        function driveBlobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const result = reader.result || '';
+                    resolve(result.includes(',') ? result.split(',')[1] : result);
+                };
+                reader.onerror = () => reject(new Error('Không đọc được phần file (FileReader lỗi).'));
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        // Upload file lên Drive CLB thông qua Apps Script (chunked resumable upload).
+        // File được chia thành từng phần ~8MB, gửi tuần tự để tránh vượt giới hạn
+        // payload/thời gian thực thi của Apps Script khi file lớn (video, v.v.).
+        async function uploadFileToDrive(file, meta, onProgress) {
             const ext = (file.name.split('.').pop() || '').toLowerCase();
             if (!DRIVE_ALLOWED_EXTENSIONS.includes(ext)) {
                 throw new Error(`Định dạng .${ext} không được phép. Chỉ nhận: ${DRIVE_ALLOWED_EXTENSIONS.join(', ')}`);
@@ -2410,67 +2831,99 @@
                 throw new Error('File vượt quá giới hạn 200MB.');
             }
 
-            const formData = new FormData();
-            formData.append('secret', DRIVE_UPLOAD_SECRET);
-            formData.append('teamName', meta.teamName || '');
-            formData.append('file', file, file.name);
+            const CHUNK_SIZE = 8 * 1024 * 1024; // 8MB mỗi phần (trước khi base64)
 
-            // Timeout dài hơn cho file lớn (tối đa 200MB)
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 giây
-
-            let response;
-            try {
-                response = await fetch(DRIVE_UPLOAD_SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData,
-                    signal: controller.signal
-                });
-            } catch (err) {
-                if (err.name === 'AbortError') {
-                    throw new Error('Quá thời gian chờ phản hồi từ Drive (120s). Vui lòng kiểm tra mạng và thử lại, hoặc dùng link thay vì file.');
+            async function callScript(body, timeoutMs) {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+                let response;
+                try {
+                    response = await fetch(DRIVE_UPLOAD_SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify(body),
+                        signal: controller.signal
+                    });
+                } catch (err) {
+                    if (err.name === 'AbortError') {
+                        throw new Error(`Quá thời gian chờ phản hồi từ Drive (${timeoutMs / 1000}s). Vui lòng kiểm tra mạng và thử lại.`);
+                    }
+                    throw new Error('Không kết nối được tới Drive CLB. Vui lòng kiểm tra mạng và thử lại.');
+                } finally {
+                    clearTimeout(timeoutId);
                 }
-                throw new Error('Không kết nối được tới Drive CLB. Vui lòng kiểm tra mạng và thử lại.');
-            } finally {
-                clearTimeout(timeoutId);
+                let result;
+                try {
+                    result = await response.json();
+                } catch (err) {
+                    throw new Error('Drive CLB phản hồi không hợp lệ. Vui lòng thử lại sau.');
+                }
+                if (!result || result.success !== true) {
+                    throw new Error((result && result.error) || 'Upload thất bại, vui lòng thử lại.');
+                }
+                return result;
             }
 
-            let result;
-            try {
-                result = await response.json();
-            } catch (err) {
-                throw new Error('Drive CLB phản hồi không hợp lệ. Vui lòng thử lại sau.');
+            if (onProgress) onProgress('Đang khởi tạo phiên upload...');
+            const initData = await callScript({
+                action: 'init',
+                secret: DRIVE_UPLOAD_SECRET,
+                teamName: meta.teamName || '',
+                fileName: meta.fileName || file.name,
+                mimeType: file.type || 'application/octet-stream',
+                fileSize: file.size
+            }, 30000);
+            const uploadUrl = initData.uploadUrl;
+
+            let offset = 0;
+            let finalResult = null;
+            while (offset < file.size) {
+                const end = Math.min(offset + CHUNK_SIZE, file.size);
+                const chunkBase64 = await driveBlobToBase64(file.slice(offset, end));
+                const data = await callScript({
+                    action: 'chunk',
+                    secret: DRIVE_UPLOAD_SECRET,
+                    uploadUrl,
+                    chunkData: chunkBase64,
+                    start: offset,
+                    end: end - 1,
+                    total: file.size
+                }, 60000);
+                offset = end;
+                if (onProgress) onProgress(`Đang tải lên... ${Math.round((offset / file.size) * 100)}%`);
+                if (data.done) finalResult = data;
             }
 
-            if (!result || result.success !== true) {
-                throw new Error((result && result.error) || 'Upload thất bại, vui lòng thử lại.');
-            }
+            if (!finalResult) throw new Error('Upload không hoàn tất (thiếu phản hồi cuối cùng từ Drive).');
+            const result = finalResult;
             return result.fileUrl || result.downloadUrl;
         }
 
-        document.getElementById('tw-submit-btn').addEventListener('click', async () => {
+        async function submitTwAssignment(assignmentId, assignmentType) {
             if (twSettings.submissionOpen === false) {
-                alert('BTC đang tạm đóng nộp bài. Vui lòng chờ thông báo mới.');
-                return;
-            }
-            const btn = document.getElementById('tw-submit-btn');
-            const fileInput = document.getElementById('tw-file-input');
-            const linkInput = document.getElementById('tw-link-input');
-            const noteInput = document.getElementById('tw-note-input');
-
-            const file = fileInput.files && fileInput.files[0];
-            const link = linkInput.value.trim();
-            const note = noteInput.value.trim();
-
-            if (!file && !link) {
-                alert('Vui lòng chọn file để tải lên hoặc dán link nộp bài.');
+                toastWarn('BTC đang tạm đóng nộp bài. Vui lòng chờ thông báo mới.');
                 return;
             }
             if (!twTeam) {
-                alert('Không tìm thấy thông tin team của bạn. Vui lòng liên hệ admin.');
+                toastError('Không tìm thấy thông tin team của bạn. Vui lòng liên hệ admin.');
                 return;
             }
-            if (twSettings.submissionDeadline && new Date(twSettings.submissionDeadline) < new Date()) {
+            const assignment = (twSettings.assignments || []).find(a => a.id === assignmentId);
+            const btn = document.querySelector(`.tw-submit-btn[data-assignment-id="${assignmentId}"]`);
+            const noteInput = document.getElementById(`tw-note-input-${assignmentId}`);
+            const note = noteInput ? noteInput.value.trim() : '';
+
+            let file = null, textOrLink = '';
+            if (assignmentType === 'file') {
+                const fileInput = document.getElementById(`tw-file-input-${assignmentId}`);
+                file = fileInput.files && fileInput.files[0];
+                if (!file) { toastWarn('Vui lòng chọn file để nộp.'); return; }
+            } else {
+                const input = document.getElementById(`tw-content-input-${assignmentId}`);
+                textOrLink = input ? input.value.trim() : '';
+                if (!textOrLink) { toastWarn(assignmentType === 'text' ? 'Vui lòng nhập nội dung.' : 'Vui lòng dán link nộp bài.'); return; }
+            }
+
+            if (twEffectiveDeadline(assignment) && new Date(twEffectiveDeadline(assignment)) < new Date()) {
                 if (!confirm('Đã quá hạn nộp bài. Bạn vẫn muốn nộp?')) return;
             }
 
@@ -2485,33 +2938,40 @@
                 if (file) {
                     content = await uploadFileToDrive(file, {
                         teamName: twTeam.name,
-                        submittedBy: applicationData.email
+                        submittedBy: applicationData.email,
+                        fileName: assignment ? `${assignment.title} - ${applicationData.fullname || applicationData.email} - ${file.name}` : undefined
                     });
-                    type = 'link'; // link Drive trả về từ Apps Script
+                    type = 'file';
                 } else {
-                    type = 'link';
-                    content = link;
+                    type = assignmentType;
+                    content = textOrLink;
                 }
 
-                await db.collection(TW_SUBMISSIONS_COL).doc(twTeam.id).set({
+                const isEveryone = twIsEveryoneScope(assignment);
+                const key = isEveryone ? twSubKeyMember(twTeam.id, assignmentId, applicationData.email) : twSubKey(twTeam.id, assignmentId);
+                const submissionData = {
+                    teamId: twTeam.id, assignmentId,
+                    ...(isEveryone ? { memberEmail: applicationData.email, memberName: applicationData.fullname || '' } : {}),
                     type, content, note,
                     submittedAt: new Date().toISOString(),
-                    submittedBy: applicationData.email
-                });
+                    submittedBy: applicationData.email,
+                    submittedByName: applicationData.fullname || ''
+                };
+                await db.collection(TW_SUBMISSIONS_COL).doc(key).set(submissionData);
 
-                twSubmission = { type, content, note, submittedAt: new Date().toISOString(), submittedBy: applicationData.email };
-                fileInput.value = '';
+                twSubmissions[key] = submissionData;
+                twResubmitOpenIds.delete(assignmentId);
                 btn.disabled = false;
                 btn.innerHTML = originalText;
                 renderTwSubmission();
-                alert('Nộp bài thành công!');
+                toastSuccess('Nộp bài thành công!');
             } catch (error) {
                 console.error('Error submitting teamwork assignment:', error);
-                alert(error.message || 'Có lỗi khi nộp bài. Vui lòng thử lại hoặc dùng link thay vì file.');
+                toastError(error.message || 'Có lỗi khi nộp bài. Vui lòng thử lại hoặc dùng link thay vì file.');
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             }
-        });
+        }
 
         // Event listeners
         document.getElementById('go-to-calendar-btn').addEventListener('click', async () => {
@@ -2524,20 +2984,20 @@
 
                 const hasAccess = await checkVotingRights();
                 if (!hasAccess) {
-                    alert('Bạn không có quyền truy cập lịch phỏng vấn.');
+                    toastWarn('Bạn không có quyền truy cập lịch phỏng vấn.');
                     return;
                 }
 
                 const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
                 if (!scheduleDoc.exists || scheduleDoc.data().published !== true) {
-                    alert('Lịch phỏng vấn chưa được công bố.');
+                    toastInfo('Lịch phỏng vấn chưa được công bố.');
                     return;
                 }
 
                 window.location.href = 'calendar.html';
             } catch (error) {
                 console.error('Error checking access:', error);
-                alert('Có lỗi xảy ra.');
+                toastError('Có lỗi xảy ra.');
             }
         });
 
@@ -2556,19 +3016,19 @@
                 const settingsDoc = await db.collection('system').doc('feedback_settings').get();
                 
                 if (!settingsDoc.exists || settingsDoc.data().enabled !== true) {
-                    alert('Hệ thống feedback chưa được kích hoạt.');
+                    toastInfo('Hệ thống feedback chưa được kích hoạt.');
                     return;
                 }
 
                 if (!applicationData || applicationData.feedback_permission !== true) {
-                    alert('Bạn chưa được cấp quyền gửi feedback. Vui lòng liên hệ admin.');
+                    toastWarn('Bạn chưa được cấp quyền gửi feedback. Vui lòng liên hệ admin.');
                     return;
                 }
 
                 if (settingsDoc.data().deadline) {
                     const deadline = settingsDoc.data().deadline.toDate();
                     if (new Date() > deadline) {
-                        alert('Thời hạn gửi feedback đã kết thúc.');
+                        toastWarn('Thời hạn gửi feedback đã kết thúc.');
                         return;
                     }
                 }
@@ -2576,7 +3036,7 @@
                 window.location.href = 'feedback.html';
             } catch (error) {
                 console.error('Error checking access:', error);
-                alert('Có lỗi xảy ra.');
+                toastError('Có lỗi xảy ra.');
             }
         });
 
@@ -2589,6 +3049,34 @@
         document.getElementById('user-profile').addEventListener('click', () => {
             // Optional: show profile dropdown or settings
         });
+
+        // Xem lại đơn ứng tuyển (Vòng 1) -> mở rộng chi tiết vòng 1 ở sidebar
+        const round1ViewBtn = document.getElementById('round1-view-btn');
+        if (round1ViewBtn) {
+            round1ViewBtn.addEventListener('click', () => {
+                toggleRoundDetails('round1');
+                const details = document.getElementById('details-round1');
+                if (details) {
+                    details.classList.add('active');
+                    details.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        }
+
+        // Xem lịch phỏng vấn từ card Vòng 2 / Vòng 4
+        const round2ViewCalendarBtn = document.getElementById('round2-view-calendar-btn');
+        if (round2ViewCalendarBtn) {
+            round2ViewCalendarBtn.addEventListener('click', () => {
+                window.location.href = 'calendar.html';
+            });
+        }
+
+        const round4ViewCalendarBtn = document.getElementById('round4-view-calendar-btn');
+        if (round4ViewCalendarBtn) {
+            round4ViewCalendarBtn.addEventListener('click', () => {
+                window.location.href = 'calendar.html';
+            });
+        }
     </script>
 </body>
 </html>

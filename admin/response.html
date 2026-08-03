@@ -1216,6 +1216,9 @@ footer {
                 <button class="export-btn" onclick="showExportOptions()">
                     <i class="fas fa-download"></i> Xuất dữ liệu
                 </button>
+                <button class="export-btn" id="publish-all-results-btn" style="display:none; background:#16a34a; color:#fff; border-color:#16a34a;" onclick="publishAllResults()">
+                    <i class="fas fa-bullhorn"></i> Công bố kết quả (hàng loạt)
+                </button>
             </div>
 
             <div class="search-box">
@@ -2637,9 +2640,115 @@ function renderApplications() {
                     }</span>
                 </div>
             </div>
+            ${renderPublishResultButtonHTML(app)}
         `;
     applicationsList.appendChild(appCard);
   });
+
+  // Cập nhật hiển thị nút công bố hàng loạt
+  const bulkBtn = document.getElementById("publish-all-results-btn");
+  if (bulkBtn) {
+    const publishable = filteredApplications.filter(canPublishResult);
+    bulkBtn.style.display = (userRole === "superadmin" && publishable.length > 0) ? "inline-flex" : "none";
+    bulkBtn.innerHTML = `<i class="fas fa-bullhorn"></i> Công bố kết quả (${publishable.length} ứng viên)`;
+  }
+}
+
+// ===== Công bố kết quả cuối cùng (dựa trên round4_priority_status / round4_secondary_status) =====
+function getFinalMergedStatus(app) {
+  const hasPriority = app.priority_position && app.priority_position !== "None";
+  const hasSecondary = app.secondary_position && app.secondary_position !== "None";
+  const p = hasPriority ? app.round4_priority_status : null;
+  const s = hasSecondary ? app.round4_secondary_status : null;
+
+  if (p === "pass" || s === "pass") return "pass";
+
+  const priorityDone = !hasPriority || p === "not-pass";
+  const secondaryDone = !hasSecondary || s === "not-pass";
+  if (priorityDone && secondaryDone && (p === "not-pass" || s === "not-pass")) return "not-pass";
+
+  return "pending";
+}
+
+// Đã có kết quả quyết định (pass hoặc not-pass ở ít nhất 1 ban) và chưa công bố
+function canPublishResult(app) {
+  if (userRole !== "superadmin") return false;
+  if (app.result_published) return false;
+  const status = getFinalMergedStatus(app);
+  return status === "pass" || status === "not-pass";
+}
+
+function renderPublishResultButtonHTML(app) {
+  if (userRole !== "superadmin") return "";
+  if (app.result_published) {
+    return `<div class="detail-item" style="margin-top:8px;">
+      <span class="detail-value" style="color:#16a34a;"><i class="fas fa-circle-check"></i> Đã công bố kết quả cho ứng viên</span>
+    </div>`;
+  }
+  if (canPublishResult(app)) {
+    return `<div class="detail-item" style="margin-top:8px;">
+      <button class="export-btn" style="background:#16a34a; color:#fff; border-color:#16a34a;" onclick="event.stopPropagation(); publishResult('${app.id}')">
+        <i class="fas fa-bullhorn"></i> Công bố kết quả cho ứng viên
+      </button>
+    </div>`;
+  }
+  return "";
+}
+
+async function publishResult(appId) {
+  if (userRole !== "superadmin") { alert("Chỉ SuperAdmin mới có quyền công bố kết quả."); return; }
+  const app = applications.find((a) => a.id === appId);
+  if (!app || !canPublishResult(app)) return;
+  if (!confirm(`Công bố kết quả cho ${app.fullname || app.email}? Ứng viên sẽ thấy kết quả ngay trên trang Profile.`)) return;
+  try {
+    await db.collection("applications").doc(appId).update({
+      result_published: true,
+      result_published_at: new Date().toISOString(),
+      result_published_by: userEmail || "",
+    });
+    app.result_published = true;
+    renderApplications();
+  } catch (error) {
+    console.error("Error publishing result:", error);
+    alert("Có lỗi khi công bố kết quả. Vui lòng thử lại.");
+  }
+}
+
+async function publishAllResults() {
+  if (userRole !== "superadmin") { alert("Chỉ SuperAdmin mới có quyền công bố kết quả."); return; }
+  const publishable = applications.filter(canPublishResult);
+  // Chỉ công bố những ứng viên đang hiển thị theo bộ lọc hiện tại
+  const departmentFilter = document.getElementById("filter-department")?.value;
+  const typeFilter = document.getElementById("filter-type")?.value;
+  const list = publishable.filter((app) => {
+    if (departmentFilter && app.priority_position !== departmentFilter && app.secondary_position !== departmentFilter) return false;
+    if (typeFilter && app.application_type !== typeFilter) return false;
+    return true;
+  });
+  if (!list.length) { alert("Không có ứng viên nào đủ điều kiện công bố trong danh sách hiện tại."); return; }
+  if (!confirm(`Công bố kết quả cho ${list.length} ứng viên đang hiển thị? Ứng viên sẽ thấy kết quả ngay trên trang Profile.`)) return;
+
+  const btn = document.getElementById("publish-all-results-btn");
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang công bố...'; }
+
+  let ok = 0;
+  for (const app of list) {
+    try {
+      await db.collection("applications").doc(app.id).update({
+        result_published: true,
+        result_published_at: new Date().toISOString(),
+        result_published_by: userEmail || "",
+      });
+      app.result_published = true;
+      ok++;
+    } catch (error) {
+      console.error(`Error publishing result for ${app.email}:`, error);
+    }
+  }
+
+  if (btn) { btn.disabled = false; }
+  renderApplications();
+  alert(`Đã công bố kết quả cho ${ok}/${list.length} ứng viên.`);
 }
 
 // Hàm lấy thông tin trạng thái

@@ -64,7 +64,7 @@ body{
 .page-title-row{margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px}
 .page-title{font-size:26px;font-weight:800;letter-spacing:-.6px}
 .page-sub{font-size:13px;color:var(--ink-60);margin-top:4px;font-weight:500}
-.card-title{font-size:12px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.6px}
+.card-title{font-size:12px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.6px;flex-wrap:wrap;row-gap:10px}
 .card-title .dot{width:8px;height:8px;border-radius:50%;background:var(--grad-accent);box-shadow:0 0 0 4px var(--yellow-light);flex-shrink:0}
 
 /* BUTTONS */
@@ -156,6 +156,7 @@ th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;c
 td{padding:11px 12px;border-bottom:1px solid var(--ink-10);font-size:13px;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 input,select,textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px;font-family:inherit;background:var(--white);color:var(--ink);transition:var(--t);width:100%}
+input[type="checkbox"],input[type="radio"]{width:16px;height:16px;padding:0;border-width:1.5px;flex-shrink:0;accent-color:var(--yellow-deep);}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow-deep);box-shadow:0 0 0 4px rgba(244,208,63,.2)}
 textarea{resize:vertical;min-height:64px}
 label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;display:block}
@@ -306,7 +307,7 @@ label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transfor
   <!-- TAB: DOCS & SUBMISSION -->
   <div class="tab-content" id="docs-content">
     <div class="card">
-      <div class="card-title"><span class="dot"></span> Tài liệu chung cho Vòng 3
+      <div class="card-title"><span class="dot"></span> Tài liệu
         <button class="btn sm primary" style="margin-left:auto;" onclick="openDocModal()"><i class="fas fa-plus"></i> Thêm tài liệu</button>
       </div>
       <div id="docs-list"></div>
@@ -326,8 +327,21 @@ label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transfor
     </div>
 
     <div class="card">
+      <div class="card-title"><span class="dot"></span> Đầu mục nộp bài
+        <button class="btn sm primary" style="margin-left:auto;" onclick="openAssignmentModal()"><i class="fas fa-plus"></i> Thêm đầu mục</button>
+      </div>
+      <p style="font-size:12.5px;color:var(--ink-60);margin-bottom:14px;">Mỗi đầu mục là một phần bài nộp riêng (VD: Pitch deck, Video demo). Mỗi team sẽ nộp riêng cho từng đầu mục theo đúng hình thức bạn đặt ở đây.</p>
+      <div id="assignments-list"></div>
+    </div>
+
+    <div class="card">
       <div class="card-title"><span class="dot"></span> Nộp bài của các team
-        <button class="btn sm danger" style="margin-left:auto;" id="reset-submissions-btn" title="Xoá toàn bộ bài nộp của tất cả team (giữ nguyên team)"><i class="fas fa-rotate-left"></i> Xoá tất cả bài nộp</button>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <select id="sub-assignment-filter" style="padding:7px 10px;border-radius:var(--radius-sm);border:1.5px solid var(--border);font-family:inherit;font-size:12.5px;font-weight:700;"></select>
+          <span id="sub-progress-badge" style="font-size:11.5px;font-weight:800;padding:6px 12px;border-radius:20px;background:var(--info-bg);color:var(--info);white-space:nowrap;"></span>
+          <button class="btn sm" id="export-submissions-btn"><i class="fas fa-file-excel"></i> Export Excel</button>
+          <button class="btn sm danger" id="reset-submissions-btn" title="Xoá toàn bộ bài nộp của tất cả team (giữ nguyên team)"><i class="fas fa-rotate-left"></i> Xoá tất cả bài nộp</button>
+        </div>
       </div>
       <div id="submissions-list"></div>
     </div>
@@ -349,7 +363,8 @@ label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transfor
     </div>
     <div class="card">
       <div class="card-title"><span class="dot"></span> Thống kê xác nhận tham gia (theo từng cá nhân)
-        <button class="btn sm danger" style="margin-left:auto;" id="reset-pitching-btn" title="Xoá xác nhận tham gia của toàn bộ thành viên (giữ nguyên thứ tự pitching)"><i class="fas fa-rotate-left"></i> Reset xác nhận</button>
+        <button class="btn sm" style="margin-left:auto;" id="export-pitching-btn"><i class="fas fa-file-excel"></i> Export Excel</button>
+        <button class="btn sm danger" id="reset-pitching-btn" title="Xoá xác nhận tham gia của toàn bộ thành viên (giữ nguyên thứ tự pitching)"><i class="fas fa-rotate-left"></i> Reset xác nhận</button>
       </div>
       <div id="pitching-stats" class="stats-summary"></div>
       <div id="pitching-absent-list" style="margin-top:14px;"></div>
@@ -357,7 +372,7 @@ label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transfor
     <div class="card">
       <div class="card-title"><span class="dot"></span> Thứ tự pitching &amp; Chi tiết theo team</div>
       <table>
-        <thead><tr><th style="width:70px;">Thứ tự</th><th>Team</th><th>Advisor / Supporter</th><th style="width:120px;">Tiến độ xác nhận</th><th>Chi tiết từng thành viên</th></tr></thead>
+        <thead><tr><th style="width:70px;">Thứ tự</th><th>Team</th><th>Advisor / Supporter</th><th style="width:120px;">Tiến độ xác nhận</th><th>Chi tiết từng thành viên</th><th style="width:150px;">Xác nhận riêng team</th></tr></thead>
         <tbody id="pitching-tbody"></tbody>
       </table>
       <div id="pitching-empty" class="empty-state" style="display:none;"><i class="fas fa-microphone"></i>Chưa có team nào.</div>
@@ -375,6 +390,16 @@ label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transfor
       </p>
       <div id="check-summary" class="stats-summary" style="margin-bottom:16px;display:none;"></div>
       <div id="check-results"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot"></span> Nhật ký chỉnh sửa gần đây
+        <button class="btn sm" style="margin-left:auto;" id="load-audit-btn"><i class="fas fa-clock-rotate-left"></i> Tải nhật ký</button>
+      </div>
+      <p style="font-size:12.5px;color:var(--ink-60);margin-bottom:14px;">
+        Ghi lại ai đã mở/đóng nộp bài, mở/đóng Pitching Day, xoá bài nộp, reset dữ liệu... và lúc nào — để dễ tra khi có tranh cãi.
+      </p>
+      <div id="audit-log-list"></div>
     </div>
   </div>
 </div>
@@ -432,13 +457,48 @@ label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transfor
 <!-- Modal: Document -->
 <div class="modal-overlay" id="doc-modal">
   <div class="modal">
-    <div class="modal-head"><h3>Thêm tài liệu chung</h3><i class="fas fa-xmark modal-close" data-close="doc-modal"></i></div>
+    <div class="modal-head"><h3 id="doc-modal-title">Thêm tài liệu</h3><i class="fas fa-xmark modal-close" data-close="doc-modal"></i></div>
     <div class="modal-body">
       <div><label class="f-label">Tên tài liệu</label><input id="doc-title" placeholder="VD: Guideline Pitching Day" /></div>
       <div><label class="f-label">Đường link</label><input id="doc-url" placeholder="https://..." /></div>
       <div><label class="f-label">Ghi chú (tuỳ chọn)</label><textarea id="doc-note"></textarea></div>
+      <div>
+        <label class="f-label">Áp dụng cho</label>
+        <div style="font-size:11.5px;color:var(--ink-60);margin-bottom:8px;">Để trống = tài liệu chung, mọi team đều thấy. Chọn team cụ thể nếu chỉ muốn gán riêng cho (các) team đó.</div>
+        <div id="doc-team-checks" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow:auto;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;"></div>
+      </div>
     </div>
-    <div class="modal-foot"><button class="btn" data-close="doc-modal">Huỷ</button><button class="btn primary" id="doc-save-btn"><i class="fas fa-check"></i> Thêm</button></div>
+    <div class="modal-foot"><button class="btn" data-close="doc-modal">Huỷ</button><button class="btn primary" id="doc-save-btn"><i class="fas fa-check"></i> <span id="doc-save-btn-label">Thêm</span></button></div>
+  </div>
+</div>
+
+<!-- Modal: Assignment (đầu mục nộp bài) -->
+<div class="modal-overlay" id="asg-modal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="asg-modal-title">Thêm đầu mục nộp bài</h3><i class="fas fa-xmark modal-close" data-close="asg-modal"></i></div>
+    <div class="modal-body">
+      <div><label class="f-label">Tên đầu mục</label><input id="asg-title" placeholder="VD: Pitch deck, Video demo..." /></div>
+      <div><label class="f-label">Hình thức nộp</label>
+        <select id="asg-type">
+          <option value="link">Link (Drive/Youtube/Figma...)</option>
+          <option value="text">Văn bản / Ghi chú</option>
+          <option value="file">Tải file lên (folder riêng theo team)</option>
+        </select>
+      </div>
+      <div><label class="f-label">Yêu cầu / ghi chú (tuỳ chọn)</label><textarea id="asg-note" placeholder="VD: File PDF, tối đa 20 trang"></textarea></div>
+      <div><label class="f-label">Ai được nộp</label>
+        <select id="asg-scope">
+          <option value="leaders">Trưởng / phó nhóm (mặc định)</option>
+          <option value="all_members">Mọi thành viên trong team (ai nộp cũng được, tính chung 1 bài nộp cho cả team)</option>
+          <option value="everyone">Bắt buộc TẤT CẢ thành viên phải tự nộp riêng (mỗi người 1 bài, tính đủ mới xong)</option>
+        </select>
+      </div>
+      <div><label class="f-label">Hạn nộp riêng cho đầu mục này (tuỳ chọn)</label>
+        <input type="datetime-local" id="asg-deadline" />
+        <p style="font-size:11.5px;color:var(--ink-60);margin-top:4px;">Để trống = dùng hạn nộp chung ở trên. Đặt riêng nếu đầu mục này cần deadline khác.</p>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-close="asg-modal">Huỷ</button><button class="btn primary" id="asg-save-btn"><i class="fas fa-check"></i> <span id="asg-save-btn-label">Thêm</span></button></div>
   </div>
 </div>
 
@@ -457,14 +517,12 @@ label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transfor
 <!-- Modal: Submit work -->
 <div class="modal-overlay" id="submit-modal">
   <div class="modal">
-    <div class="modal-head"><h3>Nộp bài cho team</h3><i class="fas fa-xmark modal-close" data-close="submit-modal"></i></div>
+    <div class="modal-head"><h3 id="submit-modal-title">Nộp bài cho team</h3><i class="fas fa-xmark modal-close" data-close="submit-modal"></i></div>
     <div class="modal-body">
-      <div><label class="f-label">Hình thức nộp</label>
-        <select id="sub-type"><option value="link">Link (Drive/Youtube/Figma...)</option><option value="text">Văn bản / Ghi chú</option><option value="file">Tải file lên (PDF, Word, Excel, PPT, ảnh, zip...)</option></select>
-      </div>
-      <div id="sub-content-wrap"><label class="f-label">Nội dung</label><textarea id="sub-content" placeholder="Dán link hoặc nhập nội dung..."></textarea></div>
+      <div id="submit-modal-note" style="font-size:12.5px;color:var(--ink-60);"></div>
+      <div id="sub-content-wrap"><label class="f-label" id="sub-content-label">Nội dung</label><textarea id="sub-content" placeholder="Dán link hoặc nhập nội dung..."></textarea></div>
       <div id="sub-file-wrap" style="display:none;">
-        <label class="f-label">Chọn file (tối đa 200MB)</label>
+        <label class="f-label">Chọn file (tối đa 200MB, sẽ lưu vào folder riêng của team)</label>
         <input type="file" id="sub-file-input" />
         <div id="sub-file-status" style="font-size:12px;margin-top:6px;color:#666;"></div>
       </div>
@@ -483,6 +541,29 @@ label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transfor
       <div><label class="f-label">Địa điểm</label><input id="pinfo-location" placeholder="VD: Hội trường D201 - Trụ sở FTU" /></div>
     </div>
     <div class="modal-foot"><button class="btn" data-close="pinfo-modal">Huỷ</button><button class="btn danger" id="pinfo-clear-btn"><i class="fas fa-eraser"></i> Xoá</button><button class="btn primary" id="pinfo-save-btn"><i class="fas fa-check"></i> Lưu</button></div>
+  </div>
+</div>
+
+<!-- Modal: Preview bài nộp -->
+<div class="modal-overlay" id="preview-modal">
+  <div class="modal" style="max-width:820px;width:92vw;">
+    <div class="modal-head"><h3 id="preview-title">Xem trước bài nộp</h3><i class="fas fa-xmark modal-close" data-close="preview-modal"></i></div>
+    <div class="modal-body" style="padding-top:0;">
+      <div id="preview-body" style="min-height:60vh;"></div>
+      <div style="margin-top:10px;font-size:12px;color:var(--ink-60);">Nếu không hiện được nội dung (do trang chặn nhúng iframe), hãy dùng nút mở tab mới bên dưới.</div>
+    </div>
+    <div class="modal-foot"><a class="btn primary" id="preview-open-link" target="_blank" rel="noopener"><i class="fas fa-up-right-from-square"></i> Mở tab mới</a></div>
+  </div>
+</div>
+
+<!-- Modal: Submission history -->
+<div class="modal-overlay" id="sub-history-modal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="sub-history-title">Lịch sử nộp bài</h3><i class="fas fa-xmark modal-close" data-close="sub-history-modal"></i></div>
+    <div class="modal-body">
+      <div id="sub-history-body"></div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-close="sub-history-modal">Đóng</button></div>
   </div>
 </div>
 
@@ -551,10 +632,26 @@ function isLeaderOrSubOf(t) {
   const m = (t.members || []).find((m) => m.email === userEmail);
   return m && (m.role === "leader" || m.role === "subleader");
 }
+function isMemberOf(t) { return (t.members || []).some((m) => m.email === userEmail); }
 function canSubmitFor(t) { return canManageTeam(t) || isLeaderOrSubOf(t); }
+function canSubmitForAssignment(t, assignment) {
+  if (canManageTeam(t)) return true;
+  if (assignment && (assignment.submitterScope === "all_members" || assignment.submitterScope === "everyone")) return isMemberOf(t);
+  return isLeaderOrSubOf(t);
+}
+function nameByEmail(email) {
+  if (!email) return "";
+  const acc = allAccounts.find((a) => a.email === email);
+  if (acc) return acc.id;
+  const cand = candidates.find((c) => c.email === email);
+  if (cand) return cand.name;
+  for (const t of teams) { const m = (t.members || []).find((m) => m.email === email); if (m) return m.name; }
+  return email;
+}
+function displayNameOf(sub) { return (sub && (sub.submittedByName || sub.memberName)) || nameByEmail(sub ? sub.submittedBy : ""); }
 
 /* ============================= NOTIFY ============================= */
-const AppToast = Swal.mixin({ toast: true, position: "top-end", showConfirmButton: false, timer: 3000, timerProgressBar: true, customClass: { popup: "app-toast" } });
+const AppToast = Swal.mixin({ toast: true, position: "bottom-end", showConfirmButton: false, timer: 3000, timerProgressBar: true, customClass: { popup: "app-toast" } });
 const notifySuccess = (m) => AppToast.fire({ icon: "success", title: m });
 const notifyError = (m) => AppToast.fire({ icon: "error", title: m, timer: 4000 });
 const notifyInfo = (m) => AppToast.fire({ icon: "info", title: m });
@@ -588,8 +685,20 @@ let teams = [];
 let candidates = []; // ứng viên đã pass vòng 2 / đang ở vòng 3, chưa gán vào team nào (id, name, email, dept)
 let allApplications = []; // toàn bộ applications (dùng cho thuật toán chia team tự động)
 let allAccounts = []; // nhân sự CLB { id(=fullname), email, role, department }
-let settings = { documents: [], submissionDeadline: null, submissionNote: "", pitchingDatetime: "", pitchingLocation: "", submissionOpen: true, pitchingConfirmOpen: true };
-let submissions = {}; // teamId -> submission
+let settings = { documents: [], assignments: [], submissionDeadline: null, submissionNote: "", pitchingDatetime: "", pitchingLocation: "", submissionOpen: true, pitchingConfirmOpen: true };
+let submissions = {}; // "teamId__assignmentId" -> submission
+let currentSubAssignmentId = null;
+let editingDocIndex = null;
+let editingAssignmentIndex = null;
+
+function subKey(teamId, assignmentId) { return `${teamId}__${assignmentId}`; }
+function getSubmission(teamId, assignmentId) { return submissions[subKey(teamId, assignmentId)]; }
+function subKeyMember(teamId, assignmentId, email) { return `${teamId}__${assignmentId}__${(email || "").toLowerCase()}`; }
+function getMemberSubmission(teamId, assignmentId, email) { return submissions[subKeyMember(teamId, assignmentId, email)]; }
+function isEveryoneScope(assignment) { return assignment && assignment.submitterScope === "everyone"; }
+function getEffectiveDeadline(assignment) { return (assignment && assignment.deadline) ? assignment.deadline : settings.submissionDeadline; }
+function isAssignmentPastDeadline(assignment) { const dl = getEffectiveDeadline(assignment); return dl ? new Date() > new Date(dl) : false; }
+function docVisibleForTeam(d, teamId) { return !d.teamIds || !d.teamIds.length || d.teamIds.includes(teamId); }
 
 async function loadAll() {
   const [teamSnap, appSnap, accSnap, setSnap, subSnap] = await Promise.all([
@@ -619,7 +728,7 @@ async function loadAll() {
   allAccounts = accSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
   const setData = setSnap.exists ? setSnap.data() : {};
-  settings = { documents: [], submissionDeadline: null, submissionNote: "", pitchingDatetime: "", pitchingLocation: "", submissionOpen: true, pitchingConfirmOpen: true, ...setData };
+  settings = { documents: [], assignments: [], submissionDeadline: null, submissionNote: "", pitchingDatetime: "", pitchingLocation: "", submissionOpen: true, pitchingConfirmOpen: true, ...setData };
 
   submissions = {};
   subSnap.forEach((d) => (submissions[d.id] = d.data()));
@@ -643,9 +752,18 @@ function renderEverything() {
   renderPitchingTab();
 }
 
-function submissionStatus(teamId) {
-  const s = submissions[teamId];
+function submissionStatus(teamId, assignmentId) {
+  const s = getSubmission(teamId, assignmentId);
   if (s && s.content) return "submitted";
+  if (settings.submissionDeadline && new Date(settings.submissionDeadline) < new Date()) return "late";
+  if (settings.submissionDeadline) return "pending";
+  return "none";
+}
+function teamOverallSubmissionStatus(teamId) {
+  const list = settings.assignments || [];
+  if (!list.length) return "none";
+  const submittedCount = list.filter((a) => { const s = getSubmission(teamId, a.id); return s && s.content; }).length;
+  if (submittedCount === list.length) return "submitted";
   if (settings.submissionDeadline && new Date(settings.submissionDeadline) < new Date()) return "late";
   if (settings.submissionDeadline) return "pending";
   return "none";
@@ -662,7 +780,7 @@ function statusBadge(status) {
 
 function renderStats() {
   const totalMembers = teams.reduce((s, t) => s + (t.members || []).length, 0);
-  const submitted = teams.filter((t) => submissionStatus(t.id) === "submitted").length;
+  const submitted = teams.filter((t) => teamOverallSubmissionStatus(t.id) === "submitted").length;
   const confirmedMembers = teams.reduce((s, t) => s + (t.members || []).filter((m) => m.pitchingConfirm === "yes").length, 0);
   document.getElementById("stats-summary").innerHTML = `
     <div class="stat-pill"><div class="stat-num">${teams.length}</div><div class="stat-label">Tổng số team</div></div>
@@ -737,7 +855,7 @@ function renderTeamsGrid() {
       </div>` : ""}
 
       <div class="team-footer">
-        ${statusBadge(submissionStatus(t.id))}
+        ${statusBadge(teamOverallSubmissionStatus(t.id))}
         ${(() => {
           const mem = t.members || [];
           const yes = mem.filter((m) => m.pitchingConfirm === "yes").length;
@@ -1103,6 +1221,72 @@ document.getElementById("tm-export-btn").addEventListener("click", () => {
   XLSX.writeFile(wb, `enactus_chia_team_${new Date().toISOString().split("T")[0]}.xlsx`);
 });
 
+document.getElementById("export-submissions-btn").addEventListener("click", () => {
+  if (!teams.length) return notifyInfo("Chưa có team nào để export");
+  if (!(settings.assignments || []).length) return notifyInfo("Chưa có đầu mục nộp bài nào để export");
+  const wb = XLSX.utils.book_new();
+  const data = [["DANH SÁCH NỘP BÀI TEAMWORK VÒNG 3"], []];
+  data.push(["Team", "Đầu mục", "Người nộp (nếu bắt buộc từng người)", "Trạng thái", "Hình thức", "Nội dung / Link", "Ghi chú", "Nộp lúc", "Nộp bởi"]);
+  teams.forEach((t) => {
+    (settings.assignments || []).forEach((a) => {
+      if (isEveryoneScope(a)) {
+        const members = t.members || [];
+        if (!members.length) { data.push([t.name, a.title, "(chưa có thành viên)", "", "", "", "", "", ""]); return; }
+        members.forEach((m) => {
+          const s = getMemberSubmission(t.id, a.id, m.email);
+          data.push([
+            t.name, a.title, m.name,
+            s ? "Đã nộp" : "Chưa nộp",
+            s ? (s.type === "link" ? "Link" : s.type === "file" ? "File" : "Văn bản") : (a.type === "link" ? "Link" : a.type === "file" ? "File" : "Văn bản"),
+            s ? s.content || "" : "",
+            s ? s.note || "" : "",
+            s ? new Date(s.submittedAt).toLocaleString("vi-VN") : "",
+            s ? displayNameOf(s) : "",
+          ]);
+        });
+        return;
+      }
+      const s = getSubmission(t.id, a.id);
+      const statusText = { submitted: "Đã nộp", pending: "Chưa nộp", late: "Trễ hạn", none: "Chưa có deadline" }[submissionStatus(t.id, a.id)] || "";
+      data.push([
+        t.name, a.title, "",
+        statusText,
+        s ? (s.type === "link" ? "Link" : s.type === "file" ? "File" : "Văn bản") : (a.type === "link" ? "Link" : a.type === "file" ? "File" : "Văn bản"),
+        s ? s.content || "" : "",
+        s ? s.note || "" : "",
+        s ? new Date(s.submittedAt).toLocaleString("vi-VN") : "",
+        s ? displayNameOf(s) : "",
+      ]);
+    });
+  });
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb, ws, "Bài nộp");
+  XLSX.writeFile(wb, `enactus_bai_nop_${new Date().toISOString().split("T")[0]}.xlsx`);
+});
+
+document.getElementById("export-pitching-btn").addEventListener("click", () => {
+  if (!teams.length) return notifyInfo("Chưa có team nào để export");
+  const wb = XLSX.utils.book_new();
+  const data = [["DANH SÁCH XÁC NHẬN PITCHING DAY"], []];
+  data.push(["Thứ tự", "Team", "Advisor", "Supporter", "Họ tên thành viên", "Trạng thái", "Lý do (nếu không tham gia)"]);
+  teams
+    .slice()
+    .sort((a, b) => (a.pitchingOrder || 999) - (b.pitchingOrder || 999))
+    .forEach((t) => {
+      const members = t.members || [];
+      const statusText = { yes: "Tham gia", no: "Không tham gia" };
+      if (!members.length) { data.push([t.pitchingOrder || "", t.name, t.advisor?.id || "", (t.supporters || []).map((s) => s.id).join(", "), "", "", ""]); return; }
+      members.forEach((m, i) => data.push([
+        i === 0 ? (t.pitchingOrder || "") : "", i === 0 ? t.name : "",
+        i === 0 ? (t.advisor?.id || "") : "", i === 0 ? (t.supporters || []).map((s) => s.id).join(", ") : "",
+        m.name, statusText[m.pitchingConfirm] || "Chưa xác nhận", m.pitchingConfirm === "no" ? (m.pitchingReason || "") : "",
+      ]));
+    });
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb, ws, "Xác nhận Pitching Day");
+  XLSX.writeFile(wb, `enactus_pitching_day_${new Date().toISOString().split("T")[0]}.xlsx`);
+});
+
 /* ---- CONFIRM: lưu vào teamwork_teams (để tương thích toàn bộ phần còn lại của trang) ---- */
 document.getElementById("tm-confirm-btn").addEventListener("click", async () => {
   const activeTab = document.querySelector("[data-tm-tab].active").dataset.tmTab;
@@ -1365,11 +1549,17 @@ document.addEventListener("dragleave", (e) => { const slot = e.target.closest(".
 function renderDocsTab() {
   const list = document.getElementById("docs-list");
   const manage = isSuperOrAdmin();
-  list.innerHTML = (settings.documents || []).length ? settings.documents.map((d, i) => `
+  list.innerHTML = (settings.documents || []).length ? settings.documents.map((d, i) => {
+    const tagBase = "margin-left:8px;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;";
+    const scopeLabel = (!d.teamIds || !d.teamIds.length)
+      ? `<span style="${tagBase}color:var(--ink-60);background:var(--ink-10);">Tất cả team</span>`
+      : `<span style="${tagBase}background:var(--info-bg);color:var(--info);">${d.teamIds.map((id) => (teams.find((t) => t.id === id) || {}).name || id).join(", ")}</span>`;
+    return `
     <div class="doc-item">
-      <div><a href="${d.url}" target="_blank" rel="noopener"><i class="fas fa-link"></i> ${d.title}</a>${d.note ? `<div style="font-size:11.5px;color:var(--ink-60);margin-top:2px;">${d.note}</div>` : ""}</div>
-      ${manage ? `<button class="btn sm danger" onclick="removeDoc(${i})"><i class="fas fa-trash"></i></button>` : ""}
-    </div>`).join("") : `<div class="empty-state" style="padding:20px;"><i class="fas fa-file"></i>Chưa có tài liệu chung nào.</div>`;
+      <div><a href="${d.url}" target="_blank" rel="noopener"><i class="fas fa-link"></i> ${d.title}</a>${scopeLabel}${d.note ? `<div style="font-size:11.5px;color:var(--ink-60);margin-top:2px;">${d.note}</div>` : ""}</div>
+      ${manage ? `<div style="display:flex;gap:6px;flex-shrink:0;"><button class="btn sm" onclick="openDocModal(${i})" title="Sửa tài liệu"><i class="fas fa-pen"></i></button><button class="btn sm danger" onclick="removeDoc(${i})"><i class="fas fa-trash"></i></button></div>` : ""}
+    </div>`;
+  }).join("") : `<div class="empty-state" style="padding:20px;"><i class="fas fa-file"></i>Chưa có tài liệu nào.</div>`;
   document.querySelector('[onclick="openDocModal()"]')?.style && (document.querySelector('.card .btn.sm.primary').style.display = manage ? "inline-flex" : "none");
 
   const dl = document.getElementById("deadline-info");
@@ -1386,21 +1576,124 @@ function renderDocsTab() {
   document.getElementById("submission-open-label").textContent = settings.submissionOpen === false ? "Đang đóng nộp bài" : "Cho phép nộp bài";
   document.getElementById("reset-submissions-btn").style.display = isSuperOrAdmin() ? "inline-flex" : "none";
 
+  renderAssignmentsList();
+  renderSubAssignmentFilter();
+  renderSubmissionsList();
+}
+
+const ASSIGNMENT_TYPE_LABEL = { link: "Link", text: "Văn bản", file: "File (folder riêng theo team)" };
+const ASSIGNMENT_TYPE_ICON = { link: "fa-link", text: "fa-align-left", file: "fa-file-arrow-up" };
+
+function renderAssignmentsList() {
+  const el = document.getElementById("assignments-list");
+  const manage = isSuperOrAdmin();
+  const list = settings.assignments || [];
+  el.innerHTML = list.length ? list.map((a, i) => `
+    <div class="doc-item">
+      <div>
+        <b><i class="fas ${ASSIGNMENT_TYPE_ICON[a.type] || "fa-file"}"></i> ${a.title}</b>
+        <span style="margin-left:8px;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;color:var(--ink-60);background:var(--ink-10);">${ASSIGNMENT_TYPE_LABEL[a.type] || a.type}</span>
+        ${a.submitterScope === "everyone" ? `<span style="margin-left:6px;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;color:var(--error);background:var(--error-bg);"><i class="fas fa-user-group"></i> Bắt buộc mọi người tự nộp</span>` : a.submitterScope === "all_members" ? `<span style="margin-left:6px;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;color:var(--info);background:var(--info-bg);"><i class="fas fa-users"></i> Cả team được nộp</span>` : `<span style="margin-left:6px;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;color:var(--ink-60);background:var(--ink-10);"><i class="fas fa-user-tie"></i> Chỉ trưởng/phó nhóm</span>`}
+        ${a.deadline ? `<span style="margin-left:6px;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;color:var(--warn);background:var(--warn-bg);"><i class="fas fa-clock"></i> Hạn riêng: ${new Date(a.deadline).toLocaleString("vi-VN")}</span>` : ""}
+        ${a.note ? `<div style="font-size:11.5px;color:var(--ink-60);margin-top:2px;">${a.note}</div>` : ""}
+      </div>
+      ${manage ? `<div style="display:flex;gap:6px;flex-shrink:0;"><button class="btn sm" onclick="openAssignmentModal(${i})" title="Sửa đầu mục"><i class="fas fa-pen"></i></button><button class="btn sm danger" onclick="removeAssignment(${i})"><i class="fas fa-trash"></i></button></div>` : ""}
+    </div>`).join("") : `<div class="empty-state" style="padding:20px;"><i class="fas fa-inbox"></i>Chưa có đầu mục nộp bài nào — thêm ít nhất 1 đầu mục để các team bắt đầu nộp bài.</div>`;
+  document.querySelector('[onclick="openAssignmentModal()"]').style.display = manage ? "inline-flex" : "none";
+}
+
+
+function renderSubAssignmentFilter() {
+  const sel = document.getElementById("sub-assignment-filter");
+  const list = settings.assignments || [];
+  if (!list.length) { sel.innerHTML = `<option value="">Chưa có đầu mục</option>`; currentSubAssignmentId = null; return; }
+  if (!currentSubAssignmentId || !list.some((a) => a.id === currentSubAssignmentId)) currentSubAssignmentId = list[0].id;
+  sel.innerHTML = list.map((a) => `<option value="${a.id}" ${a.id === currentSubAssignmentId ? "selected" : ""}>${a.title}</option>`).join("");
+}
+document.getElementById("sub-assignment-filter").addEventListener("change", (e) => {
+  currentSubAssignmentId = e.target.value;
+  renderSubmissionsList();
+});
+
+function renderSubmissionsList() {
   const subList = document.getElementById("submissions-list");
+  const list = settings.assignments || [];
+  if (!list.length) { subList.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i>Hãy thêm đầu mục nộp bài trước đã.</div>`; return; }
+  const assignment = list.find((a) => a.id === currentSubAssignmentId) || list[0];
   const submissionOpen = settings.submissionOpen !== false;
-  subList.innerHTML = teams.length ? teams.map((t) => {
-    const s = submissions[t.id];
-    const canSub = canSubmitFor(t) && submissionOpen;
+  const everyone = isEveryoneScope(assignment);
+  const pastDl = isAssignmentPastDeadline(assignment);
+
+  if (everyone) {
+    // Mỗi thành viên trong mỗi team phải tự nộp riêng — tính đủ theo số người đã nộp / tổng thành viên
+    let totalMembers = 0, totalSubmitted = 0;
+    teams.forEach((t) => { (t.members || []).forEach((m) => { totalMembers++; if (getMemberSubmission(t.id, assignment.id, m.email)) totalSubmitted++; }); });
+    const badge = document.getElementById("sub-progress-badge");
+    if (badge) badge.textContent = totalMembers ? `${totalSubmitted}/${totalMembers} người đã nộp` : "";
+
+    subList.innerHTML = teams.length ? teams.map((t) => {
+      const members = t.members || [];
+      const doneCount = members.filter((m) => getMemberSubmission(t.id, assignment.id, m.email)).length;
+      const teamDone = members.length > 0 && doneCount === members.length;
+      return `
+      <div class="sub-item" style="flex-direction:column;align-items:stretch;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <b>${t.name}</b>
+          <span class="badge ${teamDone ? "badge-success" : "badge-warn"}">${doneCount}/${members.length} thành viên đã nộp</span>
+        </div>
+        ${members.length ? members.map((m) => {
+          const s = getMemberSubmission(t.id, assignment.id, m.email);
+          const canSub = (canManageTeam(t) || m.email === userEmail) && submissionOpen;
+          const canReset = isSuperOrAdmin() && s;
+          const hasHistory = s && s.history && s.history.length;
+          const late = s && pastDl && getEffectiveDeadline(assignment) && new Date(s.submittedAt) > new Date(getEffectiveDeadline(assignment));
+          return `
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);">
+            <div>
+              <b style="font-size:12.5px;">${m.name}</b> ${s ? `<span class="badge badge-success">Đã nộp${late ? " (trễ hạn)" : ""}</span>` : `<span class="badge badge-warn">Chưa nộp</span>`}
+              ${s ? `<div style="font-size:11.5px;color:var(--ink-60);margin-top:3px;">${s.type === "link" ? `<a href="${s.content}" target="_blank" rel="noopener">${s.content}</a>` : s.content}${s.note ? " • " + s.note : ""}<br>Nộp lúc ${new Date(s.submittedAt).toLocaleString("vi-VN")} bởi ${displayNameOf(s)}</div>` : ""}
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0;">
+              ${s ? `<button class="btn sm" onclick="previewSubmission('${t.id}','${assignment.id}','${m.email}')" title="Xem trước"><i class="fas fa-eye"></i></button>` : ""}
+              ${hasHistory ? `<button class="btn sm" onclick="viewSubmissionHistory('${t.id}','${assignment.id}','${m.email}')" title="Lịch sử"><i class="fas fa-clock-rotate-left"></i></button>` : ""}
+              ${canSub ? `<button class="btn sm primary" onclick="openSubmitModal('${t.id}','${assignment.id}','${m.email}')"><i class="fas fa-upload"></i> ${s ? "Nộp lại" : "Nộp bài"}</button>` : ""}
+              ${canReset ? `<button class="btn sm danger" onclick="resetSubmission('${t.id}','${assignment.id}', '${m.name.replace(/'/g, "\\'")}', '${m.email}')" title="Xoá bài nộp"><i class="fas fa-trash"></i></button>` : ""}
+            </div>
+          </div>`;
+        }).join("") : `<div class="empty-state" style="padding:10px;font-size:11.5px;">Team chưa có thành viên.</div>`}
+      </div>`;
+    }).join("") : `<div class="empty-state"><i class="fas fa-inbox"></i>Chưa có team nào.</div>`;
+    return;
+  }
+
+  const submittedCount = teams.filter((t) => !!getSubmission(t.id, assignment.id)).length;
+  const badge = document.getElementById("sub-progress-badge");
+  if (badge) badge.textContent = teams.length ? `${submittedCount}/${teams.length} team đã nộp` : "";
+
+  const sortedTeams = [...teams].sort((a, b) => {
+    const aDone = getSubmission(a.id, assignment.id) ? 1 : 0;
+    const bDone = getSubmission(b.id, assignment.id) ? 1 : 0;
+    if (aDone !== bDone) return aDone - bDone; // chưa nộp lên đầu
+    return (a.name || "").localeCompare(b.name || "");
+  });
+
+  subList.innerHTML = teams.length ? sortedTeams.map((t) => {
+    const s = getSubmission(t.id, assignment.id);
+    const canSub = canSubmitForAssignment(t, assignment) && submissionOpen;
     const canReset = isSuperOrAdmin() && s;
+    const hasHistory = s && s.history && s.history.length;
     return `
     <div class="sub-item">
       <div>
-        <b>${t.name}</b> ${statusBadge(submissionStatus(t.id))}
-        ${s ? `<div style="font-size:12px;color:var(--ink-60);margin-top:4px;">${s.type === "link" ? `<a href="${s.content}" target="_blank" rel="noopener">${s.content}</a>` : s.content}${s.note ? " • " + s.note : ""}<br>Nộp lúc ${new Date(s.submittedAt).toLocaleString("vi-VN")} bởi ${s.submittedBy || ""}</div>` : `<div style="font-size:12px;color:var(--ink-30);margin-top:4px;">Chưa nộp bài</div>`}
+        <b>${t.name}</b> ${statusBadge(submissionStatus(t.id, assignment.id))}
+        ${s ? `<div style="font-size:12px;color:var(--ink-60);margin-top:4px;">${s.type === "link" ? `<a href="${s.content}" target="_blank" rel="noopener">${s.content}</a>` : s.content}${s.note ? " • " + s.note : ""}<br>Nộp lúc ${new Date(s.submittedAt).toLocaleString("vi-VN")} bởi ${displayNameOf(s)}</div>` : `<div style="font-size:12px;color:var(--ink-30);margin-top:4px;">Chưa nộp bài</div>`}
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0;">
-        ${canSub ? `<button class="btn sm primary" onclick="openSubmitModal('${t.id}')"><i class="fas fa-upload"></i> ${s ? "Nộp lại" : "Nộp bài"}</button>` : ""}
-        ${canReset ? `<button class="btn sm danger" onclick="resetSubmission('${t.id}', '${t.name.replace(/'/g, "\\'")}')" title="Xoá bài nộp của team này"><i class="fas fa-trash"></i></button>` : ""}
+        ${s ? `<button class="btn sm" onclick="previewSubmission('${t.id}','${assignment.id}')" title="Xem trước bài nộp"><i class="fas fa-eye"></i></button>` : ""}
+        ${s && (s.type === "link" || s.type === "file") ? `<button class="btn sm" onclick="copySubmissionLink('${t.id}','${assignment.id}')" title="Sao chép link"><i class="fas fa-copy"></i></button>` : ""}
+        ${hasHistory ? `<button class="btn sm" onclick="viewSubmissionHistory('${t.id}','${assignment.id}')" title="Xem lịch sử nộp/chỉnh sửa"><i class="fas fa-clock-rotate-left"></i></button>` : ""}
+        ${canSub ? `<button class="btn sm primary" onclick="openSubmitModal('${t.id}','${assignment.id}')"><i class="fas fa-upload"></i> ${s ? "Nộp lại" : "Nộp bài"}</button>` : ""}
+        ${canReset ? `<button class="btn sm danger" onclick="resetSubmission('${t.id}','${assignment.id}', '${t.name.replace(/'/g, "\\'")}')" title="Xoá bài nộp của team này"><i class="fas fa-trash"></i></button>` : ""}
       </div>
     </div>`;
   }).join("") : `<div class="empty-state"><i class="fas fa-inbox"></i>Chưa có team nào.</div>`;
@@ -1419,13 +1712,82 @@ document.getElementById("submission-open-toggle").addEventListener("change", asy
   }
 });
 
-window.resetSubmission = async (teamId, teamName) => {
-  const ok = await confirmDialog(`Xoá bài nộp của team "${teamName}"? Team sẽ cần nộp lại từ đầu.`, { title: "Xoá bài nộp?", confirmText: "Xoá" });
+window.previewSubmission = (teamId, assignmentId, memberEmail) => {
+  const t = teams.find((x) => x.id === teamId);
+  const a = (settings.assignments || []).find((x) => x.id === assignmentId);
+  const s = memberEmail ? getMemberSubmission(teamId, assignmentId, memberEmail) : getSubmission(teamId, assignmentId);
+  if (!s) return;
+  const memberLabel = memberEmail ? (t && (t.members || []).find((m) => m.email === memberEmail) || {}).name : null;
+  document.getElementById("preview-title").textContent = `Xem trước bài nộp — ${t ? t.name : teamId}${memberLabel ? " — " + memberLabel : ""}${a ? " — " + a.title : ""}`;
+  const openLink = document.getElementById("preview-open-link");
+  const body = document.getElementById("preview-body");
+
+  if (s.type === "text") {
+    openLink.style.display = "none";
+    body.innerHTML = `<div style="white-space:pre-wrap;font-size:13px;line-height:1.6;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;background:var(--bg);">${(s.content || "").replace(/</g, "&lt;")}</div>${s.note ? `<p style="margin-top:8px;font-size:12.5px;color:var(--ink-60);"><b>Ghi chú:</b> ${s.note}</p>` : ""}`;
+    openModal("preview-modal");
+    return;
+  }
+
+  const url = s.content || "";
+  openLink.style.display = "inline-flex";
+  openLink.href = url;
+
+  let embedUrl = url;
+  const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+  const docsMatch = url.match(/docs\.google\.com\/(document|spreadsheets|presentation)\/d\/([^/]+)/);
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+  if (driveMatch) embedUrl = `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+  else if (docsMatch) embedUrl = `https://docs.google.com/${docsMatch[1]}/d/${docsMatch[2]}/preview`;
+  else if (ytMatch) embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
+
+  if (!/^https?:\/\//i.test(url)) {
+    body.innerHTML = `<div class="check-item warn"><i class="fas fa-triangle-exclamation"></i> Nội dung không phải link hợp lệ, không xem trước được: "${url}"</div>`;
+  } else {
+    body.innerHTML = `<iframe src="${embedUrl}" style="width:100%;height:60vh;border:1px solid var(--border);border-radius:var(--radius-sm);" allow="autoplay"></iframe>${s.note ? `<p style="margin-top:8px;font-size:12.5px;color:var(--ink-60);"><b>Ghi chú:</b> ${s.note}</p>` : ""}`;
+  }
+  openModal("preview-modal");
+};
+
+window.copySubmissionLink = (teamId, assignmentId) => {
+  const s = getSubmission(teamId, assignmentId);
+  if (!s) return;
+  navigator.clipboard.writeText(s.content || "").then(
+    () => notifySuccess("Đã sao chép link"),
+    () => notifyError("Không sao chép được, hãy copy thủ công")
+  );
+};
+
+window.viewSubmissionHistory = (teamId, assignmentId, memberEmail) => {
+  const t = teams.find((x) => x.id === teamId);
+  const a = (settings.assignments || []).find((x) => x.id === assignmentId);
+  const s = memberEmail ? getMemberSubmission(teamId, assignmentId, memberEmail) : getSubmission(teamId, assignmentId);
+  if (!s) return;
+  const memberLabel = memberEmail ? (t && (t.members || []).find((m) => m.email === memberEmail) || {}).name : null;
+  document.getElementById("sub-history-title").textContent = `Lịch sử nộp bài — ${t ? t.name : teamId}${memberLabel ? " — " + memberLabel : ""}${a ? " — " + a.title : ""}`;
+  const entries = [...(s.history || []), { content: s.content, type: s.type, note: s.note, submittedAt: s.submittedAt, submittedBy: s.submittedBy, submittedByName: s.submittedByName, fileName: s.fileName }]
+    .sort((x, y) => new Date(y.submittedAt) - new Date(x.submittedAt));
+  const body = document.getElementById("sub-history-body");
+  body.innerHTML = entries.map((e, i) => `
+    <div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px;background:${i === 0 ? "var(--success-bg)" : "var(--bg)"};">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+        <b style="font-size:12.5px;">${i === 0 ? "Bản hiện tại" : "Bản trước #" + (entries.length - i)}</b>
+        <span style="font-size:11.5px;color:var(--ink-60);">${new Date(e.submittedAt).toLocaleString("vi-VN")} • ${displayNameOf(e)}</span>
+      </div>
+      <div style="font-size:12.5px;margin-top:6px;word-break:break-word;">${e.type === "link" ? `<a href="${e.content}" target="_blank" rel="noopener">${e.content}</a>` : (e.content || "")}</div>
+      ${e.note ? `<div style="font-size:12px;color:var(--ink-60);margin-top:4px;"><b>Ghi chú:</b> ${e.note}</div>` : ""}
+    </div>`).join("");
+  openModal("sub-history-modal");
+};
+
+window.resetSubmission = async (teamId, assignmentId, name, memberEmail) => {
+  const ok = await confirmDialog(`Xoá bài nộp của "${name}"? Sẽ cần nộp lại từ đầu.`, { title: "Xoá bài nộp?", confirmText: "Xoá" });
   if (!ok) return;
   try {
-    await db.collection(SUBMISSIONS_COL).doc(teamId).delete();
-    await logAudit("delete_submission", `Xoá bài nộp của team "${teamName}" (${teamId})`);
-    notifySuccess(`Đã xoá bài nộp của ${teamName}`);
+    const key = memberEmail ? subKeyMember(teamId, assignmentId, memberEmail) : subKey(teamId, assignmentId);
+    await db.collection(SUBMISSIONS_COL).doc(key).delete();
+    await logAudit("delete_submission", `Xoá bài nộp của "${name}" (${teamId}) — đầu mục "${assignmentId}"`);
+    notifySuccess(`Đã xoá bài nộp của ${name}`);
     await loadAll(); renderDocsTab(); renderTeamsGrid();
   } catch (e) { notifyError("Lỗi: " + e.message); }
 };
@@ -1433,7 +1795,7 @@ window.resetSubmission = async (teamId, teamName) => {
 document.getElementById("reset-submissions-btn").addEventListener("click", async () => {
   const { value: typed } = await Swal.fire({
     title: "Xoá toàn bộ bài nộp?",
-    html: `<div style="text-align:left"><p>Sẽ xoá bài nộp của <b>tất cả team</b> (${Object.keys(submissions).length} bài đã nộp). Team và các dữ liệu khác giữ nguyên.</p><p>Gõ <b>XOA</b> để xác nhận:</p></div>`,
+    html: `<div style="text-align:left"><p>Sẽ xoá bài nộp của <b>tất cả team, tất cả đầu mục</b> (${Object.keys(submissions).length} bài đã nộp). Team và các dữ liệu khác giữ nguyên.</p><p>Gõ <b>XOA</b> để xác nhận:</p></div>`,
     icon: "warning", input: "text", inputPlaceholder: "XOA",
     showCancelButton: true, confirmButtonText: "Xoá hết", cancelButtonText: "Huỷ",
     confirmButtonColor: "#c0392b", cancelButtonColor: "#6b7280", reverseButtons: true, focusCancel: true,
@@ -1459,26 +1821,91 @@ document.getElementById("reset-submissions-btn").addEventListener("click", async
   }
 });
 
-function openDocModal() {
-  document.getElementById("doc-title").value = "";
-  document.getElementById("doc-url").value = "";
-  document.getElementById("doc-note").value = "";
+function openDocModal(idx) {
+  editingDocIndex = typeof idx === "number" ? idx : null;
+  const d = editingDocIndex !== null ? (settings.documents || [])[editingDocIndex] : null;
+  document.getElementById("doc-modal-title").textContent = d ? "Sửa tài liệu" : "Thêm tài liệu";
+  document.getElementById("doc-save-btn-label").textContent = d ? "Lưu" : "Thêm";
+  document.getElementById("doc-title").value = d ? d.title : "";
+  document.getElementById("doc-url").value = d ? d.url : "";
+  document.getElementById("doc-note").value = d ? d.note || "" : "";
+  const checksEl = document.getElementById("doc-team-checks");
+  checksEl.innerHTML = teams.length ? teams.map((t) => `
+    <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;cursor:pointer;">
+      <input type="checkbox" class="doc-team-check" value="${t.id}" ${d && d.teamIds && d.teamIds.includes(t.id) ? "checked" : ""} /> ${t.name}
+    </label>`).join("") : `<div style="font-size:12px;color:var(--ink-60);">Chưa có team nào.</div>`;
   openModal("doc-modal");
 }
+window.openDocModal = openDocModal;
 document.getElementById("doc-save-btn").addEventListener("click", async () => {
   const title = document.getElementById("doc-title").value.trim();
   const url = document.getElementById("doc-url").value.trim();
   if (!title || !url) return notifyError("Vui lòng nhập đủ tên và link");
-  const docs = [...(settings.documents || []), { title, url, note: document.getElementById("doc-note").value.trim() }];
+  const teamIds = Array.from(document.querySelectorAll(".doc-team-check:checked")).map((c) => c.value);
+  const docs = [...(settings.documents || [])];
+  const entry = { title, url, note: document.getElementById("doc-note").value.trim(), teamIds };
+  if (editingDocIndex !== null) { docs[editingDocIndex] = entry; } else { docs.push(entry); }
   await SETTINGS_DOC.set({ documents: docs }, { merge: true });
-  notifySuccess("Đã thêm tài liệu");
+  notifySuccess(editingDocIndex !== null ? "Đã cập nhật tài liệu" : "Đã thêm tài liệu");
   closeModal("doc-modal");
+  editingDocIndex = null;
   await loadAll(); renderDocsTab();
 });
 window.removeDoc = async (idx) => {
   const docs = [...(settings.documents || [])];
   docs.splice(idx, 1);
   await SETTINGS_DOC.set({ documents: docs }, { merge: true });
+  await loadAll(); renderDocsTab();
+};
+
+/* ---- Đầu mục nộp bài (assignments) ---- */
+function openAssignmentModal(idx) {
+  editingAssignmentIndex = typeof idx === "number" ? idx : null;
+  const a = editingAssignmentIndex !== null ? (settings.assignments || [])[editingAssignmentIndex] : null;
+  document.getElementById("asg-modal-title").textContent = a ? "Sửa đầu mục nộp bài" : "Thêm đầu mục nộp bài";
+  document.getElementById("asg-save-btn-label").textContent = a ? "Lưu" : "Thêm";
+  document.getElementById("asg-title").value = a ? a.title : "";
+  document.getElementById("asg-type").value = a ? a.type : "link";
+  document.getElementById("asg-note").value = a ? a.note || "" : "";
+  document.getElementById("asg-scope").value = a && (a.submitterScope === "all_members" || a.submitterScope === "everyone") ? a.submitterScope : "leaders";
+  document.getElementById("asg-deadline").value = a && a.deadline ? a.deadline.slice(0, 16) : "";
+  openModal("asg-modal");
+}
+document.getElementById("asg-save-btn").addEventListener("click", async () => {
+  const title = document.getElementById("asg-title").value.trim();
+  if (!title) return notifyError("Vui lòng nhập tên đầu mục");
+  const type = document.getElementById("asg-type").value;
+  const note = document.getElementById("asg-note").value.trim();
+  const submitterScope = document.getElementById("asg-scope").value;
+  const dlRaw = document.getElementById("asg-deadline").value;
+  const deadline = dlRaw ? new Date(dlRaw).toISOString() : null;
+  const list = [...(settings.assignments || [])];
+  if (editingAssignmentIndex !== null) {
+    const old = list[editingAssignmentIndex];
+    list[editingAssignmentIndex] = { ...old, title, type, note, submitterScope, deadline };
+    await SETTINGS_DOC.set({ assignments: list }, { merge: true });
+    await logAudit("edit_assignment", `Sửa đầu mục nộp bài "${old.title}" → "${title}"`);
+    notifySuccess("Đã cập nhật đầu mục nộp bài");
+  } else {
+    const id = "asg_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    list.push({ id, title, type, note, submitterScope, deadline });
+    await SETTINGS_DOC.set({ assignments: list }, { merge: true });
+    await logAudit("add_assignment", `Thêm đầu mục nộp bài "${title}" (${ASSIGNMENT_TYPE_LABEL[type] || type})`);
+    notifySuccess("Đã thêm đầu mục nộp bài");
+  }
+  closeModal("asg-modal");
+  editingAssignmentIndex = null;
+  await loadAll(); renderDocsTab();
+});
+window.removeAssignment = async (idx) => {
+  const list = [...(settings.assignments || [])];
+  const a = list[idx];
+  if (!a) return;
+  const ok = await confirmDialog(`Xoá đầu mục "${a.title}"? Các bài đã nộp cho đầu mục này sẽ không còn hiển thị.`, { title: "Xoá đầu mục?", confirmText: "Xoá" });
+  if (!ok) return;
+  list.splice(idx, 1);
+  await SETTINGS_DOC.set({ assignments: list }, { merge: true });
+  await logAudit("delete_assignment", `Xoá đầu mục nộp bài "${a.title}"`);
   await loadAll(); renderDocsTab();
 };
 
@@ -1514,60 +1941,148 @@ document.getElementById("dl-clear-btn").addEventListener("click", async () => {
 const GAS_UPLOAD_URL = "https://script.google.com/macros/s/AKfycbx-MlGw7bSxc4rq9n5_RMiYf0LoCaWtN-zrKY5F8rm8zj0xK6XY7PSD-wLDL4eirUMECg/exec";
 const UPLOAD_SECRET = "enactus-ftu-hanoi-tg19.0";
 
-async function uploadFileToDrive(file, teamName) {
-  const formData = new FormData();
-  formData.append("secret", UPLOAD_SECRET);
-  formData.append("teamName", teamName);
-  formData.append("file", file, file.name);
+// Apps Script dùng resumable-upload chunked: file được chia thành từng phần nhỏ (~8MB),
+// mỗi phần encode base64 riêng rồi gửi tuần tự -> tránh vượt giới hạn payload/thời gian
+// thực thi của Apps Script khi file lớn (video, v.v.), và không cần người nộp đăng nhập Google.
+const UPLOAD_CHUNK_SIZE = 8 * 1024 * 1024; // 8MB mỗi phần (trước khi base64)
 
-  const res = await fetch(GAS_UPLOAD_URL, { method: "POST", body: formData });
-  const data = await res.json();
-  if (!data.success) throw new Error(data.error || "Upload thất bại");
-  return data; // { fileId, fileName, fileUrl, downloadUrl, size }
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result || "";
+      resolve(result.includes(",") ? result.split(",")[1] : result);
+    };
+    reader.onerror = () => reject(new Error("Không đọc được phần file (FileReader lỗi)."));
+    reader.readAsDataURL(blob);
+  });
 }
 
+async function uploadFileToDrive(file, teamName, onProgress, fileNameOverride) {
+  if (onProgress) onProgress("Đang khởi tạo phiên upload...");
+
+  const initRes = await fetch(GAS_UPLOAD_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "init",
+      secret: UPLOAD_SECRET,
+      teamName,
+      fileName: fileNameOverride || file.name,
+      mimeType: file.type || "application/octet-stream",
+      fileSize: file.size,
+    }),
+  });
+  const initData = await initRes.json();
+  if (!initData.success) throw new Error(initData.error || "Không khởi tạo được phiên upload.");
+  const uploadUrl = initData.uploadUrl;
+
+  let offset = 0;
+  let finalData = null;
+  while (offset < file.size) {
+    const end = Math.min(offset + UPLOAD_CHUNK_SIZE, file.size);
+    const chunkBase64 = await blobToBase64(file.slice(offset, end));
+
+    const res = await fetch(GAS_UPLOAD_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "chunk",
+        secret: UPLOAD_SECRET,
+        uploadUrl,
+        chunkData: chunkBase64,
+        start: offset,
+        end: end - 1,
+        total: file.size,
+      }),
+    });
+    const rawText = await res.text();
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch (e) {
+      throw new Error("Server trả về dữ liệu không hợp lệ khi gửi phần file. Vui lòng thử lại.");
+    }
+    if (!data.success) throw new Error(data.error || "Upload thất bại khi gửi phần file.");
+
+    offset = end;
+    if (onProgress) onProgress(`Đang tải lên... ${Math.round((offset / file.size) * 100)}%`);
+    if (data.done) finalData = data;
+  }
+
+  if (!finalData) throw new Error("Upload không hoàn tất (thiếu phản hồi cuối cùng từ Drive).");
+  return finalData; // { fileId, fileName, fileUrl, downloadUrl, size }
+}
+
+
 let submittingTeamId = null;
-window.openSubmitModal = (teamId) => {
+let submittingAssignmentId = null;
+let submittingMemberEmail = null;
+window.openSubmitModal = (teamId, assignmentId, memberEmail) => {
   submittingTeamId = teamId;
-  const s = submissions[teamId];
-  document.getElementById("sub-type").value = s?.type || "link";
+  submittingAssignmentId = assignmentId;
+  submittingMemberEmail = memberEmail || null;
+  const a = (settings.assignments || []).find((x) => x.id === assignmentId);
+  const t = teams.find((x) => x.id === teamId);
+  const s = submittingMemberEmail ? getMemberSubmission(teamId, assignmentId, submittingMemberEmail) : getSubmission(teamId, assignmentId);
+  const memberLabel = submittingMemberEmail ? (t && (t.members || []).find((m) => m.email === submittingMemberEmail) || {}).name : null;
+  document.getElementById("submit-modal-title").textContent = `Nộp bài — ${t ? t.name : teamId}${memberLabel ? " — " + memberLabel : ""}${a ? " — " + a.title : ""}`;
+  document.getElementById("submit-modal-note").textContent = a && a.note ? "Yêu cầu: " + a.note : "";
   document.getElementById("sub-content").value = s?.content || "";
   document.getElementById("sub-note").value = s?.note || "";
   document.getElementById("sub-file-input").value = "";
   document.getElementById("sub-file-status").textContent = "";
-  toggleSubmitTypeUI();
+  const type = a ? a.type : "link";
+  document.getElementById("sub-content-label").textContent = type === "text" ? "Nội dung" : "Đường link";
+  document.getElementById("sub-content").placeholder = type === "text" ? "Nhập nội dung..." : "Dán link (Drive/Youtube/Figma...)";
+  document.getElementById("sub-content-wrap").style.display = type === "file" ? "none" : "";
+  document.getElementById("sub-file-wrap").style.display = type === "file" ? "" : "none";
   openModal("submit-modal");
 };
 
-function toggleSubmitTypeUI() {
-  const type = document.getElementById("sub-type").value;
-  document.getElementById("sub-content-wrap").style.display = type === "file" ? "none" : "";
-  document.getElementById("sub-file-wrap").style.display = type === "file" ? "" : "none";
-}
-document.getElementById("sub-type").addEventListener("change", toggleSubmitTypeUI);
-
 document.getElementById("sub-save-btn").addEventListener("click", async () => {
-  const type = document.getElementById("sub-type").value;
+  const assignment = (settings.assignments || []).find((x) => x.id === submittingAssignmentId);
+  if (!assignment) return notifyError("Không tìm thấy đầu mục nộp bài này (có thể đã bị xoá).");
+  const type = assignment.type;
   const note = document.getElementById("sub-note").value.trim();
   const saveBtn = document.getElementById("sub-save-btn");
   const team = teams.find((t) => t.id === submittingTeamId);
   const teamName = team ? team.name : "khong-ro-team";
+  const isMemberSub = !!submittingMemberEmail;
+  const key = isMemberSub ? subKeyMember(submittingTeamId, submittingAssignmentId, submittingMemberEmail) : subKey(submittingTeamId, submittingAssignmentId);
+  const memberInfo = isMemberSub ? (team && (team.members || []).find((m) => m.email === submittingMemberEmail)) : null;
+  const submittedByEmail = isMemberSub ? submittingMemberEmail : userEmail;
+  const submittedByName = isMemberSub ? (memberInfo ? memberInfo.name : submittingMemberEmail) : nameByEmail(userEmail);
 
   if (type === "file") {
     const fileInput = document.getElementById("sub-file-input");
     const file = fileInput.files[0];
     if (!file) return notifyError("Vui lòng chọn file để nộp");
 
+    if (file.size > 30 * 1024 * 1024) {
+      const ok = await confirmDialog(
+        `File "${file.name}" nặng ${(file.size / 1024 / 1024).toFixed(1)}MB. Do file được encode base64 để gửi qua Apps Script, file lớn (thường trên ~30MB) rất dễ upload thất bại vì vượt giới hạn payload của Apps Script Web App, dù giao diện cho phép chọn tới 200MB. Vẫn muốn thử?`,
+        { title: "File khá lớn", confirmText: "Vẫn thử upload" }
+      );
+      if (!ok) return;
+    }
+
     saveBtn.disabled = true;
     document.getElementById("sub-file-status").textContent = "Đang tải file lên...";
     try {
-      const uploaded = await uploadFileToDrive(file, teamName);
-      await db.collection(SUBMISSIONS_COL).doc(submittingTeamId).set({
+      const fileNameOverride = `${assignment.title} - ${isMemberSub ? submittedByName + " - " : ""}${file.name}`;
+      const uploaded = await uploadFileToDrive(file, teamName, (msg) => {
+        document.getElementById("sub-file-status").textContent = msg;
+      }, fileNameOverride);
+      const prev = isMemberSub ? getMemberSubmission(submittingTeamId, submittingAssignmentId, submittingMemberEmail) : getSubmission(submittingTeamId, submittingAssignmentId);
+      const history = prev ? [...(prev.history || []), { content: prev.content, type: prev.type, note: prev.note, submittedAt: prev.submittedAt, submittedBy: prev.submittedBy, submittedByName: prev.submittedByName, fileName: prev.fileName }] : [];
+      await db.collection(SUBMISSIONS_COL).doc(key).set({
+        teamId: submittingTeamId, assignmentId: submittingAssignmentId,
+        ...(isMemberSub ? { memberEmail: submittedByEmail, memberName: submittedByName } : {}),
         type: "file",
         content: uploaded.fileUrl,
         fileName: uploaded.fileName,
         downloadUrl: uploaded.downloadUrl,
-        note, submittedAt: new Date().toISOString(), submittedBy: userEmail,
+        note, submittedAt: new Date().toISOString(), submittedBy: submittedByEmail, submittedByName,
+        history,
       });
       notifySuccess("Nộp bài (file) thành công!");
       closeModal("submit-modal");
@@ -1583,9 +2098,14 @@ document.getElementById("sub-save-btn").addEventListener("click", async () => {
 
   const content = document.getElementById("sub-content").value.trim();
   if (!content) return notifyError("Vui lòng nhập nội dung nộp bài");
-  await db.collection(SUBMISSIONS_COL).doc(submittingTeamId).set({
+  const prevSub = isMemberSub ? getMemberSubmission(submittingTeamId, submittingAssignmentId, submittingMemberEmail) : getSubmission(submittingTeamId, submittingAssignmentId);
+  const historyLink = prevSub ? [...(prevSub.history || []), { content: prevSub.content, type: prevSub.type, note: prevSub.note, submittedAt: prevSub.submittedAt, submittedBy: prevSub.submittedBy, submittedByName: prevSub.submittedByName }] : [];
+  await db.collection(SUBMISSIONS_COL).doc(key).set({
+    teamId: submittingTeamId, assignmentId: submittingAssignmentId,
+    ...(isMemberSub ? { memberEmail: submittedByEmail, memberName: submittedByName } : {}),
     type, content, note,
-    submittedAt: new Date().toISOString(), submittedBy: userEmail,
+    submittedAt: new Date().toISOString(), submittedBy: submittedByEmail, submittedByName,
+    history: historyLink,
   });
   notifySuccess("Nộp bài thành công!");
   closeModal("submit-modal");
@@ -1668,9 +2188,25 @@ function renderPitchingTab() {
       <td style="font-size:12px;color:var(--ink-60);">${t.advisor ? t.advisor.id : "—"}${(t.supporters || []).length ? " • " + t.supporters.map((s) => s.id).join(", ") : ""}</td>
       <td><span class="badge ${yes === members.length && members.length > 0 ? "badge-success" : "badge-warn"}">${yes}/${members.length}</span></td>
       <td>${detailHtml}</td>
+      <td>
+        ${settings.pitchingConfirmOpen === false ? `
+          <label style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--ink-60);cursor:${isSuperOrAdmin() ? "pointer" : "default"};">
+            <span class="toggle-switch" style="width:32px;height:18px;"><input type="checkbox" ${t.pitchingConfirmOverride ? "checked" : ""} ${isSuperOrAdmin() ? "" : "disabled"} onchange="toggleTeamPitchingOverride('${t.id}', '${t.name.replace(/'/g, "\\'")}', this.checked)" /><span class="toggle-slider" style="border-radius:18px;"></span></span>
+            ${t.pitchingConfirmOverride ? "Đang mở riêng" : "Mở riêng team này"}
+          </label>` : `<span style="font-size:11.5px;color:var(--ink-30);">Đang mở chung, không cần</span>`}
+      </td>
     </tr>`;
   }).join("");
 }
+
+window.toggleTeamPitchingOverride = async (teamId, teamName, val) => {
+  try {
+    await db.collection(TEAMS_COL).doc(teamId).update({ pitchingConfirmOverride: val });
+    await logAudit(val ? "unlock_team_pitching" : "lock_team_pitching", `${val ? "Mở riêng" : "Đóng lại"} xác nhận Pitching Day cho team "${teamName}" (trong khi tổng thể đang đóng).`);
+    notifySuccess(val ? `Đã mở riêng xác nhận Pitching Day cho team ${teamName}` : `Đã đóng lại xác nhận riêng của team ${teamName}`);
+    await loadAll(); renderPitchingTab();
+  } catch (e) { notifyError("Lỗi: " + e.message); }
+};
 
 window.updatePitchingOrder = async (teamId, val) => {
   await db.collection(TEAMS_COL).doc(teamId).update({ pitchingOrder: parseInt(val, 10) || null });
@@ -1706,6 +2242,7 @@ document.getElementById("pitching-open-toggle").addEventListener("change", async
   const val = e.target.checked;
   try {
     await SETTINGS_DOC.set({ pitchingConfirmOpen: val }, { merge: true });
+    await logAudit(val ? "open_pitching" : "close_pitching", val ? "Mở xác nhận Pitching Day (toàn bộ)" : "Đóng xác nhận Pitching Day (toàn bộ)");
     notifySuccess(val ? "Đã mở xác nhận Pitching Day" : "Đã đóng xác nhận Pitching Day");
     await loadAll(); renderPitchingTab();
   } catch (err) {
@@ -1730,6 +2267,7 @@ document.getElementById("reset-pitching-btn").addEventListener("click", async ()
     });
     await batch.commit();
     Swal.close();
+    await logAudit("reset_pitching_confirm", `Reset xác nhận Pitching Day của ${totalConfirmed} thành viên.`);
     notifySuccess(`Đã reset xác nhận Pitching Day của ${totalConfirmed} thành viên.`);
     await loadAll(); renderPitchingTab(); renderTeamsGrid();
   } catch (e) {
@@ -1794,23 +2332,43 @@ function runSystemCheck() {
   });
 
   // ---- 3) Bài nộp (submissions) ----
-  Object.entries(submissions).forEach(([teamId, s]) => {
+  const assignments = settings.assignments || [];
+  const assignmentIds = new Set(assignments.map((a) => a.id));
+  Object.entries(submissions).forEach(([key, s]) => {
+    const [teamId, assignmentId] = key.split("__");
+    if (!assignmentId) return; // dữ liệu cũ trước khi có đầu mục, bỏ qua
     if (!teamIds.has(teamId)) add("warn", "submission", `Có bài nộp mồ côi (team "${teamId}" không còn tồn tại) — dữ liệu thừa, có thể xoá.`);
+    if (!assignmentIds.has(assignmentId)) add("warn", "submission", `Có bài nộp cho đầu mục đã bị xoá ("${assignmentId}") của team "${teamId}" — dữ liệu thừa, có thể xoá.`);
     if (s && !s.content) add("warn", "submission", `Bài nộp của team "${teamId}" thiếu nội dung (content rỗng).`);
     if (s && s.type === "link" && s.content && !/^https?:\/\//i.test(s.content)) {
       add("warn", "submission", `Bài nộp của team "${teamId}" có link không hợp lệ: "${s.content}".`);
     }
   });
-  if (!settings.submissionDeadline && Object.keys(submissions).length > 0) {
-    add("info", "submission", `Đã có ${Object.keys(submissions).length} bài nộp nhưng hiện <b>chưa đặt deadline</b> — sinh viên sẽ không thấy mục nộp bài trên trang cá nhân.`);
+  if (!assignments.length) {
+    add("info", "submission", `Chưa có đầu mục nộp bài nào được tạo — các team chưa có gì để nộp.`);
   }
-  if (settings.submissionDeadline && new Date(settings.submissionDeadline) < new Date() && settings.submissionOpen !== false) {
-    add("info", "submission", `Deadline nộp bài đã qua nhưng nộp bài vẫn đang <b>mở</b> — team vẫn nộp trễ được nếu bạn không chủ động đóng lại.`);
+  if (!settings.submissionDeadline && assignments.length > 0) {
+    add("info", "submission", `Đã có đầu mục nộp bài nhưng hiện <b>chưa đặt deadline</b> — sinh viên sẽ không thấy mục nộp bài trên trang cá nhân.`);
+  }
+  if (settings.submissionDeadline && assignments.length) {
+    const deadline = new Date(settings.submissionDeadline);
+    const now = new Date();
+    const hoursLeft = (deadline - now) / 3600000;
+    assignments.forEach((a) => {
+      const notSubmitted = teams.filter((t) => !getSubmission(t.id, a.id));
+      if (hoursLeft >= 0 && hoursLeft <= 24 && notSubmitted.length > 0) {
+        add("warn", "submission", `Còn <b>${hoursLeft < 1 ? Math.round(hoursLeft * 60) + " phút" : hoursLeft.toFixed(1) + " giờ"}</b> nữa tới hạn nộp bài, nhưng đầu mục "<b>${a.title}</b>" còn <b>${notSubmitted.length}/${teams.length}</b> team chưa nộp: ${notSubmitted.map((t) => t.name).join(", ")}.`);
+      }
+    });
+    if (hoursLeft < 0 && settings.submissionOpen !== false) {
+      add("info", "submission", `Deadline nộp bài đã qua nhưng nộp bài vẫn đang <b>mở</b> — team vẫn nộp trễ được nếu bạn không chủ động đóng lại.`);
+    }
   }
 
-  // ---- 4) Tài liệu chung ----
+  // ---- 4) Tài liệu ----
   (settings.documents || []).forEach((d, i) => {
     if (!d.url || !/^https?:\/\//i.test(d.url)) add("warn", "doc", `Tài liệu #${i + 1} "${d.title || "(không tên)"}" có link không hợp lệ: "${d.url || "(trống)"}".`);
+    (d.teamIds || []).forEach((tid) => { if (!teamIds.has(tid)) add("warn", "doc", `Tài liệu "${d.title || "(không tên)"}" gán cho team "${tid}" nhưng team này không còn tồn tại.`); });
   });
 
   // ---- 5) Pitching Day ----
@@ -1858,7 +2416,7 @@ function renderCheckResults(issues) {
     return;
   }
 
-  const groupLabels = { team: "Team & thành viên", candidate: "Ứng viên / hồ sơ", submission: "Bài nộp", doc: "Tài liệu chung", pitching: "Pitching Day", account: "Nhân sự CLB" };
+  const groupLabels = { team: "Team & thành viên", candidate: "Ứng viên / hồ sơ", submission: "Bài nộp", doc: "Tài liệu", pitching: "Pitching Day", account: "Nhân sự CLB" };
   const iconMap = { error: "fa-circle-xmark", warn: "fa-triangle-exclamation", info: "fa-circle-info" };
   const groups = {};
   issues.forEach((it) => { (groups[it.group] = groups[it.group] || []).push(it); });
@@ -1891,14 +2449,73 @@ document.getElementById("run-check-btn").addEventListener("click", async () => {
   }
 });
 
+const AUDIT_ACTION_LABELS = {
+  open_submission: { text: "Mở nộp bài", icon: "fa-unlock", cls: "ok" },
+  close_submission: { text: "Đóng nộp bài", icon: "fa-lock", cls: "warn" },
+  open_pitching: { text: "Mở xác nhận Pitching Day", icon: "fa-unlock", cls: "ok" },
+  close_pitching: { text: "Đóng xác nhận Pitching Day", icon: "fa-lock", cls: "warn" },
+  edit_deadline: { text: "Chỉnh deadline nộp bài", icon: "fa-pen", cls: "info" },
+  clear_deadline: { text: "Xoá deadline nộp bài", icon: "fa-eraser", cls: "warn" },
+  edit_pitching_info: { text: "Chỉnh thời gian/địa điểm Pitching Day", icon: "fa-pen", cls: "info" },
+  clear_pitching_info: { text: "Xoá thời gian/địa điểm Pitching Day", icon: "fa-eraser", cls: "warn" },
+  delete_submission: { text: "Xoá bài nộp 1 team", icon: "fa-trash", cls: "error" },
+  reset_all_submissions: { text: "Xoá toàn bộ bài nộp", icon: "fa-trash", cls: "error" },
+  reset_pitching_confirm: { text: "Reset xác nhận Pitching Day", icon: "fa-rotate-left", cls: "error" },
+  reset_all: { text: "Reset TOÀN BỘ dữ liệu Teamwork", icon: "fa-triangle-exclamation", cls: "error" },
+  lock_team_pitching: { text: "Khoá xác nhận Pitching Day riêng team", icon: "fa-lock", cls: "warn" },
+  unlock_team_pitching: { text: "Mở xác nhận Pitching Day riêng team", icon: "fa-unlock", cls: "ok" },
+  add_assignment: { text: "Thêm đầu mục nộp bài", icon: "fa-plus", cls: "ok" },
+  delete_assignment: { text: "Xoá đầu mục nộp bài", icon: "fa-trash", cls: "error" },
+};
+
+document.getElementById("load-audit-btn").addEventListener("click", async () => {
+  const btn = document.getElementById("load-audit-btn");
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
+  const listEl = document.getElementById("audit-log-list");
+  try {
+    const snap = await db.collection(AUDIT_COL).orderBy("at", "desc").limit(50).get();
+    if (snap.empty) {
+      listEl.innerHTML = `<div class="empty-state"><i class="fas fa-clock-rotate-left"></i>Chưa có nhật ký nào.</div>`;
+    } else {
+      listEl.innerHTML = snap.docs.map((d) => {
+        const l = d.data();
+        const meta = AUDIT_ACTION_LABELS[l.action] || { text: l.action, icon: "fa-circle-info", cls: "info" };
+        return `<div class="check-item ${meta.cls}">
+          <i class="fas ${meta.icon}"></i>
+          <span>
+            <b>${meta.text}</b> — ${l.detail || ""}
+            <br><span style="font-size:11.5px;opacity:.8;">${l.actorName || l.actorEmail || "?"} • ${l.at ? new Date(l.at).toLocaleString("vi-VN") : ""}</span>
+          </span>
+        </div>`;
+      }).join("");
+    }
+  } catch (e) {
+    listEl.innerHTML = `<div class="check-item error"><i class="fas fa-circle-xmark"></i> Lỗi khi tải nhật ký: ${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = original;
+  }
+});
+
 /* ============================= TAB SWITCHING (chính) ============================= */
+function activateTab(tabId) {
+  const tabEl = document.querySelector(`.tabs > .tab[data-tab="${tabId}"]`);
+  if (!tabEl) return;
+  document.querySelectorAll(".tabs > .tab").forEach((t) => t.classList.remove("active"));
+  document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
+  tabEl.classList.add("active");
+  document.getElementById(tabId + "-content").classList.add("active");
+}
 document.querySelectorAll(".tabs > .tab").forEach((tab) => {
   tab.addEventListener("click", () => {
     if (!tab.dataset.tab) return;
-    document.querySelectorAll(".tabs > .tab").forEach((t) => t.classList.remove("active"));
-    document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
-    tab.classList.add("active");
-    document.getElementById(tab.dataset.tab + "-content").classList.add("active");
+    activateTab(tab.dataset.tab);
+    // Lưu tab hiện tại vào URL để reload/F5 (VD: sau khi reset dữ liệu) không bị nhảy về tab đầu
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", tab.dataset.tab);
+    history.replaceState(null, "", url);
   });
 });
 </script>
