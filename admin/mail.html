@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mail Template | Enactus FTU Hanoi</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+:root {
+  --yellow: #F4D03F;
+  --yellow-light: #FFF9E6;
+  --yellow-mid: #F7C948;
+  --yellow-deep: #E8A400;
+  --bg: #F6F7FB;
+  --white: #FFFFFF;
+  --ink: #14161F;
+  --ink-60: #63667A;
+  --ink-30: #A8AABC;
+  --ink-10: #EEF0F5;
+  --border: #E6E8F0;
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 22px;
+  --shadow-sm: 0 2px 8px rgba(20, 22, 31, .05);
+  --shadow: 0 8px 24px rgba(20, 22, 31, .08);
+  --shadow-lg: 0 20px 48px rgba(20, 22, 31, .16);
+  --success: #10B981;
+  --success-bg: #E7F9F1;
+  --error: #EF4444;
+  --error-bg: #FDECEC;
+  --warn: #F59E0B;
+  --warn-bg: #FEF6E7;
+  --info: #4F7CFF;
+  --info-bg: #EEF2FF;
+  --t: .2s cubic-bezier(.4,0,.2,1);
+  --grad-accent: linear-gradient(135deg, var(--yellow-mid) 0%, var(--yellow-deep) 100%);
+  --grad-ink: linear-gradient(135deg, #23253A 0%, #14161F 100%);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background:
+    radial-gradient(1100px 480px at 100% -10%, rgba(244, 208, 63, .10), transparent 60%),
+    radial-gradient(900px 420px at -10% 0%, rgba(79, 124, 255, .06), transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ink-30); border-radius: 10px; }
+
+/* ══════════════ HEADER ══════════════ */
+.hdr {
+  background: rgba(255, 255, 255, .85);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 300;
+}
+.logo { font-size: 15px; font-weight: 800; letter-spacing: -.3px; display: flex; align-items: center; gap: 10px; color: var(--ink); }
+.logo-img { height: 30px; width: auto; display: block; filter: drop-shadow(0 2px 6px rgba(20,22,31,.12)); }
+.nav { display: flex; gap: 4px; background: var(--ink-10); padding: 4px; border-radius: 999px; }
+.nav a { padding: 7px 16px; border-radius: 999px; color: var(--ink-60); font-weight: 600; text-decoration: none; transition: var(--t); font-size: 13px; }
+.nav a:hover { color: var(--ink); }
+.nav a.active { background: var(--grad-ink); color: var(--white); font-weight: 700; box-shadow: 0 4px 12px rgba(20,22,31,.25); }
+
+.container { max-width: 1280px; width: 100%; margin: 0 auto; padding: 28px 24px 80px; }
+
+.page-title-row { margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.page-title { font-size: 26px; font-weight: 800; letter-spacing: -.6px; color: var(--ink); }
+.page-sub { font-size: 13px; color: var(--ink-60); margin-top: 4px; font-weight: 500; }
+
+.card-title { font-size: 12px; font-weight: 800; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; color: var(--ink-60); text-transform: uppercase; letter-spacing: .6px; }
+.card-title .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--grad-accent); box-shadow: 0 0 0 4px var(--yellow-light); flex-shrink: 0; }
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--ink-10);
+  color: var(--ink-60);
+}
+.status-pill .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-30); }
+.status-pill.saved { background: var(--success-bg); color: var(--success); }
+.status-pill.saved .status-dot { background: var(--success); }
+
+/* ══════════════ TEMPLATE PICKER ══════════════ */
+.tpl-picker {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.tpl-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: rgba(255,255,255,.7);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--ink-60);
+  transition: var(--t);
+}
+.tpl-tab:hover { border-color: var(--ink-30); color: var(--ink); }
+.tpl-tab.active { background: var(--grad-ink); color: var(--white); border-color: transparent; box-shadow: 0 4px 12px rgba(20,22,31,.2); }
+.tpl-tab .tpl-icon { font-size: 15px; }
+
+/* ══════════════ LAYOUT ══════════════ */
+.editor-layout { display: grid; grid-template-columns: 420px 1fr; gap: 20px; align-items: start; }
+@media (max-width: 980px) { .editor-layout { grid-template-columns: 1fr; } }
+
+.panel {
+  background: rgba(255, 255, 255, .8);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 22px;
+}
+
+.field { margin-bottom: 18px; }
+.field:last-child { margin-bottom: 0; }
+.field label { display: block; font-weight: 700; font-size: 11px; color: var(--ink-60); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 7px; }
+.field small { display: block; margin-top: 6px; color: var(--ink-60); font-size: 11.5px; font-weight: 500; }
+
+select, input, textarea {
+  width: 100%;
+  padding: 9px 13px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--white);
+  color: var(--ink);
+  transition: var(--t);
+}
+select:hover, input:hover, textarea:hover { border-color: var(--ink-30); }
+select:focus, input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--yellow-deep);
+  box-shadow: 0 0 0 4px rgba(244, 208, 63, .25);
+}
+textarea { resize: vertical; min-height: 72px; }
+input[type=color] { padding: 3px; height: 40px; cursor: pointer; }
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.btn-row { display: grid; grid-template-columns: 1fr 1fr auto auto auto; gap: 8px; align-items: center; margin-bottom: 8px; }
+.btn-row input[type=text] { padding: 8px 10px; font-size: 12.5px; }
+.btn-row input[type=color] { padding: 2px; height: 34px; width: 34px; }
+.btn-row .btn-remove { background: var(--error-bg); color: var(--error); border: none; border-radius: 8px; width: 34px; height: 34px; cursor: pointer; font-size: 13px; flex-shrink: 0; }
+.btn-row .btn-remove:hover { background: #FCD7D7; }
+
+.placeholders { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.ph-chip {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--yellow-light);
+  color: var(--yellow-deep);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: var(--t);
+}
+.ph-chip:hover { border-color: var(--yellow-mid); transform: translateY(-1px); }
+.ph-chip.raw { background: var(--info-bg); color: var(--info); }
+
+.actions { display: flex; gap: 10px; margin-top: 22px; }
+
+.btn {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 11px 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  font-family: inherit;
+  transition: var(--t);
+}
+.btn-primary { background: var(--grad-ink); color: var(--white); flex: 1; box-shadow: 0 4px 12px rgba(20,22,31,.18); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(20,22,31,.25); }
+.btn-primary:active { transform: translateY(0); }
+.btn-secondary { background: var(--ink-10); color: var(--ink-60); }
+.btn-secondary:hover { background: var(--border); color: var(--ink); }
+
+/* preview panel */
+.preview-panel { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.preview-toolbar {
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.preview-toolbar .card-title { margin-bottom: 0; }
+.badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--success-bg);
+  color: var(--success);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 10px;
+  border-radius: 999px;
+  letter-spacing: .4px;
+}
+.badge-live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+
+iframe#preview-frame { flex: 1; min-height: 640px; border: none; width: 100%; background: var(--white); }
+
+.tpl-desc {
+  font-size: 12px;
+  color: var(--ink-60);
+  font-weight: 500;
+  background: var(--info-bg);
+  border: 1px solid rgba(79,124,255,.18);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  line-height: 1.55;
+}
+.tpl-desc b { color: var(--info); }
+
+/* SweetAlert2 restyle - đồng bộ theme */
+.swal2-popup { font-family: 'Plus Jakarta Sans', sans-serif !important; border-radius: var(--radius-lg) !important; box-shadow: var(--shadow-lg) !important; padding: 30px 26px !important; }
+.swal2-title { font-size: 18px !important; font-weight: 800 !important; letter-spacing: -.3px !important; color: var(--ink) !important; padding: 0 0 4px !important; }
+.swal2-html-container { font-size: 13px !important; font-weight: 500 !important; color: var(--ink-60) !important; margin: 8px 4px 4px !important; }
+.swal2-actions { gap: 10px !important; margin-top: 20px !important; }
+.swal2-styled { font-family: inherit !important; font-size: 13px !important; font-weight: 700 !important; border-radius: var(--radius-sm) !important; padding: 10px 20px !important; box-shadow: none !important; transition: var(--t) !important; }
+.swal2-confirm.swal2-styled { background: var(--grad-ink) !important; color: var(--white) !important; }
+.swal2-confirm.swal2-styled:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(20,22,31,.25) !important; }
+.swal2-cancel.swal2-styled { background: var(--ink-10) !important; color: var(--ink-60) !important; }
+.swal2-cancel.swal2-styled:hover { background: var(--border) !important; color: var(--ink) !important; }
+.swal2-styled:focus { box-shadow: 0 0 0 4px rgba(244, 208, 63, .25) !important; }
+.swal2-icon { border-width: 2.5px !important; }
+.swal2-icon.swal2-success { border-color: var(--success) !important; color: var(--success) !important; }
+.swal2-icon.swal2-success [class^='swal2-success-line'] { background-color: var(--success) !important; }
+.swal2-icon.swal2-success .swal2-success-ring { border-color: var(--success-bg) !important; }
+.swal2-icon.swal2-error { border-color: var(--error) !important; color: var(--error) !important; }
+.swal2-icon.swal2-error [class^='swal2-x-mark-line'] { background-color: var(--error) !important; }
+.swal2-input { font-family: inherit !important; border: 1.5px solid var(--border) !important; border-radius: var(--radius-sm) !important; box-shadow: none !important; font-size: 13px !important; color: var(--ink) !important; }
+.swal2-input:focus { border-color: var(--yellow-deep) !important; box-shadow: 0 0 0 4px rgba(244, 208, 63, .25) !important; }
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="logo">
+    <img src="/assets/logo_den.png" alt="Enactus FTU Hanoi" class="logo-img" />
+    <span>Enactus FTU Hanoi</span>
+  </div>
+  <nav class="nav">
+    <a href="../dashboard.html">Dashboard</a>
+    <a href="../response.html">Responses</a>
+    <a href="../form.html">Form</a>
+    <a href="mail.html" class="active">Mail</a>
+  </nav>
+  <div class="hdr-right"></div>
+</header>
+
+<div class="container">
+  <div class="page-title-row">
+    <div>
+      <h1 class="page-title">Mẫu email</h1>
+      <p class="page-sub" id="page-sub-text">Tuỳ chỉnh nội dung email gửi tự động &middot; Mail</p>
+    </div>
+    <span class="status-pill" id="status-pill"><span class="status-dot"></span><span id="status-text">Chưa lưu thay đổi</span></span>
+  </div>
+
+  <div class="tpl-picker" id="tpl-picker"></div>
+  <div class="tpl-desc" id="tpl-desc"></div>
+
+  <div class="editor-layout">
+    <div class="panel">
+      <div class="card-title"><span class="dot"></span> Nội dung &amp; giao diện</div>
+
+      <div class="field">
+        <label>Tiêu đề email (subject)</label>
+        <input type="text" id="f-subject" />
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Màu chủ đạo (vạch màu, badge, nút)</label>
+          <input type="color" id="f-color" />
+        </div>
+        <div class="field">
+          <label>Màu nền header (chỗ đen)</label>
+          <input type="color" id="f-headerbg" />
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Màu chữ header</label>
+          <input type="color" id="f-headertext" />
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Tên tổ chức (header)</label>
+          <input type="text" id="f-orgname" placeholder="Enactus FTU Hanoi" />
+        </div>
+        <div class="field">
+          <label>Nhãn nhỏ (eyebrow)</label>
+          <input type="text" id="f-badge" placeholder="ỨNG VIÊN MỚI" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Dòng tiêu đề trong email</label>
+        <input type="text" id="f-title" />
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Màu chữ tiêu đề</label>
+          <input type="color" id="f-titlecolor" />
+        </div>
+        <div class="field">
+          <label>Độ đậm tiêu đề</label>
+          <select id="f-titleweight">
+            <option value="800">Rất đậm</option>
+            <option value="700">Đậm</option>
+            <option value="600">Vừa</option>
+            <option value="400">Thường</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Cỡ chữ tiêu đề (px)</label>
+        <input type="number" id="f-titlesize" min="12" max="40" step="1" />
+      </div>
+
+      <div class="field">
+        <label>Lời chào / mở đầu</label>
+        <textarea id="f-intro"></textarea>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Màu chữ nội dung (lời chào, footer)</label>
+          <input type="color" id="f-bodycolor" />
+        </div>
+        <div class="field">
+          <label>Cỡ chữ nội dung (px)</label>
+          <input type="number" id="f-bodysize" min="10" max="24" step="1" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Chân trang (footer)</label>
+        <textarea id="f-footer"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Nút bấm (CTA)</label>
+        <div id="btn-list"></div>
+        <button type="button" class="btn btn-secondary" id="btn-add-button" style="margin-top:8px;width:100%;"><i class="fa-solid fa-plus"></i> Thêm nút</button>
+      </div>
+
+      <div class="field">
+        <label>Kiểu bo góc khung email</label>
+        <select id="f-radius">
+          <option value="20">Bo tròn nhiều</option>
+          <option value="10">Bo vừa</option>
+          <option value="2">Vuông vức</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Placeholder chèn vào Tiêu đề / Lời chào / Footer</label>
+        <div class="placeholders" id="ph-list"></div>
+        <small>Bấm 1 placeholder rồi bấm vào ô muốn chèn (Tiêu đề / Lời chào / Footer / Tên tổ chức / Nhãn nhỏ / Nhãn &amp; Link của từng nút) để tự động thêm vào cuối ô đó. Placeholder màu xanh chèn nguyên khối HTML (đã dựng sẵn khi hệ thống gửi), không nên tự gõ tay.</small>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="btn-save"><i class="fa-solid fa-floppy-disk"></i> Lưu mẫu email</button>
+        <button class="btn btn-secondary" id="btn-test"><i class="fa-solid fa-paper-plane"></i> Gửi thử</button>
+      </div>
+    </div>
+
+    <div class="panel preview-panel">
+      <div class="preview-toolbar">
+        <div class="card-title"><span class="dot"></span> Xem trước (dữ liệu mẫu)</div>
+        <span class="badge-live">LIVE</span>
+      </div>
+      <iframe id="preview-frame"></iframe>
+    </div>
+  </div>
+</div>
+
+<script src="../script/config.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════════
+   HỆ THỐNG TEMPLATE TỔNG QUÁT
+   Muốn thêm 1 loại mail mới: chỉ cần thêm 1 entry vào TEMPLATE_TYPES.
+   Không cần sửa gì khác trong file này.
+   ════════════════════════════════════════════════════════════════ */
+
+const TEMPLATE_TYPES = {
+  new_candidate: {
+    icon: "<i class=\"fa-solid fa-user-plus\"></i>",
+    label: "Ứng viên mới",
+    desc: "Gửi cho ban Tuyển thành viên (admin) mỗi khi có <b>ứng viên mới nộp đơn</b>. Kích hoạt tự động từ Dashboard.",
+    bodyMode: "table", // render 1 bảng label:value
+    infoRows: [
+      ["fullname", "Họ và tên"],
+      ["email", "Email"],
+      ["phone", "Số điện thoại"],
+      ["priority", "Nguyện vọng 1"],
+      ["secondary", "Nguyện vọng 2"],
+      ["type", "Loại đơn"],
+      ["time", "Thời gian"],
+    ],
+    placeholders: ["fullname", "email", "phone", "priority", "secondary", "type", "time", "application_id"],
+    sample: {
+      fullname: "Nguyễn Văn A",
+      email: "vana@gmail.com",
+      phone: "0987 654 321",
+      priority: "Marketing",
+      secondary: "Nhân sự",
+      type: "Ứng viên mới",
+      time: new Date().toLocaleString("vi-VN"),
+      application_id: "sample123ID",
+    },
+    defaults: {
+      subject: "Ứng viên mới: {{fullname}} - Enactus FTU Hanoi",
+      color: "#E8A400",
+      headerBg: "#14161F",
+      headerText: "#FFFFFF",
+      orgName: "Enactus FTU Hanoi",
+      badge: "ỨNG VIÊN MỚI",
+      title: "Thông báo đơn ứng tuyển mới",
+      titleColor: "#14161F",
+      titleWeight: "800",
+      titleSize: "20",
+      bodyColor: "#63667A",
+      bodySize: "14",
+      intro: "Một ứng viên mới vừa đăng ký. Xem thông tin chi tiết bên dưới:",
+      footer: "Email này được gửi tự động từ hệ thống tuyển thành viên Enactus FTU Hanoi.",
+      buttons: [
+        { label: "Xem chi tiết ứng viên", link: "https://recruitment.enactusftuhanoi.id.vn/response.html?id={{application_id}}", color: "#E8A400", textColor: "#14161F" },
+      ],
+      radius: "20",
+    },
+  },
+
+  interview_interviewer: {
+    icon: "<i class=\"fa-solid fa-calendar-days\"></i>",
+    label: "Báo lịch cho Interviewer",
+    desc: "Gửi cho <b>nhân sự tham gia phỏng vấn</b> sau khi lịch được sắp xếp ở trang Interview Arrangement. Mỗi vòng (Vòng 1 / Vòng 2 / Vòng 4) gửi <b>1 email riêng</b> — không gộp nhiều vòng vào 1 mail. Vai trò Host/Thư ký/Checkin chỉ hiện đúng ca (không liệt kê ứng viên); vai trò Interviewer hiện chi tiết ca, ban, ứng viên và ghi chú.",
+    bodyMode: "raw", // chèn nguyên khối HTML động (các thẻ ca đã dựng sẵn) thay vì bảng cố định
+    rawKey: "rounds_block",
+    placeholders: ["interviewer_name", "round_label", "total_slots", "time", "rounds_block"],
+    rawPlaceholders: ["rounds_block"], // các placeholder này là khối HTML dựng sẵn, không escape
+    sample: {
+      interviewer_name: "Trần Thị B",
+      round_label: "Vòng 1 · PVTĐ",
+      total_slots: "2",
+      time: new Date().toLocaleString("vi-VN"),
+      rounds_block: `
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#FAFAFC;border-radius:14px;margin-bottom:16px;">
+          <tr>
+            <td width="33%" align="center" style="padding:14px 6px;">
+              <div style="font-size:22px;font-weight:800;color:#14161F;line-height:1;">2</div>
+              <div style="font-size:9.5px;font-weight:700;color:#8A8DA0;text-transform:uppercase;letter-spacing:.3px;margin-top:5px;">Tổng số ca</div>
+            </td>
+            <td width="1" style="background:#E6E8F0;"></td>
+            <td width="33%" align="center" style="padding:14px 6px;">
+              <div style="font-size:22px;font-weight:800;color:#E8A400;line-height:1;">1</div>
+              <div style="font-size:9.5px;font-weight:700;color:#8A8DA0;text-transform:uppercase;letter-spacing:.3px;margin-top:5px;">Ca Interviewer</div>
+            </td>
+            <td width="1" style="background:#E6E8F0;"></td>
+            <td width="33%" align="center" style="padding:14px 6px;">
+              <div style="font-size:22px;font-weight:800;color:#3B82F6;line-height:1;">1</div>
+              <div style="font-size:9.5px;font-weight:700;color:#8A8DA0;text-transform:uppercase;letter-spacing:.3px;margin-top:5px;">Ca Host/TK/Checkin</div>
+            </td>
+          </tr>
+        </table>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr><td style="padding:14px 16px;background:#FFF9E6;border-radius:12px;border-left:4px solid #E8A400;">
+          <table width="100%" cellpadding="0" cellspacing="0"><tr>
+            <td style="font-size:13.5px;font-weight:800;color:#14161F;">Thứ 3, 12/08 &middot; 14:00–15:00</td>
+            <td align="right" style="font-size:10px;font-weight:800;color:#E8A400;letter-spacing:.4px;">INTERVIEWER</td>
+          </tr></table>
+          <div style="font-size:11.5px;color:#63667A;margin-top:3px;">Online</div>
+          <div style="margin-top:8px;">
+            <span style="display:inline-block;background:#EEF2FF;color:#4338CA;font-size:10px;font-weight:800;letter-spacing:.3px;padding:3px 9px;border-radius:999px;">BAN NHÂN SỰ</span>
+            <div style="font-size:12.5px;color:#14161F;margin-top:5px;line-height:1.5;">Ứng viên: <b>Nguyễn Văn A, Lê Thị C</b></div>
+          </div>
+          <div style="margin-top:8px;padding:7px 10px;background:#FFF3CD;border-radius:8px;font-size:11.5px;color:#8A6100;line-height:1.5;">&#128204; <b>Ghi chú:</b> Mang CCCD, vào phòng chờ trước 5 phút</div>
+        </td></tr></table>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr><td style="padding:14px 16px;background:#EFF6FF;border-radius:12px;border-left:4px solid #3B82F6;">
+          <table width="100%" cellpadding="0" cellspacing="0"><tr>
+            <td style="font-size:13.5px;font-weight:800;color:#14161F;">Thứ 3, 12/08 &middot; 15:00–16:00</td>
+            <td align="right" style="font-size:10px;font-weight:800;color:#3B82F6;letter-spacing:.4px;">HOST TỔNG CA</td>
+          </tr></table>
+          <div style="font-size:11.5px;color:#63667A;margin-top:3px;">Online</div>
+        </td></tr></table>`,
+    },
+    defaults: {
+      subject: "Lịch phỏng vấn {{round_label}} của bạn - Enactus FTU Hanoi",
+      color: "#E8A400",
+      headerBg: "#14161F",
+      headerText: "#FFFFFF",
+      orgName: "Enactus FTU Hanoi",
+      badge: "LỊCH PHỎNG VẤN",
+      title: "Thông báo lịch phỏng vấn",
+      titleColor: "#14161F",
+      titleWeight: "800",
+      titleSize: "20",
+      bodyColor: "#63667A",
+      bodySize: "14",
+      intro: "Chào {{interviewer_name}}, bạn đã được sắp xếp tham gia phỏng vấn {{round_label}} theo các ca dưới đây. Vui lòng có mặt đúng giờ:",
+      footer: "Nếu cần đổi ca, vui lòng liên hệ ban Tuyển thành viên sớm nhất có thể. Email này được gửi tự động từ hệ thống Enactus FTU Hanoi.",
+      buttons: [
+        { label: "Xem chi tiết trên hệ thống", link: "https://recruitment.enactusftuhanoi.id.vn/interview-arrangement.html", color: "#E8A400", textColor: "#14161F" },
+      ],
+      radius: "20",
+    },
+  },
+};
+
+/* ════════════════════════════════════════════════════════════════ */
+
+let currentType = Object.keys(TEMPLATE_TYPES)[0];
+let templatesData = {}; // { [typeId]: {subject, color, headerBg, headerText, orgName, badge, title, titleColor, titleWeight, intro, bodyColor, footer, buttons:[{label,link,color,textColor}], radius} }
+let currentButtons = []; // state của các nút bấm đang chỉnh (typeId hiện tại)
+
+const fields = {
+  subject: document.getElementById("f-subject"),
+  color: document.getElementById("f-color"),
+  headerBg: document.getElementById("f-headerbg"),
+  headerText: document.getElementById("f-headertext"),
+  orgName: document.getElementById("f-orgname"),
+  badge: document.getElementById("f-badge"),
+  title: document.getElementById("f-title"),
+  titleColor: document.getElementById("f-titlecolor"),
+  titleWeight: document.getElementById("f-titleweight"),
+  titleSize: document.getElementById("f-titlesize"),
+  intro: document.getElementById("f-intro"),
+  bodyColor: document.getElementById("f-bodycolor"),
+  bodySize: document.getElementById("f-bodysize"),
+  footer: document.getElementById("f-footer"),
+  radius: document.getElementById("f-radius"),
+};
+
+function fillPlaceholders(str, data) {
+  return (str || "").replace(/{{(\w+)}}/g, (m, key) => (data[key] !== undefined ? data[key] : m));
+}
+
+function row(label, value) {
+  return `<tr>
+    <td style="padding:9px 0;font-size:12.5px;color:#A8AABC;width:130px;vertical-align:top;border-bottom:1px solid #EEF0F5;">${label}</td>
+    <td style="padding:9px 0;font-size:13.5px;color:#14161F;font-weight:600;border-bottom:1px solid #EEF0F5;">${value || "—"}</td>
+  </tr>`;
+}
+
+function buildEmailHtml(typeId, tplValues, data) {
+  const type = TEMPLATE_TYPES[typeId];
+  const v = tplValues;
+  const title = fillPlaceholders(v.title, data);
+  const intro = fillPlaceholders(v.intro, data);
+  const footer = fillPlaceholders(v.footer, data);
+  const orgName = fillPlaceholders(v.orgName || "Enactus FTU Hanoi", data);
+  const badge = fillPlaceholders(v.badge || "", data);
+  const headerBg = v.headerBg || "#14161F";
+  const headerText = v.headerText || "#FFFFFF";
+  const titleColor = v.titleColor || "#14161F";
+  const titleWeight = v.titleWeight || "800";
+  const titleSize = v.titleSize || "20";
+  const bodyColor = v.bodyColor || "#63667A";
+  const bodySize = v.bodySize || "14";
+  const radius = v.radius || "20";
+  const buttons = (v.buttons && v.buttons.length ? v.buttons : []).filter((b) => b.label);
+
+  let bodyHtml;
+  if (type.bodyMode === "table") {
+    bodyHtml = `<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+      ${type.infoRows.map(([key, label]) => {
+        if (key === "secondary" && !data.secondary) return "";
+        return row(label, data[key]);
+      }).join("")}
+    </table>`;
+  } else {
+    // raw mode: chèn nguyên khối HTML đã dựng sẵn (vd danh sách ca phỏng vấn theo từng vòng)
+    bodyHtml = data[type.rawKey] || "";
+  }
+
+  const buttonsHtml = buttons.length
+    ? `<table cellpadding="0" cellspacing="0"><tr>
+        ${buttons.map((b, i) => `
+          <td bgcolor="${b.color || v.color}" style="border-radius:${Math.min(radius, 12)}px;${i > 0 ? "padding-left:10px;" : ""}">
+            <a href="${fillPlaceholders(b.link, data)}" style="display:inline-block;color:${b.textColor || "#14161F"};text-decoration:none;font-weight:700;font-size:13.5px;padding:13px 26px;white-space:nowrap;">${fillPlaceholders(b.label, data)} &rarr;</a>
+          </td>`).join("")}
+      </tr></table>`
+    : "";
+
+  return `
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#F0F1F5;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0F1F5;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="580" cellpadding="0" cellspacing="0" style="width:580px;max-width:100%;background:#ffffff;border-radius:${radius}px;overflow:hidden;border:1px solid #E6E8F0;">
+
+        <!-- Header: màu nền + màu chữ tự chọn -->
+        <tr>
+          <td style="background:${headerBg};padding:22px 32px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td align="left" style="vertical-align:middle;">
+                  <span style="font-size:13.5px;font-weight:800;color:${headerText};letter-spacing:.2px;">${orgName}</span>
+                </td>
+                ${badge ? `
+                <td align="right" style="vertical-align:middle;">
+                  <span style="display:inline-block;background:${v.color};color:#14161F;font-size:10.5px;font-weight:800;letter-spacing:.5px;padding:5px 11px;border-radius:999px;">${badge}</span>
+                </td>` : ""}
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Vạch màu thương hiệu -->
+        <tr>
+          <td style="height:4px;line-height:4px;font-size:0;background:${v.color};">&nbsp;</td>
+        </tr>
+
+        <!-- Tiêu đề -->
+        <tr>
+          <td style="padding:30px 32px 6px;">
+            <div style="font-size:${titleSize}px;font-weight:${titleWeight};color:${titleColor};letter-spacing:-.3px;line-height:1.35;">${title}</div>
+          </td>
+        </tr>
+
+        <!-- Nội dung -->
+        <tr>
+          <td style="padding:10px 32px 4px;">
+            <p style="font-size:${bodySize}px;color:${bodyColor};line-height:1.7;margin:0 0 22px;">${intro}</p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#FAFAFC;border-radius:14px;border-left:3px solid ${v.color};">
+              <tr>
+                <td style="padding:20px 22px;">
+                  ${bodyHtml}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Nút hành động (có thể nhiều nút) -->
+        ${buttonsHtml ? `
+        <tr>
+          <td style="padding:28px 32px 32px;">
+            ${buttonsHtml}
+          </td>
+        </tr>` : ""}
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding:20px 32px 28px;background:#FAFAFC;border-top:1px solid #EEF0F5;">
+            <p style="font-size:11.5px;color:${bodyColor};line-height:1.65;margin:0;">${footer}</p>
+            <p style="font-size:11px;color:#C7C9D6;line-height:1.6;margin:12px 0 0;">&copy; ${new Date().getFullYear()} ${orgName} &middot; Email tự động, vui lòng không trả lời</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+function renderTabs() {
+  const wrap = document.getElementById("tpl-picker");
+  wrap.innerHTML = "";
+  Object.entries(TEMPLATE_TYPES).forEach(([id, type]) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "tpl-tab" + (id === currentType ? " active" : "");
+    btn.innerHTML = `<span class="tpl-icon">${type.icon}</span> ${type.label}`;
+    btn.addEventListener("click", () => switchType(id));
+    wrap.appendChild(btn);
+  });
+  document.getElementById("tpl-desc").innerHTML = TEMPLATE_TYPES[currentType].desc;
+}
+
+function renderPlaceholderChips() {
+  const list = document.getElementById("ph-list");
+  list.innerHTML = "";
+  const type = TEMPLATE_TYPES[currentType];
+  type.placeholders.forEach((ph) => {
+    const isRaw = (type.rawPlaceholders || []).includes(ph);
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "ph-chip" + (isRaw ? " raw" : "");
+    chip.dataset.ph = `{{${ph}}}`;
+    chip.textContent = `{{${ph}}}`;
+    chip.addEventListener("click", () => {
+      lastFocusedField.value += (lastFocusedField.value ? " " : "") + chip.dataset.ph;
+      updatePreview();
+    });
+    list.appendChild(chip);
+  });
+}
+
+function fillFieldsFromValues(v) {
+  fields.subject.value = v.subject || "";
+  fields.color.value = v.color || "#E8A400";
+  fields.headerBg.value = v.headerBg || "#14161F";
+  fields.headerText.value = v.headerText || "#FFFFFF";
+  fields.orgName.value = v.orgName || "";
+  fields.badge.value = v.badge || "";
+  fields.title.value = v.title || "";
+  fields.titleColor.value = v.titleColor || "#14161F";
+  fields.titleWeight.value = v.titleWeight || "800";
+  fields.titleSize.value = v.titleSize || "20";
+  fields.intro.value = v.intro || "";
+  fields.bodyColor.value = v.bodyColor || "#63667A";
+  fields.bodySize.value = v.bodySize || "14";
+  fields.footer.value = v.footer || "";
+  fields.radius.value = v.radius || "20";
+  currentButtons = (v.buttons && v.buttons.length ? v.buttons : [{ label: "Xem chi tiết", link: "", color: v.color || "#E8A400", textColor: "#14161F" }])
+    .map((b) => Object.assign({}, b));
+  renderButtonRows();
+}
+
+function currentFieldValues() {
+  return {
+    subject: fields.subject.value,
+    color: fields.color.value,
+    headerBg: fields.headerBg.value,
+    headerText: fields.headerText.value,
+    orgName: fields.orgName.value,
+    badge: fields.badge.value,
+    title: fields.title.value,
+    titleColor: fields.titleColor.value,
+    titleWeight: fields.titleWeight.value,
+    titleSize: fields.titleSize.value,
+    intro: fields.intro.value,
+    bodyColor: fields.bodyColor.value,
+    bodySize: fields.bodySize.value,
+    footer: fields.footer.value,
+    radius: fields.radius.value,
+    buttons: readButtonsFromDOM(),
+  };
+}
+
+/* ══════════════ Quản lý nhiều nút bấm (CTA) ══════════════ */
+function readButtonsFromDOM() {
+  return currentButtons.map((_, i) => ({
+    label: document.getElementById(`btn-label-${i}`).value,
+    link: document.getElementById(`btn-link-${i}`).value,
+    color: document.getElementById(`btn-color-${i}`).value,
+    textColor: document.getElementById(`btn-textcolor-${i}`).value,
+  }));
+}
+
+function renderButtonRows() {
+  const wrap = document.getElementById("btn-list");
+  wrap.innerHTML = "";
+  currentButtons.forEach((b, i) => {
+    const row = document.createElement("div");
+    row.className = "btn-row";
+    row.innerHTML = `
+      <input type="text" id="btn-label-${i}" placeholder="Nhãn nút" value="${(b.label || "").replace(/"/g, "&quot;")}" />
+      <input type="text" id="btn-link-${i}" placeholder="Link" value="${(b.link || "").replace(/"/g, "&quot;")}" />
+      <input type="color" id="btn-color-${i}" value="${b.color || "#E8A400"}" title="Màu nền nút" />
+      <input type="color" id="btn-textcolor-${i}" value="${b.textColor || "#14161F"}" title="Màu chữ nút" />
+      <button type="button" class="btn-remove" title="Xoá nút"><i class="fa-solid fa-xmark"></i></button>
+    `;
+    wrap.appendChild(row);
+
+    const labelEl = row.querySelector(`#btn-label-${i}`);
+    const linkEl = row.querySelector(`#btn-link-${i}`);
+    [labelEl, linkEl, row.querySelector(`#btn-color-${i}`), row.querySelector(`#btn-textcolor-${i}`)].forEach((el) => {
+      el.addEventListener("input", updatePreview);
+    });
+    [labelEl, linkEl].forEach((el) => el.addEventListener("focus", () => (lastFocusedField = el)));
+
+    row.querySelector(".btn-remove").addEventListener("click", () => {
+      currentButtons.splice(i, 1);
+      renderButtonRows();
+      updatePreview();
+    });
+  });
+}
+
+document.getElementById("btn-add-button").addEventListener("click", () => {
+  currentButtons = readButtonsFromDOM();
+  currentButtons.push({ label: "Nút mới", link: "", color: "#E8A400", textColor: "#14161F" });
+  renderButtonRows();
+  updatePreview();
+});
+
+function switchType(id, opts) {
+  opts = opts || {};
+  if (!opts.silent) {
+    // lưu tạm giá trị đang sửa của type cũ (chưa lưu Firestore) để không mất khi chuyển qua lại
+    templatesData[currentType] = currentFieldValues();
+  }
+  currentType = id;
+  const type = TEMPLATE_TYPES[id];
+  const stored = templatesData[id] || type.defaults;
+  fillFieldsFromValues(stored);
+  renderTabs();
+  renderPlaceholderChips();
+  updatePreview();
+}
+
+function renderSubjectPreview() {
+  const type = TEMPLATE_TYPES[currentType];
+  return fillPlaceholders(fields.subject.value || type.defaults.subject, type.sample);
+}
+
+function updatePreview() {
+  const type = TEMPLATE_TYPES[currentType];
+  const v = currentFieldValues();
+  document.getElementById("preview-frame").srcdoc = buildEmailHtml(currentType, v, type.sample);
+  markUnsaved();
+}
+
+
+function markUnsaved() {
+  const pill = document.getElementById("status-pill");
+  pill.classList.remove("saved");
+  document.getElementById("status-text").textContent = "Có thay đổi chưa lưu";
+}
+function markSaved() {
+  const pill = document.getElementById("status-pill");
+  pill.classList.add("saved");
+  document.getElementById("status-text").textContent = "Đã lưu";
+}
+
+Object.values(fields).forEach((el) => el.addEventListener("input", updatePreview));
+
+let lastFocusedField = fields.intro;
+[fields.subject, fields.intro, fields.footer, fields.orgName, fields.badge].forEach((el) => {
+  el.addEventListener("focus", () => (lastFocusedField = el));
+});
+
+/* ══════════════ FIRESTORE — 1 doc, mỗi field = 1 loại template ══════════════ */
+const TEMPLATES_DOC = db.collection("settings").doc("email_templates");
+const LEGACY_DOC = db.collection("settings").doc("email_template"); // template "ứng viên mới" bản cũ, trước khi có hệ thống nhiều loại
+
+async function loadAllTemplates() {
+  try {
+    const snap = await TEMPLATES_DOC.get();
+    const data = snap.exists ? snap.data() : {};
+    templatesData = {};
+    Object.keys(TEMPLATE_TYPES).forEach((id) => {
+      if (data[id]) templatesData[id] = data[id];
+    });
+
+    // Migrate 1 lần: nếu chưa có "new_candidate" trong doc mới nhưng có doc cũ → copy sang
+    if (!templatesData.new_candidate) {
+      const legacySnap = await LEGACY_DOC.get();
+      if (legacySnap.exists) {
+        templatesData.new_candidate = legacySnap.data();
+        await TEMPLATES_DOC.set({ new_candidate: templatesData.new_candidate }, { merge: true });
+      }
+    }
+
+    switchType(currentType, { silent: true });
+    markSaved();
+  } catch (err) {
+    console.error("Không tải được template:", err);
+    switchType(currentType, { silent: true });
+  }
+}
+
+document.getElementById("btn-save").addEventListener("click", async () => {
+  try {
+    templatesData[currentType] = currentFieldValues();
+    await TEMPLATES_DOC.set({ [currentType]: templatesData[currentType] }, { merge: true });
+    markSaved();
+    Swal.fire({ icon: "success", title: "Đã lưu mẫu email", text: TEMPLATE_TYPES[currentType].label, timer: 1400, showConfirmButton: false });
+  } catch (err) {
+    Swal.fire({ icon: "error", title: "Lỗi khi lưu", text: err.message });
+  }
+});
+
+const WORKER_URL = "https://mail.enactusftuhanoi.workers.dev/";
+
+document.getElementById("btn-test").addEventListener("click", async () => {
+  const { value: testEmail } = await Swal.fire({
+    title: "Gửi thử tới email nào?",
+    input: "email",
+    inputPlaceholder: "you@gmail.com",
+    showCancelButton: true,
+    confirmButtonText: "Gửi thử",
+    cancelButtonText: "Huỷ",
+  });
+  if (!testEmail) return;
+
+  try {
+    const type = TEMPLATE_TYPES[currentType];
+    const v = currentFieldValues();
+    const html = buildEmailHtml(currentType, v, type.sample);
+    const res = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ to: [testEmail], subject: renderSubjectPreview(), html }),
+    });
+    const result = await res.json();
+    if (result.success) {
+      Swal.fire({ icon: "success", title: "Đã gửi email thử!", text: `Kiểm tra hộp thư ${testEmail}` });
+    } else {
+      Swal.fire({ icon: "error", title: "Gửi thất bại", text: result.error || "Không rõ lỗi" });
+    }
+  } catch (err) {
+    Swal.fire({ icon: "error", title: "Lỗi", text: err.message });
+  }
+});
+
+renderTabs();
+renderPlaceholderChips();
+loadAllTemplates();
+</script>
+</body>
+</html>
