@@ -28,8 +28,6 @@
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.5}
-
-    /* ── HEADER ── */
     .hdr{background:var(--white);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300}
     .logo{font-size:15px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:9px}
     .logo-img{height:30px;width:auto;display:block}
@@ -44,62 +42,43 @@
     .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
     .logout-btn{padding:6px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--ink-60);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:var(--t);display:flex;align-items:center;gap:6px}
     .logout-btn:hover{background:var(--error-bg);color:var(--error);border-color:#FECACA}
-
-    /* ── LAYOUT ── */
     .wrap{max-width:1100px;margin:0 auto;padding:28px 24px 80px}
-
-    /* ── PAGE TITLE ── */
     .page-title{font-size:20px;font-weight:800;letter-spacing:-.5px}
     .page-sub{font-size:12px;color:var(--ink-60);margin-top:3px}
-
-    /* ── TAB NAV ── */
     .tab-nav{display:flex;gap:0;border-bottom:1.5px solid var(--border);margin-bottom:24px;margin-top:20px}
     .tab{padding:9px 20px;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink-60);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:var(--t);display:flex;align-items:center;gap:7px}
     .tab.active{color:var(--ink);border-bottom-color:var(--ink)}
     .tab:hover:not(.active){color:var(--ink)}
     .tab-content{display:none}
     .tab-content.active{display:block}
-
-    /* ── CARD ── */
     .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-sm);margin-bottom:20px}
     .card-title{font-size:15px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px}
     .card-title .dot{width:8px;height:8px;border-radius:50%;background:var(--yellow);flex-shrink:0}
     .card-sub{font-size:12px;color:var(--ink-60);margin-bottom:18px}
-
-    /* ── STATS ── */
     .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
     .stat-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
     .stat-val{font-size:28px;font-weight:800;line-height:1}
     .stat-label{font-size:11px;color:var(--ink-60);margin-top:4px}
     .stat-val.ok{color:var(--success)}
     .stat-val.warn{color:var(--warn)}
-
-    /* ── INTERVIEW DAY BLOCKS ── */
     .day-block{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px}
     .day-hdr{background:var(--ink);color:var(--white);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700}
     .day-hdr .day-badge{background:rgba(255,255,255,.15);padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600}
     .slots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0}
     .slot-cell{padding:12px 14px;border-right:1px solid var(--border);border-top:1px solid var(--border);position:relative}
-    .slot-cell:nth-child(-n+999){} /* all */
     .slot-time{font-size:12px;font-weight:700;margin-bottom:4px}
     .slot-count{font-size:11px;color:var(--ink-60)}
     .slot-count b{color:var(--ink);font-weight:700}
-
-    /* manage tab slot cell with remove btn */
     .slot-cell-manage{padding:10px 14px;border-right:1px solid var(--border);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
     .slot-cell-manage .slot-time{margin:0}
     .remove-slot-btn{background:var(--error-bg);color:var(--error);border:none;border-radius:6px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px;flex-shrink:0;transition:var(--t)}
     .remove-slot-btn:hover{background:var(--error);color:var(--white)}
-
-    /* ── FORM ELEMENTS ── */
     .form-group{margin-bottom:16px}
     label.fl{display:block;font-size:11px;font-weight:700;color:var(--ink-60);margin-bottom:5px;letter-spacing:.2px}
     .fi,.fs,.fta{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;background:var(--white);transition:var(--t)}
     .fi:focus,.fs:focus,.fta:focus{outline:none;border-color:var(--yellow-mid);box-shadow:0 0 0 3px rgba(245,230,66,.2)}
     .fta{min-height:100px;resize:vertical}
     .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
-    /* ── BUTTONS ── */
     .btn{padding:9px 16px;border:none;border-radius:var(--radius-sm);font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;transition:var(--t);display:inline-flex;align-items:center;gap:7px}
     .btn-primary{background:var(--yellow);color:var(--ink)}
     .btn-primary:hover{background:var(--yellow-mid)}
@@ -114,15 +93,11 @@
     .btn-sm{padding:6px 11px;font-size:11px}
     .btn:disabled{opacity:.45;cursor:not-allowed}
     .action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-
-    /* ── PUBLISH TOGGLE ROW ── */
     .toggle-row{display:flex;background:var(--ink-10);border-radius:var(--radius-sm);padding:3px;gap:2px;max-width:180px}
     .toggle-opt{flex:1;padding:7px 8px;border:none;background:transparent;border-radius:6px;font-family:inherit;font-size:12px;font-weight:700;color:var(--ink-60);cursor:pointer;transition:var(--t);text-align:center}
     .toggle-opt.active{background:var(--white);color:var(--ink);box-shadow:var(--shadow-sm)}
     .toggle-opt.active.on{color:var(--success)}
     .toggle-opt.active.off{color:var(--error)}
-
-    /* old HTML toggle switch — kept for compat but hidden */
     .publish-toggle-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
     .toggle-switch{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}
     .toggle-switch input{opacity:0;width:0;height:0}
@@ -132,14 +107,10 @@
     .toggle-switch input:checked+.toggle-slider:before{transform:translateX(20px)}
     .toggle-switch input:disabled+.toggle-slider{opacity:.5;cursor:not-allowed}
     #publish-toggle-label{font-size:13px;font-weight:700}
-
-    /* ── CTRL ROW (settings) ── */
     .ctrl-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);margin-bottom:10px}
     .ctrl-label{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
     .ctrl-label i{color:var(--ink-60)}
     .ctrl-desc{font-size:11px;font-weight:400;color:var(--ink-60);margin-top:1px}
-
-    /* ── CANDIDATE ITEMS ── */
     .candidate-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;background:var(--white)}
     .cand-avatar{width:34px;height:34px;border-radius:50%;background:var(--yellow-light);color:var(--ink);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
     .cand-info{flex:1;min-width:0}
@@ -149,13 +120,18 @@
     .cand-status.voted{background:var(--success-bg);color:var(--success)}
     .cand-status.not-voted{background:var(--warn-bg);color:var(--warn)}
     .cand-actions{display:flex;gap:6px;flex-shrink:0}
-    .candidate-delete-btn,.candidate-reset-btn{border:none;border-radius:var(--radius-sm);padding:6px 10px;cursor:pointer;font-size:11px;font-weight:600;transition:var(--t);display:flex;align-items:center;gap:4px}
+    .candidate-delete-btn,.candidate-reset-btn,.candidate-grant-btn,.candidate-revoke-btn{border:none;border-radius:var(--radius-sm);padding:6px 10px;cursor:pointer;font-size:11px;font-weight:600;transition:var(--t);display:flex;align-items:center;gap:4px}
     .candidate-delete-btn{background:var(--error-bg);color:var(--error)}
     .candidate-delete-btn:hover{background:var(--error);color:var(--white)}
     .candidate-reset-btn{background:var(--warn-bg);color:var(--warn)}
     .candidate-reset-btn:hover{background:var(--warn);color:var(--white)}
-
-    /* ── MODAL ── */
+    .candidate-grant-btn{background:var(--success-bg);color:var(--success)}
+    .candidate-grant-btn:hover{background:var(--success);color:var(--white)}
+    .candidate-revoke-btn{background:var(--error-bg);color:var(--error)}
+    .candidate-revoke-btn:hover{background:var(--error);color:var(--white)}
+    .cand-perm-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;margin-top:3px;margin-left:6px;display:inline-block}
+    .cand-perm-badge.granted{background:var(--success-bg);color:var(--success)}
+    .cand-perm-badge.not-granted{background:var(--ink-10);color:var(--ink-60)}
     .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;padding:20px}
     .modal.open,.modal[style*="flex"]{display:flex}
     .modal-content{background:var(--white);border-radius:var(--radius-lg);padding:26px;max-width:560px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
@@ -163,49 +139,39 @@
     .modal-title{font-size:16px;font-weight:800}
     .close-modal{background:none;border:none;font-size:22px;cursor:pointer;color:var(--ink-30);line-height:1}
     .close-modal:hover{color:var(--ink)}
-
-    /* ── INFO / WARN BOX ── */
     .info-box{background:var(--info-bg);border:1.5px solid #BFDBFE;border-radius:var(--radius-sm);padding:10px 13px;font-size:12px;color:#1E40AF;display:flex;align-items:flex-start;gap:8px;margin-bottom:14px}
     .warn-box{background:var(--warn-bg);border:1.5px solid #FDE68A;border-radius:var(--radius-sm);padding:10px 13px;font-size:12px;color:#92400E;display:flex;align-items:flex-start;gap:8px;margin-bottom:14px}
-
-    /* ── SECTION LABEL ── */
     .sec-title{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-30);margin-bottom:10px}
     .divider{height:1px;background:var(--border);margin:20px 0}
-
-    /* ── LOADING ── */
     .page-loading{position:fixed;inset:0;background:rgba(255,255,255,.88);backdrop-filter:blur(4px);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
     .page-loading.hidden{display:none}
     .spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--ink);border-radius:50%;animation:spin .6s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
-
-    /* ── TOAST ── */
     .toast-wrap{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9999}
     .toast{background:var(--ink);color:var(--white);padding:11px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;animation:slideIn .25s ease}
     .toast.ok{background:#065F46}.toast.err{background:#7F1D1D}.toast.warn{background:#78350F}
     @keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
-
-    /* ── EMPTY STATE ── */
     .empty{text-align:center;padding:40px 20px;color:var(--ink-30)}
     .empty i{font-size:28px;margin-bottom:10px;display:block}
     .empty p{font-size:13px}
-
-    /* ── HELPERS ── */
     .flex{display:flex;align-items:center}.gap-8{gap:8px}.jb{justify-content:space-between}
     .mt-6{margin-top:6px}.mt-12{margin-top:12px}.mt-18{margin-top:18px}
     ::-webkit-scrollbar{width:5px;height:5px}
     ::-webkit-scrollbar-track{background:transparent}
     ::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+    /* NEW: round switch */
+    .round-switch{display:flex;background:var(--ink-10);border-radius:var(--radius-sm);padding:3px;gap:2px;max-width:260px;margin-bottom:18px}
+    .round-switch button{flex:1;padding:8px 10px;border:none;background:transparent;border-radius:6px;font-family:inherit;font-size:12px;font-weight:700;color:var(--ink-60);cursor:pointer;transition:var(--t);text-align:center}
+    .round-switch button.active{background:var(--white);color:var(--ink);box-shadow:var(--shadow-sm)}
   </style>
 </head>
 <body>
 
-<!-- PAGE LOADING -->
 <div class="page-loading" id="loading">
   <div class="spinner"></div>
   <div style="font-size:13px;color:var(--ink-60)">Đang tải dữ liệu...</div>
 </div>
 
-<!-- HEADER -->
 <header class="hdr">
   <div class="logo">
     <img src="/assets/logo_den.png" alt="Enactus FTU Hanoi" class="logo-img" />
@@ -228,7 +194,6 @@
   </div>
 </header>
 
-<!-- MAIN -->
 <div class="wrap">
 
   <div class="flex jb gap-8">
@@ -238,7 +203,12 @@
     </div>
   </div>
 
-  <!-- TAB NAV -->
+  <!-- NEW: chọn vòng đang thao tác — quyết định field vote nào được đọc/ghi -->
+  <div class="round-switch" id="round-switch">
+    <button data-round="round2" class="active">Vòng 2</button>
+    <button data-round="round4">Vòng 4</button>
+  </div>
+
   <div class="tab-nav">
     <button class="tab active" data-tab="schedule">
       <i class="fas fa-calendar-days"></i> Lịch phỏng vấn
@@ -251,10 +221,8 @@
     </button>
   </div>
 
-  <!-- ══ TAB: LỊCH PHỎNG VẤN ══ -->
   <div id="schedule-tab" class="tab-content active">
 
-    <!-- Stats -->
     <div class="stats-row">
       <div class="stat-card">
         <div class="stat-val" id="total-candidates">0</div>
@@ -272,7 +240,7 @@
 
     <div class="card">
       <div class="card-title"><div class="dot"></div> Tổng quan lịch ứng viên đã vote</div>
-      <p class="card-sub">Số ứng viên đã chọn từng khung giờ phỏng vấn</p>
+      <p class="card-sub">Số ứng viên đã chọn từng khung giờ phỏng vấn — <b id="active-round-label">Vòng 2</b></p>
       <div id="interview-schedule">
         <div class="empty"><i class="fas fa-calendar-xmark"></i><p>Chưa có lịch phỏng vấn nào.</p></div>
       </div>
@@ -284,7 +252,6 @@
     </div>
   </div>
 
-  <!-- ══ TAB: QUẢN LÝ LỊCH ══ -->
   <div id="manage-tab" class="tab-content">
     <div class="card">
       <div class="card-title"><div class="dot"></div> Lịch hiện tại</div>
@@ -317,10 +284,8 @@
     </div>
   </div>
 
-  <!-- ══ TAB: CÀI ĐẶT ══ -->
   <div id="settings-tab" class="tab-content">
 
-    <!-- Công bố lịch -->
     <div class="card">
       <div class="card-title"><div class="dot"></div> Công bố lịch phỏng vấn</div>
       <p class="card-sub">Bật để mở lịch cho ứng viên vào chọn ca. Tắt để đóng/ẩn lịch.</p>
@@ -377,28 +342,20 @@
       </div>
     </div>
 
-    <!-- Quản lý ứng viên -->
     <div class="card">
       <div class="card-title"><div class="dot"></div> Quản lý ứng viên vote</div>
-      <p class="card-sub">Nạp danh sách email ứng viên để cấp quyền truy cập lịch phỏng vấn</p>
-
-      <div class="form-group">
-        <label class="fl">Nhập email ứng viên <span style="font-weight:400;color:var(--ink-30)">(mỗi email một dòng)</span></label>
-        <textarea class="fta" id="candidate-emails" placeholder="email1@example.com&#10;email2@example.com"></textarea>
-      </div>
-      <div class="action-row" style="margin-top:0">
-        <button class="btn btn-dark" id="load-candidates-btn">
-          <i class="fas fa-upload"></i> Nạp ứng viên
-        </button>
-      </div>
-
-      <div class="divider"></div>
+      <p class="card-sub">Ứng viên đang ở <b id="round-pool-label">Vòng 2</b> trên Dashboard được tự động đưa vào danh sách bên dưới — chỉ cần cấp quyền để họ truy cập lịch phỏng vấn.</p>
 
       <div class="flex jb gap-8" style="margin-bottom:12px">
-        <div class="sec-title" style="margin:0">Danh sách ứng viên có quyền vote</div>
-        <button class="btn btn-danger btn-sm" id="clear-candidates-btn">
-          <i class="fas fa-trash-alt"></i> Xoá tất cả
-        </button>
+        <div class="sec-title" style="margin:0">Danh sách ứng viên (<span id="candidate-count">0</span>)</div>
+        <div class="flex gap-8">
+          <button class="btn btn-dark btn-sm" id="grant-all-btn">
+            <i class="fas fa-user-check"></i> Cấp quyền tất cả
+          </button>
+          <button class="btn btn-danger btn-sm" id="revoke-all-btn">
+            <i class="fas fa-user-slash"></i> Thu hồi tất cả
+          </button>
+        </div>
       </div>
       <div id="candidate-list">
         <div class="empty" style="padding:24px 0"><i class="fas fa-users"></i><p>Chưa có ứng viên nào.</p></div>
@@ -408,37 +365,20 @@
 
       <div class="warn-box">
         <i class="fas fa-triangle-exclamation"></i>
-        <div><b>Xoá dữ liệu vote</b> sẽ reset toàn bộ lịch ứng viên đã chọn và xoá collection <code>votes</code>. Không thể hoàn tác.</div>
+        <div><b>Xoá dữ liệu vote</b> chỉ reset lịch của <b id="clear-votes-round-label">Vòng 2</b> (không đụng vòng còn lại) và xoá collection <code>votes</code> tương ứng. Không thể hoàn tác.</div>
       </div>
       <button class="btn btn-danger btn-sm" id="clear-votes-btn">
-        <i class="fas fa-trash"></i> Xoá dữ liệu vote
+        <i class="fas fa-trash"></i> Xoá dữ liệu vote (<span id="clear-votes-round-label2">Vòng 2</span>)
       </button>
     </div>
 
   </div>
 </div>
 
-<!-- CANDIDATE CONFIRMATION MODAL -->
-<div id="candidate-confirm-modal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div class="modal-title">Xác nhận dữ liệu ứng viên</div>
-      <button class="close-modal">&times;</button>
-    </div>
-    <div id="candidate-confirm-list"></div>
-    <div class="action-row">
-      <button class="btn btn-dark" id="confirm-candidates-btn">Xác nhận và nạp dữ liệu</button>
-      <button class="btn btn-ghost close-modal">Huỷ</button>
-    </div>
-  </div>
-</div>
-
-<!-- TOAST -->
 <div class="toast-wrap" id="toast-wrap"></div>
 
 <script src="/script/config.js"></script>
 <script>
-  // ── toast helper (replaces alert() calls in the original JS below) ──
   function showToast(msg, type) {
     const wrap = document.getElementById('toast-wrap');
     const el = document.createElement('div');
@@ -456,6 +396,22 @@
   let votes = [];
   let votingCandidates = [];
   let candidates = [];
+  let ineligibleCandidates = []; // ứng viên trong danh sách vote nhưng CHƯA ở đúng vòng đang xét
+
+  // NEW: vòng đang thao tác trên trang admin — quyết định field vote đọc/ghi.
+  // Field: interview_schedule_round2 (vòng 2) / interview_schedule (vòng 4, giữ tên cũ
+  // để không phá dữ liệu đã có sẵn trên hệ thống — đồng bộ với calendar.html, profile.html,
+  // interview-arrangement.html phía candidate/arrangement).
+  let activeRound = 'round2';
+  function scheduleFieldFor(round) { return round === 'round2' ? 'interview_schedule_round2' : 'interview_schedule'; }
+  function currentScheduleField() { return scheduleFieldFor(activeRound); }
+  // Document cấu hình lịch (ngày/ca, trạng thái công bố, khoá, hạn vote) TÁCH RIÊNG theo từng vòng,
+  // để Vòng 2 và Vòng 4 có thể có ngày/ca khác nhau hoàn toàn (trước đây dùng chung 1 doc
+  // 'interview_schedule' nên đổi vòng vẫn hiện y hệt ngày/ca).
+  // Vòng 4 giữ nguyên doc cũ 'interview_schedule' để không phá dữ liệu/đồng bộ đã có với
+  // profile.html, interview-arrangement.html; Vòng 2 dùng doc mới 'interview_schedule_round2'.
+  function scheduleDocIdFor(round) { return round === 'round2' ? 'interview_schedule_round2' : 'interview_schedule'; }
+  function currentScheduleDocId() { return scheduleDocIdFor(activeRound); }
 
   // ── Auth ──
   auth.onAuthStateChanged(async (user) => {
@@ -486,6 +442,11 @@
         }
 
         await Promise.all([loadInterviewSchedule(), loadApplications(), loadVotes(), loadVotingCandidates()]);
+        // loadApplications() và loadVotingCandidates() chạy song song ở trên nên lúc
+        // syncVotingCandidatesWithApplications() tính current_round có thể applications
+        // CHƯA load xong (race condition) => sync lại 1 lần nữa cho chắc, sau khi mọi
+        // Promise đã resolve, trước khi render.
+        await syncVotingCandidatesWithApplications();
         document.getElementById('loading').classList.add('hidden');
         renderInterviewSchedule();
         renderStatistics();
@@ -502,7 +463,7 @@
   // ── Load functions ──
   async function loadInterviewSchedule() {
     try {
-      const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
+      const scheduleDoc = await db.collection('system').doc(currentScheduleDocId()).get();
       if (scheduleDoc.exists) {
         const data = scheduleDoc.data();
         interviewSchedule = data.schedule || [];
@@ -515,7 +476,7 @@
           document.getElementById('deadline-status').textContent = `Hạn hiện tại: ${pad(deadline.getDate())}/${pad(deadline.getMonth()+1)}/${deadline.getFullYear()} ${pad(deadline.getHours())}:${pad(deadline.getMinutes())}`;
         }
       } else {
-        await db.collection('system').doc('interview_schedule').set({ schedule: interviewSchedule, published: false, locked: false });
+        await db.collection('system').doc(currentScheduleDocId()).set({ schedule: interviewSchedule, published: false, locked: false });
         setPublishToggleUI(false);
       }
       await updateLockButtonStatus();
@@ -539,17 +500,52 @@
   async function loadVotingCandidates() {
     try {
       const snapshot = await db.collection('voting_candidates').get();
-      votingCandidates = snapshot.docs.map(doc => ({ id: doc.id, email: doc.data().email, addedAt: doc.data().addedAt || new Date(), addedBy: doc.data().addedBy || '' }));
+      votingCandidates = snapshot.docs.map(doc => ({ id: doc.id, email: doc.data().email, addedAt: doc.data().addedAt || new Date(), addedBy: doc.data().addedBy || '', round: doc.data().round || 'round2' }));
       await syncVotingCandidatesWithApplications();
     } catch (error) { console.error('Error loading voting candidates:',error); votingCandidates = []; }
   }
 
+  // Danh sách ứng viên vote KHÔNG còn nạp thủ công bằng email nữa.
+  // Nguồn ứng viên = tất cả application đang có current_round === activeRound (đúng vòng
+  // đang thao tác trên trang này, đối chiếu với trạng thái vòng trên Dashboard).
+  // "voting_candidates" giờ chỉ còn ý nghĩa là danh sách CẤP QUYỀN truy cập lịch/vote — mỗi
+  // doc = 1 email đã được admin cấp quyền. Ứng viên vẫn xuất hiện trong danh sách kể cả khi
+  // CHƯA được cấp quyền (để admin cấp), và vẫn hiển thị (đánh dấu) nếu đã được cấp quyền
+  // trước đó nhưng hiện current_round không còn khớp activeRound nữa (để admin thu hồi).
   async function syncVotingCandidatesWithApplications() {
     try {
-      candidates = votingCandidates.map(vc => {
-        const app = applications.find(a => a.email === vc.email);
-        return { id: vc.id, email: vc.email, name: app ? app.fullname||'' : '', priority: app ? app.priority_position||'' : '', backup: app ? app.secondary_position||'' : '', phone: app ? app.phone||'' : '', interview_schedule: app ? app.interview_schedule||[] : [], addedAt: vc.addedAt };
+      const field = currentScheduleField();
+      const requiredRound = activeRound; // 'round2' hoặc 'round4'
+      const grantedForRound = votingCandidates.filter(vc => vc.round === requiredRound);
+      const grantedByEmail = new Map(grantedForRound.map(vc => [vc.email, vc]));
+      const roundPool = applications.filter(app => (app.current_round || 'round1') === requiredRound);
+
+      const emailSet = new Set([...roundPool.map(a => a.email), ...grantedForRound.map(vc => vc.email)]);
+      const allMapped = Array.from(emailSet).map(email => {
+        const app = applications.find(a => a.email === email);
+        const vc = grantedByEmail.get(email);
+        const currentRound = app ? (app.current_round || 'round1') : null;
+        return {
+          id: vc ? vc.id : null,
+          email,
+          name: app ? app.fullname||'' : '',
+          priority: app ? app.priority_position||'' : '',
+          backup: app ? app.secondary_position||'' : '',
+          phone: app ? app.phone||'' : '',
+          interview_schedule: app ? (app[field]||[]) : [],
+          addedAt: vc ? vc.addedAt : null,
+          current_round: currentRound,
+          eligible: currentRound === requiredRound,
+          granted: !!vc,
+        };
       });
+      // Sắp xếp: chưa cấp quyền lên trước để admin dễ xử lý, trong mỗi nhóm sắp theo tên.
+      allMapped.sort((a, b) => {
+        if (a.granted !== b.granted) return a.granted ? 1 : -1;
+        return (a.name || a.email).localeCompare(b.name || b.email);
+      });
+      candidates = allMapped;
+      ineligibleCandidates = allMapped.filter(c => !c.eligible);
     } catch (error) { console.error('Error syncing voting candidates:', error); }
   }
 
@@ -567,7 +563,7 @@
     const lockBtn   = document.getElementById('lock-schedule-btn');
     const unlockBtn = document.getElementById('unlock-schedule-btn');
     try {
-      const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
+      const scheduleDoc = await db.collection('system').doc(currentScheduleDocId()).get();
       const isLocked = scheduleDoc.exists ? (scheduleDoc.data().locked || false) : false;
       lockBtn.style.display   = isLocked ? 'none'        : 'inline-flex';
       unlockBtn.style.display = isLocked ? 'inline-flex' : 'none';
@@ -597,11 +593,19 @@
 
   // ── Render: statistics ──
   function renderStatistics() {
-    document.getElementById('total-candidates').textContent = candidates.length;
+    const eligibleCandidates = candidates.filter(c => c.eligible);
+    document.getElementById('total-candidates').textContent = eligibleCandidates.length;
+    // Chỉ ứng viên ĐÃ được cấp quyền mới thực sự có thể vote, nên thống kê đã/chưa vote
+    // chỉ tính trên nhóm đã cấp quyền + đúng vòng.
+    const grantedEligible = eligibleCandidates.filter(c => c.granted);
     let voted = 0, notVoted = 0;
-    candidates.forEach(c => { if (c.interview_schedule && c.interview_schedule.length > 0) voted++; else notVoted++; });
+    grantedEligible.forEach(c => { if (c.interview_schedule && c.interview_schedule.length > 0) voted++; else notVoted++; });
     document.getElementById('voted-candidates').textContent = voted;
     document.getElementById('not-voted-candidates').textContent = notVoted;
+    const countEl = document.getElementById('candidate-count');
+    if (countEl) countEl.textContent = candidates.length;
+    const poolLabelEls = document.querySelectorAll('#round-pool-label');
+    poolLabelEls.forEach(el => { el.textContent = activeRound === 'round2' ? 'Vòng 2' : 'Vòng 4'; });
   }
 
   // ── Render: interview schedule (schedule tab) ──
@@ -613,7 +617,7 @@
       renderCurrentSchedule(); return;
     }
     const slotCounts = {};
-    candidates.forEach(c => { (c.interview_schedule || []).forEach(s => { slotCounts[s] = (slotCounts[s]||0)+1; }); });
+    candidates.filter(c => c.eligible).forEach(c => { (c.interview_schedule || []).forEach(s => { slotCounts[s] = (slotCounts[s]||0)+1; }); });
 
     interviewSchedule.forEach(day => {
       const el = document.createElement('div');
@@ -685,55 +689,90 @@
   function renderCandidateList() {
     const container = document.getElementById('candidate-list');
     container.innerHTML = '';
+
+    const roundLabel = activeRound === 'round2' ? 'Vòng 2' : 'Vòng 4';
+    if (ineligibleCandidates.length > 0) {
+      const notice = document.createElement('div');
+      notice.style.cssText = 'background:var(--warn-bg);border:1px solid #FDE68A;color:#92400E;border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;margin-bottom:14px;display:flex;align-items:center;gap:8px';
+      notice.innerHTML = `<i class="fas fa-triangle-exclamation"></i> ${ineligibleCandidates.length} ứng viên chưa ở đúng ${roundLabel} trên Dashboard (được đánh dấu bên dưới) — vote của họ ở đây sẽ không được tính vào thống kê cho tới khi cập nhật vòng.`;
+      container.appendChild(notice);
+    }
+
     if (candidates.length === 0) {
-      container.innerHTML = '<div class="empty" style="padding:24px 0"><i class="fas fa-users"></i><p>Chưa có ứng viên nào trong danh sách vote.</p></div>'; return;
+      container.innerHTML += '<div class="empty" style="padding:24px 0"><i class="fas fa-users"></i><p>Chưa có ứng viên nào trong danh sách vote.</p></div>'; return;
     }
     candidates.forEach(candidate => {
       const el = document.createElement('div');
       el.className = 'candidate-item';
+      if (!candidate.eligible) el.style.cssText = 'opacity:.65;background:var(--warn-bg)';
       const hasVoted = candidate.interview_schedule && candidate.interview_schedule.length > 0;
+      const eligBadge = candidate.eligible
+        ? ''
+        : `<span class="cand-status" style="background:var(--warn-bg);color:#92400E;border:1px solid #FDE68A;margin-left:6px"><i class="fas fa-triangle-exclamation" style="font-size:9px"></i> Không ở ${roundLabel}${candidate.current_round ? ` (đang: ${candidate.current_round})` : ' (không tìm thấy hồ sơ)'}</span>`;
+      const permBadge = candidate.granted
+        ? `<span class="cand-perm-badge granted"><i class="fas fa-user-check" style="font-size:9px"></i> Đã cấp quyền</span>`
+        : `<span class="cand-perm-badge not-granted"><i class="fas fa-user" style="font-size:9px"></i> Chưa cấp quyền</span>`;
+      const actionBtn = candidate.granted
+        ? `<button class="candidate-revoke-btn" data-candidate-email="${candidate.email}"><i class="fas fa-user-slash"></i> Thu hồi</button>`
+        : `<button class="candidate-grant-btn" data-candidate-email="${candidate.email}"><i class="fas fa-user-check"></i> Cấp quyền</button>`;
       el.innerHTML = `
         <div class="cand-avatar">${(candidate.name||candidate.email||'?').charAt(0).toUpperCase()}</div>
         <div class="cand-info">
           <div class="cand-name">${candidate.name || 'Chưa có tên'}</div>
           <div class="cand-email">${candidate.email}</div>
-          <span class="cand-status ${hasVoted?'voted':'not-voted'}">${hasVoted?`<i class="fas fa-check" style="font-size:9px"></i> Đã chọn ${candidate.interview_schedule.length} ca`:'Chưa chọn lịch'}</span>
+          <span class="cand-status ${hasVoted?'voted':'not-voted'}">${hasVoted?`<i class="fas fa-check" style="font-size:9px"></i> Đã chọn ${candidate.interview_schedule.length} ca`:'Chưa chọn lịch'}</span>${permBadge}${eligBadge}
         </div>
         <div class="cand-actions">
-          <button class="candidate-reset-btn" data-candidate-id="${candidate.id}" data-candidate-email="${candidate.email}">
+          ${actionBtn}
+          <button class="candidate-reset-btn" data-candidate-email="${candidate.email}">
             <i class="fas fa-undo"></i> Reset
-          </button>
-          <button class="candidate-delete-btn" data-candidate-id="${candidate.id}" data-candidate-email="${candidate.email}">
-            <i class="fas fa-trash"></i> Xoá
           </button>
         </div>`;
       container.appendChild(el);
     });
 
-    document.querySelectorAll('.candidate-delete-btn').forEach(btn => {
-      btn.addEventListener('click', function() { removeCandidateFromVoting(this.getAttribute('data-candidate-id'), this.getAttribute('data-candidate-email')); });
+    document.querySelectorAll('.candidate-grant-btn').forEach(btn => {
+      btn.addEventListener('click', function() { grantVoteAccess(this.getAttribute('data-candidate-email')); });
+    });
+    document.querySelectorAll('.candidate-revoke-btn').forEach(btn => {
+      btn.addEventListener('click', function() { revokeVoteAccess(this.getAttribute('data-candidate-email')); });
     });
     document.querySelectorAll('.candidate-reset-btn').forEach(btn => {
       btn.addEventListener('click', function() { resetCandidateVote(this.getAttribute('data-candidate-email')); });
     });
   }
 
-  async function removeCandidateFromVoting(candidateId, candidateEmail) {
-    if (confirm('Bạn có chắc chắn muốn xóa ứng viên này khỏi danh sách có quyền vote?')) {
-      try {
-        await db.collection('voting_candidates').doc(candidateId).delete();
-        await loadVotingCandidates(); renderCandidateList(); renderStatistics();
-        showToast('Đã xoá ứng viên khỏi danh sách vote', 'ok');
-      } catch (error) { console.error(error); showToast('Có lỗi xảy ra khi xóa ứng viên', 'err'); }
-    }
+  // ── Cấp quyền / thu hồi quyền vote ──
+  async function grantVoteAccess(candidateEmail) {
+    try {
+      if (votingCandidates.find(vc => vc.email === candidateEmail && vc.round === activeRound)) return; // đã có quyền cho vòng này
+      await db.collection('voting_candidates').add({ email: candidateEmail, round: activeRound, addedAt: new Date(), addedBy: currentUser.email });
+      await loadVotingCandidates(); await syncVotingCandidatesWithApplications();
+      renderCandidateList(); renderStatistics();
+      showToast('Đã cấp quyền vote cho ứng viên', 'ok');
+    } catch (error) { console.error(error); showToast('Có lỗi xảy ra khi cấp quyền', 'err'); }
   }
 
+  async function revokeVoteAccess(candidateEmail) {
+    if (!confirm('Bạn có chắc chắn muốn THU HỒI quyền vote của ứng viên này? Ứng viên sẽ không thể truy cập lịch phỏng vấn nữa.')) return;
+    try {
+      const vc = votingCandidates.find(v => v.email === candidateEmail && v.round === activeRound);
+      if (vc) await db.collection('voting_candidates').doc(vc.id).delete();
+      await loadVotingCandidates(); await syncVotingCandidatesWithApplications();
+      renderCandidateList(); renderStatistics();
+      showToast('Đã thu hồi quyền vote', 'ok');
+    } catch (error) { console.error(error); showToast('Có lỗi xảy ra khi thu hồi quyền', 'err'); }
+  }
+
+  // Reset vote chỉ xoá field của VÒNG ĐANG CHỌN (activeRound), giữ nguyên vote của vòng còn lại.
   async function resetCandidateVote(candidateEmail) {
-    if (confirm('Bạn có chắc chắn muốn reset kết quả vote của ứng viên này?')) {
+    const roundLabel = activeRound === 'round2' ? 'Vòng 2' : 'Vòng 4';
+    if (confirm(`Bạn có chắc chắn muốn reset kết quả vote ${roundLabel} của ứng viên này? (Vote của vòng còn lại vẫn được giữ nguyên)`)) {
       try {
+        const field = currentScheduleField();
         const application = applications.find(app => app.email === candidateEmail);
-        if (application) await db.collection('applications').doc(application.id).update({ interview_schedule: [] });
-        const voteQuery = await db.collection('votes').where('candidateEmail','==',candidateEmail).get();
+        if (application) await db.collection('applications').doc(application.id).update({ [field]: [] });
+        const voteQuery = await db.collection('votes').where('candidateEmail','==',candidateEmail).where('round','==',activeRound).get();
         if (!voteQuery.empty) {
           const batch = db.batch();
           voteQuery.docs.forEach(doc => batch.delete(doc.ref));
@@ -741,7 +780,7 @@
         }
         await loadApplications(); await syncVotingCandidatesWithApplications();
         renderCandidateList(); renderStatistics();
-        showToast('Đã reset kết quả vote', 'ok');
+        showToast(`Đã reset kết quả vote ${roundLabel}`, 'ok');
       } catch (error) { console.error(error); showToast('Có lỗi xảy ra khi reset vote', 'err'); }
     }
   }
@@ -750,7 +789,7 @@
   document.getElementById('lock-schedule-btn').addEventListener('click', async function() {
     if (confirm('Bạn có chắc chắn muốn KHÓA lịch phỏng vấn? Ứng viên sẽ KHÔNG THỂ chọn/thay đổi lịch sau khi khóa.')) {
       try {
-        await db.collection('system').doc('interview_schedule').set({ locked:true, locked_at:new Date(), locked_by:currentUser.email }, { merge:true });
+        await db.collection('system').doc(currentScheduleDocId()).set({ locked:true, locked_at:new Date(), locked_by:currentUser.email }, { merge:true });
         showToast('Đã khoá lịch phỏng vấn', 'ok'); await updateLockButtonStatus();
       } catch (error) { showToast('Có lỗi xảy ra khi khoá lịch', 'err'); }
     }
@@ -758,15 +797,35 @@
   document.getElementById('unlock-schedule-btn').addEventListener('click', async function() {
     if (confirm('Bạn có chắc chắn muốn MỞ KHÓA lịch phỏng vấn?')) {
       try {
-        await db.collection('system').doc('interview_schedule').set({ locked:false, unlocked_at:new Date(), unlocked_by:currentUser.email }, { merge:true });
+        await db.collection('system').doc(currentScheduleDocId()).set({ locked:false, unlocked_at:new Date(), unlocked_by:currentUser.email }, { merge:true });
         showToast('Đã mở khoá lịch phỏng vấn', 'ok'); await updateLockButtonStatus();
       } catch (error) { showToast('Có lỗi xảy ra khi mở khoá lịch', 'err'); }
     }
   });
 
+  // ── Round switch ──
+  document.getElementById('round-switch').addEventListener('click', async function(e) {
+    const btn = e.target.closest('button[data-round]');
+    if (!btn) return;
+    const round = btn.getAttribute('data-round');
+    if (round === activeRound) return;
+    activeRound = round;
+    document.querySelectorAll('#round-switch button').forEach(b => b.classList.toggle('active', b === btn));
+    const label = round === 'round2' ? 'Vòng 2' : 'Vòng 4';
+    document.getElementById('active-round-label').textContent = label;
+    document.getElementById('clear-votes-round-label').textContent = label;
+    document.getElementById('clear-votes-round-label2').textContent = label;
+    // Lịch (ngày/ca), trạng thái công bố/khoá, hạn vote đều tách riêng theo từng vòng
+    // (xem scheduleDocIdFor) nên phải load lại toàn bộ khi chuyển vòng.
+    await loadInterviewSchedule();
+    await syncVotingCandidatesWithApplications();
+    renderInterviewSchedule();
+    renderStatistics();
+    renderCandidateList();
+  });
+
   // ── Event Listeners ──
   document.addEventListener('DOMContentLoaded', function() {
-    // Tab switching
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', function() {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -776,14 +835,12 @@
       });
     });
 
-    // Logout
     document.getElementById('logout-btn').addEventListener('click', function() {
       if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
         auth.signOut().then(() => { window.location.href = '../admin/login.html'; }).catch(console.error);
       }
     });
 
-    // Add day
     document.getElementById('add-day-btn').addEventListener('click', function() {
       const date = document.getElementById('interview-date').value;
       const slotsText = document.getElementById('time-slots').value;
@@ -804,16 +861,14 @@
       showToast(`Đã thêm ${slots.length} khung giờ cho ${formattedDate}`, 'ok');
     });
 
-    // Save schedule
     document.getElementById('save-schedule-btn').addEventListener('click', async function() {
       try {
-        await db.collection('system').doc('interview_schedule').set({ schedule: interviewSchedule, published: false, locked: false }, { merge: true });
+        await db.collection('system').doc(currentScheduleDocId()).set({ schedule: interviewSchedule, published: false, locked: false }, { merge: true });
         renderInterviewSchedule();
         showToast('Đã lưu lịch phỏng vấn', 'ok');
       } catch (error) { console.error(error); showToast('Có lỗi xảy ra khi lưu lịch', 'err'); }
     });
 
-    // Save deadline
     document.getElementById('save-deadline-btn').addEventListener('click', async function() {
       const dateVal = document.getElementById('vote-deadline-date').value;
       const timeVal = document.getElementById('vote-deadline-time').value;
@@ -824,7 +879,7 @@
       const btn = this; const orig = btn.innerHTML;
       btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
       try {
-        await db.collection('system').doc('interview_schedule').set({ deadline: deadlineDate, deadline_updated_at: new Date(), deadline_updated_by: currentUser.email }, { merge: true });
+        await db.collection('system').doc(currentScheduleDocId()).set({ deadline: deadlineDate, deadline_updated_at: new Date(), deadline_updated_by: currentUser.email }, { merge: true });
         const pad = n => String(n).padStart(2,'0');
         statusEl.textContent = `Hạn hiện tại: ${pad(deadlineDate.getDate())}/${pad(deadlineDate.getMonth()+1)}/${deadlineDate.getFullYear()} ${pad(deadlineDate.getHours())}:${pad(deadlineDate.getMinutes())}`;
         showToast('Đã lưu hạn đóng đơn vote', 'ok');
@@ -832,87 +887,80 @@
       finally { btn.disabled = false; btn.innerHTML = orig; }
     });
 
-    // Publish toggle
     document.getElementById('publish-schedule-toggle').addEventListener('change', async function() {
       const wantPublish = this.checked;
       if (wantPublish) {
         if (interviewSchedule.length === 0) { showToast('Vui lòng tạo lịch trước khi công bố', 'warn'); setPublishToggleUI(false); return; }
         if (!confirm('Bạn có chắc chắn muốn công bố lịch phỏng vấn này?')) { setPublishToggleUI(false); return; }
         try {
-          await db.collection('system').doc('interview_schedule').set({ schedule: interviewSchedule, published: true, locked: false, published_at: new Date() }, { merge: true });
+          await db.collection('system').doc(currentScheduleDocId()).set({ schedule: interviewSchedule, published: true, locked: false, published_at: new Date() }, { merge: true });
           setPublishToggleUI(true); showToast('Đã công bố lịch phỏng vấn', 'ok');
         } catch (error) { console.error(error); showToast('Có lỗi xảy ra khi công bố', 'err'); setPublishToggleUI(false); }
       } else {
         if (!confirm('Bạn có chắc chắn muốn ĐÓNG công bố lịch phỏng vấn?')) { setPublishToggleUI(true); return; }
         try {
-          await db.collection('system').doc('interview_schedule').set({ published: false, unpublished_at: new Date() }, { merge: true });
+          await db.collection('system').doc(currentScheduleDocId()).set({ published: false, unpublished_at: new Date() }, { merge: true });
           setPublishToggleUI(false); showToast('Đã đóng công bố lịch', 'ok');
         } catch (error) { console.error(error); showToast('Có lỗi xảy ra', 'err'); setPublishToggleUI(true); }
       }
     });
 
-    // Load candidates
-    document.getElementById('load-candidates-btn').addEventListener('click', async function() {
-      const emailsText = document.getElementById('candidate-emails').value.trim();
-      if (!emailsText) { showToast('Vui lòng nhập danh sách email ứng viên', 'warn'); return; }
-      const emails = emailsText.split('\n').map(e => e.trim()).filter(e => e);
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const invalidEmails = emails.filter(e => !emailRegex.test(e));
-      if (invalidEmails.length > 0) { showToast(`Email không hợp lệ: ${invalidEmails.join(', ')}`, 'err'); return; }
+    // Cấp quyền vote cho TẤT CẢ ứng viên đang hiển thị mà chưa được cấp quyền.
+    document.getElementById('grant-all-btn').addEventListener('click', async function() {
+      const notGranted = candidates.filter(c => !c.granted);
+      if (notGranted.length === 0) { showToast('Tất cả ứng viên đã được cấp quyền', 'warn'); return; }
+      if (!confirm(`Cấp quyền vote cho ${notGranted.length} ứng viên chưa có quyền?`)) return;
       try {
-        let addedCount = 0, existingCount = 0;
-        for (const email of emails) {
-          if (!votingCandidates.find(vc => vc.email === email)) {
-            await db.collection('voting_candidates').add({ email, addedAt: new Date(), addedBy: currentUser.email });
-            addedCount++;
-          } else { existingCount++; }
-        }
-        await loadVotingCandidates(); renderCandidateList(); renderStatistics();
-        document.getElementById('candidate-emails').value = '';
-        let msg = `Đã thêm ${addedCount} ứng viên`;
-        if (existingCount > 0) msg += ` (${existingCount} đã tồn tại)`;
-        showToast(msg, 'ok');
-      } catch (error) { console.error(error); showToast('Có lỗi xảy ra khi thêm ứng viên', 'err'); }
+        const batch = db.batch();
+        notGranted.forEach(c => {
+          const ref = db.collection('voting_candidates').doc();
+          batch.set(ref, { email: c.email, round: activeRound, addedAt: new Date(), addedBy: currentUser.email });
+        });
+        await batch.commit();
+        await loadVotingCandidates(); await syncVotingCandidatesWithApplications();
+        renderCandidateList(); renderStatistics();
+        showToast(`Đã cấp quyền vote cho ${notGranted.length} ứng viên`, 'ok');
+      } catch (error) { console.error(error); showToast('Có lỗi xảy ra khi cấp quyền hàng loạt', 'err'); }
     });
 
-    // Clear candidates
-    document.getElementById('clear-candidates-btn').addEventListener('click', async function() {
-      if (confirm('Bạn có chắc chắn muốn xóa TOÀN BỘ ứng viên khỏi danh sách có quyền vote?')) {
-        try {
-          const snapshot = await db.collection('voting_candidates').get();
-          if (snapshot.empty) { showToast('Không có ứng viên nào để xoá', 'warn'); return; }
-          const batch = db.batch();
-          snapshot.docs.forEach(doc => batch.delete(doc.ref));
-          await batch.commit();
-          await loadVotingCandidates(); renderCandidateList(); renderStatistics();
-          showToast('Đã xoá toàn bộ ứng viên khỏi danh sách vote', 'ok');
-        } catch (error) { console.error(error); showToast('Có lỗi xảy ra khi xóa ứng viên', 'err'); }
-      }
+    // Thu hồi quyền vote của TẤT CẢ ứng viên đang hiển thị (đã được cấp quyền).
+    document.getElementById('revoke-all-btn').addEventListener('click', async function() {
+      const granted = candidates.filter(c => c.granted);
+      if (granted.length === 0) { showToast('Không có ứng viên nào đang được cấp quyền', 'warn'); return; }
+      if (!confirm(`Bạn có chắc chắn muốn THU HỒI quyền vote của TẤT CẢ ${granted.length} ứng viên đang hiển thị?`)) return;
+      try {
+        const batch = db.batch();
+        granted.forEach(c => { batch.delete(db.collection('voting_candidates').doc(c.id)); });
+        await batch.commit();
+        await loadVotingCandidates(); await syncVotingCandidatesWithApplications();
+        renderCandidateList(); renderStatistics();
+        showToast('Đã thu hồi quyền vote của toàn bộ ứng viên', 'ok');
+      } catch (error) { console.error(error); showToast('Có lỗi xảy ra khi thu hồi quyền hàng loạt', 'err'); }
     });
 
-    // Clear votes
+    // Clear votes — CHỈ xoá field vote của activeRound, KHÔNG đụng vòng còn lại.
     document.getElementById('clear-votes-btn').addEventListener('click', async function() {
-      if (confirm('Bạn có chắc chắn muốn xóa toàn bộ dữ liệu vote? Hành động này không thể hoàn tác.')) {
+      const roundLabel = activeRound === 'round2' ? 'Vòng 2' : 'Vòng 4';
+      if (confirm(`Bạn có chắc chắn muốn xóa toàn bộ dữ liệu vote của ${roundLabel}? Vote của vòng còn lại vẫn được giữ. Hành động này không thể hoàn tác.`)) {
         try {
+          const field = currentScheduleField();
           const batch = db.batch();
-          applications.forEach(app => { const ref = db.collection('applications').doc(app.id); batch.update(ref, { interview_schedule: [] }); });
+          applications.forEach(app => { const ref = db.collection('applications').doc(app.id); batch.update(ref, { [field]: [] }); });
           await batch.commit();
-          const votesSnapshot = await db.collection('votes').get();
+          const votesSnapshot = await db.collection('votes').where('round','==',activeRound).get();
           const delBatch = db.batch();
           votesSnapshot.docs.forEach(doc => delBatch.delete(doc.ref));
           await delBatch.commit();
           await Promise.all([loadApplications(), loadVotes()]);
           await syncVotingCandidatesWithApplications();
           renderCandidateList(); renderStatistics();
-          showToast('Đã xoá toàn bộ dữ liệu vote', 'ok');
+          showToast(`Đã xoá toàn bộ dữ liệu vote ${roundLabel}`, 'ok');
         } catch (error) { console.error(error); showToast('Có lỗi xảy ra khi xóa dữ liệu vote', 'err'); }
       }
     });
 
-    // Export schedule
     document.getElementById('export-schedule-btn').addEventListener('click', function() { exportScheduleToExcel(); });
 
-    // Close modal buttons
     document.querySelectorAll('.close-modal').forEach(btn => {
       btn.addEventListener('click', function() {
         document.querySelectorAll('.modal').forEach(modal => { modal.style.display = 'none'; });
@@ -946,8 +994,8 @@
     const ws = XLSX.utils.aoa_to_sheet(data);
     ws['!cols'] = [{wch:5},{wch:25},{wch:30},{wch:15},{wch:15},{wch:15},...new Array(headers.length-6).fill({wch:35})];
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Lịch phỏng vấn');
-    XLSX.writeFile(wb, `lich_phong_van_enactus_${new Date().toISOString().split('T')[0]}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, ws, `Lịch phỏng vấn - ${activeRound === 'round2' ? 'Vòng 2' : 'Vòng 4'}`);
+    XLSX.writeFile(wb, `lich_phong_van_enactus_${activeRound}_${new Date().toISOString().split('T')[0]}.xlsx`);
     showToast('Đã xuất Excel', 'ok');
   }
 </script>

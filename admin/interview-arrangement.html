@@ -881,14 +881,16 @@ const S = {
   candidates: [],    // [{name, email, dept, dept2, availableSlots:[slotId,...], fromCalendar}] — riêng theo từng vòng (xem _roundData)
   interviewers: [],  // [{name, email, dept, availableSlots:[slotId,...], accountRole}] — DÙNG CHUNG cho cả 3 vòng (cùng 1 nguồn nhân sự/Alumni)
   slots: [],         // [{id, name, day, date, time, mode:'offline'|'online', location, note}] — active slot list cho vòng đang chọn
-  slotsCalendar: [], // cache ca từ system/interview_schedule (Calendar) — dùng cho round2/round4
+  slotsCalendar: [], // backward-compat alias — trỏ tới ca của vòng Calendar vừa load gần nhất (xem slotsCalendarByRound)
+  slotsCalendarByRound: { round2: [], round4: [] }, // cache ca TÁCH RIÊNG theo từng vòng (Calendar dùng 2 doc riêng cho round2/round4)
   slotsForm: [],     // cache ca từ system/interview_settings (Form) — dùng cho round1 (PVTĐ)
   activePerson: null,// {type:'candidate'|'interviewer', index}
   schedule: [],
   lastUnmatched: [], // unmatched list from the last run/load, kept alongside schedule for persistence
   scheduleDirty: false, // true khi đã chạy Sắp xếp (hoặc sửa kết quả) nhưng chưa Lưu lịch — dùng để cảnh báo trước khi rời trang
   slotMode: 'offline',
-  slotMetaRaw: {},   // raw slotMeta map as stored on system/interview_schedule, keyed by sanitized slot id
+  slotMetaRaw: {},   // raw slotMeta map của vòng đang active, keyed by sanitized slot id
+  slotMetaRawByRound: { round2: {}, round4: {} }, // cache slotMeta TÁCH RIÊNG theo từng vòng (round2 doc vs round4 doc)
   slotRoles: {},      // { [slotId]: { [roleKey]: [{name, dept, accountRole}] } } — vai trò GẮN VỚI CA (scope:'slot'), riêng theo từng vòng (xem _roundData)
   roleConfig: { round1:[], round2:[], round4:[] }, // role TUỲ CHỈNH (custom) thêm cho từng vòng, gộp thêm vào BASE_ROLES khi hiển thị
   resultView: 'table', // 'table' | 'board' — chế độ hiển thị "Kết quả sắp xếp"
@@ -1061,15 +1063,16 @@ function setActiveRound(round) {
       loadSlotsFromForm().then(() => { S.slotsForm = S.slots; remapInterviewerSlots(); });
     }
   } else {
-    // round2 / round4 → dùng Calendar
-    if (S.slotsCalendar && S.slotsCalendar.length) {
-      S.slots = S.slotsCalendar;
+    // round2 / round4 → dùng Calendar — MỖI VÒNG có cache ca riêng (S.slotsCalendarByRound)
+    if (S.slotsCalendarByRound[round] && S.slotsCalendarByRound[round].length) {
+      S.slots = S.slotsCalendarByRound[round];
+      S.slotMetaRaw = S.slotMetaRawByRound[round] || {};
       remapInterviewerSlots();
       renderSlotsList();
       buildCalGrid();
     } else {
       // Chưa có cache → load từ Firebase (hiếm — thường đã load lúc init)
-      loadSlotsFromCalendar().then(() => remapInterviewerSlots());
+      loadSlotsFromCalendar(round).then(() => remapInterviewerSlots());
     }
   }
 
@@ -1219,8 +1222,13 @@ async function initApp() {
   try {
     const ok = await resolveAuthAndRole();
     if (!ok) return; // resolveAuthAndRole already redirected the page away
-    await loadSlotsFromCalendar(); // luôn load Calendar slots trước, lưu vào S.slotsCalendar
-    S.slotsCalendar = [...S.slots]; // cache để restore khi switch round2/round4
+    // Load Calendar slots của CẢ HAI vòng 2 và 4 (2 doc riêng) để cache sẵn, tránh gọi lại Firebase
+    // mỗi lần đổi tab và tránh tình trạng round2/round4 hiện chung 1 bộ ngày/ca.
+    await Promise.all([loadSlotsFromCalendar('round2'), loadSlotsFromCalendar('round4')]);
+    if (S.activeRound !== 'round1') {
+      S.slots = S.slotsCalendarByRound[S.activeRound] || [];
+      S.slotMetaRaw = S.slotMetaRawByRound[S.activeRound] || {};
+    }
     // Nếu activeRound là round1 (mặc định sau này), load thêm form slots
     if (S.activeRound === 'round1') {
       await loadSlotsFromForm();
@@ -1310,14 +1318,20 @@ function resolveAuthAndRole() {
         } else if (role === 'admin') {
           S.role = (dept === 'HR') ? 'admin-hr' : 'admin-other';
 
-          // Kiểm tra SuperAdmin có mở Interview (per-round hoặc global) cho Admin không
-          const schedDoc = await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).get();
+          // Kiểm tra SuperAdmin có mở Interview (per-round hoặc global) cho Admin không.
+          // interviewOpen_round1/round4 nằm trên doc round4 ('interview_schedule'); interviewOpen_round2
+          // nằm trên doc round2 ('interview_schedule_round2') — xem vote.html (setRoundInterviewOpen).
+          const [schedDoc, sched2Doc] = await Promise.all([
+            window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).get(),
+            window.db.collection('system').doc(scheduleDocIdForRound('round2')).get(),
+          ]);
           const schedData = schedDoc.exists ? schedDoc.data() : null;
-          // Đọc per-round flags, fallback về global memberInterviewOpen
+          const sched2Data = sched2Doc.exists ? sched2Doc.data() : null;
+          // Đọc per-round flags, fallback về global memberInterviewOpen (global flag sống ở doc round4)
           const globalOpen = !!(schedData && schedData.memberInterviewOpen);
           S.interviewOpenByRound = {
             round1: schedData && ('interviewOpen_round1' in schedData) ? !!schedData.interviewOpen_round1 : globalOpen,
-            round2: schedData && ('interviewOpen_round2' in schedData) ? !!schedData.interviewOpen_round2 : globalOpen,
+            round2: sched2Data && ('interviewOpen_round2' in sched2Data) ? !!sched2Data.interviewOpen_round2 : globalOpen,
             round4: schedData && ('interviewOpen_round4' in schedData) ? !!schedData.interviewOpen_round4 : globalOpen,
           };
           const anyRoundOpen = Object.values(S.interviewOpenByRound).some(Boolean);
@@ -1356,6 +1370,11 @@ function resolveAuthAndRole() {
 //  sanitized slot id, so it never touches the `schedule` array Calendar reads.
 // ══════════════════════════════════════════════════
 const SCHEDULE_DOC_PATH = ['system', 'interview_schedule'];
+// Lịch (ngày/ca) của Vòng 2 và Vòng 4 giờ TÁCH RIÊNG thành 2 document khác nhau trên Calendar
+// (trước đây dùng chung 1 doc 'interview_schedule' nên 2 vòng luôn hiện y hệt ca/ngày, và slotMeta
+// — mode/location/note — của 2 vòng còn bị LẪN vào nhau nếu trùng ngày/giờ). round4 giữ tên doc cũ
+// để không phá dữ liệu đã có sẵn trên hệ thống; round1 (Form) không liên quan tới doc này.
+function scheduleDocIdForRound(round) { return round === 'round2' ? 'interview_schedule_round2' : 'interview_schedule'; }
 function sanitizeSlotKey(slotId) { return String(slotId).replace(/[^\w]/g, '_'); }
 function weekdayFromDate(dateStr) {
   try {
@@ -1368,13 +1387,21 @@ function weekdayFromDate(dateStr) {
   } catch(e) { return dateStr; }
 }
 
-async function loadSlotsFromCalendar() {
-  if (!window.db) { S.slots = []; S.slotsCalendar = []; S.slotMetaRaw = {}; renderSlotsList(); buildCalGrid(); return; }
+// round: 'round2' hoặc 'round4' — mặc định là vòng đang active. Load ĐÚNG doc Calendar của vòng đó
+// và lưu cache riêng vào S.slotsCalendarByRound[round] / S.slotMetaRawByRound[round] để round2/round4
+// không còn dùng chung 1 bộ ngày/ca/slotMeta nữa.
+async function loadSlotsFromCalendar(round) {
+  round = round || (S.activeRound === 'round1' ? 'round2' : S.activeRound);
+  if (!window.db) {
+    S.slotsCalendarByRound[round] = []; S.slotMetaRawByRound[round] = {};
+    if (S.activeRound === round) { S.slots = []; S.slotMetaRaw = {}; renderSlotsList(); buildCalGrid(); }
+    return;
+  }
   try {
-    const doc = await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).get();
+    const doc = await window.db.collection('system').doc(scheduleDocIdForRound(round)).get();
     const data = doc.exists ? doc.data() : null;
     const days = (data && data.schedule) || [];
-    S.slotMetaRaw = (data && data.slotMeta) || {};
+    const slotMetaRaw = (data && data.slotMeta) || {};
 
     const slots = [];
     let order = 0;
@@ -1383,7 +1410,7 @@ async function loadSlotsFromCalendar() {
       (day.slots || []).forEach((time, idx) => {
         const id = `${day.date}_${time}`;
         const metaKey = sanitizeSlotKey(id);
-        const meta = S.slotMetaRaw[metaKey] || {};
+        const meta = slotMetaRaw[metaKey] || {};
         slots.push({
           id, metaKey,
           name: `Ca ${idx + 1}`,
@@ -1395,21 +1422,21 @@ async function loadSlotsFromCalendar() {
         });
       });
     });
-    // Lưu riêng ca từ Calendar để restore khi chuyển về round2/round4
-    S.slotsCalendar = slots;
-    // Vòng 1 dùng ca từ Form — chỉ set S.slots = Calendar nếu đang ở round2/round4
-    if (S.activeRound !== 'round1') {
+    // Lưu riêng ca + slotMeta theo TỪNG VÒNG để restore khi chuyển round2/round4
+    S.slotsCalendarByRound[round] = slots;
+    S.slotMetaRawByRound[round] = slotMetaRaw;
+    S.slotsCalendar = slots; // backward-compat alias (trỏ tới vòng vừa load)
+    if (S.activeRound === round) {
       S.slots = slots;
+      S.slotMetaRaw = slotMetaRaw;
     }
   } catch(e) {
     console.warn('Không tải được ca từ Calendar:', e);
-    S.slots = []; S.slotsCalendar = []; S.slotMetaRaw = {};
+    S.slotsCalendarByRound[round] = []; S.slotMetaRawByRound[round] = {};
+    if (S.activeRound === round) { S.slots = []; S.slotMetaRaw = {}; }
     toast('Lỗi tải ca từ Calendar: ' + e.message, 'err');
   }
-  // Nếu đang ở Vòng 1, tải ca từ Form thay vì Calendar
-  if (S.activeRound === 'round1') {
-    await loadSlotsFromForm();
-  } else {
+  if (S.activeRound === round) {
     renderSlotsList();
     buildCalGrid();
   }
@@ -1605,10 +1632,12 @@ async function saveSlot() {
   const metaKey = sanitizeSlotKey(id);
 
   S.slotMetaRaw[metaKey] = meta;
+  const round = S.activeRound === 'round1' ? 'round4' : S.activeRound; // round1 (Form) vẫn dùng doc cũ như trước
+  S.slotMetaRawByRound[round] = S.slotMetaRaw;
 
   if (window.db) {
     try {
-      await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).update({ slotMeta: S.slotMetaRaw });
+      await window.db.collection('system').doc(scheduleDocIdForRound(round)).update({ slotMeta: S.slotMetaRaw });
     } catch(e) { toast('Lỗi lưu cấu hình ca: ' + e.message, 'err'); return; }
   }
 
@@ -1628,9 +1657,11 @@ async function resetSlotMeta() {
   showConfirm('Đặt lại cấu hình ca này?', 'Hình thức sẽ về Offline, xoá địa điểm & ghi chú. Ca (ngày/giờ) vẫn giữ nguyên trên Calendar.', async () => {
     const metaKey = sanitizeSlotKey(id);
     delete S.slotMetaRaw[metaKey];
+    const round = S.activeRound === 'round1' ? 'round4' : S.activeRound; // round1 (Form) vẫn dùng doc cũ như trước
+    S.slotMetaRawByRound[round] = S.slotMetaRaw;
     if (window.db) {
       try {
-        await window.db.collection(SCHEDULE_DOC_PATH[0]).doc(SCHEDULE_DOC_PATH[1]).update({ slotMeta: S.slotMetaRaw });
+        await window.db.collection('system').doc(scheduleDocIdForRound(round)).update({ slotMeta: S.slotMetaRaw });
       } catch(e) { toast('Lỗi: ' + e.message, 'err'); return; }
     }
     const idx = S.slots.findIndex(s => s.id === id);
@@ -1931,8 +1962,7 @@ async function resyncSlots() {
     await loadSlotsFromForm();
     S.slotsForm = [...S.slots];
   } else {
-    await loadSlotsFromCalendar();
-    S.slotsCalendar = [...S.slots];
+    await loadSlotsFromCalendar(S.activeRound); // tự cập nhật S.slots + cache S.slotsCalendarByRound[activeRound]
   }
 }
 // Ca ứng viên đã vote (application_interview_slots trên hồ sơ, do form.js lưu)
@@ -1985,13 +2015,27 @@ async function loadCandidatesRound1() {
 }
 
 // Vòng 2/4 — lấy voting_candidates (danh sách được duyệt) + cross-check applications.
+//
+// FIX: trước đây hàm này lấy TOÀN BỘ voting_candidates không phân biệt vòng nào, nên ứng
+// viên được cấp quyền vote Vòng 2 cũng bị kéo nhầm vào sắp xếp Vòng 4 (và ngược lại) — kể cả
+// khi họ chưa hề lên tới vòng đó trên Dashboard. Giờ lọc CHẶT theo 2 điều kiện, khớp với
+// calendar.html/profile.html:
+//   1. Doc voting_candidates phải có field `round` khớp đúng S.activeRound (doc cũ chưa có
+//      field `round` thì coi là round2, đồng bộ quy ước với calendar.html/profile.html).
+//   2. Hồ sơ application phải đang thật sự ở đúng vòng đó (current_round === S.activeRound)
+//      trên Dashboard — tránh nạp nhầm ứng viên đã bị loại hoặc chưa lên vòng.
 async function loadCandidatesRound2or4() {
+  const requiredRound = S.activeRound; // 'round2' hoặc 'round4'
   const votingSnap = await window.db.collection('voting_candidates').get();
   if (votingSnap.empty) { toast('Không có ứng viên nào trong danh sách được duyệt (voting_candidates)', 'warn'); return; }
 
   const approvedEmails = new Set(
-    votingSnap.docs.map(d => (d.data().email || '').toLowerCase().trim()).filter(Boolean)
+    votingSnap.docs
+      .filter(d => (d.data().round || 'round2') === requiredRound)
+      .map(d => (d.data().email || '').toLowerCase().trim())
+      .filter(Boolean)
   );
+  if (approvedEmails.size === 0) { toast(`Không có ứng viên nào được cấp quyền cho ${requiredRound === 'round2' ? 'Vòng 2' : 'Vòng 4'}`, 'warn'); return; }
 
   const appSnap = await window.db.collection('applications').get();
   let added = 0;
@@ -2000,11 +2044,18 @@ async function loadCandidatesRound2or4() {
     const app = doc.data();
     const email = (app.email || '').toLowerCase().trim();
     if (!approvedEmails.has(email)) return;
+    // Chỉ nạp ứng viên đang THẬT SỰ ở đúng vòng này trên Dashboard — bỏ qua nếu current_round
+    // lệch (đã bị loại từ vòng trước, hoặc đã lên vòng sau).
+    if ((app.current_round || 'round1') !== requiredRound) return;
 
     const name = app.fullname || app.name || email;
     const dept1 = normalizeDept(app.priority_position || app.department || '');
     const dept2 = normalizeDept(app.secondary_position || app.department2 || '');
-    const calSlots = app.interview_schedule || app.availableSlots || [];
+    // Vòng 2/4 giờ tách riêng field vote lịch (interview_schedule_round2 / interview_schedule)
+    // để không bị lẫn ca giữa 2 vòng, dùng chung helper roundFieldKey như các field status khác.
+    // Fallback app.interview_schedule cho data cũ (trước khi tách field) chỉ áp dụng khi field mới rỗng.
+    const scheduleField = roundFieldKey('interview_schedule', S.activeRound);
+    const calSlots = app[scheduleField] || app.availableSlots || [];
     const slots = mapCalendarSlotsToIds(calSlots);
 
     const existIdx = S.candidates.findIndex(c => c.email === email && c.dept === dept1);
@@ -2096,16 +2147,49 @@ function getActivePerson() {
 }
 
 function renderPersonList() {
-  const list = getList();
+  const fullList = getList();
   const el   = document.getElementById('person-list');
-  document.getElementById('list-count').textContent = list.length + ' người';
+
+  // Gắn kèm index GỐC (trong S.interviewers/S.candidates) vào từng phần tử trước khi filter,
+  // vì selectPerson(i)/removePerson(i)/getActivePerson() đều tra theo index trong mảng gốc —
+  // filter() sẽ làm lệch index nếu không giữ lại _origIdx.
+  let list = fullList.map((p, i) => ({ p, origIdx: i }));
+
+  // Nhân sự: chỉ hiện người ĐÃ vote (có ít nhất 1 ca) cho vòng đang active.
+  // Trước đây hiện luôn cả người 0 ca (đã vote vòng khác nhưng chưa vote vòng này) →
+  // nhìn như nhân sự 3 vòng bị chồng chéo lên nhau, gây khó chịu. Giờ ẩn hẳn —
+  // vẫn luôn hiện người đang được chọn (S.activePerson) để không mất tick giữa chừng.
+  const hiddenCount = { n: 0 };
+  if (S.mode === 'interviewer') {
+    const activeIdxKeep = S.activePerson && S.activePerson.type === 'interviewer' ? S.activePerson.index : -1;
+    list = list.filter(({ p, origIdx }) => {
+      const hasVoted = p.availableSlots && p.availableSlots.length > 0;
+      if (hasVoted || origIdx === activeIdxKeep) return true;
+      hiddenCount.n++;
+      return false;
+    });
+  }
+
+  // Vòng 2: ứng viên apply 2 ban chỉ tạo 1 entry "chính" (dùng để xếp lịch), entry phụ
+  // (isSecond) chỉ tồn tại trong S.candidates để tính toán nội bộ (xem arrangeRound2 —
+  // luôn lọc bỏ isSecond) chứ KHÔNG phải người thật cần hiển thị riêng. Trước đây danh sách
+  // vẫn vẽ luôn cả 2 entry của cùng 1 người → nhìn như bị nhân đôi ứng viên. Giờ ẩn hẳn entry
+  // phụ này khỏi danh sách khi đang ở Vòng 2 (Vòng 4 vẫn hiện đủ 2 vì phỏng vấn 2 lần thật).
+  const visibleCount = (S.mode === 'candidate' && S.activeRound === 'round2')
+    ? list.filter(({ p }) => !p.isSecond).length
+    : list.length;
+  document.getElementById('list-count').textContent = visibleCount + ' người'
+    + (S.mode === 'interviewer' && hiddenCount.n > 0 ? ` (${hiddenCount.n} chưa vote vòng này, đang ẩn)` : '');
 
   if (!list.length) {
-    el.innerHTML = `<div class="list-empty"><i class="fas fa-users"></i><p>Chưa có ai</p></div>`;
+    el.innerHTML = S.mode === 'interviewer' && hiddenCount.n > 0
+      ? `<div class="list-empty"><i class="fas fa-users"></i><p>Chưa có ai vote vòng này</p><p style="font-size:11px;margin-top:4px">${hiddenCount.n} người đã vote vòng khác nhưng chưa vote vòng này</p></div>`
+      : `<div class="list-empty"><i class="fas fa-users"></i><p>Chưa có ai</p></div>`;
     return;
   }
 
-  el.innerHTML = list.map((p, i) => {
+  el.innerHTML = list.map(({ p, origIdx: i }) => {
+    if (S.mode === 'candidate' && S.activeRound === 'round2' && p.isSecond) return '';
     const isActive = S.activePerson && S.activePerson.type === S.mode && S.activePerson.index === i;
     const dept = p.dept || p.department || '';
     const dc   = DEPT_CLASS[dept] || 'b-hr';
@@ -3291,7 +3375,7 @@ function renderTable(schedule, deptFilter) {
 
     const locHtml = s.location
       ? (s.mode === 'online'
-          ? `<a href="${s.location}" target="_blank" style="color:var(--md-color);font-size:12px;word-break:break-all">Link</a>`
+          ? meetPlatformBadgeHtml(s.location)
           : `<span style="font-size:12px">${s.location}</span>`)
       : `<span style="color:var(--ink-30);font-size:11px">—</span>`;
     const actionHtml = canEditRow(s)
@@ -3369,7 +3453,7 @@ function renderTableRound2(schedule, deptFilter) {
       : `<span class="badge" style="background:#F0FDF4;color:#166534"><i class="fas fa-building" style="font-size:9px"></i> Offline</span>`;
     const locHtml = first.location
       ? (first.mode === 'online'
-          ? `<a href="${first.location}" target="_blank" style="color:var(--md-color);font-size:12px">Link</a>`
+          ? meetPlatformBadgeHtml(first.location)
           : `<span style="font-size:12px">${first.location}</span>`)
       : `<span style="color:var(--ink-30);font-size:11px">—</span>`;
 
@@ -3689,31 +3773,55 @@ function renderBoardView() {
 
     // Per-candidate section
     const deptScopeRoles = roleDefs.filter(r => r.scope === 'dept');
-    if (slotRows.length) {
+    const isRound2Slot = slotRows.length && slotRows[0].row.round === 'round2';
+    if (isRound2Slot) {
+      // Vòng 2: 1 nhân sự phỏng vấn CHUNG toàn bộ ứng viên CÙNG BAN trong CẢ CA (mọi
+      // nhóm/Nhóm 1, Nhóm 2... — xem dropToGroupMember). Trước đây UI vẽ từng ứng viên với ô
+      // kéo-thả nhân sự RIÊNG, nên kéo nhân sự vào 1 ứng viên lại thấy nó "nhảy" áp dụng luôn
+      // cho ứng viên khác cùng ban — không phải bug, chỉ là UI vẽ sai mô hình dữ liệu.
+      // Sửa: gộp hiển thị NGANG theo BAN (đúng như thực tế vận hành) — mỗi ban trong ca này là
+      // 1 khối: danh sách ứng viên ban đó (kéo/xoá riêng từng người) + 1 ô kéo-thả nhân sự DÙNG
+      // CHUNG cho cả ban.
+      const DEPT_ORDER_LOCAL = ['MD','HR','PD','ER'];
+      const deptGroups = {}; // dept -> { candidates:[{name,team,rowIdx,memberIdx}], ivs:Map, repRowIdx, repMemberIdx }
+      slotRows.forEach(({ row, idx }, teamOrder) => {
+        (row.group || []).forEach((g, mIdx) => {
+          if (!deptGroups[g.dept]) deptGroups[g.dept] = { candidates: [], ivs: new Map(), repRowIdx: idx, repMemberIdx: mIdx };
+          const dg = deptGroups[g.dept];
+          dg.candidates.push({ name: g.candidate.name, team: teamOrder + 1, rowIdx: idx, memberIdx: mIdx });
+          (g.ivs || []).forEach(iv => { if (!dg.ivs.has(iv.name)) dg.ivs.set(iv.name, iv); });
+        });
+      });
+      const multiTeam = slotRows.length > 1;
+      const totalCands = Object.values(deptGroups).reduce((s, d) => s + d.candidates.length, 0);
+
+      html += `<div style="background:var(--bg);border-radius:var(--radius-sm);padding:8px 10px;border:1px solid var(--border)">`;
+      html += `<div style="font-size:10px;font-weight:700;color:var(--ink-60);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Ca phỏng vấn nhóm — ${totalCands} ứng viên · ${Object.keys(deptGroups).length} ban</div>`;
+      DEPT_ORDER_LOCAL.filter(d => deptGroups[d]).forEach(dept => {
+        const dg = deptGroups[dept];
+        const dc = DEPT_CLASS[dept] || 'b-md';
+        const ivsArr = [...dg.ivs.values()];
+        html += `<div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;margin-bottom:6px;background:var(--white)">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+            <span class="badge ${dc}" style="font-size:9px;padding:1px 5px;flex-shrink:0">${DEPT_NAMES[dept]||dept}</span>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              ${dg.candidates.map(c => `${chipCandHtmlGroup(c.name, dept, c.rowIdx, c.memberIdx)}${multiTeam ? `<span style="font-size:9px;color:var(--ink-30);align-self:center">N${c.team}</span>` : ''}`).join('')}
+            </div>
+          </div>
+          <div class="role-zone" id="rzone-grp-${dg.repRowIdx}-${dept}"
+            ondragover="event.preventDefault();this.classList.add('drag-over')"
+            ondragleave="this.classList.remove('drag-over')"
+            ondrop="dropToGroupMember(event,${dg.repRowIdx},${dg.repMemberIdx})"
+            style="display:flex;flex-wrap:wrap;gap:4px;min-height:22px">
+            ${ivsArr.map(iv => chipIVHtmlGroup(iv.name, iv.dept||dept, iv.accountRole||'', dg.repRowIdx, dg.repMemberIdx)).join('')}
+            ${!ivsArr.length ? `<span style="font-size:11px;color:var(--ink-30)">Kéo nhân sự ban ${DEPT_NAMES[dept]||dept} vào đây — áp dụng chung cho cả ${dg.candidates.length} ứng viên ban này trong ca</span>` : ''}
+          </div>
+        </div>`;
+      });
+      html += `</div>`;
+    } else if (slotRows.length) {
       slotRows.forEach(({ row, idx }) => {
-        // Round2: 1 row = 1 nhóm → render từng ứng viên trong group với chips kéo thả
-        if (row.round === 'round2' && row.group && row.group.length) {
-          html += `<div style="background:var(--bg);border-radius:var(--radius-sm);padding:8px 10px;border:1px solid var(--border)">`;
-          html += `<div style="font-size:10px;font-weight:700;color:var(--ink-60);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Nhóm phỏng vấn — ${row.group.length} người</div>`;
-          row.group.forEach((g, mIdx) => {
-            const dc = DEPT_CLASS[g.dept] || 'b-md';
-            html += `<div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;margin-bottom:6px;background:var(--white)">
-              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
-                <span class="badge ${dc}" style="font-size:9px;padding:1px 5px">${DEPT_NAMES[g.dept]||g.dept}</span>
-                ${chipCandHtmlGroup(g.candidate.name, g.dept, idx, mIdx)}
-              </div>
-              <div class="role-zone" id="rzone-grp-${idx}-${mIdx}"
-                ondragover="event.preventDefault();this.classList.add('drag-over')"
-                ondragleave="this.classList.remove('drag-over')"
-                ondrop="dropToGroupMember(event,${idx},${mIdx})"
-                style="display:flex;flex-wrap:wrap;gap:4px;min-height:22px">
-                ${(g.ivs||[]).map(iv => chipIVHtmlGroup(iv.name, iv.dept||g.dept, iv.accountRole||'', idx, mIdx)).join('')}
-                ${!g.ivs||!g.ivs.length ? `<span style="font-size:11px;color:var(--ink-30)">Kéo nhân sự vào đây</span>` : ''}
-              </div>
-            </div>`;
-          });
-          html += `</div>`;
-        } else {
+
           // Round1/4: 1 row = 1 ứng viên
           const dc = DEPT_CLASS[row.candidateDept] || 'b-md';
           html += `<div style="background:var(--bg);border-radius:var(--radius-sm);padding:8px 10px;border:1px solid var(--border)">
@@ -3740,7 +3848,6 @@ function renderBoardView() {
             html += `</div>`;
           }
           html += `</div>`;
-        }
       });
     } else {
       html += `<div class="candidates-zone" id="czone-${sanitizeSlotKey(sl.id)}"
@@ -4543,6 +4650,56 @@ function exportResult() {
 //  and is visible to Admin-other (who can never run the algorithm, only
 //  edit their own dept's rows once a schedule has been saved).
 // ══════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+//  DRAFT PUSH TO DASHBOARD — mỗi khi "Lưu lịch" (saveSchedule), đẩy nhanh
+//  bản NHÁP thời gian/người phỏng vấn sang applications/{id}.{round}_draft.*
+//  để Dashboard thấy ngay. Trang ứng viên (profile.html) KHÔNG đọc field
+//  *_draft này — ứng viên chỉ thấy khi SuperAdmin bấm "Công bố vào hệ thống"
+//  (ghi vào field {round}.* chính thức, xem doPublish()).
+//  Chạy ngầm (best-effort), không chặn UI, lỗi từng candidate chỉ log console.
+// ══════════════════════════════════════════════════
+async function pushDraftToApplications(round) {
+  if (!window.db || !S.schedule || !S.schedule.length) return;
+  try {
+    const items = flattenScheduleForRound(round);
+    // FIX: cùng lỗi với doPublish — where('email','==',...) phân biệt hoa/thường nên bỏ sót
+    // ứng viên có email gốc chứa chữ hoa. Tải 1 lần, khớp theo email đã chuẩn hoá.
+    const allAppsSnap = await window.db.collection('applications').get();
+    const appsByEmail = {};
+    allAppsSnap.forEach(doc => {
+      const em = (doc.data().email || '').toLowerCase().trim();
+      if (em && !appsByEmail[em]) appsByEmail[em] = doc.id;
+    });
+
+    for (const s of items) {
+      try {
+        if (!s.candidateEmail) continue;
+        const matchedDocId = appsByEmail[s.candidateEmail.toLowerCase().trim()];
+        if (!matchedDocId) continue;
+
+        const type = s.candidateType || 'priority';
+        const fields = {
+          time: `${s.day} ${s.time}`.trim(),
+          location: s.location || '',
+          method: s.mode || 'offline',
+          note: s.note || '',
+        };
+        const allIVNames = Object.values(s.roles||{}).flat().map(p => p.name);
+        fields.interviewer = allIVNames.length ? allIVNames.join(', ') : (s.interviewers||[]).map(iv => iv.name).join(', ');
+
+        const updates = {};
+        Object.keys(fields).forEach(k => { updates[`${round}_draft.${type}.${k}`] = fields[k]; });
+
+        await window.db.collection('applications').doc(matchedDocId).update(updates);
+      } catch (e) {
+        console.warn('Đẩy nháp lỗi cho', s.candidateName, e);
+      }
+    }
+  } catch (e) {
+    console.warn('Không đẩy được bản nháp sang Dashboard:', e);
+  }
+}
+
 async function saveSchedule(opts) {
   opts = opts || {};
   if (!(canCRUD() || S.role === 'admin-other')) { if (!opts.silent) toast('Bạn không có quyền lưu lịch', 'err'); return; }
@@ -4572,6 +4729,8 @@ async function saveSchedule(opts) {
     if (!opts.silent) toast('Đã lưu lịch sắp xếp', 'ok');
     S.scheduleDirty = false;
     updateDeleteSavedScheduleVisibility(true);
+    // Đẩy bản nháp sang Dashboard ngay (không chờ, không chặn UI)
+    pushDraftToApplications(round);
   } catch(e) {
     toast('Lỗi lưu lịch: ' + e.message, 'err');
   } finally {
@@ -4717,6 +4876,53 @@ async function publishToSystem() {
   );
 }
 
+// Flatten S.schedule thành danh sách item theo từng ứng viên (round2 có group[] nên
+// cần expand thành nhiều item con). Dùng chung cho cả "Công bố" (chính thức) và
+// "đẩy nháp" (draft, tự động mỗi khi Lưu lịch) để tránh lệch logic giữa 2 đường.
+// Nhận diện nền tảng họp online theo link (Teams: teams.microsoft.com / teams.live.com,
+// Google Meet: meet.google.com) để hiện đúng logo/màu — dùng chung cho các bảng lịch bên dưới.
+function detectMeetPlatform(url) {
+  const u = (url || '').toLowerCase();
+  if (u.includes('teams.microsoft.com') || u.includes('teams.live.com')) return 'teams';
+  if (u.includes('meet.google.com')) return 'meet';
+  return 'other';
+}
+function meetPlatformBadgeHtml(link) {
+  const platform = detectMeetPlatform(link);
+  // Logo chính thức lấy từ Simple Icons CDN — logo màu gốc, không phải tự vẽ.
+  const meta = platform === 'teams'
+    ? { logo: 'https://cdn.simpleicons.org/microsoftteams', color: '#5059C9', label: 'Teams' }
+    : platform === 'meet'
+      ? { logo: 'https://cdn.simpleicons.org/googlemeet', color: '#00897B', label: 'Meet' }
+      : { logo: '', color: '#5A5A58', label: 'Link' };
+  return `<a href="${link}" target="_blank" title="${link}"
+              style="display:inline-flex;align-items:center;gap:5px;color:${meta.color};font-size:12px;font-weight:600;text-decoration:none">
+             ${meta.logo ? `<img src="${meta.logo}" alt="${meta.label}" width="14" height="14" style="display:block;flex-shrink:0;">` : ''}
+             ${meta.label}
+           </a>`;
+}
+
+function flattenScheduleForRound(round) {
+  const items = [];
+  for (const s of S.schedule) {
+    if (round === 'round2' && s.group && s.group.length) {
+      s.group.forEach(g => {
+        items.push({
+          candidateEmail: g.candidate.email || '',
+          candidateName: g.candidate.name,
+          candidateType: 'priority',
+          day: s.day, time: s.time, mode: s.mode, location: s.location, note: s.note,
+          roles: { ...s.roles, interviewer: g.ivs },
+          interviewers: g.ivs,
+        });
+      });
+    } else {
+      items.push(s);
+    }
+  }
+  return items;
+}
+
 async function doPublish(round) {
   const btn = document.getElementById('publish-btn');
   btn.disabled = true;
@@ -4727,36 +4933,26 @@ async function doPublish(round) {
   const publishedItems = [];
   const roundLabel = ROUND_LABELS[round] || round;
 
-  // Flatten schedule: round2 có group[] nên cần expand thành nhiều items
-  const publishItems = [];
-  for (const s of S.schedule) {
-    if (round === 'round2' && s.group && s.group.length) {
-      // Mỗi ứng viên trong nhóm → publish riêng vào hồ sơ của họ
-      s.group.forEach(g => {
-        publishItems.push({
-          candidateEmail: g.candidate.email || '',
-          candidateName: g.candidate.name,
-          candidateType: 'priority',
-          day: s.day, time: s.time, mode: s.mode, location: s.location, note: s.note,
-          // IV của ban đó + các role slot (host/secretary/checkin)
-          roles: {
-            ...s.roles,
-            interviewer: g.ivs,
-          },
-          interviewers: g.ivs,
-        });
-      });
-    } else {
-      publishItems.push(s);
-    }
-  }
+  const publishItems = flattenScheduleForRound(round);
+
+  // FIX: trước đây mỗi lượt query Firestore bằng where('email','==', s.candidateEmail) với
+  // s.candidateEmail đã lowercase (từ loadCandidatesRound1), nhưng field `email` gốc trên hồ sơ
+  // (do ứng viên tự nhập) có thể có chữ hoa → so khớp phân biệt hoa/thường của Firestore trả về
+  // rỗng, khiến hồ sơ đó KHÔNG được ghi dữ liệu dù admin thấy "công bố xong". Nay tải toàn bộ
+  // applications 1 lần, khớp theo email đã chuẩn hoá (lowercase + trim) ở phía client.
+  const allAppsSnap = await window.db.collection('applications').get();
+  const appsByEmail = {};
+  allAppsSnap.forEach(doc => {
+    const em = (doc.data().email || '').toLowerCase().trim();
+    if (em && !appsByEmail[em]) appsByEmail[em] = doc.id; // giữ doc đầu tiên nếu trùng email
+  });
 
   for (const s of publishItems) {
     try {
       if (!s.candidateEmail) { failed.push(`${s.candidateName} — thiếu email, không xác định được hồ sơ`); continue; }
 
-      const snap = await window.db.collection('applications').where('email', '==', s.candidateEmail).limit(1).get();
-      if (snap.empty) { failed.push(`${s.candidateName} — không tìm thấy hồ sơ ứng tuyển (${s.candidateEmail})`); continue; }
+      const matchedDocId = appsByEmail[s.candidateEmail.toLowerCase().trim()];
+      if (!matchedDocId) { failed.push(`${s.candidateName} — không tìm thấy hồ sơ ứng tuyển (${s.candidateEmail})`); continue; }
 
       const type = s.candidateType || 'priority';
       const fields = {
@@ -4772,10 +4968,13 @@ async function doPublish(round) {
 
       const updates = {};
       Object.keys(fields).forEach(k => { updates[`${round}.${type}.${k}`] = fields[k]; });
+      // Công bố chính thức cũng đồng thời dọn field nháp của candidate/type này,
+      // để tránh dashboard hiển thị lẫn lộn nháp-cũ vs bản đã công bố-mới.
+      Object.keys(fields).forEach(k => { updates[`${round}_draft.${type}.${k}`] = fields[k]; });
 
-      await window.db.collection('applications').doc(snap.docs[0].id).update(updates);
+      await window.db.collection('applications').doc(matchedDocId).update(updates);
       ok++;
-      publishedItems.push({ docId: snap.docs[0].id, type, candidateName: s.candidateName });
+      publishedItems.push({ docId: matchedDocId, type, candidateName: s.candidateName });
     } catch (e) {
       failed.push(`${s.candidateName} — lỗi: ${e.message}`);
     }

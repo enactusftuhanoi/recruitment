@@ -727,6 +727,37 @@ async function loadAll() {
 
   allAccounts = accSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
+  // Tự chữa lệch dữ liệu: nếu application.round3.team/role không khớp với team hiện tại
+  // (VD dữ liệu cũ trước khi có tính năng đồng bộ role), âm thầm vá lại — chỉ ghi khi
+  // thực sự khác, tránh spam write không cần thiết.
+  (function healRound3TeamRoleSync() {
+    const appById = new Map(allApplications.map((a) => [a.id, a]));
+    const fixes = [];
+    teams.forEach((t) => {
+      (t.members || []).forEach((m) => {
+        if (!m.id || m.id.startsWith("manual_")) return;
+        const app = appById.get(m.id);
+        if (!app) return;
+        const curTeam = (app.round3 && app.round3.team) || null;
+        const curRole = (app.round3 && app.round3.role) || null;
+        const wantRole = m.role || "member";
+        if (curTeam !== t.name || curRole !== wantRole) {
+          fixes.push({ id: m.id, team: t.name, role: wantRole });
+        }
+      });
+    });
+    if (fixes.length) {
+      const batch = db.batch();
+      fixes.forEach((f) => {
+        batch.update(db.collection("applications").doc(f.id), {
+          "round3.team": f.team,
+          "round3.role": f.role,
+        });
+      });
+      batch.commit().catch((e) => console.warn("Không vá được round3.team/role:", e));
+    }
+  })();
+
   const setData = setSnap.exists ? setSnap.data() : {};
   settings = { documents: [], assignments: [], submissionDeadline: null, submissionNote: "", pitchingDatetime: "", pitchingLocation: "", submissionOpen: true, pitchingConfirmOpen: true, ...setData };
 
@@ -920,6 +951,19 @@ async function syncTeamStaffFields(teamId) {
   } catch (e) { console.warn("Không sync được advisor/supporter cho team", teamId, e); }
 }
 
+/* Đồng bộ round3.role trên applications mỗi khi vai trò (Leader/Sub Leader/Member)
+   của 1 thành viên thay đổi, để Dashboard (Vòng 3) đọc được app.round3.role. */
+async function syncMemberRoleField(memberId, role) {
+  if (!memberId || memberId.startsWith("manual_")) return;
+  try {
+    if (role) {
+      await db.collection("applications").doc(memberId).update({ "round3.role": role });
+    } else {
+      await db.collection("applications").doc(memberId).update({ "round3.role": firebase.firestore.FieldValue.delete() });
+    }
+  } catch (e) { console.warn("Không sync được round3.role cho", memberId, e); }
+}
+
 async function moveCandidateToTeam(candId, targetTeamId) {
   try {
     // Xoá khỏi team hiện tại (nếu có)
@@ -938,10 +982,12 @@ async function moveCandidateToTeam(candId, targetTeamId) {
       const newMembers = [...(targetTeam.members || []), { id: candId, name: cand.name, email: cand.email || "", role: "member" }];
       await db.collection(TEAMS_COL).doc(targetTeamId).update({ members: newMembers });
       await syncMemberTeamField(candId, targetTeam.name);
+      await syncMemberRoleField(candId, "member");
       await loadAll();
       await syncTeamStaffFields(targetTeamId);
     } else {
       await syncMemberTeamField(candId, null);
+      await syncMemberRoleField(candId, null);
       if (candId && !candId.startsWith("manual_")) {
         await db.collection("applications").doc(candId).update({
           "round3.advisor1": firebase.firestore.FieldValue.delete(),
@@ -959,6 +1005,7 @@ window.setMemberRole = async (teamId, memberId, role) => {
   const t = teams.find((t) => t.id === teamId);
   const members = (t.members || []).map((m) => (m.id === memberId ? { ...m, role } : m));
   await db.collection(TEAMS_COL).doc(teamId).update({ members });
+  await syncMemberRoleField(memberId, role);
   notifySuccess("Đã cập nhật vai trò");
   await loadAll(); renderEverything();
 };

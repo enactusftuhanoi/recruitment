@@ -1327,6 +1327,23 @@ let userRole = sessionStorage.getItem("role") || null;
 let userDept = sessionStorage.getItem("department") || null;
 
 let applications = [];
+
+// ============================================================
+// HỖ TRỢ HỒ SƠ GỘP (application_types: có thể chứa cả 'form' và 'interview')
+// Đơn cũ chỉ có application_type đơn lẻ vẫn được fallback đúng.
+// ============================================================
+function getAppTypes(app) {
+  if (!app) return [];
+  return app.application_types || (app.application_type ? [app.application_type] : []);
+}
+function hasType(app, type) {
+  return getAppTypes(app).includes(type);
+}
+function typeLabel(app) {
+  const types = getAppTypes(app);
+  if (!types.length) return "Điền đơn";
+  return types.map(t => t === "interview" ? "Phỏng vấn thay đơn" : "Điền đơn").join(" + ");
+}
 let currentApplicationId = null;
 
 // ==== CÁC BIẾN NÀY SẼ ĐƯỢC LOAD TỪ FIREBASE ====
@@ -1514,13 +1531,13 @@ function renderEvaluationSection(application, container) {
             label: "Ưu tiên",
             accepted: application.priorityAccepted || false,
             rejected: application.priorityRejected || false,
-            notes: application.application_type === "form" 
+            notes: hasType(application, "form") 
                 ? (application.priority_notes || "") 
                 : (application.priority_interview_notes || ""),
-            by: application.application_type === "form" 
+            by: hasType(application, "form") 
                 ? (application.priority_evaluated_by || "") 
                 : (application.priority_interview_evaluated_by || ""),
-            at: application.application_type === "form" 
+            at: hasType(application, "form") 
                 ? (application.priority_evaluated_at || null) 
                 : (application.priority_interview_evaluated_at || null),
             canAct: canActOnDepartment(application, "priority")
@@ -1534,13 +1551,13 @@ function renderEvaluationSection(application, container) {
             label: "Dự bị",
             accepted: application.secondaryAccepted || false,
             rejected: application.secondaryRejected || false,
-            notes: application.application_type === "form" 
+            notes: hasType(application, "form") 
                 ? (application.secondary_notes || "") 
                 : (application.secondary_interview_notes || ""),
-            by: application.application_type === "form" 
+            by: hasType(application, "form") 
                 ? (application.secondary_evaluated_by || "") 
                 : (application.secondary_interview_evaluated_by || ""),
-            at: application.application_type === "form" 
+            at: hasType(application, "form") 
                 ? (application.secondary_evaluated_at || null) 
                 : (application.secondary_interview_evaluated_at || null),
             canAct: canActOnDepartment(application, "secondary")
@@ -1557,11 +1574,11 @@ function renderEvaluationSection(application, container) {
         let statusIcon = '<i class="fas fa-clock" style="font-size:12px;"></i>';
         
         if (dept.accepted) {
-            statusText = application.application_type === "form" ? "Đã chấp nhận" : "Pass";
+            statusText = hasType(application, "form") ? "Đã chấp nhận" : "Pass";
             statusClass = "passed";
             statusIcon = '<i class="fas fa-check-circle" style="font-size:12px;"></i>';
         } else if (dept.rejected) {
-            statusText = application.application_type === "form" ? "Đã từ chối" : "Fail";
+            statusText = hasType(application, "form") ? "Đã từ chối" : "Fail";
             statusClass = "failed";
             statusIcon = '<i class="fas fa-times-circle" style="font-size:12px;"></i>';
         }
@@ -1575,7 +1592,7 @@ function renderEvaluationSection(application, container) {
         if (dept.canAct) {
             if (!dept.accepted && !dept.rejected) {
                 // Chưa đánh giá -> hiện nút đánh giá
-                if (application.application_type === "form") {
+                if (hasType(application, "form")) {
                     actionsHTML = `
                         <button class="btn-eval btn-pass" onclick="evalForm('${application.id}', '${dept.type}', 'pass')">
                             <i class="fas fa-check" style="font-size:11px;"></i> Chấp nhận
@@ -1596,7 +1613,7 @@ function renderEvaluationSection(application, container) {
                 }
             } else {
                 // Đã đánh giá -> hiện nút ghi chú + đặt lại
-                if (application.application_type === "form") {
+                if (hasType(application, "form")) {
                     actionsHTML = `
                         <button class="btn-eval btn-note" onclick="addFormNote('${application.id}', '${dept.type}')">
                             <i class="fas fa-pen" style="font-size:11px;"></i> Ghi chú
@@ -2413,8 +2430,8 @@ function renderStats(list) {
       deptCounts[name] = (deptCounts[name] || 0) + 1;
     });
 
-    const typeLabel = app.application_type === "interview" ? "Phỏng vấn" : "Điền đơn";
-    typeCounts[typeLabel] = (typeCounts[typeLabel] || 0) + 1;
+    const _typeLabel = typeLabel(app);
+    typeCounts[_typeLabel] = (typeCounts[_typeLabel] || 0) + 1;
 
     const d = getAppDate(app);
     if (d) {
@@ -2534,7 +2551,7 @@ function renderApplications() {
       return false;
 
     // Lọc theo hình thức
-    if (typeFilter && app.application_type !== typeFilter) return false;
+    if (typeFilter && !hasType(app, typeFilter)) return false;
 
     // Lọc theo tìm kiếm
     if (
@@ -2639,7 +2656,7 @@ function renderApplications() {
                 <div class="detail-item">
                     <span class="detail-label">Hình thức</span>
                     <span class="detail-value">${
-                      app.application_type === "interview" ? "Phỏng vấn thay đơn" : "Điền đơn"
+                      typeLabel(app)
                     }</span>
                 </div>
             </div>
@@ -2793,7 +2810,7 @@ async function publishAllResults() {
   const typeFilter = document.getElementById("filter-type")?.value;
   const list = publishable.filter((app) => {
     if (departmentFilter && app.priority_position !== departmentFilter && app.secondary_position !== departmentFilter) return false;
-    if (typeFilter && app.application_type !== typeFilter) return false;
+    if (typeFilter && !hasType(app, typeFilter)) return false;
     return true;
   });
   if (!list.length) {
@@ -2845,7 +2862,7 @@ async function revokeAllResults() {
   const typeFilter = document.getElementById("filter-type")?.value;
   const list = revocable.filter((app) => {
     if (departmentFilter && app.priority_position !== departmentFilter && app.secondary_position !== departmentFilter) return false;
-    if (typeFilter && app.application_type !== typeFilter) return false;
+    if (typeFilter && !hasType(app, typeFilter)) return false;
     return true;
   });
   if (!list.length) {
@@ -3006,9 +3023,9 @@ function showApplicationDetail(appId) {
   renderApplicationInfo(application, detailSections);
 
   // ============================================================
-  // 3. XỬ LÝ THEO HÌNH THỨC ỨNG TUYỂN
+  // 3. XỬ LÝ THEO HÌNH THỨC ỨNG TUYỂN (hồ sơ gộp -> hiện CẢ HAI phần)
   // ============================================================
-  if (application.application_type === "form") {
+  if (hasType(application, "form")) {
     // ---- 3a. CÂU TRẢ LỜI CHUNG ----
     renderGeneralAnswers(application, detailSections);
 
@@ -3022,8 +3039,9 @@ function showApplicationDetail(appId) {
         canViewDepartment(application, "secondary")) {
       renderBanAnswers(application, "secondary", detailSections);
     }
+  }
 
-  } else {
+  if (hasType(application, "interview")) {
     // ---- HÌNH THỨC PHỎNG VẤN ----
     renderInterviewInfo(application, detailSections);
   }
@@ -3114,7 +3132,7 @@ function renderApplicationInfo(application, container) {
       <div class="app-info-row">
         <div class="app-info-item">
           <span class="app-label">Hình thức ứng tuyển</span>
-          <span class="app-value">${application.application_type === "form" ? "Điền đơn" : "Phỏng vấn"}</span>
+          <span class="app-value">${typeLabel(application)}</span>
         </div>
         <div class="app-info-item">
           <span class="app-label">Trạng thái tổng</span>
@@ -3580,7 +3598,7 @@ async function addInterviewNotes() {
   const application = applications.find(
     (app) => app.id === currentApplicationId
   );
-  if (!application || application.application_type !== "interview") return;
+  if (!application || !hasType(application, "interview")) return;
 
   const { value: notes } = await Swal.fire({
     title: "Thêm ghi chú phỏng vấn",
@@ -3625,7 +3643,7 @@ async function evaluateInterview(result, departmentType = null) {
   const application = applications.find(
     (app) => app.id === currentApplicationId
   );
-  if (!application || application.application_type !== "interview") return;
+  if (!application || !hasType(application, "interview")) return;
 
   // Kiểm tra quyền trước
   let targetDepartment = departmentType;
@@ -3824,7 +3842,7 @@ function computeInterviewOverallStatus(application, updateData = {}) {
 
 // Hàm hiển thị lịch phỏng vấn
 function renderInterviewSchedule(application, container) {
-  if (!application || application.application_type !== "interview") return;
+  if (!application || !hasType(application, "interview")) return;
 
   const interviewSection = document.createElement("div");
   interviewSection.className = "detail-section";
@@ -4390,7 +4408,7 @@ function normalizeApplicationForSummary(app, index = 0) {
     Trường: app.school ?? "",
     "Chuyên ngành": app.major ?? "",
     "Hình thức ứng tuyển":
-      app.application_type === "form" ? "Điền đơn" : "Phỏng vấn",
+      typeLabel(app),
     "Ban ưu tiên": getDepartmentName(app.priority_position),
     "Ban dự bị":
       app.secondary_position && app.secondary_position !== "None"
@@ -5072,7 +5090,7 @@ async function exportInterviewSchedule() {
   try {
     // Lấy dữ liệu ứng viên phỏng vấn (admin chỉ thấy ứng viên thuộc ban mình)
     const interviewApps = getExportableApplications().filter(
-      (app) => app.application_type === "interview"
+      (app) => hasType(app, "interview")
     );
 
     if (interviewApps.length === 0) {

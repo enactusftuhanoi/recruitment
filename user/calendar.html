@@ -985,6 +985,7 @@
         let selectedSlots = [];
         let savedSlots = [];       // slots already saved on server, used for the read-only view
         let scheduleLocked = false;
+        let scheduleField = 'interview_schedule'; // field lưu vote, tách theo vòng — set khi biết current_round
 
         // Update avatar display
         function updateAvatarDisplay(user) {
@@ -1019,8 +1020,32 @@
                         return;
                     }
 
-                    // Kiểm tra lịch đã được công bố chưa
-                    const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
+                    // Check if user has an application (cần load TRƯỚC để biết current_round,
+                    // vì lịch/ca của Vòng 2 và Vòng 4 giờ TÁCH RIÊNG theo từng vòng)
+                    const snapshot = await db.collection('applications')
+                                        .where('email', '==', user.email)
+                                        .limit(1)
+                                        .get();
+
+                    if (snapshot.empty) {
+                        window.location.href = 'form.html';
+                        return;
+                    }
+
+                    // Application found
+                    applicationData = snapshot.docs[0].data();
+                    applicationData.id = snapshot.docs[0].id;
+
+                    // Vòng 2 và vòng 4 có nguồn ca (system/...) và field lưu vote TÁCH RIÊNG,
+                    // không thì sang vòng 4 sẽ bị dính ca/vote cũ của vòng 2.
+                    // Doc/Field: *_round2 (vòng 2) / tên cũ không hậu tố (vòng 4, giữ để không phá
+                    // dữ liệu đã có sẵn trên hệ thống).
+                    const currentRound = applicationData.current_round || 'round2';
+                    const scheduleDocId = currentRound === 'round2' ? 'interview_schedule_round2' : 'interview_schedule';
+                    scheduleField = currentRound === 'round2' ? 'interview_schedule_round2' : 'interview_schedule';
+
+                    // Kiểm tra lịch đã được công bố chưa (đúng doc của vòng hiện tại)
+                    const scheduleDoc = await db.collection('system').doc(scheduleDocId).get();
 
                     if (!scheduleDoc.exists || scheduleDoc.data().published !== true) {
                         showError('Lịch phỏng vấn chưa được công bố. Vui lòng quay lại sau.');
@@ -1041,25 +1066,10 @@
                         }
                     }
 
-                    // Check if user has an application
-                    const snapshot = await db.collection('applications')
-                                        .where('email', '==', user.email)
-                                        .limit(1)
-                                        .get();
-
-                    if (snapshot.empty) {
-                        window.location.href = 'form.html';
-                        return;
-                    }
-
-                    // Application found
-                    applicationData = snapshot.docs[0].data();
-                    applicationData.id = snapshot.docs[0].id;
-
                     // Load interview schedule từ Firestore - format đã chuẩn hóa: "DD/MM/YYYY_HH:MM - HH:MM"
-                    if (applicationData.interview_schedule && applicationData.interview_schedule.length > 0) {
-                        selectedSlots = [...applicationData.interview_schedule];
-                        savedSlots = [...applicationData.interview_schedule];
+                    if (applicationData[scheduleField] && applicationData[scheduleField].length > 0) {
+                        selectedSlots = [...applicationData[scheduleField]];
+                        savedSlots = [...applicationData[scheduleField]];
                     }
 
                     const hasVoted = savedSlots.length > 0;
@@ -1443,7 +1453,7 @@
                 saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
 
                 await db.collection('applications').doc(applicationData.id).update({
-                    interview_schedule: selectedSlots,
+                    [scheduleField]: selectedSlots,
                     interview_updated: new Date()
                 });
 

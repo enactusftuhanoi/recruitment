@@ -151,12 +151,12 @@
             display: flex;
             align-items: flex-start;
             gap: 24px;
-            padding: 24px 28px 40px 24px;
+            padding: 24px 56px 40px 48px;
             min-height: calc(100vh - 64px);
         }
 
         .sidebar {
-            width: 232px;
+            width: 268px;
             background: var(--white);
             border: 1px solid var(--gray-200);
             border-radius: var(--radius-lg);
@@ -229,7 +229,7 @@
         .content {
             flex: 1;
             padding: 0;
-            max-width: 960px;
+            min-width: 0;
             overflow: visible;
         }
 
@@ -331,18 +331,39 @@
         /* ========================
            STATS GRID
         ======================== */
-        .stats-grid {
+        .overview-top-row {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: minmax(0, 900px) 1fr;
             gap: 14px;
             margin-bottom: 24px;
+            align-items: stretch;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 14px;
+            width: 100%;
+            height: 100%;
+        }
+
+        @media (max-width: 900px) {
+            .overview-top-row { grid-template-columns: 1fr; }
         }
 
         .stat-card {
             background: var(--white);
             border: 1px solid var(--gray-200);
             border-radius: var(--radius-lg);
-            padding: 18px 20px;
+            padding: 20px 22px;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            text-align: left;
+            gap: 4px;
             box-shadow: var(--shadow-sm);
             transition: var(--transition);
             position: relative;
@@ -367,17 +388,43 @@
 
         .stat-card:hover::before { opacity: 1; }
 
+        .stat-icon {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: absolute;
+            top: 20px;
+            right: 22px;
+        }
+
+        .stat-icon svg { width: 20px; height: 20px; }
+
+        .stat-icon-yellow { background: none; color: var(--yellow-600); }
+        .stat-icon-blue { background: none; color: var(--blue-500); }
+        .stat-icon-green { background: none; color: var(--green-500); }
+        .stat-icon-purple { background: none; color: var(--purple-500); }
+
+        .stat-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            min-width: 0;
+            padding-right: 32px;
+        }
+
         .stat-value {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 800;
             color: var(--gray-900);
-            line-height: 1;
-            margin-bottom: 6px;
+            line-height: 1.15;
             letter-spacing: -.5px;
         }
 
         .stat-label {
-            font-size: 12px;
+            font-size: 12.5px;
             color: var(--gray-500);
             font-weight: 500;
         }
@@ -607,8 +654,10 @@
             background: var(--white);
             border: 1px solid var(--gray-200);
             border-radius: var(--radius-lg);
-            padding: 16px 18px 12px;
+            padding: 16px 18px 16px;
             box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
         }
 
         .chart-card-title {
@@ -618,7 +667,14 @@
             margin-bottom: 10px;
         }
 
-        .chart-canvas-wrap { position: relative; height: 220px; }
+        .chart-canvas-wrap {
+            position: relative;
+            height: 280px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
         @media (max-width: 900px) {
             .charts-grid { grid-template-columns: 1fr; }
@@ -1472,22 +1528,81 @@
                 </button>
             </div>
 
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value" id="stat-total">--</div>
-                    <div class="stat-label">Tổng số câu hỏi</div>
+            <div class="overview-top-row">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-yellow">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 3.5h7l3 3V16a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"/><path d="M12 3.5V7h3"/><path d="M6.5 10h6M6.5 12.5h6M6.5 15h3.5"/></svg>
+                        </div>
+                        <div class="stat-text">
+                            <div class="stat-label">Tổng số câu hỏi</div>
+                            <div class="stat-value" id="stat-total">--</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-blue">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2.5v3M13 2.5v3"/></svg>
+                        </div>
+                        <div class="stat-text">
+                            <div class="stat-label">Ca phỏng vấn</div>
+                            <div class="stat-value" id="stat-interview">--</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-green">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><path d="M7.8 8a2.2 2.2 0 1 1 3.2 2c-.9.6-1 1-1 2"/><circle cx="10" cy="13.6" r=".2" fill="currentColor"/></svg>
+                        </div>
+                        <div class="stat-text">
+                            <div class="stat-label">Câu hỏi chung</div>
+                            <div class="stat-value" id="stat-general">--</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-purple">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17V8l7-4.5L17 8v9"/><path d="M7.5 17v-5h5v5"/></svg>
+                        </div>
+                        <div class="stat-text">
+                            <div class="stat-label">Câu hỏi theo ban</div>
+                            <div class="stat-value" id="stat-ban">--</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="stat-general">--</div>
-                    <div class="stat-label">Câu hỏi chung</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="stat-ban">--</div>
-                    <div class="stat-label">Câu hỏi theo ban</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="stat-interview">--</div>
-                    <div class="stat-label">Ca phỏng vấn</div>
+
+                <div class="card" style="margin:0;">
+                    <div class="card-header">
+                        <div class="card-header-left">
+                            <div class="card-icon yellow">
+                                <svg viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm.75 10.5h-1.5v-4.5h1.5v4.5zm0-6h-1.5v-1.5h1.5v1.5z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="card-title">Trạng thái hệ thống</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="overview-status-loading" class="loading-state">
+                            <div class="spinner"></div>
+                            Đang tải...
+                        </div>
+                        <div id="overview-status" style="display:none;">
+                            <div class="toggle-group" style="margin-bottom:10px;">
+                                <div class="toggle-info">
+                                    <div class="toggle-title" id="form-status-text">Form tuyển dụng</div>
+                                    <div class="toggle-desc" id="form-status-time"></div>
+                                </div>
+                                <span id="form-status-badge"></span>
+                            </div>
+                            <div class="toggle-group">
+                                <div class="toggle-info">
+                                    <div class="toggle-title" id="interview-status-text">Phỏng vấn thay đơn</div>
+                                    <div class="toggle-desc" id="interview-status-time"></div>
+                                </div>
+                                <span id="interview-status-badge"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1499,43 +1614,6 @@
                 <div class="chart-card">
                     <div class="chart-card-title">Phân bổ theo loại câu hỏi</div>
                     <div class="chart-canvas-wrap"><canvas id="chart-questions-by-type"></canvas></div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-header-left">
-                        <div class="card-icon yellow">
-                            <svg viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm.75 10.5h-1.5v-4.5h1.5v4.5zm0-6h-1.5v-1.5h1.5v1.5z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <div class="card-title">Trạng thái hệ thống</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div id="overview-status-loading" class="loading-state">
-                        <div class="spinner"></div>
-                        Đang tải...
-                    </div>
-                    <div id="overview-status" style="display:none;">
-                        <div class="toggle-group" style="margin-bottom:10px;">
-                            <div class="toggle-info">
-                                <div class="toggle-title" id="form-status-text">Form tuyển dụng</div>
-                                <div class="toggle-desc" id="form-status-time"></div>
-                            </div>
-                            <span id="form-status-badge"></span>
-                        </div>
-                        <div class="toggle-group">
-                            <div class="toggle-info">
-                                <div class="toggle-title" id="interview-status-text">Phỏng vấn thay đơn</div>
-                                <div class="toggle-desc" id="interview-status-time"></div>
-                            </div>
-                            <span id="interview-status-badge"></span>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -2984,9 +3062,18 @@ function renderBanQuestions() {
         if (typeof Chart === "undefined") return;
 
         // ----- Biểu đồ: số câu hỏi theo ban -----
-        const catKeys = Object.keys(questionData).filter(cat => (questionData[cat] || []).length > 0);
-        const catLabels = catKeys.map(cat => CAT_LABELS[cat] || cat);
-        const catCounts = catKeys.map(cat => (questionData[cat] || []).length);
+        const MD_KEYS = ["MD-General", "MD-Design", "MD-Content"];
+        const mdTotal = MD_KEYS.reduce((sum, k) => sum + (questionData[k] || []).length, 0);
+        const otherKeys = Object.keys(questionData).filter(cat => !MD_KEYS.includes(cat) && cat !== "general" && (questionData[cat] || []).length > 0);
+        const hasGeneral = (questionData["general"] || []).length > 0;
+
+        const catKeys = [
+            ...(hasGeneral ? ["general"] : []),
+            ...(mdTotal > 0 ? ["MD"] : []),
+            ...otherKeys,
+        ];
+        const catLabels = catKeys.map(cat => cat === "MD" ? "Truyền thông" : (CAT_LABELS[cat] || cat));
+        const catCounts = catKeys.map(cat => cat === "MD" ? mdTotal : (questionData[cat] || []).length);
         const CHART_COLORS = ["#F7C948", "#4F7CFF", "#10B981", "#EF4444", "#8B5CF6", "#F59E0B", "#14B8A6", "#EC4899"];
 
         renderOrUpdateOverviewChart("chart-questions-by-cat", {
@@ -3003,6 +3090,7 @@ function renderBanQuestions() {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: { padding: { top: 8, bottom: 8 } },
                 plugins: { legend: { display: false } },
                 scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
             },

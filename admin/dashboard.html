@@ -18,6 +18,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       :root {
@@ -400,25 +401,135 @@
         height: 38px;
         padding: 0 18px;
         font-size: 13px;
-        background: linear-gradient(135deg, var(--primary-light), var(--gold));
-        border: none;
+        background: var(--gold-deep);
+        border: 1px solid var(--gold-deep);
         border-radius: 10px;
-        color: var(--ink);
-        font-weight: 700;
+        color: var(--white);
+        font-weight: 600;
+        letter-spacing: 0.1px;
         cursor: pointer;
         transition: var(--transition);
-        display: flex;
+        display: inline-flex;
         align-items: center;
-        box-shadow: 0 6px 14px -6px rgba(212, 160, 23, 0.55);
+        gap: 8px;
+        box-shadow: 0 4px 10px -4px rgba(169, 121, 10, 0.45);
       }
 
       .update-all-rounds-btn:hover {
+        background: var(--gold);
+        border-color: var(--gold);
         transform: translateY(-1px);
-        box-shadow: 0 10px 20px -6px rgba(212, 160, 23, 0.65);
+        box-shadow: 0 8px 16px -6px rgba(169, 121, 10, 0.5);
+      }
+
+      .update-all-rounds-btn:active {
+        transform: translateY(0);
       }
 
       .update-all-rounds-btn i {
-        margin-right: 8px;
+        font-size: 12.5px;
+      }
+
+      /* Nút "Ứng viên apply nhiều lần" + badge nháy khi có trùng */
+      #duplicates-toggle-btn {
+        background: var(--gray-50);
+        color: var(--gray-700);
+        border: 1px solid var(--gray-200);
+      }
+      #duplicates-toggle-btn.has-duplicates {
+        background: var(--error-light);
+        color: var(--error);
+        border-color: var(--error-light);
+      }
+      #duplicates-badge {
+        display: none;
+        margin-left: 8px;
+        background: var(--error);
+        color: var(--white);
+        border-radius: 999px;
+        padding: 1px 8px;
+        font-size: 11px;
+        font-weight: 700;
+      }
+      #duplicates-toggle-btn.has-duplicates #duplicates-badge {
+        display: inline-block;
+        animation: duplicates-blink 1.1s ease-in-out infinite;
+      }
+      @keyframes duplicates-blink {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.45; transform: scale(1.08); }
+      }
+
+      /* Thanh tìm kiếm / lọc dùng chung cho các vòng */
+      .round-filters-bar,
+      .round1-filters-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin: 16px 0;
+      }
+      .round-filters-bar .filter-select,
+      .round1-filters-bar .filter-select {
+        height: 36px;
+      }
+
+      .interview-info-cell {
+        font-size: 12.5px;
+        line-height: 1.5;
+        white-space: nowrap;
+      }
+      .interview-info-cell .ii-row + .ii-row {
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px dashed var(--gray-200);
+      }
+      .interview-info-cell .ii-dept {
+        font-weight: 700;
+        color: var(--gold-deep);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+      .interview-info-cell .ii-empty {
+        color: var(--gray-400);
+        font-style: italic;
+      }
+      .interview-info-cell .ii-draft-tag {
+        display: inline-block;
+        margin-left: 4px;
+        padding: 0 6px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        color: var(--warning);
+        background: var(--warning-light);
+        border-radius: 999px;
+        vertical-align: middle;
+      }
+
+      /* Badge "Vai trò" ở Vòng 3 — màu đồng bộ với teamwork.html */
+      .role-badge-dash {
+        display: inline-block;
+        font-size: 10.5px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        padding: 3px 10px;
+        border-radius: 20px;
+      }
+      .role-badge-dash.leader {
+        background: #fde68a;
+        color: #92400e;
+      }
+      .role-badge-dash.subleader {
+        background: #bfdbfe;
+        color: #1e40af;
+      }
+      .role-badge-dash.member {
+        background: var(--gray-100);
+        color: var(--gray-600);
       }
 
       /* Content */
@@ -543,9 +654,21 @@
       /* Charts */
       .charts-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 16px;
         margin-bottom: 20px;
+      }
+
+      @media (max-width: 1400px) {
+        .charts-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        .charts-grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
       }
 
       .chart-card {
@@ -554,6 +677,7 @@
         box-shadow: var(--shadow);
         border: 1px solid var(--gray-200);
         padding: 20px 22px;
+        min-width: 0;
       }
 
       .chart-card.chart-wide {
@@ -580,6 +704,7 @@
       .chart-canvas-wrap {
         position: relative;
         height: 260px;
+        width: 100%;
       }
 
       /* Round sub-tabs */
@@ -908,12 +1033,12 @@
       }
 
       .view-btn {
-        background-color: var(--info-light);
-        color: var(--info);
+        background-color: #CCFBF1;
+        color: #0D9488;
       }
 
       .view-btn:hover {
-        background-color: var(--info);
+        background-color: #0D9488;
         color: var(--white);
       }
 
@@ -1800,18 +1925,6 @@
           <i class="fas fa-layer-group"></i>
           <span>Vòng tuyển chọn</span>
         </div>
-        <div class="nav-item" id="teamwork-nav-item" style="display: none" onclick="window.location.href='teamwork.html'">
-          <i class="fas fa-people-group"></i>
-          <span>Teamwork</span>
-        </div>
-        <div class="nav-item" onclick="window.location.href='interview.html'">
-          <i class="fas fa-comments"></i>
-          <span>Interview</span>
-        </div>
-        <div class="nav-item" data-tab="success">
-          <i class="fas fa-trophy"></i>
-          <span>Thành viên chính thức</span>
-        </div>
         <div
           class="nav-item system-settings-menu"
           style="display: none"
@@ -1819,6 +1932,14 @@
         >
           <i class="fa-solid fa-calendar-days"></i>
           <span>Calendar</span>
+        </div>
+        <div class="nav-item" id="teamwork-nav-item" style="display: none" onclick="window.location.href='teamwork.html'">
+          <i class="fas fa-people-group"></i>
+          <span>Teamwork</span>
+        </div>
+        <div class="nav-item" onclick="window.location.href='interview.html'">
+          <i class="fas fa-comments"></i>
+          <span>Interview</span>
         </div>
         <div
           class="nav-item system-settings-menu"
@@ -1876,7 +1997,7 @@
               font-size: 13px;
             "
           >
-            <i class="fas fa-archive"></i>
+            <i class="fas fa-archive" style="margin-right: 6px"></i>
             Lưu trữ
           </button>
           <button class="refresh-btn" id="refresh-btn">
@@ -1955,8 +2076,16 @@
             <div class="chart-canvas-wrap"><canvas id="chart-department"></canvas></div>
           </div>
           <div class="chart-card">
+            <div class="chart-card-title"><i class="fas fa-chart-bar"></i> Trạng thái theo ban</div>
+            <div class="chart-canvas-wrap"><canvas id="chart-dept-status"></canvas></div>
+          </div>
+          <div class="chart-card">
             <div class="chart-card-title"><i class="fas fa-chart-bar"></i> Phân bố theo vòng hiện tại</div>
             <div class="chart-canvas-wrap"><canvas id="chart-round"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-title"><i class="fas fa-chart-pie"></i> Hình thức ứng tuyển</div>
+            <div class="chart-canvas-wrap"><canvas id="chart-apptype"></canvas></div>
           </div>
           <div class="chart-card chart-wide">
             <div class="chart-card-title"><i class="fas fa-chart-line"></i> Số đơn nộp theo ngày</div>
@@ -2055,73 +2184,41 @@
 
         <!-- Round 1 Content -->
         <div id="round1-content" class="round-subpanel active">
-          <div
-            style="
-              margin-top: 30px;
-              padding: 20px;
-              background: var(--white);
-              border-radius: var(--border-radius);
-              box-shadow: var(--shadow);
-            "
-          >
-            <h3 style="color: var(--error); margin-bottom: 16px">
-              <i class="fas fa-exclamation-triangle"></i>
+          <div class="round1-filters-bar" style="justify-content: space-between; margin-bottom: 8px">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center">
+              <input
+                type="text"
+                id="round1-search"
+                class="filter-select"
+                placeholder="Tìm theo tên, email, SĐT..."
+                style="min-width: 220px"
+              />
+              <select id="round1-filter-department" class="filter-select">
+                <option value="">Tất cả ban</option>
+                <option value="MD">Truyền thông</option>
+                <option value="HR">Nhân sự</option>
+                <option value="PD">Dự án</option>
+                <option value="ER">Đối ngoại</option>
+              </select>
+              <select id="round1-filter-status" class="filter-select">
+                <option value="">Tất cả trạng thái</option>
+                <option value="new">New</option>
+                <option value="pending">Pending</option>
+                <option value="pass">Pass</option>
+                <option value="not-pass">Not pass</option>
+              </select>
+            </div>
+            <!-- Đã chặn trùng ngay từ lúc nộp đơn (form.js: email_lower + bắt đăng nhập +
+                 gộp hình thức), nên không cần quét trùng ở đây nữa. Giữ ẩn trong DOM để
+                 admin có thể vẫn dùng qua console (findAndDisplayDuplicateApplications())
+                 khi cần dọn dữ liệu cũ từ trước khi có cơ chế mới. -->
+            <button class="action-btn" id="duplicates-toggle-btn" style="display: none;">
+              <i class="fas fa-exclamation-triangle" style="margin-right: 6px"></i>
               Ứng viên apply nhiều lần
-            </h3>
-
-            <div
-              style="
-                margin-bottom: 16px;
-                display: flex;
-                gap: 12px;
-                align-items: center;
-              "
-            >
-              <button
-                class="action-btn"
-                id="scan-duplicates-btn"
-                style="background: var(--warning-light); color: var(--warning)"
-              >
-                <i class="fas fa-search"></i>
-                Quét đơn trùng
-              </button>
-              <span
-                id="duplicates-count"
-                style="font-size: 14px; color: var(--gray-600)"
-              >
-                Chưa quét
-              </span>
-            </div>
-
-            <div id="duplicates-container" style="display: none">
-              <table class="applications-table">
-                <thead>
-                  <tr>
-                    <th>Email</th>
-                    <th>Số đơn</th>
-                    <th>Thông tin ứng viên</th>
-                    <th>Hành động</th>
-                  </tr>
-                </thead>
-                <tbody id="duplicates-table-body">
-                  <!-- Data will be populated by JavaScript -->
-                </tbody>
-              </table>
-            </div>
-
-            <div
-              id="no-duplicates-message"
-              style="
-                display: none;
-                padding: 20px;
-                text-align: center;
-                color: var(--success);
-              "
-            >
-              <i class="fas fa-check-circle"></i>
-              Không có ứng viên nào apply nhiều lần
-            </div>
+              <span id="duplicates-badge">0</span>
+            </button>
           </div>
+
           <table class="applications-table">
             <thead>
               <tr>
@@ -2130,6 +2227,8 @@
                 <th>SĐT</th>
                 <th>Ban ứng tuyển</th>
                 <th>Loại đơn</th>
+                <th>Thông tin phỏng vấn</th>
+                <th>Nhân sự phỏng vấn</th>
                 <th>Hành động</th>
               </tr>
             </thead>
@@ -2137,13 +2236,97 @@
           </table>
         </div>
 
+        <!-- Modal: Ứng viên apply nhiều lần -->
+        <div class="modal" id="duplicates-modal">
+          <div class="modal-content" style="max-width: 900px; max-height: 85vh">
+            <div class="modal-header">
+              <h2 class="modal-title">
+                <i class="fas fa-exclamation-triangle" style="color: var(--error); margin-right: 6px"></i>
+                Ứng viên apply nhiều lần
+              </h2>
+              <button class="modal-close" id="duplicates-modal-close">&times;</button>
+            </div>
+            <div style="padding: 20px; overflow-y: auto">
+              <div
+                style="
+                  margin-bottom: 16px;
+                  display: flex;
+                  gap: 12px;
+                  align-items: center;
+                "
+              >
+                <button
+                  class="action-btn"
+                  id="scan-duplicates-btn"
+                  style="background: var(--warning-light); color: var(--warning)"
+                >
+                  <i class="fas fa-search"></i>
+                  Quét đơn trùng
+                </button>
+                <span
+                  id="duplicates-count"
+                  style="font-size: 14px; color: var(--gray-600)"
+                >
+                  Chưa quét
+                </span>
+              </div>
+
+              <div id="duplicates-container" style="display: none">
+                <table class="applications-table">
+                  <thead>
+                    <tr>
+                      <th>Email</th>
+                      <th>Số đơn</th>
+                      <th>Thông tin ứng viên</th>
+                      <th>Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody id="duplicates-table-body">
+                    <!-- Data will be populated by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div
+                id="no-duplicates-message"
+                style="
+                  display: none;
+                  padding: 20px;
+                  text-align: center;
+                  color: var(--success);
+                "
+              >
+                <i class="fas fa-check-circle"></i>
+                Không có ứng viên nào apply nhiều lần
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Round 2 Content -->
         <div id="round2-content" class="round-subpanel">
+          <div class="round-filters-bar">
+            <input type="text" id="round2-search" class="filter-select" placeholder="Tìm theo tên, email, SĐT..." style="min-width: 220px" />
+            <select id="round2-filter-department" class="filter-select">
+              <option value="">Tất cả ban</option>
+              <option value="MD">Truyền thông</option>
+              <option value="HR">Nhân sự</option>
+              <option value="PD">Dự án</option>
+              <option value="ER">Đối ngoại</option>
+            </select>
+            <select id="round2-filter-status" class="filter-select">
+              <option value="">Tất cả trạng thái</option>
+              <option value="pending">Pending</option>
+              <option value="pass">Pass</option>
+              <option value="not-pass">Not pass</option>
+            </select>
+          </div>
           <table class="applications-table">
             <thead>
               <tr>
                 <th>Họ và tên</th>
                 <th>Ban ứng tuyển</th>
+                <th>Thông tin phỏng vấn</th>
                 <th>Ghi chú</th>
                 <th>Trạng thái</th>
                 <th>Hành động</th>
@@ -2156,11 +2339,28 @@
         </div>
         <!-- Round 3 Content -->
         <div id="round3-content" class="round-subpanel">
+          <div class="round-filters-bar">
+            <input type="text" id="round3-search" class="filter-select" placeholder="Tìm theo tên, email, SĐT..." style="min-width: 220px" />
+            <select id="round3-filter-department" class="filter-select">
+              <option value="">Tất cả ban</option>
+              <option value="MD">Truyền thông</option>
+              <option value="HR">Nhân sự</option>
+              <option value="PD">Dự án</option>
+              <option value="ER">Đối ngoại</option>
+            </select>
+            <select id="round3-filter-status" class="filter-select">
+              <option value="">Tất cả trạng thái</option>
+              <option value="pending">Pending</option>
+              <option value="pass">Pass</option>
+              <option value="not-pass">Not pass</option>
+            </select>
+          </div>
           <table class="applications-table">
               <thead>
                   <tr>
                       <th>Họ và tên</th>
                       <th>Ban ứng tuyển</th>
+                      <th>Vai trò</th>
                       <th>Ghi chú</th>
                       <th>Trạng thái</th>
                       <th>Hành động</th>
@@ -2171,11 +2371,29 @@
         </div>
         <!-- Round 4 Content -->
         <div id="round4-content" class="round-subpanel">
+          <div class="round-filters-bar">
+            <input type="text" id="round4-search" class="filter-select" placeholder="Tìm theo tên, email, SĐT..." style="min-width: 220px" />
+            <select id="round4-filter-department" class="filter-select">
+              <option value="">Tất cả ban</option>
+              <option value="MD">Truyền thông</option>
+              <option value="HR">Nhân sự</option>
+              <option value="PD">Dự án</option>
+              <option value="ER">Đối ngoại</option>
+            </select>
+            <select id="round4-filter-status" class="filter-select">
+              <option value="">Tất cả trạng thái</option>
+              <option value="pending">Pending</option>
+              <option value="pass">Pass</option>
+              <option value="not-pass">Not pass</option>
+            </select>
+          </div>
           <table class="applications-table">
             <thead>
               <tr>
                 <th>Họ và tên</th>
                 <th>Ban ứng tuyển</th>
+                <th>Thông tin phỏng vấn</th>
+                <th>Nhân sự phỏng vấn</th>
                 <th>Ghi chú</th>
                 <th>Trạng thái</th>
                 <th>Hành động</th>
@@ -2995,7 +3213,7 @@ async function fixOldData() {
         
         await batch.commit();
         notifySuccess(`✅ Đã fix ${fixedCount} ứng viên!`);
-        loadApplications();
+        refreshApplications();
     } catch (error) {
         console.error("Lỗi fix dữ liệu:", error);
         notifyError("❌ Lỗi: " + error.message);
@@ -3058,13 +3276,21 @@ window.fixOldData = fixOldData;
 
         tbody.innerHTML = "";
 
+        const toggleBtn = document.getElementById("duplicates-toggle-btn");
+        const badge = document.getElementById("duplicates-badge");
+
         if (Object.keys(duplicates).length === 0) {
           container.style.display = "none";
           noDuplicatesMessage.style.display = "block";
           countElement.textContent = "Không có đơn trùng";
           countElement.style.color = "var(--success)";
+          if (toggleBtn) toggleBtn.classList.remove("has-duplicates");
+          if (badge) badge.textContent = "0";
           return;
         }
+
+        if (toggleBtn) toggleBtn.classList.add("has-duplicates");
+        if (badge) badge.textContent = Object.keys(duplicates).length;
 
         container.style.display = "block";
         noDuplicatesMessage.style.display = "none";
@@ -3085,7 +3311,7 @@ window.fixOldData = fixOldData;
           apps.forEach((app, index) => {
             const formattedTime = formatApplicationTime(app.timestamp);
             const applicationType =
-              app.application_type === "interview" ? "Phỏng vấn" : "Form";
+              getApplicationTypeLabel(app);
             const currentRound = getRoundText(app.current_round);
 
             applicationsHTML += `
@@ -3220,7 +3446,7 @@ window.fixOldData = fixOldData;
         apps.forEach((app, index) => {
           const formattedTime = formatApplicationTime(app.timestamp);
           const applicationType =
-            app.application_type === "interview" ? "Phỏng vấn" : "Form";
+            getApplicationTypeLabel(app);
           const hasPhone = app.phone && app.phone.trim() !== "";
           const hasFullname = app.fullname && app.fullname.trim() !== "";
 
@@ -3369,10 +3595,23 @@ window.fixOldData = fixOldData;
 
         const otherApps = apps.filter((app) => app.id !== bestApp.id);
 
+        // Gộp "loại đơn": nếu các đơn trùng có hình thức apply khác nhau
+        // (vd: 1 đơn form, 1 đơn phỏng vấn) thì giữ lại CẢ 2 hình thức trên đơn chính.
+        // Dùng đúng field application_types (mảng) mà response.html đang đọc,
+        // KHÔNG dùng chuỗi gộp trong application_type (response.html không parse chuỗi đó).
+        const allTypes = new Set();
+        apps.forEach((app) => {
+          getAppTypes(app).forEach((t) => allTypes.add(t));
+        });
+        const mergedApplicationTypes = Array.from(allTypes);
+
         let confirmMessage = `Gộp ${otherApps.length} đơn vào đơn chính?\n\n`;
         confirmMessage += `Đơn chính: ${bestApp.fullname} (${bestApp.email})\n`;
-        confirmMessage += `Số đơn sẽ xóa: ${otherApps.length}\n\n`;
-        confirmMessage += `Đơn chính sẽ được giữ lại, các đơn khác sẽ bị xóa.`;
+        confirmMessage += `Số đơn sẽ xóa: ${otherApps.length}\n`;
+        if (allTypes.size > 1) {
+          confirmMessage += `Loại đơn sẽ được gộp thành: ${mergedApplicationTypes.join(" + ")} (ứng viên đã apply bằng nhiều hình thức)\n`;
+        }
+        confirmMessage += `\nĐơn chính sẽ được giữ lại, các đơn khác sẽ bị xóa.`;
 
         if (!(await confirmDialog(confirmMessage))) {
           return;
@@ -3385,6 +3624,14 @@ window.fixOldData = fixOldData;
             const appRef = db.collection("applications").doc(app.id);
             batch.delete(appRef);
           });
+          // Cập nhật đơn chính với application_types đã gộp (nếu có nhiều hình thức)
+          if (allTypes.size > 1) {
+            const mainRef = db.collection("applications").doc(bestApp.id);
+            batch.update(mainRef, {
+              application_types: mergedApplicationTypes,
+              application_type: mergedApplicationTypes[0],
+            });
+          }
 
           await batch.commit();
           notifySuccess(`✅ Đã gộp thành công! Đã xóa ${otherApps.length} đơn trùng`);
@@ -3406,6 +3653,23 @@ window.fixOldData = fixOldData;
             "click",
             findAndDisplayDuplicateApplications
           );
+        }
+
+        const dupToggleBtn = document.getElementById("duplicates-toggle-btn");
+        const dupModal = document.getElementById("duplicates-modal");
+        const dupModalClose = document.getElementById("duplicates-modal-close");
+        if (dupToggleBtn && dupModal) {
+          dupToggleBtn.addEventListener("click", () => {
+            dupModal.style.display = "flex";
+          });
+        }
+        if (dupModalClose && dupModal) {
+          dupModalClose.addEventListener("click", () => {
+            dupModal.style.display = "none";
+          });
+          dupModal.addEventListener("click", (e) => {
+            if (e.target === dupModal) dupModal.style.display = "none";
+          });
         }
       });
 
@@ -3794,7 +4058,7 @@ function exportAllData() {
             getRoundText(app.current_round),
             getStatusText(computeOverallStatus(app)),
             formatApplicationTime(app.timestamp),
-            app.application_type === 'interview' ? 'Phỏng vấn' : 'Form'
+            getApplicationTypeLabel(app)
         ]);
     });
     
@@ -3821,7 +4085,7 @@ function exportPersonalInfo() {
                 ? getDepartmentName(app.secondary_position) 
                 : 'Không có',
             formatApplicationTime(app.timestamp),
-            app.application_type === 'interview' ? 'Phỏng vấn' : 'Form'
+            getApplicationTypeLabel(app)
         ]);
     });
     
@@ -3901,7 +4165,7 @@ function exportByDepartment(department) {
                 getRoundText(app.current_round),
                 getStatusText(status),
                 formatApplicationTime(app.timestamp),
-                app.application_type === 'interview' ? 'Phỏng vấn' : 'Form'
+                getApplicationTypeLabel(app)
             ]);
         }
     });
@@ -3948,11 +4212,11 @@ function exportPersonalWithResults() {
 
 // Hàm helper để lấy kết quả của một department
 function getDepartmentResult(app, type) {
-    const prefix = type === 'priority' ? '' : 'secondary_';
-    const round1Status = app[`${prefix}status`] || 'pending';
-    const round2Status = app[`round2_${prefix}status`] || 'pending';
-    const round3Status = app[`round3_${prefix}status`] || 'pending';
-    const round4Status = app[`round4_${prefix}status`] || 'pending';
+    // type là 'priority' hoặc 'secondary' -> tên field đúng là {type}_status, round2_{type}_status, ...
+    const round1Status = app[`${type}_status`] || 'pending';
+    const round2Status = app[`round2_${type}_status`] || 'pending';
+    const round3Status = app[`round3_${type}_status`] || 'pending';
+    const round4Status = app[`round4_${type}_status`] || 'pending';
     
     if (app.current_round === 'success' && app.final_department === app[`${type}_position`]) {
         return 'Trúng tuyển';
@@ -4320,15 +4584,13 @@ function exportManualTeams() {
                           app.fullname || "Chưa có tên"
                         }
                             <span class="duplicate-badge" style="background: ${
-                              app.application_type === "interview"
+                              getApplicationTypeLabel(app) === "Phỏng vấn"
                                 ? "var(--info)"
+                                : getApplicationTypeLabel(app) === "Form + Phỏng vấn"
+                                ? "#0D9488"
                                 : "var(--warning)"
                             };">
-                                ${
-                                  app.application_type === "interview"
-                                    ? "Phỏng vấn"
-                                    : "Form"
-                                }
+                                ${getApplicationTypeLabel(app)}
                             </span>
                             <div style="margin-top: 4px;">
                                 SĐT: ${app.phone || "Chưa có"} | 
@@ -4365,7 +4627,7 @@ function exportManualTeams() {
         apps.forEach((app, index) => {
           const formattedTime = formatApplicationTime(app.timestamp);
           const applicationType =
-            app.application_type === "interview" ? "Phỏng vấn" : "Form";
+            getApplicationTypeLabel(app);
           const hasPhone = app.phone && app.phone.trim() !== "";
           const hasFullname = app.fullname && app.fullname.trim() !== "";
 
@@ -4688,11 +4950,15 @@ function exportManualTeams() {
               ? getDepartmentName(app.secondary_position)
               : null;
 
-          // Hiển thị loại đơn
-          const appType =
-            app.application_type === "interview"
-              ? '<span class="duplicate-badge" style="background: var(--info); margin-left: 4px; font-size: 10px;">Phỏng vấn</span>'
-              : '<span class="duplicate-badge" style="background: var(--warning); margin-left: 4px; font-size: 10px;">Form</span>';
+          // Hiển thị loại đơn (dùng chung hàm getApplicationTypeLabel để không bị thiếu khi có cả Form + Phỏng vấn)
+          const appTypeLabel = getApplicationTypeLabel(app);
+          const appTypeColor =
+            appTypeLabel === "Form + Phỏng vấn"
+              ? "#0D9488"
+              : appTypeLabel === "Phỏng vấn"
+              ? "var(--info)"
+              : "var(--warning)";
+          const appType = `<span class="duplicate-badge" style="background: ${appTypeColor}; margin-left: 4px; font-size: 10px;">${appTypeLabel}</span>`;
 
           tr.innerHTML = `
             <td>
@@ -5004,30 +5270,14 @@ function exportManualTeams() {
       async function refreshApplications() {
         await loadApplications();
 
-        // Cập nhật UI theo tab hiện tại
-        const activeTab = document
-          .querySelector(".nav-item.active")
-          .getAttribute("data-tab");
-        switch (activeTab) {
-          case "dashboard":
-            renderApplications();
-            break;
-          case "round1":
-            renderRound1();
-            break;
-          case "round2":
-            renderRound2();
-            break;
-          case "round3":
-            renderRound3();
-            break;
-          case "round4":
-            renderRound4();
-            break;
-          case "success":
-            renderSuccess();
-            break;
-        }
+        // Cập nhật UI theo tab (và sub-tab vòng) hiện tại đang mở
+        applyFiltersToCurrentTab();
+
+        // Luôn vẽ lại chart dashboard, kể cả khi đang không đứng ở tab dashboard,
+        // để lần sau bấm vào tab dashboard là thấy số liệu mới ngay, không cần
+        // phải "trigger" bằng cách chuyển qua vòng khác rồi quay lại mới update.
+        updateStats();
+        renderDashboardCharts();
       }
 
 
@@ -5083,8 +5333,9 @@ function exportManualTeams() {
 
             this.parentNode.replaceChild(newBadge, this);
 
-            // Reload để cập nhật UI
-            loadApplications();
+            // Reload để cập nhật UI (kể cả chart dashboard, không cần đợi
+            // chuyển vòng mới thấy số liệu mới)
+            refreshApplications();
           } catch (error) {
             console.error("Lỗi khi cập nhật trạng thái:", error);
             notifyInfo("Lỗi khi cập nhật trạng thái: " + error.message);
@@ -5099,10 +5350,10 @@ function exportManualTeams() {
 
       function filterRound1Applications() {
         const departmentFilter =
-          document.getElementById("filter-department").value;
-        const statusFilter = document.getElementById("filter-status").value;
+          document.getElementById("round1-filter-department").value;
+        const statusFilter = document.getElementById("round1-filter-status").value;
         const searchText = document
-          .getElementById("search-input")
+          .getElementById("round1-search")
           .value.toLowerCase();
 
         return applications.filter((app) => {
@@ -5161,14 +5412,16 @@ function exportManualTeams() {
 
       function filterRound2Applications() {
         const departmentFilter =
-          document.getElementById("filter-department").value;
-        const statusFilter = document.getElementById("filter-status").value;
+          document.getElementById("round2-filter-department").value;
+        const statusFilter = document.getElementById("round2-filter-status").value;
         const searchText = document
-          .getElementById("search-input")
+          .getElementById("round2-search")
           .value.toLowerCase();
 
         return applications.filter((app) => {
-          if (app.current_round !== "round2") return false;
+          // SỬA: BỎ điều kiện "app.current_round !== "round2"" để ứng viên
+          // đã pass vòng 1 vẫn hiển thị ở đây dù đã chuyển tiếp lên vòng sau
+          if (roundIndex(app.current_round) < roundIndex("round2")) return false;
 
           // Department filter
           if (departmentFilter) {
@@ -5200,12 +5453,14 @@ function exportManualTeams() {
       }
 
 function filterRound3Applications() {
-    const departmentFilter = document.getElementById("filter-department").value;
-    const statusFilter = document.getElementById("filter-status").value;
-    const searchText = document.getElementById("search-input").value.toLowerCase();
+    const departmentFilter = document.getElementById("round3-filter-department").value;
+    const statusFilter = document.getElementById("round3-filter-status").value;
+    const searchText = document.getElementById("round3-search").value.toLowerCase();
 
     return applications.filter((app) => {
-        if (app.current_round !== "round3") return false;
+        // SỬA: BỎ điều kiện "app.current_round !== "round3"" để ứng viên
+        // đã pass vòng 2 vẫn hiển thị ở đây dù đã chuyển tiếp lên vòng sau
+        if (roundIndex(app.current_round) < roundIndex("round3")) return false;
 
         // Lấy tất cả ban đã pass vòng 2
         const hasPassedRound2 = 
@@ -5266,14 +5521,16 @@ function filterRound3Applications() {
 
       function filterRound4Applications() {
         const departmentFilter =
-          document.getElementById("filter-department").value;
-        const statusFilter = document.getElementById("filter-status").value;
+          document.getElementById("round4-filter-department").value;
+        const statusFilter = document.getElementById("round4-filter-status").value;
         const searchText = document
-          .getElementById("search-input")
+          .getElementById("round4-search")
           .value.toLowerCase();
 
         return applications.filter((app) => {
-          if (app.current_round !== "round4") return false;
+          // SỬA: BỎ điều kiện "app.current_round !== "round4"" để ứng viên
+          // đã trở thành "Thành viên chính thức" vẫn hiển thị ở đây
+          if (roundIndex(app.current_round) < roundIndex("round4")) return false;
 
           // SỬA: Kiểm tra ứng viên có ít nhất 1 ban pass vòng 3
           const hasPassedRound3 =
@@ -5485,7 +5742,7 @@ Email: ${application.email || 'Chưa cung cấp'}
 SĐT: ${application.phone || 'Chưa cung cấp'}
 Nguyện vọng 1: ${getDepartmentName(application.priority_position) || 'Chưa có'}
 ${application.secondary_position && application.secondary_position !== 'None' ? `Nguyện vọng 2: ${getDepartmentName(application.secondary_position)}` : ''}
-Loại đơn: ${application.application_type === 'interview' ? 'Phỏng vấn thay đơn' : 'Điền form'}
+Loại đơn: ${getApplicationTypeLabel(application)}
 Thời gian: ${applicationTime.toLocaleString('vi-VN')}
 
 Xem chi tiết: https://recruitment.enactusftuhanoi.id.vn/dashboard.html
@@ -5597,7 +5854,7 @@ Xem chi tiết: https://recruitment.enactusftuhanoi.id.vn/dashboard.html
                     <td style="white-space: nowrap;">
                         <button class="action-btn view-btn" data-id="${
                           app.id
-                        }" title="Xem / Sửa thông tin"><i class="fas fa-pen"></i> Sửa</button>
+                        }" title="Xem thông tin"><i class="fas fa-eye"></i> Xem</button>
                         <button class="action-btn response-link-btn" data-id="${
                           app.id
                         }" style="background: var(--info-light); color: var(--info); margin-left: 6px;" title="Xem đơn ứng tuyển gốc"><i class="fas fa-file-alt"></i> Đơn</button>
@@ -5625,6 +5882,67 @@ Xem chi tiết: https://recruitment.enactusftuhanoi.id.vn/dashboard.html
       }
 
       // Trong hàm renderRound1(), sửa phần event listener
+      // Lấy dữ liệu lịch phỏng vấn cho 1 ứng viên ở 1 vòng cụ thể, tách theo từng ban.
+      // Ưu tiên field NHÁP ({round}_draft — tự đẩy lên mỗi khi "Lưu lịch" bên trang sắp
+      // xếp phỏng vấn) để Dashboard thấy sớm; nếu ban đó chưa có nháp thì mới lấy field
+      // CHÍNH THỨC ({round} — chỉ có sau khi bấm "Công bố vào hệ thống"). Ứng viên
+      // (profile.html) chỉ đọc field chính thức nên không bị lộ lịch chưa công bố.
+      function getInterviewRoundData(app, round) {
+        const depts = [];
+        if (app.priority_position)
+          depts.push({ type: "priority", dept: app.priority_position });
+        if (app.secondary_position && app.secondary_position !== "None")
+          depts.push({ type: "secondary", dept: app.secondary_position });
+
+        const draftData = app[`${round}_draft`] || {};
+        const publishedData = app[round] || {};
+
+        return depts.map((d) => {
+          const draft = draftData[d.type] || {};
+          const published = publishedData[d.type] || {};
+          const hasDraft = !!(draft.time || draft.interviewer);
+          const src = hasDraft ? draft : published;
+          return {
+            dept: d.dept,
+            multi: depts.length > 1,
+            time: src.time || "",
+            interviewer: src.interviewer || "",
+            isDraft: hasDraft,
+          };
+        });
+      }
+
+      // Cột "Thông tin phỏng vấn": Thứ/ngày/tháng + ca + thời gian (chuỗi time đã được
+      // ghép sẵn từ trang sắp lịch phỏng vấn). Nếu apply 2 ban thì chia làm 2 dòng.
+      function renderInterviewTimeCell(app, round) {
+        const rows = getInterviewRoundData(app, round);
+        if (!rows.length) return '<span class="ii-empty">—</span>';
+        return `<div class="interview-info-cell">${rows
+          .map(
+            (r) => `
+          <div class="ii-row">
+            ${r.multi ? `<div class="ii-dept">${getDepartmentName(r.dept)}</div>` : ""}
+            <div>${r.time ? r.time : '<span class="ii-empty">Chưa sắp lịch</span>'}${r.time && r.isDraft ? ' <span class="ii-draft-tag">nháp</span>' : ""}</div>
+          </div>`
+          )
+          .join("")}</div>`;
+      }
+
+      // Cột "Nhân sự phỏng vấn": tên người phỏng vấn. Nếu apply 2 ban thì chia làm 2 dòng.
+      function renderInterviewerCell(app, round) {
+        const rows = getInterviewRoundData(app, round);
+        if (!rows.length) return '<span class="ii-empty">—</span>';
+        return `<div class="interview-info-cell">${rows
+          .map(
+            (r) => `
+          <div class="ii-row">
+            ${r.multi ? `<div class="ii-dept">${getDepartmentName(r.dept)}</div>` : ""}
+            <div>${r.interviewer ? r.interviewer : '<span class="ii-empty">—</span>'}</div>
+          </div>`
+          )
+          .join("")}</div>`;
+      }
+
       function renderRound1() {
         const tbody = document.getElementById("round1-table-body");
         tbody.innerHTML = "";
@@ -5632,9 +5950,13 @@ Xem chi tiết: https://recruitment.enactusftuhanoi.id.vn/dashboard.html
         const filteredApps = filterRound1Applications();
 
         filteredApps.forEach((app) => {
-          if (app.current_round !== "round1") return;
+          // Ứng viên đã chuyển sang vòng sau vẫn hiển thị ở đây (không ẩn đi nữa),
+          // chỉ thêm ghi chú "Đã chuyển lên vòng i+1" để biết trạng thái hiện tại.
+          const round = app.current_round || "round1";
+          const hasMovedOn = round !== "round1";
 
           const tr = document.createElement("tr");
+          if (hasMovedOn) tr.style.opacity = "0.65";
           tr.innerHTML = `
                     <td>${app.fullname}</td>
                     <td>${app.email}</td>
@@ -5653,8 +5975,22 @@ Xem chi tiết: https://recruitment.enactusftuhanoi.id.vn/dashboard.html
                               )
                             : ""
                         }
+                        ${
+                          hasMovedOn
+                            ? `<div style="margin-top: 4px;"><span style="font-style: italic; font-weight: 700; font-size: 11px; color: var(--gold-deep);">Đã chuyển lên ${getRoundText(round)}</span></div>`
+                            : ""
+                        }
                     </td>
-                    <td>${app.application_type || "form"}</td>
+                    <td>${(() => {
+                      const types = getAppTypes(app);
+                      const hasForm = types.includes("form") || !types.length;
+                      const hasInterview = types.includes("interview");
+                      const formBadge = `<span class="duplicate-badge" style="background: var(--warning-light, #FEF3C7); color: var(--warning, #D97706); font-size: 11px; font-weight: 600; margin-left: 0;">Form</span>`;
+                      const interviewBadge = `<span class="duplicate-badge" style="background: var(--info-light); color: var(--info); font-size: 11px; font-weight: 600; margin-left: 4px;">Phỏng vấn</span>`;
+                      return `${hasForm ? formBadge : ""}${hasInterview ? interviewBadge : ""}`;
+                    })()}</td>
+                    <td>${renderInterviewTimeCell(app, "round1")}</td>
+                    <td>${renderInterviewerCell(app, "round1")}</td>
                     <td>
                         <button class="action-btn view-btn" data-id="${app.id}">
                             <i class="fas fa-external-link-alt" style="margin-right: 4px;"></i>
@@ -5694,7 +6030,9 @@ function renderRound2() {
     const filteredApps = filterRound2Applications();
 
     filteredApps.forEach((app) => {
-        if (app.current_round !== "round2") return;
+        // Ứng viên đã chuyển sang vòng sau vẫn hiển thị ở đây (không ẩn đi nữa),
+        // chỉ làm mờ dòng + thêm ghi chú "Đã chuyển lên vòng i+1" để biết trạng thái hiện tại.
+        const hasMovedOn = app.current_round !== "round2";
 
         // Lấy thông tin chung từ round2 (ưu tiên lấy từ priority nếu có)
         const round2Data = app.round2 || {};
@@ -5741,6 +6079,7 @@ function renderRound2() {
         }
 
         const tr = document.createElement("tr");
+        if (hasMovedOn) tr.style.opacity = "0.65";
 
         tr.innerHTML = `
             <td>
@@ -5749,6 +6088,7 @@ function renderRound2() {
                     <div class="applicant-details">
                         <div class="applicant-name">${app.fullname}</div>
                         <div class="applicant-contact">${app.email}</div>
+                        ${hasMovedOn ? `<div style="margin-top: 4px;"><span style="font-style: italic; font-weight: 700; font-size: 11px; color: var(--gold-deep);">Đã chuyển lên ${getRoundText(app.current_round)}</span></div>` : ""}
                     </div>
                 </div>
             </td>
@@ -5763,21 +6103,22 @@ function renderRound2() {
                     return renderDepartment(pos.dept, pos.status);
                 }).join("")}
             </td>
+            <td>${renderInterviewTimeCell(app, "round2")}</td>
             <td>
                 ${allDepartments.map((pos) => {
                     if (!pos.isPassedPrevRound) return '';
                     return `<input class="app-input" value="${commonData.note || ""}" 
                         data-field="common.note" style="margin-bottom: 4px; width: 100%;"
-                        ${!pos.canEdit ? "disabled" : ""}>`;
+                        ${!pos.canEdit || hasMovedOn ? "disabled" : ""}>`;
                 }).join("")}
             </td>
             <td>
                 <div id="status-section-${app.id}">
-                    ${renderRound2StatusSection(app)}
+                    ${renderRound2StatusSection(app, hasMovedOn)}
                 </div>
             </td>
             <td>
-                <button class="action-btn save-btn" data-id="${app.id}">Lưu</button>
+                ${hasMovedOn ? "" : `<button class="action-btn save-btn" data-id="${app.id}">Lưu</button>`}
             </td>
         `;
 
@@ -5842,7 +6183,7 @@ function renderRound2() {
 }
 
 // Hàm render phần trạng thái vòng 2 chia theo ban
-function renderRound2StatusSection(app) {
+function renderRound2StatusSection(app, hasMovedOn = false) {
     let html = "";
     const positions = [];
 
@@ -5890,7 +6231,7 @@ function renderRound2StatusSection(app) {
                 ${pos.isPassedPrevRound ? `
                 <select class="app-select ban-status-select" 
                         data-ban-type="${pos.type}" 
-                        ${!pos.canEdit ? "disabled" : ""}
+                        ${!pos.canEdit || hasMovedOn ? "disabled" : ""}
                         style="width: 100%; font-size: 12px; padding: 4px 8px;">
                     <option value="pending" ${pos.status === "pending" ? "selected" : ""}>Pending</option>
                     <option value="pass" ${pos.status === "pass" ? "selected" : ""}>Pass</option>
@@ -5988,6 +6329,17 @@ function renderRound2StatusSection(app) {
         setupRound3SaveHandlers();
       }
 
+// Vai trò trong team ở Vòng 3, lấy từ teamwork.html (app.round3.role).
+// Leader xếp trước, kế đến Sub Leader, cuối cùng Member.
+const ROUND3_ROLE_ORDER = { leader: 0, subleader: 1, member: 2 };
+const ROUND3_ROLE_LABEL = { leader: "Leader", subleader: "Sub Leader", member: "Member" };
+function renderRoleBadge(role) {
+    const r = role || "member";
+    const label = ROUND3_ROLE_LABEL[r] || "Member";
+    const cls = ROUND3_ROLE_ORDER[r] !== undefined ? r : "member";
+    return `<span class="role-badge-dash ${cls}">${label}</span>`;
+}
+
 function renderRound3() {
     const tbody = document.getElementById("round3-table-body");
     tbody.innerHTML = "";
@@ -6053,7 +6405,7 @@ function renderRound3() {
             <td style="font-weight: 600; border-right: 2px solid var(--primary);">
                 ${team.name}
             </td>
-            <td colspan="6" style="padding: 12px 16px;">
+            <td colspan="7" style="padding: 12px 16px;">
                 <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: center;">
                     <div>
                         <strong style="font-size: 12px; color: var(--gray-600);">Advisor:</strong>
@@ -6074,8 +6426,15 @@ function renderRound3() {
         `;
         tbody.appendChild(headerRow);
 
+        // Sắp xếp thành viên trong team: Leader trước, rồi Sub Leader, rồi Member
+        const sortedMembers = [...team.members].sort((a, b) => {
+            const ra = ROUND3_ROLE_ORDER[a.round3?.role] ?? 2;
+            const rb = ROUND3_ROLE_ORDER[b.round3?.role] ?? 2;
+            return ra - rb;
+        });
+
         // Members
-        team.members.forEach((app, memberIndex) => {
+        sortedMembers.forEach((app, memberIndex) => {
             // Tạo danh sách tất cả ban (kể cả đã bị loại ở vòng trước)
             const allDepartments = [];
             
@@ -6110,9 +6469,14 @@ function renderRound3() {
                 });
             }
 
+            // Ứng viên đã chuyển sang vòng sau vẫn hiển thị ở đây (không ẩn đi nữa),
+            // chỉ làm mờ dòng + thêm ghi chú "Đã chuyển lên vòng i+1" để biết trạng thái hiện tại.
+            const hasMovedOn = app.current_round !== "round3";
+
             // Hiển thị thông tin
             const memberRow = document.createElement("tr");
             memberRow.setAttribute("data-team", team.name);
+            if (hasMovedOn) memberRow.style.opacity = "0.65";
             memberRow.innerHTML = `
                 <td style="padding-left: 32px; border-right: 2px solid var(--primary);">
                     <div style="display: flex; align-items: center; gap: 8px;">
@@ -6122,6 +6486,7 @@ function renderRound3() {
                         <div>
                             <div style="font-weight: 500;">${app.fullname}</div>
                             <div style="font-size: 11px; color: var(--gray-500);">${app.email}</div>
+                            ${hasMovedOn ? `<div style="margin-top: 4px;"><span style="font-style: italic; font-weight: 700; font-size: 11px; color: var(--gold-deep);">Đã chuyển lên ${getRoundText(app.current_round)}</span></div>` : ""}
                         </div>
                     </div>
                 </td>
@@ -6135,25 +6500,26 @@ function renderRound3() {
                         return renderDepartment(pos.dept, pos.status);
                     }).join("")}
                 </td>
+                <td>${renderRoleBadge(app.round3?.role)}</td>
                 <td>
                     ${allDepartments.map((pos) => {
                         if (!pos.isPassedPrevRound) return '';
                         return `<input class="app-input" value="${app.round3?.[pos.type]?.note || ""}" 
                             data-field="${pos.type}.note" data-id="${app.id}" 
                             placeholder="Ghi chú" style="margin-bottom: 4px; width: 100%;"
-                            ${!pos.canEdit ? "disabled" : ""}>`;
+                            ${!pos.canEdit || hasMovedOn ? "disabled" : ""}>`;
                     }).join("")}
                 </td>
                 <td>
                     <div id="round3-status-section-${app.id}" style="min-width: 150px;">
-                        ${renderRound3StatusSection(app)}
+                        ${renderRound3StatusSection(app, hasMovedOn)}
                     </div>
                 </td>
                 <td>
-                    <button class="action-btn save-btn" data-id="${app.id}" 
+                    ${hasMovedOn ? "" : `<button class="action-btn save-btn" data-id="${app.id}" 
                         style="padding: 6px 12px; font-size: 12px;">
                         Lưu
-                    </button>
+                    </button>`}
                 </td>
             `;
             tbody.appendChild(memberRow);
@@ -6169,7 +6535,7 @@ function renderRound3() {
 }
 
 // Hàm render phần trạng thái vòng 3 chia theo ban (GIỐNG VÒNG 2)
-function renderRound3StatusSection(app) {
+function renderRound3StatusSection(app, hasMovedOn = false) {
     let html = "";
     const positions = [];
 
@@ -6208,7 +6574,7 @@ function renderRound3StatusSection(app) {
                 </div>
                 <select class="app-select ban-status-select" 
                         data-ban-type="${pos.type}" 
-                        ${!pos.canEdit ? "disabled" : ""}
+                        ${!pos.canEdit || hasMovedOn ? "disabled" : ""}
                         style="width: 100%; font-size: 12px; padding: 4px 8px;">
                     <option value="pending" ${pos.status === "pending" ? "selected" : ""}>Pending</option>
                     <option value="pass" ${pos.status === "pass" ? "selected" : ""}>Pass</option>
@@ -6319,7 +6685,9 @@ function renderRound4() {
     const filteredApps = filterRound4Applications();
 
     filteredApps.forEach((app) => {
-        if (app.current_round !== "round4") return;
+        // Ứng viên đã thành "Thành viên chính thức" vẫn hiển thị ở đây (không ẩn đi nữa),
+        // chỉ làm mờ dòng + thêm ghi chú để biết trạng thái hiện tại.
+        const hasMovedOn = app.current_round !== "round4";
 
         // Tạo danh sách tất cả ban (kể cả đã bị loại ở vòng trước)
         const allDepartments = [];
@@ -6361,11 +6729,13 @@ function renderRound4() {
         }
 
         const tr = document.createElement("tr");
+        if (hasMovedOn) tr.style.opacity = "0.65";
 
         tr.innerHTML = `
             <td>
                 <div style="font-weight: 500;">${app.fullname}</div>
                 <div style="font-size: 11px; color: var(--gray-500);">${app.email}</div>
+                ${hasMovedOn ? `<div style="margin-top: 4px;"><span style="font-style: italic; font-weight: 700; font-size: 11px; color: var(--success);">${getRoundText(app.current_round)}</span></div>` : ""}
             </td>
             <td>
                 ${allDepartments.map((pos) => {
@@ -6378,10 +6748,12 @@ function renderRound4() {
                     return renderDepartment(pos.dept, pos.status);
                 }).join("")}
             </td>
+            <td>${renderInterviewTimeCell(app, "round4")}</td>
+            <td>${renderInterviewerCell(app, "round4")}</td>
             <td>
                 ${allDepartments.map((pos) => {
                     if (!pos.isPassedPrevRound) return '';
-                    return `<input class="app-input" ${!pos.canEdit ? "disabled" : ""} 
+                    return `<input class="app-input" ${!pos.canEdit || hasMovedOn ? "disabled" : ""} 
                         value="${app.round4?.[pos.type]?.note || ""}" 
                         data-field="${pos.type}.note" style="margin-bottom: 4px; width: 100%;">`;
                 }).join("")}
@@ -6403,7 +6775,7 @@ function renderRound4() {
                                 ${getStatusText(pos.status)}
                             </span>
                         </div>
-                        <select class="app-select" ${!pos.canEdit ? "disabled" : ""} 
+                        <select class="app-select" ${!pos.canEdit || hasMovedOn ? "disabled" : ""} 
                             data-field="${pos.type}.status" style="width: 100%; font-size: 12px; padding: 4px 8px;">
                             <option value="pending" ${pos.status === "pending" ? "selected" : ""}>Pending</option>
                             <option value="interviewed" ${pos.status === "interviewed" ? "selected" : ""}>Interviewed</option>
@@ -6414,7 +6786,7 @@ function renderRound4() {
                 }).join("")}
             </td>
             <td>
-                <button class="action-btn save-btn" data-id="${app.id}">Lưu</button>
+                ${hasMovedOn ? "" : `<button class="action-btn save-btn" data-id="${app.id}">Lưu</button>`}
             </td>
         `;
         tbody.appendChild(tr);
@@ -6582,9 +6954,6 @@ function renderRound4() {
         );
         updateComparisonElement("rejected-applicants", comparisons.rejected);
 
-        // Cập nhật thống kê theo ban
-        updateDepartmentStats();
-
         // Cập nhật biểu đồ (chỉ khi tab Dashboard đang hiển thị)
         const dashboardTabActive =
           document.querySelector('.nav-item.active[data-tab="dashboard"]') !==
@@ -6651,118 +7020,9 @@ function renderRound4() {
         }
       }
 
-      // Thêm hàm thống kê theo ban
-      function updateDepartmentStats() {
-        const departmentStats = {
-          MD: { total: 0, completed: 0, inProgress: 0, rejected: 0 },
-          HR: { total: 0, completed: 0, inProgress: 0, rejected: 0 },
-          PD: { total: 0, completed: 0, inProgress: 0, rejected: 0 },
-          ER: { total: 0, completed: 0, inProgress: 0, rejected: 0 },
-        };
+      // Thống kê theo ban giờ được gộp trực tiếp vào biểu đồ "Trạng thái theo ban"
+      // (xem renderDashboardCharts) thay vì hiển thị dạng thẻ lặp lại như trước.
 
-        // Đếm thống kê theo ban
-        applications.forEach((app) => {
-          const status = computeOverallStatus(app);
-
-          // Đếm cho ban ưu tiên
-          if (app.priority_position && departmentStats[app.priority_position]) {
-            departmentStats[app.priority_position].total++;
-            if (status === "success")
-              departmentStats[app.priority_position].completed++;
-            else if (status === "not-pass")
-              departmentStats[app.priority_position].rejected++;
-            else departmentStats[app.priority_position].inProgress++;
-          }
-
-          // Đếm cho ban dự bị (nếu có)
-          if (
-            app.secondary_position &&
-            app.secondary_position !== "None" &&
-            departmentStats[app.secondary_position]
-          ) {
-            departmentStats[app.secondary_position].total++;
-            if (status === "success")
-              departmentStats[app.secondary_position].completed++;
-            else if (status === "not-pass")
-              departmentStats[app.secondary_position].rejected++;
-            else departmentStats[app.secondary_position].inProgress++;
-          }
-        });
-
-        // Cập nhật UI cho thống kê ban
-        updateDepartmentStatsUI(departmentStats);
-      }
-
-      // Cập nhật UI thống kê theo ban
-      function updateDepartmentStatsUI(stats) {
-        const totalApplicants = applications.length;
-        let statsHTML = "";
-
-        Object.keys(stats).forEach((deptCode) => {
-          const dept = stats[deptCode];
-          if (dept.total > 0) {
-            const percentage = Math.round((dept.total / totalApplicants) * 100);
-            const icon = getDepartmentIcon(deptCode);
-
-            statsHTML += `
-                        <div class="department-stat-card department-${deptCode.toLowerCase()}">
-                            <div class="department-stat-header">
-                                <div class="department-stat-icon">
-                                    <i class="${icon}"></i>
-                                </div>
-                                <div class="department-stat-title">${getDepartmentName(
-                                  deptCode
-                                )}</div>
-                            </div>
-                            <div class="department-stat-value">${
-                              dept.total
-                            }</div>
-                            <div class="department-stat-details">
-                                <div class="department-stat-item">
-                                    <span class="department-stat-label">Hoàn thành:</span>
-                                    <span class="department-stat-count" style="color: var(--success);">${
-                                      dept.completed
-                                    }</span>
-                                </div>
-                                <div class="department-stat-item">
-                                    <span class="department-stat-label">Đang xử lý:</span>
-                                    <span class="department-stat-count" style="color: var(--warning);">${
-                                      dept.inProgress
-                                    }</span>
-                                </div>
-                                <div class="department-stat-item">
-                                    <span class="department-stat-label">Đã loại:</span>
-                                    <span class="department-stat-count" style="color: var(--error);">${
-                                      dept.rejected
-                                    }</span>
-                                </div>
-                            </div>
-                            <div class="department-stat-progress">
-                                <div class="department-stat-progress-bar" style="width: ${percentage}%"></div>
-                            </div>
-                        </div>
-                    `;
-          }
-        });
-
-        // Thêm vào stats container
-        const departmentStatsContainer = document.getElementById(
-          "department-stats-container"
-        );
-        if (!departmentStatsContainer) {
-          // Tạo container mới nếu chưa có
-          const newContainer = document.createElement("div");
-          newContainer.id = "department-stats-container";
-          newContainer.className = "department-stats-container main-dashboard";
-          newContainer.style.marginTop = "20px";
-          newContainer.innerHTML = `<h3 style="grid-column: 1 / -1; margin-bottom: 4px; color: var(--gray-900); font-family: 'Clash Display', sans-serif; font-size: 17px; font-weight: 700;">Thống kê theo ban</h3>${statsHTML}`;
-          document
-            .querySelector(".content")
-            .insertBefore(newContainer, document.querySelector(".charts-grid"));
-        } else {
-          departmentStatsContainer.innerHTML = `<h3 style="grid-column: 1 / -1; margin-bottom: 4px; color: var(--gray-900); font-family: 'Clash Display', sans-serif; font-size: 17px; font-weight: 700;">Thống kê theo ban</h3>${statsHTML}`;
-        }
-      }
 
       // ===== BIỂU ĐỒ DASHBOARD =====
       let _charts = {};
@@ -6783,15 +7043,18 @@ function renderRound4() {
         const deptNames = { MD: "Truyền thông", HR: "Nhân sự", PD: "Dự án", ER: "Đối ngoại" };
         const deptColors = { MD: "#f59e0b", HR: "#10b981", PD: "#3b82f6", ER: "#ef4444" };
 
-        // 1) Theo ban (đếm ban ưu tiên)
+        // 1) Theo ban (đếm cả ban ưu tiên VÀ ban nguyện vọng 2, vì ứng viên có thể apply 2 ban)
         const deptCounts = { MD: 0, HR: 0, PD: 0, ER: 0 };
         applications.forEach((app) => {
-          if (app.priority_position && deptCounts.hasOwnProperty(app.priority_position)) {
-            deptCounts[app.priority_position]++;
-          }
+          [app.priority_position, app.secondary_position].forEach((code) => {
+            if (code && code !== "None" && deptCounts.hasOwnProperty(code)) {
+              deptCounts[code]++;
+            }
+          });
         });
 
-        // 2) Theo vòng hiện tại
+        // 2) Theo vòng hiện tại (dạng phễu: ai đã đi qua vòng nào vẫn được tính ở vòng đó,
+        //    không bị "biến mất" khỏi vòng cũ khi lên vòng mới)
         const roundLabels = {
           round1: "Vòng 1",
           round2: "Vòng 2",
@@ -6799,10 +7062,120 @@ function renderRound4() {
           round4: "Vòng 4",
           success: "Thành viên",
         };
+        const roundOrder = ["round1", "round2", "round3", "round4", "success"];
         const roundCounts = { round1: 0, round2: 0, round3: 0, round4: 0, success: 0 };
         applications.forEach((app) => {
           const r = app.current_round || "round1";
-          if (roundCounts.hasOwnProperty(r)) roundCounts[r]++;
+          const idx = roundOrder.indexOf(r);
+          const reachedIdx = idx === -1 ? 0 : idx;
+          // Ứng viên đã đạt tới vòng nào thì được cộng vào tất cả các vòng từ đầu tới vòng đó
+          for (let i = 0; i <= reachedIdx; i++) {
+            roundCounts[roundOrder[i]]++;
+          }
+        });
+
+        // 2a-bis) Tách mỗi vòng thành Pass (đã qua vòng, tính từ số người đạt tới vòng kế tiếp)
+        // và Not pass (bị loại RÕ RÀNG ở vòng đó - không tính ứng viên đang pending/chưa có kết quả).
+        const roundStatusFields = {
+          round1: ["priority_status", "secondary_status"],
+          round2: ["round2_priority_status", "round2_secondary_status"],
+          round3: ["round3_priority_status", "round3_secondary_status"],
+          round4: ["round4_priority_status", "round4_secondary_status"],
+        };
+        // Theo ĐÚNG logic cập nhật vòng thật (xem computeOverallStatus / updateAllRounds):
+        // chỉ cần 1 trong các ban đang ứng tuyển pass là tổng đã tính Pass (được lên vòng sau).
+        // Not pass chỉ khi TẤT CẢ ban đang ứng tuyển đều đã có kết quả not-pass rõ ràng (không ai pass, không ai còn pending).
+        function isExplicitPass(app, key) {
+          const fields = roundStatusFields[key];
+          if (!fields) return false; // success: không có khái niệm pass/not-pass riêng
+          const [pField, sField] = fields;
+          const hasPriority = !!app.priority_position;
+          const hasSecondary = !!(app.secondary_position && app.secondary_position !== "None");
+          if (!hasPriority && !hasSecondary) return false;
+          const pStatus = app[pField];
+          const sStatus = app[sField];
+          // Chỉ cần 1 ban đã pass là coi như ứng viên đã có kết quả vòng (Pass), giống logic cập nhật vòng.
+          return (hasPriority && pStatus === "pass") || (hasSecondary && sStatus === "pass");
+        }
+
+        function isExplicitNotPass(app, key) {
+          const fields = roundStatusFields[key];
+          if (!fields) return false; // success: không có khái niệm not-pass
+          if (isExplicitPass(app, key)) return false; // đã pass thì chắc chắn không phải not-pass
+          const [pField, sField] = fields;
+          const hasPriority = !!app.priority_position;
+          const hasSecondary = !!(app.secondary_position && app.secondary_position !== "None");
+          if (!hasPriority && !hasSecondary) return false;
+          const pStatus = app[pField];
+          const sStatus = app[sField];
+          const pDone = !hasPriority || pStatus === "not-pass";
+          const sDone = !hasSecondary || sStatus === "not-pass";
+          // Not pass khi TẤT CẢ ban đang ứng tuyển đều đã not-pass rõ ràng (đã có kết quả, không còn pending).
+          return pDone && sDone && (pStatus === "not-pass" || sStatus === "not-pass");
+        }
+
+        const roundPassCounts = {};
+        const roundNotPassCounts = {};
+        roundOrder.forEach((key, i) => {
+          const nextKey = roundOrder[i + 1];
+          // Ứng viên đã được CHUYỂN VÒNG (current_round đã sang vòng sau) => chắc chắn đã pass vòng này.
+          const advanced = nextKey ? roundCounts[nextKey] : roundCounts[key];
+
+          // Ứng viên còn ĐANG DỪNG LẠI ở vòng này (chưa được chuyển vòng), tách theo trạng thái
+          // đã chọn thực tế: pass rõ ràng / not-pass rõ ràng / còn pending.
+          const stuckHere = applications.filter((app) => {
+            const r = app.current_round || "round1";
+            return r === key;
+          });
+          const stuckPass = stuckHere.filter((app) => isExplicitPass(app, key)).length;
+          const stuckNotPass = stuckHere.filter((app) => isExplicitNotPass(app, key)).length;
+
+          // Pass = đã chuyển vòng + đã chọn pass nhưng chưa kịp chuyển vòng.
+          roundPassCounts[key] = advanced + stuckPass;
+          roundNotPassCounts[key] = stuckNotPass;
+        });
+
+        // Đang chờ kết quả ở vòng này = Tổng đạt tới vòng - Pass - Not pass
+        // (để cộng dồn đúng bằng Tổng ứng viên khi gộp vào 1 cột stack)
+        const roundPendingCounts = {};
+        roundOrder.forEach((key) => {
+          roundPendingCounts[key] = Math.max(
+            0,
+            roundCounts[key] - roundPassCounts[key] - roundNotPassCounts[key]
+          );
+        });
+
+
+
+        // 2b) Trạng thái theo ban: xét ĐỘC LẬP từng nguyện vọng (ưu tiên/nguyện vọng 2) của
+        // từng ứng viên với đúng ban đó, thay vì gán trạng thái tổng (chung) của ứng viên cho
+        // cả 2 ban. Nhờ vậy nếu 1 ứng viên bị loại ở ban A nhưng vẫn đang xử lý/đã trúng tuyển
+        // ở ban B thì mỗi ban sẽ phản ánh đúng trạng thái riêng của mình.
+        const deptStatus = {
+          MD: { completed: 0, inProgress: 0, rejected: 0 },
+          HR: { completed: 0, inProgress: 0, rejected: 0 },
+          PD: { completed: 0, inProgress: 0, rejected: 0 },
+          ER: { completed: 0, inProgress: 0, rejected: 0 },
+        };
+        applications.forEach((app) => {
+          [
+            ["priority", app.priority_position],
+            ["secondary", app.secondary_position],
+          ].forEach(([type, code]) => {
+            if (!code || code === "None" || !deptStatus[code]) return;
+            const result = getDepartmentResult(app, type); // dùng đúng logic per-ban/per-nguyện vọng
+            let bucket;
+            if (result === "Trúng tuyển") bucket = "completed";
+            else if (result.startsWith("Loại")) bucket = "rejected";
+            else bucket = "inProgress";
+            deptStatus[code][bucket]++;
+          });
+        });
+
+        // 2c) Theo hình thức ứng tuyển (form / phỏng vấn / cả 2)
+        const appTypeCounts = { "Form": 0, "Phỏng vấn": 0, "Form + Phỏng vấn": 0 };
+        applications.forEach((app) => {
+          appTypeCounts[getApplicationTypeLabel(app)] = (appTypeCounts[getApplicationTypeLabel(app)] || 0) + 1;
         });
 
         // 3) Theo ngày nộp (14 ngày gần nhất)
@@ -6826,14 +7199,20 @@ function renderRound4() {
         const commonOpts = {
           responsive: true,
           maintainAspectRatio: false,
+          resizeDelay: 100,
           plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } } },
         };
 
-        // Destroy chart cũ trước khi vẽ lại
-        Object.values(_charts).forEach((c) => c && c.destroy());
+        // Destroy chart cũ trước khi vẽ lại (clear canvas trước để tránh sót tooltip/vệt vẽ cũ)
+        Object.values(_charts).forEach((c) => {
+          if (!c) return;
+          const ctx = c.canvas && c.canvas.getContext("2d");
+          if (ctx) ctx.clearRect(0, 0, c.canvas.width, c.canvas.height);
+          c.destroy();
+        });
 
         _charts.department = new Chart(document.getElementById("chart-department"), {
-          type: "doughnut",
+          type: "pie",
           data: {
             labels: Object.keys(deptCounts).map((k) => deptNames[k]),
             datasets: [
@@ -6845,7 +7224,7 @@ function renderRound4() {
               },
             ],
           },
-          options: { ...commonOpts, cutout: "62%" },
+          options: { ...commonOpts },
         });
 
         _charts.round = new Chart(document.getElementById("chart-round"), {
@@ -6854,19 +7233,102 @@ function renderRound4() {
             labels: Object.keys(roundCounts).map((k) => roundLabels[k]),
             datasets: [
               {
-                label: "Số ứng viên",
-                data: Object.values(roundCounts),
-                backgroundColor: "#ffd54f",
-                borderRadius: 6,
-                maxBarThickness: 46,
+                type: "bar",
+                label: "Not pass",
+                data: Object.keys(roundCounts).map((k) => roundNotPassCounts[k]),
+                backgroundColor: "#ef4444",
+                grouped: true,
+                borderRadius: 4,
+                maxBarThickness: 40,
+                order: 2,
+                datalabels: { display: false },
               },
+              {
+                type: "bar",
+                label: "Pass",
+                data: Object.keys(roundCounts).map((k) => roundPassCounts[k]),
+                backgroundColor: "#10b981",
+                grouped: true,
+                borderRadius: 4,
+                maxBarThickness: 40,
+                order: 1,
+                datalabels: { display: false },
+              },
+              {
+                type: "bar",
+                label: "Tổng ứng viên",
+                data: Object.keys(roundCounts).map((k) => roundCounts[k]),
+                backgroundColor: "#ffd54f",
+                grouped: true,
+                borderRadius: 4,
+                maxBarThickness: 40,
+                order: 3,
+                datalabels: { display: false },
+              },
+            ],
+          },
+          plugins: [ChartDataLabels],
+          options: {
+            ...commonOpts,
+            plugins: {
+              ...commonOpts.plugins,
+              legend: {
+                position: "bottom",
+                labels: {
+                  boxWidth: 10,
+                  boxHeight: 10,
+                  padding: 14,
+                  usePointStyle: true,
+                  pointStyle: "rectRounded",
+                  font: { size: 11 },
+                },
+              },
+            },
+            layout: { padding: { top: 8 } },
+            datasets: {
+              bar: { categoryPercentage: 0.85, barPercentage: 0.9 },
+            },
+            scales: {
+              x: { stacked: false },
+              y: { stacked: false, beginAtZero: true, ticks: { precision: 0 } },
+            },
+          },
+        });
+
+        _charts.deptStatus = new Chart(document.getElementById("chart-dept-status"), {
+          type: "bar",
+          data: {
+            labels: Object.keys(deptStatus).map((k) => deptNames[k]),
+            datasets: [
+              { label: "Hoàn thành", data: Object.keys(deptStatus).map((k) => deptStatus[k].completed), backgroundColor: "#10b981", borderRadius: 4 },
+              { label: "Đang xử lý", data: Object.keys(deptStatus).map((k) => deptStatus[k].inProgress), backgroundColor: "#f59e0b", borderRadius: 4 },
+              { label: "Đã loại", data: Object.keys(deptStatus).map((k) => deptStatus[k].rejected), backgroundColor: "#ef4444", borderRadius: 4 },
             ],
           },
           options: {
             ...commonOpts,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+            plugins: { legend: { position: "bottom", labels: { boxWidth: 10, font: { size: 11 } } } },
+            scales: {
+              x: { stacked: true },
+              y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } },
+            },
           },
+        });
+
+        _charts.apptype = new Chart(document.getElementById("chart-apptype"), {
+          type: "doughnut",
+          data: {
+            labels: Object.keys(appTypeCounts),
+            datasets: [
+              {
+                data: Object.values(appTypeCounts),
+                backgroundColor: ["#4F7CFF", "#F7C948", "#8B5CF6"],
+                borderWidth: 2,
+                borderColor: "#fff",
+              },
+            ],
+          },
+          options: { ...commonOpts, cutout: "62%" },
         });
 
         _charts.timeline = new Chart(document.getElementById("chart-timeline"), {
@@ -6890,6 +7352,26 @@ function renderRound4() {
             plugins: { legend: { display: false } },
             scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
           },
+        });
+      }
+
+      // Đảm bảo chart co giãn đúng theo kích thước khung chứa (resize cửa sổ, thu/mở sidebar, đổi tab...)
+      let _chartsResizeTimeout = null;
+      function _resizeAllDashboardCharts() {
+        Object.values(_charts).forEach((c) => c && c.resize());
+      }
+      window.addEventListener("resize", () => {
+        clearTimeout(_chartsResizeTimeout);
+        _chartsResizeTimeout = setTimeout(_resizeAllDashboardCharts, 150);
+      });
+      if (window.ResizeObserver) {
+        document.addEventListener("DOMContentLoaded", () => {
+          document.querySelectorAll(".chart-canvas-wrap").forEach((wrap) => {
+            new ResizeObserver(() => {
+              clearTimeout(_chartsResizeTimeout);
+              _chartsResizeTimeout = setTimeout(_resizeAllDashboardCharts, 100);
+            }).observe(wrap);
+          });
         });
       }
 
@@ -6958,6 +7440,12 @@ function renderRound4() {
       <!-- Tab Lịch sử vòng -->
       <div id="history-tab" class="tab-content" style="display: none;">
         ${renderRoundHistory(application)}
+        <div style="margin-top:24px;">
+          <h4 style="margin-bottom:10px;"><i class="fas fa-stream" style="margin-right:6px;"></i>Lịch sử hoạt động của ứng viên</h4>
+          <div id="activity-log-list" style="font-size:13px;color:var(--text-secondary,#666);">
+            <i class="fas fa-spinner fa-spin"></i> Đang tải...
+          </div>
+        </div>
       </div>
     </div>
   `;
@@ -6968,12 +7456,70 @@ function renderRound4() {
         // Thêm event listeners cho tabs
         setupApplicationTabs();
 
+        // Tải lịch sử hoạt động (log) của ứng viên: tạo đơn, sửa, bổ sung hình thức...
+        loadActivityLog(appId);
+
         // Thêm sự kiện cho nút xem đơn đầy đủ
         document
           .getElementById("view-full-application")
           .addEventListener("click", () => {
             window.open(`response.html?id=${appId}`, "_blank");
           });
+      }
+
+      // ============================================================
+      // TẢI & HIỂN THỊ LỊCH SỬ HOẠT ĐỘNG (activity_log subcollection)
+      // Ghi bởi form.js mỗi khi: tạo đơn mới, bổ sung hình thức (gộp
+      // Điền đơn + Phỏng vấn thay đơn), hoặc các thao tác khác sau này.
+      // ============================================================
+      const ACTIVITY_ACTION_LABELS = {
+        created: { icon: "fa-plus-circle", color: "#10B981", label: "Nộp đơn ứng tuyển lần đầu" },
+        merge_application_type: { icon: "fa-layer-group", color: "#3B82F6", label: "Bổ sung hình thức ứng tuyển" },
+        updated: { icon: "fa-pen", color: "#F59E0B", label: "Chỉnh sửa thông tin" },
+        reapply_blocked: { icon: "fa-shield-halved", color: "#EF4444", label: "Bị chặn nộp trùng (chưa đăng nhập)" }
+      };
+
+      async function loadActivityLog(appId) {
+        const container = document.getElementById("activity-log-list");
+        if (!container) return;
+        try {
+          const snap = await db
+            .collection("applications")
+            .doc(appId)
+            .collection("activity_log")
+            .orderBy("timestamp", "desc")
+            .limit(50)
+            .get();
+
+          if (snap.empty) {
+            container.innerHTML = '<p style="color:#999;">Chưa có log hoạt động nào được ghi nhận.</p>';
+            return;
+          }
+
+          const items = snap.docs.map((doc) => {
+            const d = doc.data();
+            const meta = ACTIVITY_ACTION_LABELS[d.action] || { icon: "fa-circle-info", color: "#6B7280", label: d.action || "Hoạt động" };
+            let time = "—";
+            try {
+              if (d.timestamp && d.timestamp.toDate) time = d.timestamp.toDate().toLocaleString("vi-VN");
+            } catch (e) {}
+            const note = d.detail && d.detail.note ? d.detail.note : "";
+            return `
+              <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #eee;">
+                <div style="color:${meta.color};font-size:16px;flex-shrink:0;"><i class="fas ${meta.icon}"></i></div>
+                <div style="flex:1;">
+                  <div style="font-weight:600;color:#333;">${meta.label}</div>
+                  ${note ? `<div style="color:#666;margin-top:2px;">${note}</div>` : ""}
+                  <div style="color:#999;font-size:12px;margin-top:4px;">${time} · ${d.actor || "—"}</div>
+                </div>
+              </div>`;
+          });
+
+          container.innerHTML = items.join("");
+        } catch (err) {
+          console.error("Lỗi tải activity log:", err);
+          container.innerHTML = '<p style="color:#EF4444;">Không tải được lịch sử hoạt động.</p>';
+        }
       }
 
       // Hàm render thông tin cá nhân
@@ -7147,17 +7693,14 @@ function renderRound4() {
             <div class="info-item">
               <span class="info-label">Loại đơn:</span>
               <span class="info-value">
-                <span class="status-badge ${
-                  application.application_type === "interview"
-                    ? "status-interviewed"
-                    : "status-pending"
-                }">
-                  ${
-                    application.application_type === "interview"
-                      ? "Phỏng vấn"
-                      : "Form"
-                  }
-                </span>
+                ${(() => {
+                  const types = getAppTypes(application);
+                  const hasForm = types.includes("form") || !types.length;
+                  const hasInterview = types.includes("interview");
+                  const formBadge = `<span class="duplicate-badge" style="background: var(--warning-light, #FEF3C7); color: var(--warning, #D97706); font-size: 11px; font-weight: 600; margin-left: 0;">Form</span>`;
+                  const interviewBadge = `<span class="duplicate-badge" style="background: var(--info-light); color: var(--info); font-size: 11px; font-weight: 600; margin-left: 4px;">Phỏng vấn</span>`;
+                  return `${hasForm ? formBadge : ""}${hasInterview ? interviewBadge : ""}`;
+                })()}
               </span>
             </div>
           </div>
@@ -7624,6 +8167,30 @@ function renderRound4() {
         }
       }
 
+      // Thứ tự các vòng để so sánh "đã qua vòng nào chưa"
+      const ROUND_ORDER = ["round1", "round2", "round3", "round4", "success"];
+      function roundIndex(round) {
+        const i = ROUND_ORDER.indexOf(round || "round1");
+        return i === -1 ? 0 : i;
+      }
+
+      // Hiển thị "Loại đơn" - hỗ trợ trường hợp ứng viên apply bằng cả 2 hình thức.
+      // Đồng bộ với response.html: field chuẩn là `application_types` (mảng),
+      // fallback về `application_type` (đơn lẻ) cho hồ sơ cũ.
+      function getAppTypes(app) {
+        if (!app) return [];
+        return app.application_types || (app.application_type ? [app.application_type] : []);
+      }
+      function getApplicationTypeLabel(app) {
+        const types = getAppTypes(app);
+        if (!types.length) return "Form";
+        const hasForm = types.includes("form");
+        const hasInterview = types.includes("interview");
+        if (hasInterview && hasForm) return "Form + Phỏng vấn";
+        if (hasInterview) return "Phỏng vấn";
+        return "Form";
+      }
+
       function getRoundText(round) {
         switch (round) {
           case "round1":
@@ -8014,7 +8581,7 @@ function exportByRound(round = 'all') {
                             : '',
                         getStatusText(computeOverallStatus(app)),
                         formatApplicationTime(app.timestamp),
-                        app.application_type === 'interview' ? 'Phỏng vấn' : 'Form'
+                        getApplicationTypeLabel(app)
                     ]);
                 });
             }
@@ -8055,7 +8622,7 @@ function exportByRound(round = 'all') {
                         app.secondary_position && app.secondary_position !== 'None' 
                             ? getStatusText(app.secondary_status || 'pending') 
                             : '',
-                        app.application_type === 'interview' ? 'Phỏng vấn' : 'Form',
+                        getApplicationTypeLabel(app),
                         formatApplicationTime(app.timestamp),
                         app.round1?.note || ''
                     ]);
@@ -8329,7 +8896,7 @@ document.getElementById('export-modal').innerHTML += `
 
             await batch.commit();
             notifySuccess("✅ Đã reset dữ liệu vòng cho tất cả ứng viên!");
-            loadApplications(); // refresh lại bảng
+            refreshApplications(); // refresh lại bảng + chart
           } catch (error) {
             console.error("Lỗi khi reset vòng:", error);
             notifyError("❌ Lỗi khi reset vòng: " + error.message);
@@ -8536,7 +9103,7 @@ async function processRoundUpdate(newRound) {
         notifySuccess(
             `✅ Đã cập nhật ${updatedCount} ứng viên pass sang vòng ${newRound}`
         );
-        loadApplications();
+        refreshApplications();
     } catch (error) {
         console.error("Lỗi khi cập nhật vòng:", error);
         notifyError("❌ Lỗi khi cập nhật vòng: " + error.message);
@@ -8685,6 +9252,22 @@ async function processRoundUpdate(newRound) {
       document
         .getElementById("search-input")
         .addEventListener("input", applyFiltersToCurrentTab);
+
+      // Gắn event cho filter riêng của từng vòng (1-4)
+      const roundRenderFns = {
+        round1: renderRound1,
+        round2: renderRound2,
+        round3: renderRound3,
+        round4: renderRound4,
+      };
+      Object.keys(roundRenderFns).forEach((r) => {
+        const searchEl = document.getElementById(`${r}-search`);
+        const deptEl = document.getElementById(`${r}-filter-department`);
+        const statusEl = document.getElementById(`${r}-filter-status`);
+        if (searchEl) searchEl.addEventListener("input", () => roundRenderFns[r]());
+        if (deptEl) deptEl.addEventListener("change", () => roundRenderFns[r]());
+        if (statusEl) statusEl.addEventListener("change", () => roundRenderFns[r]());
+      });
 
       // Initialize UI
       updateUserInfo(userEmail, userRole, userDept);
