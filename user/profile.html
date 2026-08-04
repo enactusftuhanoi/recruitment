@@ -602,12 +602,67 @@
 
         /* Profile Card */
         .profile-card {
+            position: relative;
             background: white;
             border-radius: var(--radius-2xl);
             padding: 32px;
             box-shadow: var(--shadow-xl);
             border: 1px solid var(--neutral-200);
             margin-bottom: 32px;
+        }
+
+        /* Nút "Xem lại đơn của tôi" + "Đăng ký phỏng vấn thay đơn" cố định góc trên
+           trái của panel Vòng 1 (round1-card), không còn ở panel thông tin nữa */
+        .round1-card-corner-actions {
+            position: absolute;
+            right: 16px;
+            top: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            z-index: 2;
+        }
+        .view-application-corner-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: var(--radius-lg, 8px);
+            background: var(--neutral-100, #F3F4F6);
+            color: var(--neutral-800, #1F2937);
+            border: 1px solid var(--neutral-200, #E5E7EB);
+            font-size: 11.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .round1-card-corner-actions #round1-append-interview-btn {
+            padding: 6px 10px;
+            font-size: 11.5px;
+        }
+        .view-application-corner-btn:hover {
+            background: var(--primary-500, #FFC107);
+            color: #1F2937;
+            transform: translateY(-1px);
+        }
+        /* Đẩy nội dung của panel vòng 1 xuống để không bị 2 nút góc trên trái đè lên */
+        #round1-card {
+            padding-top: 44px;
+        }
+        @media (max-width: 640px) {
+            .round1-card-corner-actions {
+                position: static;
+                margin-bottom: 12px;
+                width: 100%;
+            }
+            .round1-card-corner-actions .view-application-corner-btn,
+            .round1-card-corner-actions #round1-append-interview-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            #round1-card {
+                padding-top: 24px;
+            }
         }
 
         .profile-header {
@@ -1187,6 +1242,66 @@
         @media (max-width: 480px) {
             #toast-container { left: 12px; right: 12px; bottom: 12px; max-width: none; }
         }
+        /* Popup "Xem lại đơn của tôi" */
+        .app-view-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(17, 24, 39, 0.55);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .app-view-modal-overlay.active {
+            display: flex;
+        }
+        .app-view-modal {
+            background: white;
+            border-radius: var(--radius-2xl, 16px);
+            box-shadow: var(--shadow-xl);
+            width: 100%;
+            max-width: 560px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: slideDown 0.25s ease;
+        }
+        .app-view-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--neutral-200, #E5E7EB);
+        }
+        .app-view-modal-header h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--neutral-900, #111827);
+        }
+        .app-view-modal-close {
+            background: var(--neutral-100, #F3F4F6);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--neutral-600, #4B5563);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .app-view-modal-close:hover {
+            background: var(--error-500, #EF4444);
+            color: white;
+        }
+        .app-view-modal-body {
+            padding: 20px 24px 24px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
@@ -1286,12 +1401,17 @@
                     <p>Trạng thái hiện tại: <span id="round1-status-text">—</span></p>
                     <p>Hình thức: <span id="round1-type-text">—</span></p>
                     <p>Thời gian nộp: <span id="round1-time-text">—</span></p>
-                    <div class="notification-actions">
-                        <button class="btn btn-secondary" id="round1-view-btn">
-                            <i class="fas fa-eye"></i>
-                            <span>Xem lại đơn của tôi</span>
-                        </button>
-                    </div>
+                    <div id="round1-interview-body"></div>
+                </div>
+                <div class="round1-card-corner-actions">
+                    <button class="view-application-corner-btn" id="round1-view-btn">
+                        <i class="fas fa-eye"></i>
+                        <span>Xem lại đơn của tôi</span>
+                    </button>
+                    <button class="btn btn-primary" id="round1-append-interview-btn" style="display: none;">
+                        <i class="fas fa-plus"></i>
+                        <span id="round1-append-btn-label">Đăng ký phỏng vấn thay đơn</span>
+                    </button>
                 </div>
             </div>
 
@@ -1488,6 +1608,19 @@
         </div>
     </div>
 
+    <!-- Popup "Xem lại đơn của tôi" -->
+    <div class="app-view-modal-overlay" id="app-view-modal-overlay">
+        <div class="app-view-modal">
+            <div class="app-view-modal-header">
+                <h3>Đơn ứng tuyển của tôi</h3>
+                <button type="button" class="app-view-modal-close" id="app-view-modal-close" aria-label="Đóng">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="app-view-modal-body" id="app-view-modal-body"></div>
+        </div>
+    </div>
+
     <script src="/script/config.js"></script>
     <script>
         // Global State
@@ -1665,6 +1798,74 @@
             renderResultCard();
         }
 
+        // ===== Helpers: nhận diện nền tảng họp online theo link + vẽ box lịch phỏng vấn =====
+        // Teams: teams.microsoft.com (cả link cũ /l/meetup-join/ lẫn link mới /meet/) hoặc teams.live.com
+        // Google Meet: meet.google.com
+        function detectMeetPlatform(url) {
+            const u = (url || '').toLowerCase();
+            if (u.includes('teams.microsoft.com') || u.includes('teams.live.com')) return 'teams';
+            if (u.includes('meet.google.com')) return 'meet';
+            return 'other';
+        }
+
+        function platformMeta(platform) {
+            // Logo chính thức lấy từ Simple Icons CDN (cdn.simpleicons.org) — trả về đúng
+            // logo màu gốc của từng nền tảng, không phải icon tự vẽ.
+            if (platform === 'teams') return { logo: 'https://cdn.simpleicons.org/microsoftteams', color: '#5059C9', label: 'Tham gia qua Microsoft Teams' };
+            if (platform === 'meet') return { logo: 'https://cdn.simpleicons.org/googlemeet', color: '#00897B', label: 'Tham gia qua Google Meet' };
+            return { logo: '', color: 'var(--neutral-700)', label: 'Tham gia phỏng vấn online' };
+        }
+
+        // Vẽ 1 box lịch phỏng vấn cho 1 ban ứng viên đã apply — badge Online/Offline
+        // ở góc phải trên, thông tin thời gian/ghi chú, và nút tham gia (nếu online).
+        function renderInterviewSlotBox(deptLabel, data) {
+            const isOnline = data.method === 'online';
+            const badgeBg = isOnline ? 'var(--info-100)' : 'var(--success-100)';
+            const badgeColor = isOnline ? 'var(--info-600)' : 'var(--success-700)';
+            const badgeIcon = isOnline ? 'fa-video' : 'fa-building';
+            const badgeText = isOnline ? 'Online' : 'Offline';
+
+            let joinHtml = '';
+            if (data.location) {
+                if (isOnline) {
+                    const platform = detectMeetPlatform(data.location);
+                    const meta = platformMeta(platform);
+                    joinHtml = `
+                        <a href="${data.location}" target="_blank" rel="noopener noreferrer"
+                           style="display:inline-flex;align-items:center;gap:10px;background:#fff;
+                                  border:1.5px solid ${meta.color};color:${meta.color};
+                                  padding:8px 16px;border-radius:var(--radius);text-decoration:none;font-weight:600;
+                                  font-size:13px;line-height:1;margin-top:10px;">
+                            ${meta.logo ? `<img src="${meta.logo}" alt="${meta.label}" width="20" height="20" style="display:block;flex-shrink:0;">` : ''}
+                            ${meta.label}
+                        </a>`;
+                } else {
+                    joinHtml = `<div style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--neutral-600);margin-top:8px;">
+                        <i class="fas fa-location-dot" style="width:14px;color:var(--neutral-400);margin-top:2px;"></i>
+                        <span>${data.location}</span>
+                    </div>`;
+                }
+            }
+
+            return `
+            <div style="position:relative;border:1px solid var(--neutral-200);border-radius:var(--radius-lg);
+                        padding:16px;margin-top:10px;background:var(--neutral-50);">
+                <span style="position:absolute;top:14px;right:14px;display:inline-flex;align-items:center;gap:5px;
+                             padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;
+                             background:${badgeBg};color:${badgeColor};">
+                    <i class="fas ${badgeIcon}" style="font-size:9px;"></i> ${badgeText}
+                </span>
+                <div style="font-weight:700;font-size:14px;color:var(--neutral-800);padding-right:80px;">${deptLabel}</div>
+                ${data.time ? `<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--neutral-600);margin-top:8px;">
+                    <i class="fas fa-clock" style="width:14px;color:var(--neutral-400);"></i> ${data.time}
+                </div>` : ''}
+                ${joinHtml}
+                ${data.note ? `<div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--neutral-500);margin-top:8px;">
+                    <i class="fas fa-note-sticky" style="width:14px;margin-top:2px;"></i> <span>${data.note}</span>
+                </div>` : ''}
+            </div>`;
+        }
+
         // ===== Round 1 Info Card =====
         function renderRound1Card() {
             const card = document.getElementById('round1-card');
@@ -1680,8 +1881,23 @@
             const s = applicationData.secondary_position ? getRound1Status('secondary') : null;
             const overall = s ? mergeStatus(p, s) : p;
             document.getElementById('round1-status-text').textContent = getStatusText(overall);
+            const appTypes = applicationData.application_types ||
+                (applicationData.application_type ? [applicationData.application_type] : []);
+            const typeLabels = appTypes.map(t => t === 'interview' ? 'Phỏng vấn thay đơn' : 'Điền đơn');
             document.getElementById('round1-type-text').textContent =
-                applicationData.application_type === 'interview' ? 'Phỏng vấn thay đơn' : 'Điền đơn';
+                typeLabels.length ? typeLabels.join(' + ') : (applicationData.application_type === 'interview' ? 'Phỏng vấn thay đơn' : 'Điền đơn');
+
+            // Nếu hồ sơ mới chỉ có 1 hình thức -> cho phép bổ sung hình thức còn lại
+            const appendBtn = document.getElementById('round1-append-interview-btn');
+            const appendLabel = document.getElementById('round1-append-btn-label');
+            const missingType = ['form', 'interview'].find(t => !appTypes.includes(t));
+            if (appendBtn && missingType) {
+                appendLabel.textContent = missingType === 'interview' ? 'Đăng ký phỏng vấn thay đơn' : 'Bổ sung điền đơn';
+                appendBtn.style.display = 'inline-flex';
+                appendBtn.onclick = () => { window.location.href = '/user/form.html'; };
+            } else if (appendBtn) {
+                appendBtn.style.display = 'none';
+            }
 
             let ts = 'Không xác định';
             if (applicationData.timestamp) {
@@ -1702,6 +1918,26 @@
                 }
             }
             document.getElementById('round1-time-text').textContent = ts;
+
+            // Lịch phỏng vấn thay đơn (PVTĐ) đã được BTC công bố — chỉ áp dụng khi
+            // ứng viên chọn hình thức "interview". Không hiển thị người phỏng vấn.
+            const bodyEl = document.getElementById('round1-interview-body');
+            if (bodyEl) {
+                bodyEl.innerHTML = '';
+                if (applicationData.application_type === 'interview') {
+                    const roundObj = applicationData.round1 || {};
+                    const parts = [];
+                    ['priority', 'secondary'].forEach(type => {
+                        const dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
+                        if (!dept) return;
+                        const data = roundObj[type] || {};
+                        if (!data.time && !data.location && !data.note) return; // chưa có gì để hiện
+
+                        parts.push(renderInterviewSlotBox(`Ban ${getDepartmentName(dept)}`, data));
+                    });
+                    bodyEl.innerHTML = parts.join('');
+                }
+            }
 
             card.style.display = 'flex';
         }
@@ -1813,6 +2049,107 @@
         }
 
         // Build round details
+        // Tóm tắt Vòng 1 dùng cho timeline "quá trình ứng tuyển" (giữ như bản gốc:
+        // chỉ ban/trạng thái + hình thức + thời gian nộp, KHÔNG có nội dung đơn đầy đủ)
+        function buildRound1TimelineSummary() {
+            const frag = document.createDocumentFragment();
+            if (!applicationData) {
+                frag.appendChild(createDetailRow('', 'Chưa có thông tin'));
+                return frag;
+            }
+
+            ['priority', 'secondary'].forEach(type => {
+                const dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
+                if (!dept) return;
+                const status = getRound1Status(type);
+                frag.appendChild(createDetailRow(
+                    `Ban ${getDepartmentName(dept)}`,
+                    `Trạng thái: ${getStatusText(status)}`
+                ));
+            });
+
+            const _appTypesForRow = applicationData.application_types ||
+                (applicationData.application_type ? [applicationData.application_type] : []);
+            frag.appendChild(createDetailRow('Hình thức', _appTypesForRow.length
+                ? _appTypesForRow.map(t => t === 'interview' ? 'Phỏng vấn thay đơn' : 'Điền đơn').join(' + ')
+                : 'Điền đơn'));
+
+            let ts = 'Không xác định';
+            if (applicationData.timestamp) {
+                try {
+                    let date;
+                    if (applicationData.timestamp.toDate && typeof applicationData.timestamp.toDate === 'function') {
+                        date = applicationData.timestamp.toDate();
+                    } else if (applicationData.timestamp.seconds) {
+                        date = new Date(applicationData.timestamp.seconds * 1000);
+                    } else if (typeof applicationData.timestamp === 'string') {
+                        date = new Date(applicationData.timestamp);
+                    } else if (typeof applicationData.timestamp === 'number') {
+                        date = new Date(applicationData.timestamp);
+                    }
+                    if (date) ts = date.toLocaleString('vi-VN');
+                } catch (error) {
+                    console.error('Error parsing timestamp:', error);
+                }
+            }
+            frag.appendChild(createDetailRow('Thời gian nộp', ts));
+
+            return frag;
+        }
+
+        // Nội dung đầy đủ của đơn (thông tin cá nhân + toàn bộ câu trả lời đã nộp)
+        // -> CHỈ dùng cho popup "Xem lại đơn của tôi", không dùng ở timeline
+        function buildRound1FullApplicationDetail() {
+            const frag = buildRound1TimelineSummary();
+
+            if (!applicationData) return frag;
+
+            const personalFieldLabels = {
+                fullname: 'Họ và tên', birthdate: 'Ngày sinh', gender: 'Giới tính',
+                phone: 'Số điện thoại', school: 'Trường', major: 'Khoá/Chuyên ngành',
+                facebook: 'Facebook'
+            };
+            const personalRows = [];
+            Object.keys(personalFieldLabels).forEach(key => {
+                if (applicationData[key]) {
+                    personalRows.push(createDetailRow(personalFieldLabels[key], applicationData[key]));
+                }
+            });
+            if (personalRows.length) {
+                frag.appendChild(createDetailRow('— Thông tin cá nhân —', ''));
+                personalRows.forEach(row => frag.appendChild(row));
+            }
+
+            const formatAnswerLabel = (key) => key
+                .replace(/^general_|^priority_|^secondary_/, '')
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, c => c.toUpperCase());
+            const formatAnswerValue = (value) => {
+                if (Array.isArray(value)) return value.join(', ');
+                if (value === null || value === undefined || value === '') return null;
+                return String(value);
+            };
+
+            ['general', 'priority', 'secondary'].forEach(group => {
+                const groupLabel = group === 'general' ? 'Câu hỏi chung'
+                    : group === 'priority' ? `Câu hỏi riêng - ${getDepartmentName(applicationData.priority_position) || 'Nguyện vọng 1'}`
+                    : `Câu hỏi riêng - ${getDepartmentName(applicationData.secondary_position) || 'Nguyện vọng 2'}`;
+                const rows = [];
+                Object.keys(applicationData)
+                    .filter(k => k.startsWith(group + '_'))
+                    .forEach(key => {
+                        const val = formatAnswerValue(applicationData[key]);
+                        if (val !== null) rows.push(createDetailRow(formatAnswerLabel(key), val));
+                    });
+                if (rows.length) {
+                    frag.appendChild(createDetailRow(`— ${groupLabel} —`, ''));
+                    rows.forEach(row => frag.appendChild(row));
+                }
+            });
+
+            return frag;
+        }
+
         function buildRoundDetailsFragment(roundId) {
             const frag = document.createDocumentFragment();
             
@@ -1823,44 +2160,7 @@
             }
 
             if (roundId === 'round1') {
-                ['priority', 'secondary'].forEach(type => {
-                    const dept = (type === 'priority' ? applicationData.priority_position : applicationData.secondary_position);
-                    if (!dept) return;
-                    const status = getRound1Status(type);
-                    const row = createDetailRow(
-                        `Ban ${getDepartmentName(dept)}`,
-                        `Trạng thái: ${getStatusText(status)}`
-                    );
-                    frag.appendChild(row);
-                });
-                
-                const typeRow = createDetailRow('Hình thức', applicationData.application_type === 'interview' ? 'Phỏng vấn thay đơn' : (applicationData.application_type === 'form' ? 'Điền đơn' : 'Điền đơn'));
-                frag.appendChild(typeRow);
-                
-                let ts = 'Không xác định';
-                if (applicationData.timestamp) {
-                    try {
-                        let date;
-                        if (applicationData.timestamp.toDate && typeof applicationData.timestamp.toDate === 'function') {
-                            date = applicationData.timestamp.toDate();
-                        } else if (applicationData.timestamp.seconds) {
-                            date = new Date(applicationData.timestamp.seconds * 1000);
-                        } else if (typeof applicationData.timestamp === 'string') {
-                            date = new Date(applicationData.timestamp);
-                        } else if (typeof applicationData.timestamp === 'number') {
-                            date = new Date(applicationData.timestamp);
-                        }
-                        if (date) {
-                            ts = date.toLocaleString('vi-VN');
-                        }
-                    } catch (error) {
-                        console.error('Error parsing timestamp:', error);
-                    }
-                }
-                const timeRow = createDetailRow('Thời gian nộp', ts);
-                frag.appendChild(timeRow);
-                
-                return frag;
+                return buildRound1TimelineSummary();
             }
 
             if (roundId === 'round2') {
@@ -2185,7 +2485,19 @@
         // Check interview notification
         async function checkInterviewNotification() {
             try {
-                const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
+                // Vòng 2/4 lưu CẤU HÌNH LỊCH (ngày/ca, published, locked, deadline) ở 2 doc
+                // TÁCH RIÊNG trong collection 'system' — đồng bộ với calendar.html:
+                //   - Vòng 2 => doc 'interview_schedule_round2'
+                //   - Vòng 4 => doc 'interview_schedule' (doc cũ, giữ nguyên tên để không phá dữ liệu)
+                // Trước đây trang này LUÔN đọc doc 'interview_schedule' bất kể vòng nào, nên khi
+                // admin công bố (publish) lịch Vòng 2 trên calendar.html (ghi vào doc
+                // 'interview_schedule_round2'), trang này vẫn kiểm tra doc 'interview_schedule'
+                // (chưa được publish) => không hiện thông báo/mời vote cho ứng viên Vòng 2.
+                const currentRound = applicationData.current_round || 'round2';
+                const scheduleDocId = currentRound === 'round2' ? 'interview_schedule_round2' : 'interview_schedule';
+                const scheduleField = currentRound === 'round2' ? 'interview_schedule_round2' : 'interview_schedule';
+
+                const scheduleDoc = await db.collection('system').doc(scheduleDocId).get();
                 const notification = document.getElementById('interview-notification');
                 const voteStatus = document.getElementById('vote-status');
                 
@@ -2201,9 +2513,9 @@
                     const votingClosed = isLocked || isPastDeadline;
 
                     const hasVotingRights = await checkVotingRights();
-                    
+
                     if (hasVotingRights) {
-                        const hasVoted = applicationData.interview_schedule && applicationData.interview_schedule.length >= 3;
+                        const hasVoted = applicationData[scheduleField] && applicationData[scheduleField].length >= 3;
                         
                         if (!hasVoted) {
                             if (votingClosed) {
@@ -2233,7 +2545,7 @@
                             notification.style.display = 'none';
                             voteStatus.style.display = 'flex';
                             document.getElementById('selected-slots-count').textContent = 
-                                applicationData.interview_schedule.length;
+                                applicationData[scheduleField].length;
                         }
                     } else {
                         notification.style.display = 'none';
@@ -2251,17 +2563,23 @@
         }
 
         // Check voting rights
+        // Quyền vote giờ gắn theo TỪNG VÒNG (field 'round' trên doc voting_candidates,
+        // đồng bộ với calendar.html) — ứng viên được cấp quyền ở Vòng 2 sẽ KHÔNG tự động
+        // có quyền ở Vòng 4 và ngược lại. Doc cũ (tạo trước khi có field 'round') được coi
+        // là round2 để không phá quyền đã cấp trước đó.
         async function checkVotingRights() {
             try {
                 const user = auth.currentUser;
                 if (!user) return false;
-                
-                const candidate = await db.collection('voting_candidates')
+
+                const currentRound = (applicationData && applicationData.current_round) || 'round2';
+                const requiredRound = currentRound === 'round2' ? 'round2' : 'round4';
+
+                const snapshot = await db.collection('voting_candidates')
                     .where('email', '==', user.email)
-                    .limit(1)
                     .get();
-                    
-                return !candidate.empty;
+
+                return snapshot.docs.some(doc => (doc.data().round || 'round2') === requiredRound);
             } catch (error) {
                 console.error('Error checking voting rights:', error);
                 return false;
@@ -3018,7 +3336,12 @@
                     return;
                 }
 
-                const scheduleDoc = await db.collection('system').doc('interview_schedule').get();
+                // Đọc đúng doc cấu hình lịch theo vòng hiện tại (đồng bộ với calendar.html /
+                // checkInterviewNotification): Vòng 2 => 'interview_schedule_round2', Vòng 4 =>
+                // 'interview_schedule' (doc cũ).
+                const currentRoundForCalendar = (applicationData && applicationData.current_round) || 'round2';
+                const scheduleDocIdForCalendar = currentRoundForCalendar === 'round2' ? 'interview_schedule_round2' : 'interview_schedule';
+                const scheduleDoc = await db.collection('system').doc(scheduleDocIdForCalendar).get();
                 if (!scheduleDoc.exists || scheduleDoc.data().published !== true) {
                     toastInfo('Lịch phỏng vấn chưa được công bố.');
                     return;
@@ -3080,18 +3403,39 @@
             // Optional: show profile dropdown or settings
         });
 
-        // Xem lại đơn ứng tuyển (Vòng 1) -> mở rộng chi tiết vòng 1 ở sidebar
+        // Xem lại đơn ứng tuyển (Vòng 1) -> mở popup, không nhét vào timeline nữa
+        function openApplicationViewModal() {
+            const overlay = document.getElementById('app-view-modal-overlay');
+            const body = document.getElementById('app-view-modal-body');
+            if (!overlay || !body) return;
+            body.innerHTML = '';
+            body.appendChild(buildRound1FullApplicationDetail());
+            overlay.classList.add('active');
+        }
+
+        function closeApplicationViewModal() {
+            const overlay = document.getElementById('app-view-modal-overlay');
+            if (overlay) overlay.classList.remove('active');
+        }
+
         const round1ViewBtn = document.getElementById('round1-view-btn');
         if (round1ViewBtn) {
-            round1ViewBtn.addEventListener('click', () => {
-                toggleRoundDetails('round1');
-                const details = document.getElementById('details-round1');
-                if (details) {
-                    details.classList.add('active');
-                    details.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
+            round1ViewBtn.addEventListener('click', openApplicationViewModal);
+        }
+
+        const appViewModalClose = document.getElementById('app-view-modal-close');
+        if (appViewModalClose) {
+            appViewModalClose.addEventListener('click', closeApplicationViewModal);
+        }
+        const appViewModalOverlay = document.getElementById('app-view-modal-overlay');
+        if (appViewModalOverlay) {
+            appViewModalOverlay.addEventListener('click', (e) => {
+                if (e.target === appViewModalOverlay) closeApplicationViewModal();
             });
         }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeApplicationViewModal();
+        });
 
         // Xem lịch phỏng vấn từ card Vòng 2 / Vòng 4
         const round2ViewCalendarBtn = document.getElementById('round2-view-calendar-btn');

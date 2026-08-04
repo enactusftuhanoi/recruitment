@@ -47,6 +47,15 @@ let applicationType = '';
 let currentSection = 0;
 const totalSections = 4;
 
+// ============================================================
+// TRẠNG THÁI "BỔ SUNG HỒ SƠ" (gộp Điền đơn + Phỏng vấn thay đơn
+// vào chung 1 document applications/{id} thay vì tạo đơn mới)
+// ============================================================
+let mergeMode = false;               // true nếu đang bổ sung vào hồ sơ đã tồn tại
+let existingApplicationId = null;    // id document applications/ đã tồn tại
+let existingApplicationData = null;  // dữ liệu document đó
+let existingApplicationTypes = [];   // hình thức đã có: ['form'] / ['interview'] / cả 2
+
 // Dữ liệu câu hỏi - sẽ được tải từ Firebase
 let generalQuestions = [];
 let banQuestions = {};
@@ -372,6 +381,219 @@ function selectApplicationType(type) {
     });
     const target = document.getElementById(`type-${type}`);
     if (target) target.classList.add('selected');
+}
+
+// ============================================================
+// GHI LOG HOẠT ĐỘNG (hiển thị ở tab "Lịch sử" bên Dashboard)
+// applications/{id}/activity_log/{autoId}
+// ============================================================
+async function logActivity(applicationId, action, detail) {
+    if (!applicationId || typeof db === 'undefined' || !db) return;
+    try {
+        const actor = (auth && auth.currentUser) ? auth.currentUser.email : ((detail && detail.email) || 'ẩn danh');
+        await db.collection('applications').doc(applicationId)
+            .collection('activity_log').add({
+                action: action,
+                detail: detail || {},
+                actor: actor,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+    } catch (err) {
+        console.warn('[Form] Không ghi được activity log:', err);
+    }
+}
+
+// ============================================================
+// KIỂM TRA EMAIL TRÙNG + CHẶN GHI ĐÈ DỮ LIỆU NGƯỜI KHÁC
+// - Chưa đăng nhập + email đã tồn tại -> bắt đăng nhập, KHÔNG cho đi tiếp
+// - Đăng nhập nhưng email khác tài khoản -> chặn
+// - Đăng nhập đúng chủ hồ sơ -> chuyển sang chế độ BỔ SUNG (mergeMode)
+//   để gộp "Điền đơn" + "Phỏng vấn thay đơn" vào 1 application duy nhất
+// Gọi hàm này khi rời Section 1 (thông tin cá nhân), TRƯỚC khi cho
+// sang Section 2 (chọn ban) — vì mergeMode cần khoá lựa chọn ban ở đó.
+// ============================================================
+async function checkEmailDuplicateGate() {
+    const emailInput = document.getElementById('email');
+    const email = (emailInput?.value || '').trim().toLowerCase();
+    if (!email || typeof db === 'undefined' || !db) return true;
+
+    // Đã xác định mergeMode cho đúng email này rồi thì khỏi hỏi lại
+    if (mergeMode && existingApplicationData &&
+        (existingApplicationData.email_lower || (existingApplicationData.email || '').toLowerCase()) === email) {
+        return true;
+    }
+
+    try {
+        const snap = await db.collection('applications').where('email_lower', '==', email).limit(1).get();
+
+        if (snap.empty) {
+            // Không trùng -> reset về chế độ tạo mới bình thường
+            mergeMode = false;
+            existingApplicationId = null;
+            existingApplicationData = null;
+            existingApplicationTypes = [];
+            return true;
+        }
+
+        const docSnap = snap.docs[0];
+        const data = docSnap.data();
+        const types = data.application_types || (data.application_type ? [data.application_type] : []);
+        const currentUser = auth ? auth.currentUser : null;
+
+        // 1) Chưa đăng nhập -> KHÔNG cho tự chọn "điền lại", bắt đăng nhập trước
+        if (!currentUser) {
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Email đã tồn tại',
+                html: 'Email này đã có đơn ứng tuyển trong hệ thống.<br>Để bảo vệ dữ liệu ứng tuyển, vui lòng <b>đăng nhập</b> bằng đúng email đó để tiếp tục.',
+                confirmButtonText: 'Đăng nhập ngay',
+                showCancelButton: true,
+                cancelButtonText: 'Để sau'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    window.location.href = '/user/login.html';
+                }
+            });
+            return false;
+        }
+
+        // 2) Đăng nhập nhưng khác chủ email -> chặn, không cho xoá/ghi đè dữ liệu người khác
+        if ((currentUser.email || '').toLowerCase() !== email) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Email không khớp tài khoản',
+                text: 'Email bạn nhập không trùng với tài khoản Google đang đăng nhập. Vui lòng nhập đúng email đã đăng ký hoặc đăng nhập đúng tài khoản.',
+                confirmButtonText: 'Đã hiểu'
+            });
+            return false;
+        }
+
+        // 3) Đúng chủ hồ sơ, nhưng đã đủ cả 2 hình thức rồi
+        if (types.includes('form') && types.includes('interview')) {
+            await Swal.fire({
+                icon: 'info',
+                title: 'Hồ sơ đã hoàn tất',
+                text: 'Bạn đã hoàn tất cả "Điền đơn" lẫn "Phỏng vấn thay đơn" cho hồ sơ này. Không thể nộp thêm.',
+                confirmButtonText: 'Xem hồ sơ của tôi'
+            });
+            window.location.href = '/user/profile.html';
+            return false;
+        }
+
+        // 4) Đúng chủ hồ sơ, còn thiếu 1 hình thức -> chuyển sang chế độ BỔ SUNG
+        mergeMode = true;
+        existingApplicationId = docSnap.id;
+        existingApplicationData = data;
+        existingApplicationTypes = types;
+
+        applyMergeModeRestrictions();
+
+        await Swal.fire({
+            icon: 'info',
+            title: 'Bổ sung hồ sơ ứng tuyển',
+            html: `Bạn đã có hồ sơ với hình thức <b>${types.includes('form') ? 'Điền đơn' : 'Phỏng vấn thay đơn'}</b>.<br>Lần này hệ thống sẽ gộp thêm hình thức còn lại vào <b>cùng một hồ sơ</b> của bạn.`,
+            confirmButtonText: 'Đã hiểu'
+        });
+
+        return true;
+    } catch (err) {
+        console.error('[Form] Lỗi kiểm tra email trùng:', err);
+        Swal.fire({ icon: 'error', title: 'Lỗi hệ thống', text: 'Không thể kiểm tra email lúc này. Vui lòng thử lại.', confirmButtonText: 'OK' });
+        return false;
+    }
+}
+
+// ============================================================
+// ÁP DỤNG GIỚI HẠN KHI Ở CHẾ ĐỘ BỔ SUNG HỒ SƠ (mergeMode)
+// - Ẩn hình thức đã có ở Section 0, chỉ còn hình thức cần bổ sung
+// - Khoá (readonly) thông tin cá nhân đã có sẵn, tránh lệch dữ liệu
+// - Nếu hồ sơ gốc có "Điền đơn": khoá 2 ban đúng theo đơn gốc,
+//   không cho chọn ban khác khi đăng ký "Phỏng vấn thay đơn"
+// ============================================================
+function applyMergeModeRestrictions() {
+    if (!mergeMode || !existingApplicationData) return;
+
+    const remaining = ['form', 'interview'].filter(t => !existingApplicationTypes.includes(t));
+
+    document.querySelectorAll('.application-type').forEach(el => {
+        const t = el.id.replace('type-', '');
+        el.style.display = remaining.includes(t) ? '' : 'none';
+        el.style.opacity = remaining.includes(t) ? '' : '0.4';
+    });
+
+    if (remaining.length === 1) {
+        selectApplicationType(remaining[0]);
+    }
+
+    // Prefill + khoá thông tin cá nhân đã có, tránh sửa lệch với hồ sơ gốc
+    ['fullname', 'birthdate', 'gender', 'phone', 'school', 'major', 'facebook'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && existingApplicationData[id]) {
+            el.value = existingApplicationData[id];
+            el.setAttribute('readonly', 'readonly');
+            if (el.tagName === 'SELECT') el.setAttribute('disabled', 'disabled');
+            el.style.background = '#F3F4F6';
+        }
+    });
+
+    // Nếu hồ sơ gốc đã có "Điền đơn" -> ban phải khớp đúng 2 ban đó
+    if (existingApplicationTypes.includes('form')) {
+        lockBanSelectionToExisting();
+    }
+}
+
+// mergeAllowedBans: danh sách mã ban mà ứng viên được phép chọn khi bổ sung hồ sơ
+// (null = không giới hạn). Dùng chung với updateSecondaryOptions() để giữ giới hạn
+// này mỗi khi người dùng đổi lựa chọn (thay vì reset về mở toàn bộ 4 ban).
+let mergeAllowedBans = null;
+
+function lockBanSelectionToExisting() {
+    const priorityExisting = existingApplicationData.priority_position;
+    const secondaryExisting = existingApplicationData.secondary_position;
+
+    const prioritySel = document.getElementById('priority_position');
+    const secondarySel = document.getElementById('secondary_position');
+
+    if (priorityExisting && secondaryExisting) {
+        // CASE 1: Đơn gốc đã điền đủ 2 ban (NV1 + NV2).
+        // -> Không khoá cứng nữa: cho phép ứng viên đổi chỗ giữa 2 ban đã nộp
+        //    (đổi ban nào là NV1/NV2), hoặc chỉ giữ lại 1 ban (PVTĐ 1 ban) bằng
+        //    cách để trống NV2. Chỉ không cho chọn sang một ban thứ 3 hoàn toàn khác.
+        mergeAllowedBans = [priorityExisting, secondaryExisting];
+
+        [prioritySel, secondarySel].forEach(sel => {
+            if (!sel) return;
+            Array.from(sel.options).forEach(opt => {
+                if (!opt.value) return; // giữ nguyên option rỗng "-- Chọn vị trí --"
+                opt.disabled = !mergeAllowedBans.includes(opt.value);
+            });
+            sel.removeAttribute('disabled');
+        });
+
+        if (prioritySel) prioritySel.value = priorityExisting;
+        if (secondarySel) secondarySel.value = secondaryExisting;
+    } else if (priorityExisting) {
+        // CASE 2: Đơn gốc chỉ điền 1 ban (NV1) -> NV1 đó phải giữ nguyên,
+        // nhưng NV2 để hoàn toàn tự do, cho ứng viên bổ sung thêm 1 ban bất kỳ.
+        mergeAllowedBans = null;
+
+        if (prioritySel) {
+            Array.from(prioritySel.options).forEach(opt => {
+                if (!opt.value) return;
+                opt.disabled = opt.value !== priorityExisting;
+            });
+            prioritySel.value = priorityExisting;
+            prioritySel.setAttribute('disabled', 'disabled');
+        }
+        if (secondarySel) {
+            Array.from(secondarySel.options).forEach(opt => { opt.disabled = false; });
+            secondarySel.removeAttribute('disabled');
+        }
+    }
+
+    if (typeof updateSecondaryOptions === 'function') updateSecondaryOptions();
+    if (typeof updateMDSubDepartments === 'function') updateMDSubDepartments();
+    if (typeof updatePositionNames === 'function') updatePositionNames();
 }
 
 // ============================================================
@@ -1408,7 +1630,14 @@ function updateSecondaryOptions() {
     if (!prioritySelect || !secondarySelect) return;
 
     const priorityValue = prioritySelect.value;
-    Array.from(secondarySelect.options).forEach(opt => { opt.disabled = false; });
+    Array.from(secondarySelect.options).forEach(opt => {
+        if (!opt.value) return; // giữ nguyên option rỗng "-- Chọn vị trí --"
+        // Nếu đang ở chế độ bổ sung hồ sơ (mergeMode) và có giới hạn danh sách ban
+        // (mergeAllowedBans), giữ nguyên giới hạn đó thay vì mở lại toàn bộ 4 ban
+        opt.disabled = (typeof mergeAllowedBans !== 'undefined' && mergeAllowedBans)
+            ? !mergeAllowedBans.includes(opt.value)
+            : false;
+    });
 
     if (priorityValue) {
         Array.from(secondarySelect.options).forEach(opt => {
@@ -1450,7 +1679,7 @@ function showTab(tabName) {
 // ============================================================
 // NAVIGATION
 // ============================================================
-function nextSection(current) {
+async function nextSection(current) {
     if (current === 0 && !applicationType) {
         Swal.fire({ icon: 'warning', title: 'Chưa chọn hình thức', text: 'Vui lòng chọn hình thức ứng tuyển.', confirmButtonText: 'OK' });
         return;
@@ -1511,12 +1740,20 @@ function nextSection(current) {
         });
     }
 
-    if (valid) {
-        simpleSaveFormData();
-        showSection(current + 1);
-    } else {
+    if (!valid) {
         Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng điền đầy đủ các thông tin bắt buộc.', confirmButtonText: 'OK' });
+        return;
     }
+
+    // Rời Section 1 (thông tin cá nhân) -> kiểm tra email trùng trước khi
+    // cho sang Section 2 (chọn ban), vì mergeMode cần khoá ban ở đó.
+    if (current === 1) {
+        const canProceed = await checkEmailDuplicateGate();
+        if (!canProceed) return;
+    }
+
+    simpleSaveFormData();
+    showSection(current + 1);
 }
 
 function prevSection(current) {
@@ -1629,7 +1866,8 @@ function collectFormData() {
         fullname: document.getElementById('fullname')?.value || '',
         birthdate: formatDateToVN(document.getElementById('birthdate')?.value || ''),
         gender: document.getElementById('gender')?.value || '',
-        email: document.getElementById('email')?.value || '',
+        email: (document.getElementById('email')?.value || '').trim(),
+        email_lower: (document.getElementById('email')?.value || '').trim().toLowerCase(),
         phone: document.getElementById('phone')?.value || '',
         school: document.getElementById('school')?.value || '',
         major: document.getElementById('major')?.value || '',
@@ -1865,11 +2103,56 @@ document.addEventListener('DOMContentLoaded', () => {
                 formObject.secondary_position
             ].filter(p => p && p !== "None");
 
-            formObject.timestamp = firebase.firestore.FieldValue.serverTimestamp();
             delete formObject.timestamp; // Xóa ISO string, dùng serverTimestamp
-            formObject.timestamp = firebase.firestore.FieldValue.serverTimestamp();
 
-            await db.collection('applications').add(formObject);
+            let savedAppId;
+
+            if (mergeMode && existingApplicationId) {
+                // ---- BỔ SUNG VÀO HỒ SƠ ĐÃ TỒN TẠI (gộp form + interview) ----
+                const freshDoc = await db.collection('applications').doc(existingApplicationId).get();
+                const freshData = freshDoc.exists ? freshDoc.data() : {};
+                const freshTypes = freshData.application_types || (freshData.application_type ? [freshData.application_type] : []);
+                if (freshTypes.includes(applicationType)) {
+                    throw new Error('Hình thức này đã được ghi nhận trước đó cho hồ sơ của bạn. Vui lòng tải lại trang.');
+                }
+
+                const updatePayload = { ...formObject };
+                // Không ghi đè các trường định danh gốc của hồ sơ
+                ['application_type', 'email', 'email_lower', 'fullname', 'birthdate', 'gender',
+                 'phone', 'school', 'major', 'facebook', 'priority_position', 'secondary_position']
+                    .forEach(k => delete updatePayload[k]);
+
+                updatePayload.application_types = firebase.firestore.FieldValue.arrayUnion(applicationType);
+                updatePayload.updated_at = firebase.firestore.FieldValue.serverTimestamp();
+
+                await db.collection('applications').doc(existingApplicationId).update(updatePayload);
+                savedAppId = existingApplicationId;
+
+                await logActivity(savedAppId, 'merge_application_type', {
+                    added_type: applicationType,
+                    note: `Ứng viên bổ sung hình thức "${applicationType === 'interview' ? 'Phỏng vấn thay đơn' : 'Điền đơn'}" vào hồ sơ hiện có.`
+                });
+            } else {
+                // ---- TẠO HỒ SƠ MỚI: kiểm tra trùng lần cuối để tránh race-condition ----
+                const dupCheck = await db.collection('applications')
+                    .where('email_lower', '==', formObject.email_lower)
+                    .limit(1).get();
+                if (!dupCheck.empty) {
+                    throw new Error('Email này vừa được ghi nhận đơn ứng tuyển. Vui lòng tải lại trang và đăng nhập để tiếp tục.');
+                }
+
+                formObject.application_types = [applicationType];
+                formObject.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+                formObject.created_at = firebase.firestore.FieldValue.serverTimestamp();
+
+                const newDocRef = await db.collection('applications').add(formObject);
+                savedAppId = newDocRef.id;
+
+                await logActivity(savedAppId, 'created', {
+                    application_type: applicationType,
+                    note: 'Ứng viên nộp đơn ứng tuyển lần đầu.'
+                });
+            }
 
             localStorage.removeItem('enactus_form_data');
 
