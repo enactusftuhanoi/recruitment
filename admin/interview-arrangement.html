@@ -551,6 +551,9 @@
           <button class="btn btn-ghost btn-sm" id="save-schedule-btn" onclick="saveSchedule()">
             <i class="fas fa-save"></i> Lưu lịch
           </button>
+          <button class="btn btn-ghost btn-sm" id="notify-interviewers-btn" onclick="openNotifyInterviewersModal()" title="Gửi email báo lịch cho nhân sự — chỉ gồm ca của vòng đang xem, mỗi vòng gửi email riêng" style="color:#1E40AF;border-color:#BFDBFE;background:#EFF6FF">
+            <i class="fas fa-paper-plane"></i> Báo lịch cho Interviewer
+          </button>
           <button class="btn btn-ghost btn-sm" onclick="exportResult()">
             <i class="fas fa-download"></i> Xuất Excel
           </button>
@@ -779,6 +782,25 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeConfirm()">Huỷ</button>
       <button class="btn btn-dark" id="confirm-ok">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFY INTERVIEWERS MODAL -->
+<div class="overlay" id="notify-iv-overlay">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-title" id="notify-iv-title">Gửi email báo lịch cho Interviewer</div>
+    <div class="modal-sub" id="notify-iv-sub">Chỉ gồm ca của <b>vòng đang xem</b> đã <b>Lưu lịch</b> — mỗi vòng gửi <b>1 email riêng</b>, không gộp nhiều vòng vào 1 mail. Chỉ những người có email hợp lệ mới nhận được.</div>
+    <div id="notify-iv-summary" style="font-size:12.5px;color:var(--ink-60);background:var(--bg);border-radius:var(--radius-sm);padding:10px 12px;margin-top:6px">
+      Đang tổng hợp danh sách...
+    </div>
+    <div id="notify-iv-stats" style="display:none;margin-top:10px;grid-template-columns:repeat(3,1fr);gap:8px"></div>
+    <div id="notify-iv-list" style="max-height:280px;overflow-y:auto;margin-top:10px;display:flex;flex-direction:column;gap:7px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('notify-iv-overlay').classList.remove('open')">Huỷ</button>
+      <button class="btn btn-dark" id="notify-iv-send-btn" onclick="sendInterviewerNotifications()" disabled>
+        <i class="fas fa-paper-plane"></i> Gửi email
+      </button>
     </div>
   </div>
 </div>
@@ -5199,6 +5221,308 @@ document.addEventListener('DOMContentLoaded', () => {
   // Init app (Firebase)
   initApp();
 });
+
+// ══════════════════════════════════════════════════════════════════
+//  BÁO LỊCH CHO NHÂN SỰ — CHỈ VÒNG ĐANG XEM (S.activeRound)
+//  1 email = 1 vòng, không gộp nhiều vòng. Dùng chung template
+//  "interview_interviewer" cấu hình ở admin/mail.html
+//  (settings/email_templates, field interview_interviewer).
+// ══════════════════════════════════════════════════════════════════
+
+const NOTIFY_ROUND_LABELS = ROUND_LABELS; // { round1, round2, round4 }
+const NOTIFY_ROLE_LABELS = { host: 'Host tổng ca', secretary: 'Thư ký', checkin: 'Checkin', interviewer: 'Interviewer' };
+let _notifyData = null; // { [email]: { name, email, slots: { [slotId]: {...} } } }
+let _notifyRound = null;
+
+// Gom vai trò gắn trực tiếp trên từng row của VÒNG ĐANG XEM.
+// - roleKey scope:'slot' (host, secretary, checkin...) → chỉ cần biết đúng ca, KHÔNG liệt kê
+//   ứng viên (1 ca có thể có nhiều ứng viên, liệt kê hết sẽ rối và vô nghĩa với vai trò này).
+// - roleKey 'interviewer' (scope:'dept') → cần chi tiết: ca nào, ban nào, phỏng vấn ứng viên nào.
+// LƯU Ý: vai trò gán tay dạng kéo-thả cho Host/Thư ký/Checkin ở Vòng 2 & 4 được lưu riêng ở
+// arrangedSlotRoles_{round} và KHÔNG có email sẵn — phần này chưa gộp vào email báo lịch, vì cần
+// map tên → email qua danh sách nhân sự đang tải (S.interviewers) mới chính xác 100%.
+async function buildInterviewerNotificationData(round) {
+  const doc = await window.db.collection('system').doc('interview_schedule').get();
+  const data = doc.exists ? doc.data() : {};
+  const nameToEmail = {};
+  (S.interviewers || []).forEach(iv => { if (iv.name && iv.email) nameToEmail[iv.name] = iv.email; });
+
+  const schedule = data[`arrangedSchedule_${round}`] || (round === 'round4' ? data.arrangedSchedule : null) || [];
+  const byEmail = {};
+
+  schedule.forEach(row => {
+    Object.entries(row.roles || {}).forEach(([roleKey, people]) => {
+      (people || []).forEach(p => {
+        const email = (p.email || nameToEmail[p.name] || '').trim().toLowerCase();
+        if (!email || !p.name) return;
+        if (!byEmail[email]) byEmail[email] = { name: p.name, email: (p.email || nameToEmail[p.name]).trim(), slots: {} };
+        const slots = byEmail[email].slots;
+        if (!slots[row.slotId]) {
+          slots[row.slotId] = {
+            slotName: row.slotName, day: row.day, time: row.time,
+            mode: row.mode, location: row.location, note: row.note || '',
+            roles: {}, // { host:true, interviewer: { [dept]: Set<candidateName> } }
+          };
+        }
+        const slotEntry = slots[row.slotId];
+        if (roleKey === 'interviewer') {
+          if (!slotEntry.roles.interviewer) slotEntry.roles.interviewer = {};
+          const dept = row.candidateDept || '';
+          if (!slotEntry.roles.interviewer[dept]) slotEntry.roles.interviewer[dept] = new Set();
+          if (row.candidateName) slotEntry.roles.interviewer[dept].add(row.candidateName);
+        } else {
+          // scope:'slot' — chỉ đánh dấu có mặt trong ca, không gắn ứng viên cụ thể
+          slotEntry.roles[roleKey] = true;
+        }
+      });
+    });
+  });
+
+  return byEmail;
+}
+
+function notifyEscape(s) {
+  return (s || '').toString().replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+// Thẻ (card) đẹp cho từng ca — Host/Thư ký/Checkin: gọn, chỉ ngày giờ + hình thức + ghi chú.
+// Interviewer: chi tiết đầy đủ ban + danh sách ứng viên của đúng ban đó trong ca này.
+function buildSlotCardsHtml(slots) {
+  const slotIds = Object.keys(slots);
+  if (!slotIds.length) return '<p style="font-size:12.5px;color:#A8AABC;">Không có ca nào.</p>';
+
+  const cards = slotIds.map(slotId => {
+    const s = slots[slotId];
+    const modeLabel = s.mode === 'online' ? 'Online' : 'Offline';
+    const locLine = s.mode === 'online' ? '' : (s.location ? notifyEscape(s.location) : '');
+    const metaLine = [modeLabel, locLine].filter(Boolean).join(' &middot; ');
+    const noteHtml = s.note ? `<div style="margin-top:8px;padding:7px 10px;background:#FFF3CD;border-radius:8px;font-size:11.5px;color:#8A6100;line-height:1.5;">&#128204; <b>Ghi chú:</b> ${notifyEscape(s.note)}</div>` : '';
+    const roleKeys = Object.keys(s.roles);
+
+    return roleKeys.map(roleKey => {
+      const roleLabel = NOTIFY_ROLE_LABELS[roleKey] || roleKey;
+      if (roleKey === 'interviewer') {
+        const deptRows = Object.entries(s.roles.interviewer).map(([dept, namesSet]) => {
+          const names = Array.from(namesSet);
+          const deptLabel = DEPT_NAMES[dept] || dept || 'Chưa rõ ban';
+          return `<div style="margin-top:8px;">
+            <span style="display:inline-block;background:#EEF2FF;color:#4338CA;font-size:10px;font-weight:800;letter-spacing:.3px;padding:3px 9px;border-radius:999px;">BAN ${notifyEscape(deptLabel.toUpperCase())}</span>
+            <div style="font-size:12.5px;color:#14161F;margin-top:5px;line-height:1.5;">Ứng viên: <b>${notifyEscape(names.join(', ') || '—')}</b></div>
+          </div>`;
+        }).join('');
+        return `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr><td style="padding:14px 16px;background:#FFF9E6;border-radius:12px;border-left:4px solid #E8A400;">
+          <table width="100%" cellpadding="0" cellspacing="0"><tr>
+            <td style="font-size:13.5px;font-weight:800;color:#14161F;">${notifyEscape(s.day)} &middot; ${notifyEscape(s.time)}</td>
+            <td align="right" style="font-size:10px;font-weight:800;color:#E8A400;letter-spacing:.4px;">${roleLabel.toUpperCase()}</td>
+          </tr></table>
+          <div style="font-size:11.5px;color:#63667A;margin-top:3px;">${metaLine}</div>
+          ${deptRows}
+          ${noteHtml}
+        </td></tr></table>`;
+      }
+      return `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr><td style="padding:14px 16px;background:#EFF6FF;border-radius:12px;border-left:4px solid #3B82F6;">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td style="font-size:13.5px;font-weight:800;color:#14161F;">${notifyEscape(s.day)} &middot; ${notifyEscape(s.time)}</td>
+          <td align="right" style="font-size:10px;font-weight:800;color:#3B82F6;letter-spacing:.4px;">${roleLabel.toUpperCase()}</td>
+        </tr></table>
+        <div style="font-size:11.5px;color:#63667A;margin-top:3px;">${metaLine}</div>
+        ${noteHtml}
+      </td></tr></table>`;
+    }).join('');
+  }).join('');
+
+  return cards;
+}
+
+function countTotalSlots(personSlots) {
+  return Object.keys(personSlots || {}).length;
+}
+
+// Tóm tắt vai trò của 1 người trong vòng này, dùng cho card thống kê + list chọn người nhận.
+function summarizeRoles(personSlots) {
+  let hostLike = 0, interviewer = 0;
+  Object.values(personSlots || {}).forEach(s => {
+    Object.keys(s.roles || {}).forEach(roleKey => {
+      if (roleKey === 'interviewer') interviewer++; else hostLike++;
+    });
+  });
+  const parts = [];
+  if (interviewer) parts.push(`${interviewer} ca Interviewer`);
+  if (hostLike) parts.push(`${hostLike} ca Host/Thư ký/Checkin`);
+  return parts.join(' &middot; ') || '—';
+}
+
+const NOTIFY_TEMPLATE_DEFAULTS = {
+  subject: "🗓️ Lịch phỏng vấn {{round_label}} của bạn - Enactus FTU Hanoi",
+  color: "#E8A400",
+  logo: "",
+  title: "Thông báo lịch phỏng vấn",
+  intro: "Chào {{interviewer_name}}, bạn đã được sắp xếp tham gia phỏng vấn {{round_label}} theo các ca dưới đây. Vui lòng có mặt đúng giờ:",
+  footer: "Nếu cần đổi ca, vui lòng liên hệ ban Tuyển thành viên sớm nhất có thể. Email này được gửi tự động từ hệ thống Enactus FTU Hanoi.",
+  link: "https://recruitment.enactusftuhanoi.id.vn/interview-arrangement.html",
+  cta: "Xem chi tiết trên hệ thống",
+  titleSize: "20",
+  bodySize: "14",
+};
+
+async function getInterviewerNotifyTemplate() {
+  try {
+    const snap = await window.db.collection('settings').doc('email_templates').get();
+    const data = snap.exists ? snap.data() : {};
+    return { ...NOTIFY_TEMPLATE_DEFAULTS, ...(data.interview_interviewer || {}) };
+  } catch (e) {
+    return NOTIFY_TEMPLATE_DEFAULTS;
+  }
+}
+
+function notifyFillPlaceholders(str, data) {
+  return (str || '').replace(/{{(\w+)}}/g, (m, key) => (data[key] !== undefined ? data[key] : m));
+}
+
+function buildNotifyEmailHtml(t, data) {
+  const title = notifyFillPlaceholders(t.title, data);
+  const intro = notifyFillPlaceholders(t.intro, data);
+  const footer = notifyFillPlaceholders(t.footer, data);
+  const titleSize = t.titleSize || '20';
+  const bodySize = t.bodySize || '14';
+  return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F6F7FB;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F6F7FB;padding:32px 0;"><tr><td align="center">
+    <table width="540" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(20,22,31,.08);">
+      <tr><td style="background:${t.color};padding:22px 28px;">
+        ${t.logo ? `<img src="${t.logo}" alt="logo" style="height:36px;display:block;margin-bottom:10px;" />` : ''}
+        <div style="color:#14161F;font-size:${titleSize}px;font-weight:800;">${title}</div>
+      </td></tr>
+      <tr><td style="padding:26px 28px 6px;">
+        <p style="font-size:${bodySize}px;color:#63667A;line-height:1.6;margin:0 0 18px;">${intro}</p>
+        ${data.rounds_block}
+      </td></tr>
+      <tr><td style="padding:10px 28px 28px;">
+        <a href="${t.link}" style="display:inline-block;background:${t.color};color:#14161F;text-decoration:none;font-weight:700;font-size:13.5px;padding:11px 20px;border-radius:10px;">${t.cta}</a>
+      </td></tr>
+      <tr><td style="padding:18px 28px;border-top:1px solid #E6E8F0;">
+        <p style="font-size:11.5px;color:#A8AABC;line-height:1.5;margin:0;">${footer}</p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+  </body></html>`;
+}
+
+async function openNotifyInterviewersModal() {
+  const overlay = document.getElementById('notify-iv-overlay');
+  const titleEl = document.getElementById('notify-iv-title');
+  const subEl = document.getElementById('notify-iv-sub');
+  const summary = document.getElementById('notify-iv-summary');
+  const stats = document.getElementById('notify-iv-stats');
+  const list = document.getElementById('notify-iv-list');
+  const sendBtn = document.getElementById('notify-iv-send-btn');
+  overlay.classList.add('open');
+  summary.textContent = 'Đang tổng hợp danh sách...';
+  stats.style.display = 'none';
+  stats.innerHTML = '';
+  list.innerHTML = '';
+  sendBtn.disabled = true;
+
+  _notifyRound = S.activeRound;
+  const roundLabel = (NOTIFY_ROUND_LABELS[_notifyRound] || _notifyRound).split('&middot;')[0].split('·')[0].trim();
+  titleEl.textContent = `Gửi email báo lịch — ${roundLabel}`;
+  subEl.innerHTML = `Chỉ gồm ca của <b>${notifyEscape(roundLabel)}</b> đã <b>Lưu lịch</b> — mỗi vòng gửi <b>1 email riêng</b>, không gộp nhiều vòng. Chỉ những người có email hợp lệ mới nhận được.`;
+
+  try {
+    _notifyData = await buildInterviewerNotificationData(_notifyRound);
+    const entries = Object.entries(_notifyData).map(([email, p]) => ({ email, ...p }));
+    if (!entries.length) {
+      summary.innerHTML = `Chưa có ca nào của <b>${notifyEscape(roundLabel)}</b> đã <b>Lưu lịch</b> gắn với người có email hợp lệ.`;
+      return;
+    }
+
+    // ── Thẻ thống kê nhanh: tổng người, tổng ca, tổng ca Interviewer ──
+    let totalSlots = 0, totalInterviewSlots = 0, totalHostLikeSlots = 0;
+    entries.forEach(p => {
+      Object.values(p.slots).forEach(s => {
+        totalSlots++;
+        if (s.roles.interviewer) totalInterviewSlots++;
+        if (Object.keys(s.roles).some(k => k !== 'interviewer')) totalHostLikeSlots++;
+      });
+    });
+    stats.style.display = 'grid';
+    const statCard = (label, value, color, bg) => `<div style="background:${bg};border-radius:10px;padding:10px 12px;">
+      <div style="font-size:18px;font-weight:800;color:${color};">${value}</div>
+      <div style="font-size:10.5px;font-weight:700;color:var(--ink-60);text-transform:uppercase;letter-spacing:.3px;margin-top:2px;">${label}</div>
+    </div>`;
+    stats.innerHTML =
+      statCard('Nhân sự', entries.length, 'var(--ink)', 'var(--ink-10)') +
+      statCard('Ca Interviewer', totalInterviewSlots, '#B45309', '#FFF9E6') +
+      statCard('Ca Host/TK/Checkin', totalHostLikeSlots, '#1D4ED8', '#EFF6FF');
+
+    summary.innerHTML = `Tìm thấy <b>${entries.length}</b> nhân sự có ca đã lưu ở <b>${notifyEscape(roundLabel)}</b> — bỏ chọn người không muốn gửi.`;
+
+    list.innerHTML = entries.map(p => {
+      const total = countTotalSlots(p.slots);
+      return `<label style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;background:var(--white);transition:.15s;">
+        <input type="checkbox" class="notify-iv-check" data-email="${notifyEscape(p.email)}" checked style="width:16px;height:16px;flex-shrink:0" />
+        <div class="p-avatar" style="width:32px;height:32px;background:var(--yellow-light);color:#8A6100;font-size:12px;flex-shrink:0;">${notifyEscape((p.name||'?').slice(0,1).toUpperCase())}</div>
+        <span style="flex:1;min-width:0">
+          <div style="font-weight:700;color:var(--ink);font-size:13px;">${notifyEscape(p.name)}</div>
+          <div style="color:var(--ink-60);font-size:11px;margin-top:1px;">${notifyEscape(p.email)}</div>
+          <div style="color:var(--ink-60);font-size:11px;margin-top:2px;">${summarizeRoles(p.slots)}</div>
+        </span>
+        <span style="flex-shrink:0;background:var(--ink-10);color:var(--ink);font-size:12px;font-weight:800;padding:4px 10px;border-radius:999px;">${total} ca</span>
+      </label>`;
+    }).join('');
+    sendBtn.disabled = false;
+  } catch (e) {
+    summary.textContent = 'Lỗi khi tải dữ liệu: ' + e.message;
+  }
+}
+
+async function sendInterviewerNotifications() {
+  if (!_notifyData || !_notifyRound) return;
+  const checks = Array.from(document.querySelectorAll('.notify-iv-check:checked'));
+  if (!checks.length) { toast('Chưa chọn ai để gửi', 'warn'); return; }
+
+  const sendBtn = document.getElementById('notify-iv-send-btn');
+  sendBtn.disabled = true;
+  const originalLabel = sendBtn.innerHTML;
+
+  const template = await getInterviewerNotifyTemplate();
+  const roundLabel = (NOTIFY_ROUND_LABELS[_notifyRound] || _notifyRound).split('&middot;')[0].split('·')[0].trim();
+  const WORKER_URL = 'https://mail.enactusftuhanoi.workers.dev/';
+  let ok = 0, fail = 0;
+
+  for (let i = 0; i < checks.length; i++) {
+    const email = checks[i].dataset.email;
+    const person = _notifyData[email];
+    if (!person) continue;
+    sendBtn.innerHTML = `<span class="mini-spin"></span> Đang gửi ${i + 1}/${checks.length}...`;
+
+    const placeholderData = {
+      interviewer_name: person.name,
+      round_label: roundLabel,
+      total_slots: String(countTotalSlots(person.slots)),
+      time: new Date().toLocaleString('vi-VN'),
+      rounds_block: buildSlotCardsHtml(person.slots),
+    };
+    const subject = notifyFillPlaceholders(template.subject, placeholderData);
+    const html = buildNotifyEmailHtml(template, placeholderData);
+
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: [person.email], subject, html }),
+      });
+      const result = await res.json();
+      if (result.success) ok++; else fail++;
+    } catch (e) {
+      fail++;
+    }
+  }
+
+  sendBtn.innerHTML = originalLabel;
+  sendBtn.disabled = false;
+  document.getElementById('notify-iv-overlay').classList.remove('open');
+  toast(`Đã gửi ${ok} email (${roundLabel}) thành công${fail ? `, ${fail} lỗi` : ''}`, fail ? 'warn' : 'ok');
+}
 </script>
 </body>
 </html>

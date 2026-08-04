@@ -15,7 +15,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
@@ -2748,8 +2747,6 @@
       let round3TeamsIndex = {};
       let emailSendingInProgress = new Set(); // Theo dõi các email đang được gửi
 
-      // Khởi tạo EmailJS (đã có trong code)
-      emailjs.init("HJUuXcN5zo-hOZPoG"); // Public Key
 
       // Service ID và Template ID
       const SERVICE_ID = "service_oxo8n38";
@@ -2827,10 +2824,6 @@
           customClass: { popup: "app-confirm-popup" },
         });
       }
-      function hideLoading() {
-        Swal.close();
-      }
-
       // Check authentication
       if (!userEmail || !userRole) {
         sessionStorage.setItem("postLoginRedirect", location.pathname + location.search);
@@ -3103,23 +3096,13 @@ async function loadApplications() {
             const notNotified = !data.notification_sent;
 
             if (isNew && notNotified && data.fullname && data.email) {
-                console.log(
-                    "🆕 Phát hiện đơn mới, gửi email...",
-                    data.fullname,
-                    doc.id,
-                    "Loại:",
-                    data.application_type || "form"
-                );
-
-                sendEmailNotification({
+                                sendEmailNotification({
                     id: doc.id,
                     ...data,
                 }).then((success) => {
                     if (success) {
-                        console.log("✅ Đã xử lý gửi email cho:", data.fullname);
-                    } else {
-                        console.log("❌ Gửi email thất bại cho:", data.fullname);
-                    }
+                                            } else {
+                                            }
                 });
             }
         });
@@ -3225,9 +3208,7 @@ window.fixOldData = fixOldData;
 
       // Hàm tìm và hiển thị ứng viên apply nhiều lần
       function findAndDisplayDuplicateApplications() {
-        console.log("🔍 Đang tìm ứng viên apply nhiều lần...");
-
-        // Nhóm ứng viên theo email
+                // Nhóm ứng viên theo email
         const applicantsByEmail = {};
 
         applications.forEach((app) => {
@@ -3252,14 +3233,7 @@ window.fixOldData = fixOldData;
         });
 
         // Hiển thị kết quả trong console
-        console.log(
-          `📊 Tổng số ứng viên apply nhiều lần: ${
-            Object.keys(duplicates).length
-          }`
-        );
-        console.log(`📝 Tổng số đơn trùng: ${totalDuplicates}`);
-
-        // Hiển thị kết quả trong UI
+                        // Hiển thị kết quả trong UI
         displayDuplicatesInUI(duplicates);
 
         return duplicates;
@@ -3674,81 +3648,6 @@ window.fixOldData = fixOldData;
       });
 
 // Tạo form nhập team thủ công (LEGACY - không dùng nữa, tính năng chia team đã chuyển sang teamwork.html)
-function generateManualTeamForms_UNUSED() {
-  const teamCount = parseInt(document.getElementById('manual-team-count').value);
-  const container = document.getElementById('manual-teams-container');
-  const validationDiv = document.getElementById('manual-team-validation');
-  
-  if (teamCount < 1) {
-    validationDiv.innerHTML = `
-      <div class="validation-error validation-message">
-        <i class="fas fa-exclamation-triangle"></i>
-        Số team phải lớn hơn 0
-      </div>
-    `;
-    return;
-  }
-  
-  container.innerHTML = '';
-  validationDiv.innerHTML = '';
-  
-  for (let i = 1; i <= teamCount; i++) {
-    const teamCard = document.createElement('div');
-    teamCard.className = 'manual-team-card';
-    teamCard.innerHTML = `
-      <div class="manual-team-header">
-        <div class="manual-team-name">Team ${i}</div>
-        <button class="remove-team-btn" onclick="removeManualTeam(${i})">
-          <i class="fas fa-trash"></i> Xóa
-        </button>
-      </div>
-      
-      <div class="manual-team-members">
-        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Thành viên (mỗi dòng một người):</label>
-        <textarea 
-          class="member-input" 
-          id="manual-team-${i}-members" 
-          placeholder="Nhập tên thành viên, mỗi dòng một người&#10;VD:&#10;Nguyễn Văn A&#10;Trần Thị B&#10;Lê Văn C"
-          rows="5"
-        ></textarea>
-      </div>
-      
-      <div class="manual-team-advisors">
-        <div>
-          <label style="display: block; margin-bottom: 4px; font-weight: 500;">Advisor 1:</label>
-          <input type="text" class="member-input" id="manual-team-${i}-advisor1" placeholder="Tên advisor 1">
-        </div>
-        <div>
-          <label style="display: block; margin-bottom: 4px; font-weight: 500;">Advisor 2:</label>
-          <input type="text" class="member-input" id="manual-team-${i}-advisor2" placeholder="Tên advisor 2">
-        </div>
-      </div>
-      
-      <div class="manual-team-supporters">
-        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Supporter (có thể có 2-3 supporter, cách nhau bằng dấu phẩy):</label>
-        <input 
-          type="text" 
-          class="member-input" 
-          id="manual-team-${i}-supporter" 
-          placeholder="VD: Nguyễn Văn X, Trần Thị Y, Lê Văn Z"
-        >
-      </div>
-    `;
-    
-    container.appendChild(teamCard);
-  }
-  
-  // Hiển thị container
-  container.style.display = 'block';
-  
-  validationDiv.innerHTML = `
-    <div class="validation-success validation-message">
-      <i class="fas fa-check-circle"></i>
-      Đã tạo ${teamCount} form nhập team. Vui lòng nhập thông tin cho từng team.
-    </div>
-  `;
-}
-
 // Xóa team thủ công
 function removeManualTeam(teamNumber) {
   // Tìm đúng card theo id của textarea bên trong (ổn định hơn nth-child)
@@ -4256,135 +4155,13 @@ function exportToExcel(data, fileName) {
         XLSX.utils.book_append_sheet(wb, ws, 'Data');
         XLSX.writeFile(wb, fileName);
         
-        console.log('✅ Export thành công:', fileName);
-    } catch (error) {
+            } catch (error) {
         console.error('❌ Lỗi khi export Excel:', error);
         notifyInfo('Lỗi khi xuất file Excel: ' + error.message);
     }
 }
 
 // Export team thủ công
-function exportManualTeams() {
-  const teams = collectManualTeams();
-  
-  if (teams.length === 0) {
-    notifyInfo('Chưa có team nào để export!');
-    return;
-  }
-  
-  const wb = XLSX.utils.book_new();
-  const data = [];
-  
-  // Tiêu đề
-  data.push(['DANH SÁCH TEAM VÒNG 3 - CHIA THỦ CÔNG']);
-  data.push(['Lưu ý: Mỗi ứng viên chỉ thuộc 1 team duy nhất']);
-  data.push([]);
-  data.push([
-    'Team',
-    'Advisor 1',
-    'Advisor 2',
-    'Supporter',
-    'STT',
-    'Họ và tên',
-    'Email',
-    'Các ban hợp lệ',
-    'Ghi chú'
-  ]);
-  
-  teams.forEach(team => {
-    // Dòng team với advisors và supporter
-    data.push([
-      team.name,
-      team.advisor1 || '',
-      team.advisor2 || '',
-      team.supporter || '',
-      '', '', '', '', ''
-    ]);
-    
-    // Thành viên
-    team.members.forEach((memberName, index) => {
-      const candidate = findCandidateByName(memberName);
-      let email = '';
-      let validDepartments = [];
-      let note = '';
-      
-      if (candidate) {
-        email = candidate.email || '';
-        
-        // Lấy các ban hợp lệ với trạng thái
-        if (candidate.round2_priority_status === 'pass') {
-          const status = candidate.round3_priority_status || 'pending';
-          validDepartments.push({
-            name: getDepartmentName(candidate.priority_position),
-            status: status
-          });
-        }
-        if (candidate.round2_secondary_status === 'pass') {
-          const status = candidate.round3_secondary_status || 'pending';
-          validDepartments.push({
-            name: getDepartmentName(candidate.secondary_position),
-            status: status
-          });
-        }
-        
-        // Tạo chuỗi hiển thị với định dạng
-        const deptDisplay = validDepartments.map(dept => {
-          if (dept.status === 'not-pass') {
-            return `<span style="font-style: italic; text-decoration: line-through; color: #888;">${dept.name}</span>`;
-          } else {
-            return dept.name;
-          }
-        }).join(', ');
-        
-        note = validDepartments.length === 2 ? 'Pass 2 ban' : '';
-        
-        data.push([
-          '', // Team
-          '', // Advisor 1
-          '', // Advisor 2
-          '', // Supporter
-          index + 1, // STT
-          memberName, // Họ và tên
-          email, // Email
-          deptDisplay, // Các ban hợp lệ (đã định dạng)
-          note // Ghi chú
-        ]);
-      } else {
-        // Nếu không tìm thấy candidate
-        data.push([
-          '', '', '', '',
-          index + 1,
-          memberName,
-          'Không tìm thấy trong hệ thống',
-          '',
-          'Lỗi: Không tìm thấy'
-        ]);
-      }
-    });
-    
-    data.push([]); // Dòng trống giữa các team
-  });
-  
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  
-  // Định dạng cột
-  ws['!cols'] = [
-    { wch: 15 }, // Team
-    { wch: 20 }, // Advisor 1
-    { wch: 20 }, // Advisor 2
-    { wch: 25 }, // Supporter
-    { wch: 8 },  // STT
-    { wch: 25 }, // Họ và tên
-    { wch: 30 }, // Email
-    { wch: 20 }, // Các ban hợp lệ
-    { wch: 15 }, // Ghi chú
-  ];
-  
-  XLSX.utils.book_append_sheet(wb, ws, 'Danh sách team thủ công');
-  XLSX.writeFile(wb, 'Danh_sach_team_thu_cong_vong_3.xlsx');
-}
-
-
       // Biến toàn cục
       let selectedArchiveMethod = null;
       let selectedAppsForArchive = new Set();
@@ -4786,8 +4563,7 @@ function exportManualTeams() {
           // Xóa khỏi collection applications
           await db.collection("applications").doc(appId).delete();
 
-          console.log("✅ Đã lưu trữ ứng viên:", app.fullname);
-          return true;
+                    return true;
         } catch (error) {
           console.error("Lỗi khi lưu trữ ứng viên:", error);
           notifyError("❌ Lỗi khi lưu trữ: " + error.message);
@@ -4824,8 +4600,7 @@ function exportManualTeams() {
 
             // Nếu là tab restore, load dữ liệu
             if (tabName === "restore") {
-              console.log("🔄 Đang tải tab khôi phục...");
-              loadArchivedApplications();
+                            loadArchivedApplications();
             }
           });
         });
@@ -4842,9 +4617,7 @@ function exportManualTeams() {
         noResultsElement.style.display = "none";
 
         try {
-          console.log("📥 Đang tải danh sách archive từ Firestore...");
-
-          // Lấy toàn bộ dữ liệu từ collection archived_applications
+                    // Lấy toàn bộ dữ liệu từ collection archived_applications
           const snapshot = await db
             .collection("archived_applications")
             .orderBy("archived_at", "desc")
@@ -4874,11 +4647,7 @@ function exportManualTeams() {
             archivedApplications.push(archivedApp);
           });
 
-          console.log(
-            `📊 Tổng số ứng viên trong archive: ${archivedApplications.length}`
-          );
-
-          // Hiển thị tất cả ứng viên đã lưu trữ
+                    // Hiển thị tất cả ứng viên đã lưu trữ
           displayArchivedApplications(archivedApplications);
         } catch (error) {
           console.error("❌ Lỗi khi tải danh sách lưu trữ:", error);
@@ -5012,13 +4781,10 @@ function exportManualTeams() {
 
       // Hàm xử lý khôi phục ứng viên
       async function handleRestoreApplication(archivedAppId) {
-        console.log("🔄 Bắt đầu khôi phục:", archivedAppId);
-
-        try {
+                try {
           const success = await restoreApplication(archivedAppId);
           if (success) {
-            console.log("✅ Khôi phục thành công");
-            // Tự động refresh danh sách
+                        // Tự động refresh danh sách
             setTimeout(() => {
               loadArchivedApplications();
             }, 1000);
@@ -5074,9 +4840,7 @@ function exportManualTeams() {
         }
 
         try {
-          console.log("🔄 Đang khôi phục ứng viên:", archivedAppId);
-
-          // Lấy dữ liệu từ archived_applications
+                    // Lấy dữ liệu từ archived_applications
           const archivedDoc = await db
             .collection("archived_applications")
             .doc(archivedAppId)
@@ -5087,9 +4851,7 @@ function exportManualTeams() {
           }
 
           const archivedData = archivedDoc.data();
-          console.log("📋 Dữ liệu archive:", archivedData);
-
-          // Chuẩn bị dữ liệu để khôi phục - LOẠI BỎ CÁC TRƯỜNG METADATA CỦA ARCHIVE
+                    // Chuẩn bị dữ liệu để khôi phục - LOẠI BỎ CÁC TRƯỜNG METADATA CỦA ARCHIVE
           const restoreData = { ...archivedData };
 
           // XÓA các trường metadata của archive
@@ -5105,9 +4867,7 @@ function exportManualTeams() {
             restoreData.status = "new";
           }
 
-          console.log("📤 Dữ liệu khôi phục:", restoreData);
-
-          // Sử dụng original_id nếu có, nếu không thì dùng archivedAppId
+                    // Sử dụng original_id nếu có, nếu không thì dùng archivedAppId
           const targetAppId = archivedData.original_id || archivedAppId;
 
           // 🔄 KHÔI PHỤC VỀ COLLECTION APPLICATIONS
@@ -5135,19 +4895,12 @@ function exportManualTeams() {
 
       async function debugArchiveCollection() {
         try {
-          console.log("🔍 Đang kiểm tra collection archived_applications...");
-          const snapshot = await db.collection("archived_applications").get();
-          console.log(
-            `📊 Tổng số documents trong archived_applications: ${snapshot.size}`
-          );
-
-          snapshot.forEach((doc) => {
-            console.log(`📄 Document ${doc.id}:`, doc.data());
-          });
+                    const snapshot = await db.collection("archived_applications").get();
+                    snapshot.forEach((doc) => {
+                      });
 
           if (snapshot.size === 0) {
-            console.log("ℹ️ Collection archived_applications đang trống");
-          }
+                      }
         } catch (error) {
           console.error("❌ Lỗi khi debug archive collection:", error);
         }
@@ -5164,8 +4917,7 @@ function exportManualTeams() {
         }
 
         try {
-          console.log("🗑️ Đang xóa vĩnh viễn:", archivedAppId);
-          await db
+                    await db
             .collection("archived_applications")
             .doc(archivedAppId)
             .delete();
@@ -5643,14 +5395,11 @@ function filterRound3Applications() {
 // Hàm gửi email thông báo - GỌI QUA WORKER MỚI
 async function sendEmailNotification(application) {
     if (emailSendingInProgress.has(application.id)) {
-        console.log("⏳ Email đang được gửi...");
-        return false;
+                return false;
     }
 
     try {
-        console.log("📨 Đang gửi email thông báo...", application.fullname);
-
-        emailSendingInProgress.add(application.id);
+                emailSendingInProgress.add(application.id);
 
         // Lấy danh sách email từ account
         let recipientEmails = [];
@@ -5679,8 +5428,11 @@ async function sendEmailNotification(application) {
             ? application.timestamp.toDate()
             : new Date(application.timestamp || application.createdAt || application.submittedAt);
 
-        // Tạo nội dung email
-        const emailText = buildEmailText(application, applicationTime);
+        // Tạo nội dung email từ template đã custom ở admin/mail.html (fallback nếu chưa có/lỗi)
+        const { subject: emailSubject, html: emailHtml } = await buildEmailFromTemplate(
+            application,
+            applicationTime
+        );
 
         // === GỌI WORKER MỚI ===
         const WORKER_URL = 'https://mail.enactusftuhanoi.workers.dev/';
@@ -5694,16 +5446,15 @@ async function sendEmailNotification(application) {
                 },
                 body: JSON.stringify({
                     to: recipientEmails,
-                    subject: `📋 Ứng viên mới: ${application.fullname || 'Ứng viên'} - Enactus FTU Hanoi`,
-                    body: emailText
+                    subject: emailSubject,
+                    html: emailHtml
                 })
             });
 
             const result = await response.json();
             
             if (result.success) {
-                console.log(`✅ Email đã gửi thành công đến ${recipientEmails.length} admin`);
-                
+                                
                 if (application.id) {
                     await db.collection("applications").doc(application.id).update({
                         notification_sent: true,
@@ -5730,23 +5481,122 @@ async function sendEmailNotification(application) {
     }
 }
 
-// Hàm build text email
-function buildEmailText(application, applicationTime) {
-    return `
-📋 Enactus FTU Hanoi - Thông báo đơn ứng tuyển mới
+// Mẫu email mặc định — dùng khi chưa có ai custom template ở admin/mail.html,
+// hoặc khi không đọc được Firestore (mất mạng, lỗi quyền, ...).
+const DEFAULT_EMAIL_TEMPLATE = {
+    subject: "📋 Ứng viên mới: {{fullname}} - Enactus FTU Hanoi",
+    color: "#d4a017",
+    logo: "",
+    title: "Thông báo đơn ứng tuyển mới",
+    intro: "Một ứng viên mới vừa đăng ký. Xem thông tin chi tiết bên dưới:",
+    footer: "Email này được gửi tự động từ hệ thống tuyển thành viên Enactus FTU Hanoi.",
+    link: "https://recruitment.enactusftuhanoi.id.vn/dashboard.html",
+    cta: "Xem chi tiết trên Dashboard",
+};
 
-👋 Ứng viên mới vừa đăng ký!
+let _cachedEmailTemplate = null;
 
-Họ và tên: ${application.fullname || 'Chưa có tên'}
-Email: ${application.email || 'Chưa cung cấp'}
-SĐT: ${application.phone || 'Chưa cung cấp'}
-Nguyện vọng 1: ${getDepartmentName(application.priority_position) || 'Chưa có'}
-${application.secondary_position && application.secondary_position !== 'None' ? `Nguyện vọng 2: ${getDepartmentName(application.secondary_position)}` : ''}
-Loại đơn: ${getApplicationTypeLabel(application)}
-Thời gian: ${applicationTime.toLocaleString('vi-VN')}
+// Từ khi có hệ thống nhiều loại mail (mail.html), template "ứng viên mới" được lưu tại
+// settings/email_templates (field new_candidate). Doc settings/email_template (số ít, cũ)
+// chỉ còn dùng làm fallback cho tới khi ai đó mở mail.html ít nhất 1 lần để tự migrate.
+async function getEmailTemplate() {
+    if (_cachedEmailTemplate) return _cachedEmailTemplate;
+    try {
+        const snap = await db.collection("settings").doc("email_templates").get();
+        const data = snap.exists ? snap.data() : {};
+        if (data.new_candidate) {
+            _cachedEmailTemplate = { ...DEFAULT_EMAIL_TEMPLATE, ...data.new_candidate };
+            return _cachedEmailTemplate;
+        }
+        // Chưa migrate — đọc doc cũ
+        const legacySnap = await db.collection("settings").doc("email_template").get();
+        _cachedEmailTemplate = legacySnap.exists
+            ? { ...DEFAULT_EMAIL_TEMPLATE, ...legacySnap.data() }
+            : DEFAULT_EMAIL_TEMPLATE;
+    } catch (err) {
+        console.error("Không tải được template email, dùng mặc định:", err);
+        _cachedEmailTemplate = DEFAULT_EMAIL_TEMPLATE;
+    }
+    return _cachedEmailTemplate;
+}
 
-Xem chi tiết: https://recruitment.enactusftuhanoi.id.vn/dashboard.html
-    `;
+function fillEmailPlaceholders(str, data) {
+    return (str || "").replace(/{{(\w+)}}/g, (m, key) => (data[key] !== undefined && data[key] !== null && data[key] !== '' ? data[key] : m));
+}
+
+function emailTableRow(label, value) {
+    return `<tr>
+      <td style="padding:7px 0;font-size:12.5px;color:#9ca3af;width:130px;vertical-align:top;">${label}</td>
+      <td style="padding:7px 0;font-size:13.5px;color:#171410;font-weight:600;">${value || "—"}</td>
+    </tr>`;
+}
+
+// Xây email HTML + subject dựa theo template đã lưu ở admin/mail.html
+async function buildEmailFromTemplate(application, applicationTime) {
+    const t = await getEmailTemplate();
+
+    const placeholderData = {
+        fullname: application.fullname || "Chưa có tên",
+        email: application.email || "Chưa cung cấp",
+        phone: application.phone || "Chưa cung cấp",
+        priority: getDepartmentName(application.priority_position) || "Chưa có",
+        secondary:
+            application.secondary_position && application.secondary_position !== "None"
+                ? getDepartmentName(application.secondary_position)
+                : "",
+        type: getApplicationTypeLabel(application),
+        time: applicationTime.toLocaleString("vi-VN"),
+    };
+
+    const subject = fillEmailPlaceholders(t.subject, placeholderData);
+    const title = fillEmailPlaceholders(t.title, placeholderData);
+    const intro = fillEmailPlaceholders(t.intro, placeholderData);
+    const footer = fillEmailPlaceholders(t.footer, placeholderData);
+
+    const html = `
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#f4f2ec;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f2ec;padding:32px 0;">
+    <tr><td align="center">
+      <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.06);">
+        <tr>
+          <td style="background:${t.color};padding:22px 28px;">
+            ${t.logo ? `<img src="${t.logo}" alt="logo" style="height:36px;display:block;margin-bottom:10px;" />` : ""}
+            <div style="color:#171410;font-size:17px;font-weight:800;">${title}</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:26px 28px 6px;">
+            <p style="font-size:14px;color:#374151;line-height:1.6;margin:0 0 18px;">${intro}</p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+              ${emailTableRow("Họ và tên", placeholderData.fullname)}
+              ${emailTableRow("Email", placeholderData.email)}
+              ${emailTableRow("Số điện thoại", placeholderData.phone)}
+              ${emailTableRow("Nguyện vọng 1", placeholderData.priority)}
+              ${placeholderData.secondary ? emailTableRow("Nguyện vọng 2", placeholderData.secondary) : ""}
+              ${emailTableRow("Loại đơn", placeholderData.type)}
+              ${emailTableRow("Thời gian", placeholderData.time)}
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:10px 28px 28px;">
+            <a href="${t.link}" style="display:inline-block;background:${t.color};color:#171410;text-decoration:none;font-weight:700;font-size:13.5px;padding:11px 20px;border-radius:9px;">${t.cta}</a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:18px 28px;border-top:1px solid #e7e3d8;">
+            <p style="font-size:11.5px;color:#9ca3af;line-height:1.5;margin:0;">${footer}</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+    return { subject, html };
 }
 
       // Render applications to the table
@@ -7376,21 +7226,6 @@ function renderRound4() {
       }
 
       // Hàm lấy icon cho từng ban
-      function getDepartmentIcon(code) {
-        switch (code) {
-          case "MD":
-            return "fas fa-bullhorn";
-          case "HR":
-            return "fas fa-users";
-          case "PD":
-            return "fas fa-project-diagram";
-          case "ER":
-            return "fas fa-handshake";
-          default:
-            return "fas fa-building";
-        }
-      }
-
       function renderDepartment(code, status) {
         const badgeClass = `department-badge ${getStatusClass(status || "pending")}`;
         return `
@@ -8382,34 +8217,7 @@ function renderRound4() {
       }
 
 // Hàm render department với định dạng đặc biệt cho trạng thái "not pass"
-function renderDepartmentForExport(deptCode, status, deptType = null) {
-  const deptName = getDepartmentName(deptCode);
-  
-  if (status === "not-pass") {
-    return `<span style="font-style: italic; text-decoration: line-through; color: var(--gray-500);">${deptName}</span>`;
-  } else if (status === "pass") {
-    return `<span style="font-weight: 600; color: var(--success);">${deptName}</span>`;
-  } else {
-    return deptName;
-  }
-}
-
 // Hàm render trạng thái với màu sắc
-function renderStatusForExport(status) {
-  const statusText = getStatusText(status);
-  
-  switch(status) {
-    case 'pass':
-      return `<span style="color: #10b981; font-weight: 600;">${statusText}</span>`;
-    case 'not-pass':
-      return `<span style="color: #ef4444; font-weight: 600;">${statusText}</span>`;
-    case 'pending':
-      return `<span style="color: #f59e0b; font-weight: 600;">${statusText}</span>`;
-    default:
-      return statusText;
-  }
-}
-
 // Sửa hàm exportTeamsToExcel
 function exportTeamsToExcel(teams) {
   const wb = XLSX.utils.book_new();
