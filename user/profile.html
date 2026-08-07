@@ -611,16 +611,27 @@
             margin-bottom: 32px;
         }
 
-        /* Nút "Xem lại đơn của tôi" + "Đăng ký phỏng vấn thay đơn" cố định góc trên
-           trái của panel Vòng 1 (round1-card), không còn ở panel thông tin nữa */
-        .round1-card-corner-actions {
-            position: absolute;
-            right: 16px;
-            top: 16px;
+        /* Header của panel Vòng 1 (round1-card): tiêu đề + nút hành động nằm CHUNG 1 dòng flex,
+           ngang hàng thật sự thay vì dùng position:absolute để nổi nút lên góc như trước (khiến
+           nút lệch khỏi dòng chữ "Vòng 1 · Đơn ứng tuyển" và phải chêm padding-top để né đè). */
+        .round1-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .round1-card-header h3 {
+            margin-bottom: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--neutral-900);
+        }
+        .round1-card-actions {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
-            z-index: 2;
+            gap: 8px;
         }
         .view-application-corner-btn {
             display: inline-flex;
@@ -636,7 +647,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        .round1-card-corner-actions #round1-append-interview-btn {
+        .round1-card-actions #round1-append-interview-btn {
             padding: 6px 10px;
             font-size: 11.5px;
         }
@@ -645,23 +656,65 @@
             color: #1F2937;
             transform: translateY(-1px);
         }
-        /* Đẩy nội dung của panel vòng 1 xuống để không bị 2 nút góc trên trái đè lên */
-        #round1-card {
-            padding-top: 44px;
+
+        /* Thông tin vòng 1 (trạng thái/hình thức/thời gian nộp): mỗi dòng 1 item riêng, khung
+           vuông bo góc vừa phải (không bo tròn hết như pill), chiều dài CỐ ĐỊNH và BẰNG NHAU
+           cho cả 3 item, thay vì chip tự co theo nội dung như trước. */
+        /* Bỏ nền màu của icon lớn ở đầu card Vòng 1 (không riêng gì icon trong info item) —
+           chỉ áp dụng cho #round1-card để không ảnh hưởng các card khác (round2/round3/round4
+           dùng chung class .notification-icon). */
+        #round1-card .notification-icon {
+            background: transparent;
+        }
+        .round1-info-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .round1-info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            max-width: 100%;
+            padding: 11px 16px;
+            background: var(--neutral-50, #F9FAFB);
+            border: 1px solid var(--neutral-200, #E5E7EB);
+            border-radius: 8px;
+            font-size: 15px;
+        }
+        .round1-info-item i {
+            font-size: 13px;
+            color: var(--primary-600, #D97706);
+            width: 16px;
+            flex-shrink: 0;
+        }
+        .round1-info-item .round1-info-label {
+            color: var(--neutral-500, #6B7280);
+            flex-shrink: 0;
+        }
+        .round1-info-item .round1-info-value {
+            color: var(--neutral-900, #111827);
+            font-weight: 700;
+            margin-left: auto;
+            text-align: right;
         }
         @media (max-width: 640px) {
-            .round1-card-corner-actions {
-                position: static;
-                margin-bottom: 12px;
+            .round1-card-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .round1-card-actions {
                 width: 100%;
             }
-            .round1-card-corner-actions .view-application-corner-btn,
-            .round1-card-corner-actions #round1-append-interview-btn {
-                width: 100%;
+            .round1-card-actions .view-application-corner-btn,
+            .round1-card-actions #round1-append-interview-btn {
+                flex: 1;
                 justify-content: center;
             }
-            #round1-card {
-                padding-top: 24px;
+            .round1-info-item {
+                width: 100%;
             }
         }
 
@@ -1397,21 +1450,37 @@
                     <i class="fas fa-id-card"></i>
                 </div>
                 <div class="notification-content">
-                    <h3>Vòng 1 · Đơn ứng tuyển</h3>
-                    <p>Trạng thái hiện tại: <span id="round1-status-text">—</span></p>
-                    <p>Hình thức: <span id="round1-type-text">—</span></p>
-                    <p>Thời gian nộp: <span id="round1-time-text">—</span></p>
+                    <div class="round1-card-header">
+                        <h3>Vòng 1 · Đơn ứng tuyển</h3>
+                        <div class="round1-card-actions">
+                            <button class="view-application-corner-btn" id="round1-view-btn">
+                                <i class="fas fa-eye"></i>
+                                <span>Xem lại đơn của tôi</span>
+                            </button>
+                            <button class="btn btn-primary" id="round1-append-interview-btn" style="display: none;">
+                                <i class="fas fa-plus"></i>
+                                <span id="round1-append-btn-label">Đăng ký phỏng vấn thay đơn</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="round1-info-grid">
+                        <div class="round1-info-item">
+                            <i class="fas fa-circle-dot"></i>
+                            <span class="round1-info-label">Trạng thái</span>
+                            <span class="round1-info-value" id="round1-status-text">—</span>
+                        </div>
+                        <div class="round1-info-item">
+                            <i class="fas fa-pen-to-square"></i>
+                            <span class="round1-info-label">Hình thức</span>
+                            <span class="round1-info-value" id="round1-type-text">—</span>
+                        </div>
+                        <div class="round1-info-item">
+                            <i class="fas fa-clock"></i>
+                            <span class="round1-info-label">Thời gian nộp</span>
+                            <span class="round1-info-value" id="round1-time-text">—</span>
+                        </div>
+                    </div>
                     <div id="round1-interview-body"></div>
-                </div>
-                <div class="round1-card-corner-actions">
-                    <button class="view-application-corner-btn" id="round1-view-btn">
-                        <i class="fas fa-eye"></i>
-                        <span>Xem lại đơn của tôi</span>
-                    </button>
-                    <button class="btn btn-primary" id="round1-append-interview-btn" style="display: none;">
-                        <i class="fas fa-plus"></i>
-                        <span id="round1-append-btn-label">Đăng ký phỏng vấn thay đơn</span>
-                    </button>
                 </div>
             </div>
 
