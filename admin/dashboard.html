@@ -55,6 +55,85 @@
       }
 
       /* === SweetAlert2: đồng bộ với theme vàng-đen của dashboard === */
+      /* FIX: các overlay tự chế trong trang (panel "Công bố kết quả vòng", modal chọn vòng
+         reset...) dùng z-index: 9999, cao hơn z-index mặc định của Swal2 (~1060). Vì vậy khi
+         gọi confirmDialog() lúc panel đó đang mở, hộp thoại xác nhận bị panel đè lên trên,
+         không bấm xác nhận được. Nâng z-index của Swal2 lên cao nhất trang để luôn nổi trên
+         mọi overlay/modal khác. */
+      .swal2-container {
+        z-index: 100000 !important;
+      }
+      .swal2-popup {
+        font-family: "Plus Jakarta Sans", sans-serif !important;
+        border-radius: 18px !important;
+        box-shadow: var(--shadow-lg) !important;
+        padding: 30px 26px !important;
+      }
+      .swal2-title {
+        font-size: 18px !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.3px !important;
+        color: var(--ink) !important;
+        padding: 0 0 4px !important;
+      }
+      .swal2-html-container {
+        font-size: 13.5px !important;
+        font-weight: 500 !important;
+        color: var(--gray-600) !important;
+        margin: 8px 4px 4px !important;
+      }
+      .swal2-actions { gap: 10px !important; margin-top: 20px !important; }
+      .swal2-styled {
+        font-family: inherit !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        border-radius: 10px !important;
+        padding: 10px 20px !important;
+        box-shadow: none !important;
+        transition: var(--transition) !important;
+      }
+      .swal2-confirm.swal2-styled {
+        background: var(--gold) !important;
+        color: var(--ink) !important;
+      }
+      .swal2-confirm.swal2-styled:hover {
+        background: var(--gold-deep) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(212, 160, 23, 0.28) !important;
+      }
+      .swal2-cancel.swal2-styled {
+        background: var(--gray-100) !important;
+        color: var(--gray-600) !important;
+      }
+      .swal2-cancel.swal2-styled:hover {
+        background: var(--gray-200) !important;
+        color: var(--ink) !important;
+      }
+      .swal2-styled:focus,
+      .swal2-confirm.swal2-styled:focus,
+      .swal2-cancel.swal2-styled:focus {
+        box-shadow: 0 0 0 4px rgba(212, 160, 23, 0.25) !important;
+      }
+      .swal2-icon { border-width: 2.5px !important; }
+      .swal2-icon.swal2-success { border-color: var(--success) !important; color: var(--success) !important; }
+      .swal2-icon.swal2-success [class^="swal2-success-line"] { background-color: var(--success) !important; }
+      .swal2-icon.swal2-success .swal2-success-ring { border-color: var(--success-light) !important; }
+      .swal2-icon.swal2-error { border-color: var(--error) !important; color: var(--error) !important; }
+      .swal2-icon.swal2-error [class^="swal2-x-mark-line"] { background-color: var(--error) !important; }
+      .swal2-icon.swal2-warning { border-color: var(--warning) !important; color: var(--warning) !important; }
+      .swal2-icon.swal2-info { border-color: var(--info) !important; color: var(--info) !important; }
+      .swal2-input, .swal2-textarea, .swal2-select {
+        font-family: inherit !important;
+        border: 1.5px solid var(--gray-200) !important;
+        border-radius: 10px !important;
+        box-shadow: none !important;
+        font-size: 13px !important;
+        color: var(--ink) !important;
+      }
+      .swal2-input:focus, .swal2-textarea:focus, .swal2-select:focus {
+        border-color: var(--gold) !important;
+        box-shadow: 0 0 0 4px rgba(212, 160, 23, 0.2) !important;
+      }
       .app-toast-popup {
         border-radius: 14px !important;
         box-shadow: var(--shadow-lg) !important;
@@ -64,13 +143,7 @@
         font-size: 14px !important;
         font-weight: 600 !important;
       }
-      .app-confirm-popup {
-        border-radius: 18px !important;
-        font-family: "Plus Jakarta Sans", sans-serif !important;
-      }
-      .app-confirm-popup .swal2-title { font-weight: 700 !important; }
-      .swal2-confirm.swal2-styled:focus,
-      .swal2-cancel.swal2-styled:focus { box-shadow: none !important; }
+      .app-confirm-popup .swal2-title { font-weight: 800 !important; }
 
       * {
         margin: 0;
@@ -1386,6 +1459,9 @@
         font-size: 11px;
         font-weight: 600;
         margin-left: 8px;
+        display: inline-block;
+        white-space: nowrap;
+        flex-shrink: 0;
       }
 
       /* CSS cho thống kê ban */
@@ -1913,6 +1989,7 @@
         </div>
         <div
           class="nav-item system-settings-menu"
+          id="member-response-nav"
           style="display: none"
           onclick="window.location.href='response.html'"
         >
@@ -1950,7 +2027,7 @@
         <div
           class="nav-item superadmin-only-menu"
           style="display: none"
-          onclick="window.location.href='admin/mail.html'"
+          onclick="window.location.href='mail.html'"
         >
           <i class="fas fa-envelope"></i>
           <span>Mail</span>
@@ -1989,6 +2066,10 @@
           <button class="reset-btn" id="reset-rounds-btn">
             <i class="fas fa-undo"></i>
             Reset dữ liệu vòng
+          </button>
+          <button class="reset-btn" id="publish-round-btn" style="display: none; background: var(--success-light); color: var(--success); border-color: var(--success-light);">
+            <i class="fas fa-bullhorn"></i>
+            Công bố kết quả vòng
           </button>
           <button class="update-all-rounds-btn" id="update-round-btn">
             <i class="fas fa-level-up-alt"></i>
@@ -2164,9 +2245,8 @@
               <thead>
                 <tr>
                   <th>Họ và tên</th>
-                  <th>Ban ứng tuyển</th>
-                  <th>Email</th>
                   <th>SĐT</th>
+                  <th>Ban ứng tuyển</th>
                   <th>Vòng hiện tại</th>
                   <th>Trạng thái</th>
                   <th>Hành động</th>
@@ -2237,8 +2317,6 @@
             <thead>
               <tr>
                 <th>Họ và tên</th>
-                <th>Email</th>
-                <th>SĐT</th>
                 <th>Ban ứng tuyển</th>
                 <th>Loại đơn</th>
                 <th>Thông tin phỏng vấn</th>
@@ -2839,15 +2917,13 @@
           customClass: { popup: "app-confirm-popup" },
         });
       }
+      // FIX: trước đây member bị redirect thẳng ra response.html, không được vào Dashboard.
+      // Nay cho member vào Dashboard, chỉ giới hạn sidebar còn Dashboard/Response/Interview Day/
+      // Teamwork (xử lý trong applyRoleUIRules() bên dưới), không redirect nữa.
       // Check authentication
       if (!userEmail || !userRole) {
         sessionStorage.setItem("postLoginRedirect", location.pathname + location.search);
         window.location.href = "login.html";
-      }
-
-      // Redirect members to response page
-      if (userRole === "member") {
-        window.location.href = "response.html";
       }
 
       // Auth state listener
@@ -2931,6 +3007,11 @@
           resetBtn.style.display =
             userRole === "superadmin" ? "inline-flex" : "none";
 
+        const publishRoundBtn = document.getElementById("publish-round-btn");
+        if (publishRoundBtn)
+          publishRoundBtn.style.display =
+            userRole === "superadmin" ? "inline-flex" : "none";
+
         // Mail nav (quản lý template email) — CHỈ SuperAdmin được thấy/truy cập
         const superadminMenus = document.querySelectorAll(".superadmin-only-menu");
         superadminMenus.forEach((menu) => {
@@ -2947,9 +3028,19 @@
         // Teamwork nav: chỉ hiện cho superadmin/admin, hoặc advisor/supporter của ít nhất 1 team
         updateTeamworkNavVisibility();
 
-        // Members should be redirected out earlier; but if not:
+        // Member: chỉ được thấy Dashboard, Response, Interview Day, Teamwork trên sidebar —
+        // ẩn hết các mục tuyển dụng nội bộ khác (Form, Thông tin ứng viên, Vòng tuyển chọn).
+        // Response vốn nằm trong .system-settings-menu (mặc định chỉ admin/superadmin thấy),
+        // nên bật riêng cho member ở đây. Teamwork đã tự xử lý đúng ở updateTeamworkNavVisibility().
         if (userRole === "member") {
-          window.location.href = "response.html";
+          const formNav = document.querySelector('.nav-item[data-tab="form"]');
+          if (formNav) formNav.style.display = "none";
+          const infoNav = document.querySelector('.nav-item[data-tab="info"]');
+          if (infoNav) infoNav.style.display = "none";
+          const roundsNav = document.querySelector('.nav-item[data-tab="rounds"]');
+          if (roundsNav) roundsNav.style.display = "none";
+          const responseNav = document.getElementById("member-response-nav");
+          if (responseNav) responseNav.style.display = "flex";
         }
       }
 
@@ -5579,24 +5670,12 @@ async function buildEmailFromTemplate(application, applicationTime) {
                 : "",
         type: getApplicationTypeLabel(application),
         time: applicationTime.toLocaleString("vi-VN"),
-        application_id: application.id || "",
     };
 
     const subject = fillEmailPlaceholders(t.subject, placeholderData);
     const title = fillEmailPlaceholders(t.title, placeholderData);
     const intro = fillEmailPlaceholders(t.intro, placeholderData);
     const footer = fillEmailPlaceholders(t.footer, placeholderData);
-
-    // Nút CTA: mail.html lưu dưới dạng mảng "buttons" (nhiều nút, mỗi nút có link riêng
-    // có thể chứa {{application_id}}...). Trước đây hàm này đọc t.link/t.cta — 2 field
-    // KHÔNG hề được mail.html lưu nữa (chỉ còn trong DEFAULT_EMAIL_TEMPLATE cũ), nên mọi
-    // tuỳ chỉnh nút bấm ở mail.html bị bỏ qua hoàn toàn khi gửi thật, và placeholder trong
-    // link cũng chưa từng được thay thế. Fix: dùng buttons[] nếu có, luôn fillEmailPlaceholders
-    // cho cả label lẫn link; fallback về link/cta cũ nếu chưa có buttons nào được cấu hình.
-    const buttons = (t.buttons && t.buttons.length ? t.buttons : [{ label: t.cta, link: t.link, color: t.color, textColor: "#171410" }])
-        .filter((b) => b && b.label);
-    const buttonsHtml = buttons.map((b, i) => `
-            <a href="${fillEmailPlaceholders(b.link, placeholderData)}" style="display:inline-block;background:${b.color || t.color};color:${b.textColor || "#171410"};text-decoration:none;font-weight:700;font-size:13.5px;padding:11px 20px;border-radius:9px;${i > 0 ? "margin-left:10px;" : ""}">${fillEmailPlaceholders(b.label, placeholderData)}</a>`).join("");
 
     const html = `
 <!DOCTYPE html>
@@ -5627,7 +5706,7 @@ async function buildEmailFromTemplate(application, applicationTime) {
         </tr>
         <tr>
           <td style="padding:10px 28px 28px;">
-            ${buttonsHtml}
+            <a href="${t.link}" style="display:inline-block;background:${t.color};color:#171410;text-decoration:none;font-weight:700;font-size:13.5px;padding:11px 20px;border-radius:9px;">${t.cta}</a>
           </td>
         </tr>
         <tr>
@@ -5721,6 +5800,7 @@ async function buildEmailFromTemplate(application, applicationTime) {
                             </div>
                         </div>
                     </td>
+                    <td>${app.phone || "Chưa cung cấp"}</td>
                     <td>
                         ${renderDepartment(
                           app.priority_position,
@@ -5736,8 +5816,6 @@ async function buildEmailFromTemplate(application, applicationTime) {
                             : ""
                         }
                     </td>
-                    <td>${app.email || "Chưa cung cấp"}</td>
-                    <td>${app.phone || "Chưa cung cấp"}</td>
                     <td>${getRoundText(app.current_round)}</td>
                     <td>
                         <span class="status-badge ${getStatusClass(
@@ -5838,6 +5916,17 @@ async function buildEmailFromTemplate(application, applicationTime) {
           .join("")}</div>`;
       }
 
+      // Hiện icon + text placeholder khi tab vòng không có ứng viên nào, thay vì để bảng trống trơn.
+      function renderEmptyRoundRow(tbody, colspan, message = "Chưa có ứng viên nào ở vòng này") {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td colspan="${colspan}" style="text-align: center; padding: 48px 16px; color: var(--gray-500);">
+            <i class="fas fa-inbox" style="font-size: 32px; display: block; margin-bottom: 10px; color: var(--gray-300);"></i>
+            ${message}
+          </td>`;
+        tbody.appendChild(tr);
+      }
+
       function renderRound1() {
         const tbody = document.getElementById("round1-table-body");
         tbody.innerHTML = "";
@@ -5853,9 +5942,16 @@ async function buildEmailFromTemplate(application, applicationTime) {
           const tr = document.createElement("tr");
           if (hasMovedOn) tr.style.opacity = "0.65";
           tr.innerHTML = `
-                    <td>${app.fullname}</td>
-                    <td>${app.email}</td>
-                    <td>${app.phone || ""}</td>
+                    <td>
+                        <div class="applicant-info">
+                            <div class="applicant-avatar">${app.fullname ? app.fullname.charAt(0).toUpperCase() : "U"}</div>
+                            <div class="applicant-details">
+                                <div class="applicant-name">${app.fullname}</div>
+                                <div class="applicant-contact">${app.email}</div>
+                                ${hasMovedOn ? `<div style="margin-top: 4px;"><span style="font-style: italic; font-weight: 700; font-size: 11px; color: var(--gold-deep);">Đã chuyển lên ${getRoundText(round)}</span></div>` : ""}
+                            </div>
+                        </div>
+                    </td>
                     <td>
                         ${renderDepartment(
                           app.priority_position,
@@ -5870,19 +5966,14 @@ async function buildEmailFromTemplate(application, applicationTime) {
                               )
                             : ""
                         }
-                        ${
-                          hasMovedOn
-                            ? `<div style="margin-top: 4px;"><span style="font-style: italic; font-weight: 700; font-size: 11px; color: var(--gold-deep);">Đã chuyển lên ${getRoundText(round)}</span></div>`
-                            : ""
-                        }
                     </td>
                     <td>${(() => {
                       const types = getAppTypes(app);
                       const hasForm = types.includes("form") || !types.length;
                       const hasInterview = types.includes("interview");
                       const formBadge = `<span class="duplicate-badge" style="background: var(--warning-light, #FEF3C7); color: var(--warning, #D97706); font-size: 11px; font-weight: 600; margin-left: 0;">Form</span>`;
-                      const interviewBadge = `<span class="duplicate-badge" style="background: var(--info-light); color: var(--info); font-size: 11px; font-weight: 600; margin-left: 4px;">Phỏng vấn</span>`;
-                      return `${hasForm ? formBadge : ""}${hasInterview ? interviewBadge : ""}`;
+                      const interviewBadge = `<span class="duplicate-badge" style="background: var(--info-light); color: var(--info); font-size: 11px; font-weight: 600; margin-left: 0;">Phỏng vấn</span>`;
+                      return `<div style="display:flex; flex-wrap:wrap; gap:4px;">${hasForm ? formBadge : ""}${hasInterview ? interviewBadge : ""}</div>`;
                     })()}</td>
                     <td>${renderInterviewTimeCell(app, "round1")}</td>
                     <td>${renderInterviewerCell(app, "round1")}</td>
@@ -5895,6 +5986,8 @@ async function buildEmailFromTemplate(application, applicationTime) {
                 `;
           tbody.appendChild(tr);
         });
+
+        if (!tbody.children.length) renderEmptyRoundRow(tbody, 6);
 
         // Sửa phần event listener - thêm kiểm tra authentication
         tbody.querySelectorAll(".view-btn").forEach((btn) => {
@@ -6019,6 +6112,8 @@ function renderRound2() {
 
         tbody.appendChild(tr);
     });
+
+    if (!tbody.children.length) renderEmptyRoundRow(tbody, 6);
 
     // Event listeners cho nút lưu
     tbody.querySelectorAll(".save-btn").forEach((btn) => {
@@ -6426,6 +6521,8 @@ function renderRound3() {
         tbody.appendChild(spacerRow);
     });
 
+    if (!tbody.children.length) renderEmptyRoundRow(tbody, 8);
+
     setupRound3SaveHandlers();
 }
 
@@ -6686,6 +6783,8 @@ function renderRound4() {
         `;
         tbody.appendChild(tr);
     });
+
+    if (!tbody.children.length) renderEmptyRoundRow(tbody, 7);
 
     // ✅ SỬA: Event listeners cho save - VIẾT ĐẦY ĐỦ
     tbody.querySelectorAll(".save-btn").forEach((btn) => {
@@ -7135,8 +7234,7 @@ function renderRound4() {
                 grouped: true,
                 borderRadius: 4,
                 maxBarThickness: 40,
-                order: 3,
-                datalabels: { display: false },
+                order: 3,            datalabels: { display: false },
               },
               {
                 type: "bar",
@@ -8691,70 +8789,265 @@ document.getElementById('export-modal').innerHTML += `
             return;
           }
 
+          // FIX: trước đây bấm nút này LUÔN xoá sạch cả 4 vòng (round1→round4) của mọi
+          // ứng viên, không có lựa chọn nào khác — dù chỉ muốn làm lại 1 vòng. Giờ cho
+          // chọn đúng vòng cần reset (hoặc "Tất cả" như hành vi cũ).
+          const round = await pickRoundToReset();
+          if (!round) return; // huỷ
+
+          const roundLabel = { round1: "Vòng 1", round2: "Vòng 2", round3: "Vòng 3 (Teamwork)", round4: "Vòng 4", all: "TẤT CẢ các vòng" }[round];
+
           if (
             !(await confirmDialog(
-              "⚠️ Bạn có chắc muốn reset toàn bộ dữ liệu vòng? (Dữ liệu form ứng viên sẽ giữ nguyên)"
+              `⚠️ Reset dữ liệu ${roundLabel}?\nChỉ áp dụng cho ứng viên ĐÃ TỚI vòng này trở lên. Sẽ xoá: trạng thái/kết quả đã công bố, lịch phỏng vấn nháp (chưa công bố) của vòng này trở đi, VÀ ghi chú đánh giá (ghi chú không tách theo vòng nên sẽ mất hết, kể cả ghi chú của vòng khác). Dữ liệu form ứng viên được GIỮ NGUYÊN.`,
+              { icon: "warning", confirmText: "Reset", cancelText: "Huỷ" }
             ))
           ) {
             return;
           }
 
           try {
+            // Ghi chú đánh giá (priority_notes/secondary_notes/priority_interview_notes/
+            // secondary_interview_notes) KHÔNG tách theo vòng (nhập ở trang Response, dùng chung
+            // cho cả quá trình ứng viên) — nên xoá ở BẤT KỲ vòng nào được reset (không chỉ round1),
+            // áp dụng cho mọi ứng viên bị ảnh hưởng bởi lượt reset này.
+            const ALWAYS_CLEAR_ON_ANY_RESET = ["priority_notes", "secondary_notes", "priority_interview_notes", "secondary_interview_notes"];
+            // FIX: trước đây round{N}_draft (lịch phỏng vấn nháp) được giữ lại khi reset, nhưng
+            // Dashboard (getInterviewRoundData) luôn ưu tiên hiển thị bản nháp nếu có → sau khi
+            // reset, cột "Thông tin phỏng vấn" / "Nhân sự phỏng vấn" vẫn hiện dữ liệu cũ từ bản
+            // nháp, trông như chưa xoá gì. Nay xoá cả round{N} (chính thức) lẫn round{N}_draft
+            // (nháp) khi reset, để 2 cột này thực sự trống sau khi reset.
+            const roundFieldMap = {
+              round1: ["priority_status", "secondary_status", "priorityAccepted", "priorityRejected", "secondaryAccepted", "secondaryRejected", "round1", "round1_draft", "round1_published", "round1_published_at", "round1_published_by", "round1_revoked_at", "round1_revoked_by"],
+              round2: ["round2", "round2_draft", "round2_priority_status", "round2_secondary_status", "round2_published", "round2_published_at", "round2_published_by", "round2_revoked_at", "round2_revoked_by"],
+              round3: ["round3", "round3_draft", "round3_priority_status", "round3_secondary_status", "round3_published", "round3_published_at", "round3_published_by", "round3_revoked_at", "round3_revoked_by", "final_department"],
+              round4: ["round4", "round4_draft", "round4_priority_status", "round4_secondary_status", "round4_published", "round4_published_at", "round4_published_by", "round4_revoked_at", "round4_revoked_by"],
+            };
+            const ROUND_ORDER = ["round1", "round2", "round3", "round4"];
+
+            // Reset 1 vòng cụ thể → cũng xoá cascading các vòng SAU nó (vì kết quả các vòng
+            // sau phụ thuộc vào vòng này), nhưng KHÔNG đụng tới các vòng TRƯỚC nó.
+            let roundsToClear;
+            const targetIdx = round === "all" ? 0 : ROUND_ORDER.indexOf(round);
+            if (round === "all") {
+              roundsToClear = ROUND_ORDER;
+            } else {
+              roundsToClear = ROUND_ORDER.slice(targetIdx);
+            }
+
+            const del = firebase.firestore.FieldValue.delete();
             const snapshot = await db.collection("applications").get();
             const batch = db.batch();
 
             snapshot.forEach((doc) => {
               const data = doc.data();
-              const del = firebase.firestore.FieldValue.delete();
+              // FIX: trước đây MỌI ứng viên đều bị set current_round = round (và bị xoá field),
+              // kể cả ứng viên chưa từng tới vòng đó (đang ở vòng trước) — khiến tất cả ứng viên
+              // bị "dồn" về chung 1 vòng sau khi reset. Nay chỉ áp dụng cho ứng viên ĐANG Ở vòng
+              // được chọn TRỞ LÊN (đã từng chạm tới vòng này), vì chỉ những ứng viên đó mới có
+              // dữ liệu ở vòng này cần xoá.
+              const currentIdx = ROUND_ORDER.indexOf(data.current_round || "round1");
+              if (round !== "all" && currentIdx < targetIdx) return; // chưa tới vòng này → bỏ qua, không đụng gì
 
-              // Giữ lại thông tin cá nhân, answers; xóa hẳn các field vòng cũ
-              const newData = {
-                fullname: data.fullname || null,
-                email: data.email || null,
-                phone: data.phone || null,
-                answers: data.answers || {},
-                priority_position: data.priority_position || null,
-                secondary_position: data.secondary_position || null,
-                timestamp:
-                  data.timestamp ||
-                  firebase.firestore.FieldValue.serverTimestamp(),
-
-                // Reset toàn bộ dữ liệu vòng
-                current_round: "round1",
-                status: "new",
-
-                // Xóa hẳn các field round để tránh dữ liệu cũ lẫn
-                priority_status: del,
-                secondary_status: del,
-                priorityAccepted: del,
-                priorityRejected: del,
-                secondaryAccepted: del,
-                secondaryRejected: del,
-                round1: del,
-                round2: del,
-                round2_priority_status: del,
-                round2_secondary_status: del,
-                round3: del,
-                round3_priority_status: del,
-                round3_secondary_status: del,
-                round4: del,
-                round4_priority_status: del,
-                round4_secondary_status: del,
-                final_department: del,
-              };
-
-              // Dùng update thay vì set+merge để delete field hoạt động đúng
-              batch.update(doc.ref, newData);
+              const updates = {};
+              ALWAYS_CLEAR_ON_ANY_RESET.forEach((field) => { updates[field] = del; });
+              roundsToClear.forEach((r) => {
+                (roundFieldMap[r] || []).forEach((field) => { updates[field] = del; });
+              });
+              // current_round lùi về đúng vòng vừa reset (hoặc round1 nếu reset "Tất cả")
+              updates.current_round = round === "all" ? "round1" : round;
+              if (round === "all" || round === "round1") updates.status = "new";
+              batch.update(doc.ref, updates);
             });
 
             await batch.commit();
-            notifySuccess("✅ Đã reset dữ liệu vòng cho tất cả ứng viên!");
+            notifySuccess(`✅ Đã reset dữ liệu ${roundLabel} cho các ứng viên đã tới vòng này (kể cả ghi chú đánh giá)!`);
             refreshApplications(); // refresh lại bảng + chart
           } catch (error) {
             console.error("Lỗi khi reset vòng:", error);
             notifyError("❌ Lỗi khi reset vòng: " + error.message);
           }
         });
+
+      // Modal nhỏ để chọn vòng cần reset — trả về Promise<string|null> ('round1'..'round4'|'all', hoặc null nếu huỷ)
+      function pickRoundToReset() {
+        return new Promise((resolve) => {
+          const overlay = document.createElement("div");
+          overlay.style.cssText = `position: fixed; inset: 0; background: rgba(20,22,31,.5); display: flex; align-items: center; justify-content: center; z-index: 9999;`;
+          const modal = document.createElement("div");
+          modal.style.cssText = `background: var(--white); padding: 28px; border-radius: 16px; max-width: 380px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,.3);`;
+          modal.innerHTML = `
+            <h3 style="margin-bottom: 10px;">Reset dữ liệu vòng nào?</h3>
+            <p style="margin-bottom: 16px; color: var(--gray-600); font-size: 13px;">Chỉ áp dụng cho ứng viên đã tới vòng được chọn trở lên. Xoá kết quả/trạng thái đã công bố, lịch phỏng vấn nháp, VÀ ghi chú đánh giá của các ứng viên này.</p>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px;">
+              <button class="action-btn" data-round="round1" style="text-align:left;">Vòng 1</button>
+              <button class="action-btn" data-round="round2" style="text-align:left;">Vòng 2 (và các vòng sau)</button>
+              <button class="action-btn" data-round="round3" style="text-align:left;">Vòng 3 - Teamwork (và các vòng sau)</button>
+              <button class="action-btn" data-round="round4" style="text-align:left;">Vòng 4</button>
+              <button class="action-btn" data-round="all" style="text-align:left; background: var(--error-light, #FDECEC); color: var(--error, #EF4444);">Tất cả các vòng (như trước đây)</button>
+            </div>
+            <div style="display: flex; justify-content: flex-end;">
+              <button class="action-btn" id="pick-round-cancel" style="background: var(--gray-200);">Huỷ</button>
+            </div>`;
+          overlay.appendChild(modal);
+          document.body.appendChild(overlay);
+
+          modal.querySelectorAll("[data-round]").forEach((btn) => {
+            btn.addEventListener("click", () => { overlay.remove(); resolve(btn.getAttribute("data-round")); });
+          });
+          modal.querySelector("#pick-round-cancel").addEventListener("click", () => { overlay.remove(); resolve(null); });
+          overlay.addEventListener("click", (e) => { if (e.target === overlay) { overlay.remove(); resolve(null); } });
+        });
+      }
+
+      // ══════════════════════════════════════════════════
+      //  CÔNG BỐ / THU HỒI KẾT QUẢ VÒNG (SuperAdmin) — tổng quát hoá cơ chế
+      //  round1_published (đã có sẵn ở response.html) cho cả Vòng 2/3/4. Trước đây CHỈ
+      //  Vòng 1 có khái niệm "công bố" — ứng viên thấy kết quả Vòng 2/3/4 NGAY khi admin
+      //  cập nhật trạng thái, không qua bước công bố nào. Giờ profile.html cũng đã gate
+      //  round2/3/4 sau field round{N}_published, y hệt round1.
+      // ══════════════════════════════════════════════════
+      const PUBLISH_ROUND_LABELS = { round1: "Vòng 1", round2: "Vòng 2", round3: "Vòng 3 (Teamwork)", round4: "Vòng 4" };
+
+      function getRoundFinalStatus(app, round) {
+        const hasPriority = app.priority_position && app.priority_position !== "None";
+        const hasSecondary = app.secondary_position && app.secondary_position !== "None";
+        let p, s;
+        if (round === "round1") {
+          p = hasPriority ? (app.priorityAccepted ? "pass" : (app.priorityRejected ? "not-pass" : "pending")) : null;
+          s = hasSecondary ? (app.secondaryAccepted ? "pass" : (app.secondaryRejected ? "not-pass" : "pending")) : null;
+        } else {
+          p = hasPriority ? (app[`${round}_priority_status`] || "pending") : null;
+          s = hasSecondary ? (app[`${round}_secondary_status`] || "pending") : null;
+        }
+        if (p === "pass" || s === "pass") return "pass";
+        const priorityDone = !hasPriority || p === "not-pass";
+        const secondaryDone = !hasSecondary || s === "not-pass";
+        if (priorityDone && secondaryDone && ((hasPriority && p === "not-pass") || (hasSecondary && s === "not-pass"))) return "not-pass";
+        return "pending";
+      }
+
+      function canPublishRound(app, round) {
+        if (app[`${round}_published`]) return false;
+        const status = getRoundFinalStatus(app, round);
+        return status === "pass" || status === "not-pass";
+      }
+      function canRevokeRound(app, round) {
+        return !!app[`${round}_published`];
+      }
+
+      document.getElementById("publish-round-btn")?.addEventListener("click", () => {
+        if (userRole !== "superadmin") {
+          notifyInfo("Chỉ superadmin mới có quyền công bố kết quả vòng.");
+          return;
+        }
+        openPublishRoundPanel();
+      });
+
+      function openPublishRoundPanel() {
+        const overlay = document.createElement("div");
+        overlay.id = "publish-round-overlay";
+        overlay.style.cssText = `position: fixed; inset: 0; background: rgba(20,22,31,.5); display: flex; align-items: center; justify-content: center; z-index: 9999;`;
+        const modal = document.createElement("div");
+        modal.style.cssText = `background: var(--white); padding: 28px; border-radius: 18px; max-width: 560px; width: 92%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3);`;
+        modal.innerHTML = `
+          <h3 style="margin-bottom: 6px;"><i class="fas fa-bullhorn" style="color: var(--success); margin-right: 8px;"></i>Công bố kết quả vòng</h3>
+          <p style="margin-bottom: 18px; color: var(--gray-600); font-size: 13px;">Công bố cho ứng viên thấy kết quả (Pass/Not-pass) đã có sẵn của từng vòng, hoặc thu hồi lại nếu công bố nhầm. Đơn chưa có kết quả quyết định sẽ không bị ảnh hưởng.</p>
+          <div id="publish-round-list" style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="text-align:center; padding: 20px; color: var(--gray-400);"><i class="fas fa-spinner fa-spin"></i> Đang tải trạng thái...</div>
+          </div>
+          <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+            <button class="action-btn" id="publish-round-close" style="background: var(--gray-200);">Đóng</button>
+          </div>`;
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
+        modal.querySelector("#publish-round-close").addEventListener("click", () => overlay.remove());
+        renderPublishRoundList();
+      }
+
+      async function renderPublishRoundList() {
+        const listEl = document.getElementById("publish-round-list");
+        if (!listEl) return;
+        try {
+          const snapshot = await db.collection("applications").get();
+          const apps = [];
+          snapshot.forEach((doc) => apps.push({ id: doc.id, ...doc.data() }));
+
+          listEl.innerHTML = Object.keys(PUBLISH_ROUND_LABELS).map((round) => {
+            const publishable = apps.filter((a) => canPublishRound(a, round));
+            const revocable = apps.filter((a) => canRevokeRound(a, round));
+            return `
+              <div style="border: 1px solid var(--gray-200); border-radius: 12px; padding: 14px 16px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                  <div style="font-weight: 700;">${PUBLISH_ROUND_LABELS[round]}</div>
+                  <div style="font-size: 12px; color: var(--gray-500);">${revocable.length} đã công bố &middot; ${publishable.length} chờ công bố</div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button class="action-btn" data-action="publish" data-round="${round}" ${publishable.length ? "" : "disabled"} style="flex:1; background: var(--success-light); color: var(--success); ${publishable.length ? "" : "opacity:.5; cursor:not-allowed;"}">
+                    <i class="fas fa-bullhorn"></i> Công bố (${publishable.length})
+                  </button>
+                  <button class="action-btn" data-action="revoke" data-round="${round}" ${revocable.length ? "" : "disabled"} style="flex:1; background: var(--error-light); color: var(--error); ${revocable.length ? "" : "opacity:.5; cursor:not-allowed;"}">
+                    <i class="fas fa-rotate-left"></i> Thu hồi (${revocable.length})
+                  </button>
+                </div>
+              </div>`;
+          }).join("");
+
+          listEl.querySelectorAll("[data-action]").forEach((btn) => {
+            btn.addEventListener("click", () => bulkPublishRound(btn.getAttribute("data-round"), btn.getAttribute("data-action")));
+          });
+        } catch (error) {
+          console.error("Lỗi tải trạng thái công bố:", error);
+          listEl.innerHTML = `<div style="color: var(--error); text-align:center; padding: 16px;">Lỗi tải dữ liệu: ${error.message}</div>`;
+        }
+      }
+
+      async function bulkPublishRound(round, action) {
+        const isPublish = action === "publish";
+        const roundLabel = PUBLISH_ROUND_LABELS[round];
+        const confirmMsg = isPublish
+          ? `Công bố kết quả ${roundLabel} cho toàn bộ ứng viên đã có kết quả quyết định (Pass/Not-pass) nhưng chưa công bố?\nỨng viên sẽ thấy kết quả ngay trên trang Profile.`
+          : `Thu hồi kết quả ${roundLabel} đã công bố?\nỨng viên sẽ KHÔNG còn thấy kết quả ${roundLabel} trên trang Profile nữa cho đến khi công bố lại.`;
+
+        if (!(await confirmDialog(confirmMsg, { icon: isPublish ? "question" : "warning", confirmText: isPublish ? "Công bố" : "Thu hồi", cancelText: "Huỷ" }))) {
+          return;
+        }
+
+        showLoading(isPublish ? "Đang công bố..." : "Đang thu hồi...");
+        try {
+          const snapshot = await db.collection("applications").get();
+          const batch = db.batch();
+          let count = 0;
+
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            const eligible = isPublish ? canPublishRound(data, round) : canRevokeRound(data, round);
+            if (!eligible) return;
+            const updates = isPublish
+              ? { [`${round}_published`]: true, [`${round}_published_at`]: new Date().toISOString(), [`${round}_published_by`]: userEmail || "" }
+              : { [`${round}_published`]: false, [`${round}_revoked_at`]: new Date().toISOString(), [`${round}_revoked_by`]: userEmail || "" };
+            batch.update(doc.ref, updates);
+            count++;
+          });
+
+          if (!count) {
+            Swal.close();
+            notifyInfo("Không có ứng viên nào phù hợp.");
+            return;
+          }
+
+          await batch.commit();
+          Swal.close();
+          notifySuccess(`✅ Đã ${isPublish ? "công bố" : "thu hồi"} kết quả ${roundLabel} cho ${count} ứng viên.`);
+          renderPublishRoundList();
+          refreshApplications();
+        } catch (error) {
+          Swal.close();
+          console.error("Lỗi công bố/thu hồi:", error);
+          notifyError("❌ Lỗi: " + error.message);
+        }
+      }
 
 document
   .getElementById("update-round-btn")

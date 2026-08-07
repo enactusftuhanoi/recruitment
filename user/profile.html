@@ -2482,6 +2482,16 @@
             return priority || secondary || 'pending';
         }
 
+        // Trả về status thật (pass/not-pass) của round{N}/{type} CHỈ KHI SuperAdmin đã bấm
+        // "Công bố" cho vòng đó (round{N}_published === true) — trước khi có hàm này,
+        // round2/round3/round4 hiện kết quả ngay khi admin cập nhật status trong hệ thống,
+        // không qua bước công bố nào (khác hẳn Vòng 1 vốn đã có round1_published từ trước).
+        function getPublishedRoundStatus(app, round, type) {
+            if (!app) return 'pending';
+            if (app[`${round}_published`] !== true) return 'pending';
+            return app[`${round}_${type}_status`] || 'pending';
+        }
+
         // Check interview notification
         async function checkInterviewNotification() {
             try {
@@ -2696,9 +2706,9 @@
                 : 'pending';
             const statusMap = {
                 round1: round1Status,
-                round2: app['round2_' + type + '_status'],
-                round3: app['round3_' + type + '_status'],
-                round4: app['round4_' + type + '_status']
+                round2: getPublishedRoundStatus(app, 'round2', type),
+                round3: getPublishedRoundStatus(app, 'round3', type),
+                round4: getPublishedRoundStatus(app, 'round4', type)
             };
             
             if (round === 'round2' && statusMap.round2) return statusMap.round2;
@@ -2709,29 +2719,33 @@
         }
 
         // Compute overall status
+        // FIX: trước đây hàm này chỉ forward y hệt trạng thái của current_round (pending/pass/
+        // not-pass) — không phải "trạng thái tổng" thực sự, dễ gây hiểu nhầm vì trùng với badge
+        // trạng thái của từng ban ngay bên dưới. Nay chỉ trả về 1 trong 3 trạng thái CHUNG cho
+        // toàn bộ hành trình ứng tuyển, không phụ thuộc đang ở vòng nào:
+        // - 'success'     : đã trúng tuyển chính thức (pass Vòng 4)
+        // - 'rejected'    : đã bị loại (not-pass ở vòng hiện tại, không còn tiếp tục)
+        // - 'in-progress' : vẫn đang trong quá trình xét tuyển (pending hoặc đã pass 1 vòng
+        //                   nhưng chưa phải vòng cuối)
         function computeOverallStatus(app) {
-            if (!app) return 'pending';
+            if (!app) return 'in-progress';
 
             const current = app.current_round || 'round1';
 
-            if (mergeStatus(app.round4_priority_status, app.round4_secondary_status) === 'pass') {
+            if (mergeStatus(getPublishedRoundStatus(app, 'round4', 'priority'), getPublishedRoundStatus(app, 'round4', 'secondary')) === 'pass') {
                 return 'success';
             }
 
+            let currentRoundStatus = 'pending';
             if (current === 'round1') {
-                if (app.round1_published !== true) return 'pending';
-                if (app.priorityAccepted || app.secondaryAccepted) return 'pass';
-                if (app.priorityRejected && (app.secondaryRejected || !app.secondaryAccepted)) return 'not-pass';
-                return 'pending';
-            } else if (current === 'round2') {
-                return mergeStatus(app.round2_priority_status, app.round2_secondary_status);
-            } else if (current === 'round3') {
-                return mergeStatus(app.round3_priority_status, app.round3_secondary_status);
-            } else if (current === 'round4') {
-                return mergeStatus(app.round4_priority_status, app.round4_secondary_status);
+                if (app.round1_published !== true) currentRoundStatus = 'pending';
+                else if (app.priorityAccepted || app.secondaryAccepted) currentRoundStatus = 'pass';
+                else if (app.priorityRejected && (app.secondaryRejected || !app.secondaryAccepted)) currentRoundStatus = 'not-pass';
+            } else if (current === 'round2' || current === 'round3' || current === 'round4') {
+                currentRoundStatus = mergeStatus(getPublishedRoundStatus(app, current, 'priority'), getPublishedRoundStatus(app, current, 'secondary'));
             }
 
-            return 'pending';
+            return currentRoundStatus === 'not-pass' ? 'rejected' : 'in-progress';
         }
 
         // Helper functions
@@ -2764,7 +2778,10 @@
                 'not-pass': 'not-pass',
                 'success': 'success',
                 'voted': 'voted',
-                'interviewed': 'interviewed'
+                'interviewed': 'interviewed',
+                // "Trạng thái tổng" (computeOverallStatus) — tái dùng màu sẵn có
+                'in-progress': 'pending',
+                'rejected': 'not-pass'
             };
             return map[status] || 'pending';
         }
@@ -2777,7 +2794,10 @@
                 'not-pass': 'Not Pass',
                 'success': 'Success',
                 'voted': 'Đã chọn lịch',
-                'interviewed': 'Đã phỏng vấn'
+                'interviewed': 'Đã phỏng vấn',
+                // "Trạng thái tổng" (computeOverallStatus) — 3 trạng thái chung, tiếng Anh
+                'in-progress': 'In Progress',
+                'rejected': 'Rejected'
             };
             return map[status] || status;
         }

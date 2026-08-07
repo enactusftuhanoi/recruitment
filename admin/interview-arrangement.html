@@ -4723,8 +4723,11 @@ async function pushDraftToApplications(round) {
           method: s.mode || 'offline',
           note: s.note || '',
         };
-        const allIVNames = Object.values(s.roles||{}).flat().map(p => p.name);
-        fields.interviewer = allIVNames.length ? allIVNames.join(', ') : (s.interviewers||[]).map(iv => iv.name).join(', ');
+        // FIX: trước đây gộp Object.values(s.roles||{}).flat() lấy TẤT CẢ vai trò (Host, Thư ký,
+        // Checkin, Interviewer...) vào chung field `interviewer`, khiến Dashboard hiện nhầm cả
+        // nhân sự role khác vào cột "Nhân sự phỏng vấn". Nay chỉ lấy đúng vai trò 'interviewer'.
+        const ivNames = (s.roles && s.roles.interviewer ? s.roles.interviewer : []).map(p => p.name);
+        fields.interviewer = ivNames.length ? ivNames.join(', ') : (s.interviewers||[]).map(iv => iv.name).join(', ');
 
         const updates = {};
         Object.keys(fields).forEach(k => { updates[`${round}_draft.${type}.${k}`] = fields[k]; });
@@ -5001,8 +5004,11 @@ async function doPublish(round) {
         note: s.note || '',
       };
 
-      const allIVNames = Object.values(s.roles||{}).flat().map(p => p.name);
-      fields.interviewer = allIVNames.length ? allIVNames.join(', ') : (s.interviewers||[]).map(iv => iv.name).join(', ');
+      // FIX: trước đây gộp Object.values(s.roles||{}).flat() lấy TẤT CẢ vai trò (Host, Thư ký,
+      // Checkin, Interviewer...) vào chung field `interviewer`, khiến Dashboard hiện nhầm cả
+      // nhân sự role khác vào cột "Nhân sự phỏng vấn". Nay chỉ lấy đúng vai trò 'interviewer'.
+      const ivNames = (s.roles && s.roles.interviewer ? s.roles.interviewer : []).map(p => p.name);
+      fields.interviewer = ivNames.length ? ivNames.join(', ') : (s.interviewers||[]).map(iv => iv.name).join(', ');
       if (s.roles) fields.roles = s.roles;
 
       const updates = {};
