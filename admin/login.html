@@ -292,7 +292,7 @@
       <p class="popup-sub" style="margin-top:10px">Bạn muốn vào đâu?</p>
     </div>
     <div class="popup-actions">
-      <button class="popup-btn" id="memberResponseBtn" onclick="go('response.html')">
+      <button class="popup-btn primary" id="memberResponseBtn" onclick="go('response.html')">
         <div class="btn-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -309,6 +309,17 @@
           </svg>
         </div>
         <div class="btn-text-wrap"><span class="btn-label">Vote lịch</span><span class="btn-desc">Chọn ca phỏng vấn</span></div>
+      </button>
+      <button class="popup-btn" id="memberTeamworkBtn" onclick="go('teamwork.html')" style="display:none">
+        <div class="btn-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="btn-text-wrap"><span class="btn-label">Teamwork vòng 3</span><span class="btn-desc">Theo dõi team bạn phụ trách</span></div>
       </button>
       <button class="popup-btn" id="memberInterviewBtn" onclick="go('interview.html')" style="display:none">
         <div class="btn-icon">
@@ -353,6 +364,17 @@
           </svg>
         </div>
         <div class="btn-text-wrap"><span class="btn-label">Dashboard</span><span class="btn-desc">Tổng quan hệ thống</span></div>
+      </button>
+      <button class="popup-btn" onclick="go('teamwork.html')">
+        <div class="btn-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="btn-text-wrap"><span class="btn-label">Teamwork vòng 3</span><span class="btn-desc">Theo dõi tiến độ các team</span></div>
       </button>
       <button class="popup-btn" id="adminInterviewBtn" onclick="go('interview.html')" style="display:none">
         <div class="btn-icon">
@@ -532,6 +554,22 @@ async function isUserScheduledAsPIC(email) {
   }
 }
 
+// ── Check advisor/supporter của ít nhất 1 team (vòng 3) ───
+async function isTeamAdvisorOrSupporter(email) {
+  try {
+    const emailLower = (email || '').toLowerCase();
+    const teamsSnap = await db.collection('teamwork_teams').get();
+    return teamsSnap.docs.some(doc => {
+      const t = doc.data();
+      const advisorEmail = (t.advisor && t.advisor.email || '').toLowerCase();
+      const supporterEmails = (t.supporters || []).map(s => (s.email || '').toLowerCase());
+      return advisorEmail === emailLower || supporterEmails.includes(emailLower);
+    });
+  } catch (e) {
+    return false;
+  }
+}
+
 // ── Set popup avatar ──────────────────────────────
 function setPopupAvatar(prefix, photoURL, name) {
   const img = document.getElementById(prefix + 'Avatar');
@@ -592,6 +630,11 @@ async function showMemberPopup(user, accountData) {
     ivText.textContent = 'Chưa có vòng phỏng vấn nào được kích hoạt.';
   }
 
+  // Teamwork vòng 3 — chỉ hiện nếu là advisor/supporter của 1 team
+  const twBtn = document.getElementById('memberTeamworkBtn');
+  const isAdvisorSupporter = await isTeamAdvisorOrSupporter(email);
+  twBtn.style.display = isAdvisorSupporter ? 'flex' : 'none';
+
   document.getElementById('memberPopup').classList.add('show');
 }
 
@@ -633,21 +676,33 @@ async function showAlumniPopup(user, accountData) {
   const schedData = await fetchScheduleDoc();
   const roundActive = checkAnyRoundActive(schedData);
 
+  // Response luôn hiện cho Alumni
+  let html = `
+    <button class="popup-btn primary" onclick="go('response.html')">
+      <div class="btn-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+      </div>
+      <div class="btn-text-wrap"><span class="btn-label">Xem đơn</span><span class="btn-desc">Danh sách hồ sơ ứng tuyển</span></div>
+    </button>`;
+
   if (!roundActive) {
-    actionsEl.innerHTML = `
-      <div class="popup-note" style="margin-bottom:4px">
+    html += `
+      <div class="popup-note" style="margin-top:4px">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         SuperAdmin chưa kích hoạt vòng phỏng vấn. Vui lòng chờ thông báo từ ban tổ chức.
       </div>`;
+    actionsEl.innerHTML = html;
     document.getElementById('alumniPopup').classList.add('show');
     return;
   }
 
   const scheduled = await isUserScheduledAsPIC(email);
   if (scheduled) {
-    actionsEl.innerHTML = `
-      <p style="font-size:13px;color:var(--gray-700);margin-bottom:4px">Bạn đã được phân công phỏng vấn trong vòng này.</p>
-      <button class="popup-btn primary" onclick="go('interview.html')">
+    html += `
+      <button class="popup-btn" onclick="go('interview.html')">
         <div class="btn-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -658,13 +713,14 @@ async function showAlumniPopup(user, accountData) {
         <div class="btn-text-wrap"><span class="btn-label">Vào phòng phỏng vấn</span><span class="btn-desc">Phiên phỏng vấn đang mở</span></div>
       </button>`;
   } else {
-    actionsEl.innerHTML = `
-      <div class="popup-note">
+    html += `
+      <div class="popup-note" style="margin-top:4px">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         Email <b>${email}</b> không có lịch phân công trong vòng phỏng vấn hiện tại. Vui lòng liên hệ ban tổ chức.
       </div>`;
   }
 
+  actionsEl.innerHTML = html;
   document.getElementById('alumniPopup').classList.add('show');
 }
 

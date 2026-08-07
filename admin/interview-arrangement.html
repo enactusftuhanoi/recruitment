@@ -712,8 +712,12 @@
       <input class="fi" id="slot-location" placeholder="Phòng A3.02 — Tòa A, FTU" />
     </div>
     <div class="form-group">
-      <label class="fl">Ghi chú</label>
+      <label class="fl">Ghi chú <span style="font-weight:400;color:var(--ink-30)">(hiện cho ứng viên)</span></label>
       <input class="fi" id="slot-note" placeholder="Mang CCCD, đến trước 5 phút..." />
+    </div>
+    <div class="form-group">
+      <label class="fl">Ghi chú gửi email cho nhân sự <span style="font-weight:400;color:var(--ink-30)">(khác với ghi chú ứng viên ở trên)</span></label>
+      <input class="fi" id="slot-email-note" placeholder="VD: mang laptop, đến sớm chuẩn bị phòng..." />
     </div>
 
     <div class="modal-footer">
@@ -761,8 +765,12 @@
       </div>
     </div>
     <div class="form-group">
-      <label class="fl">Ghi chú</label>
+      <label class="fl">Ghi chú <span style="font-weight:400;color:var(--ink-30)">(hiện cho ứng viên)</span></label>
       <input class="fi" id="edit-row-note" placeholder="Mang CCCD, đến trước 5 phút..." />
+    </div>
+    <div class="form-group">
+      <label class="fl">Ghi chú gửi email cho nhân sự <span style="font-weight:400;color:var(--ink-30)">(khác với ghi chú ứng viên ở trên)</span></label>
+      <input class="fi" id="edit-row-email-note" placeholder="VD: mang laptop, đến sớm chuẩn bị phòng..." />
     </div>
 
     <div class="modal-footer">
@@ -1617,6 +1625,7 @@ function openSlotModal(slotId) {
   document.getElementById('slot-readonly-daytime').textContent = `${sl.day} · ${sl.time}`;
   document.getElementById('slot-location').value = sl.location || '';
   document.getElementById('slot-note').value = sl.note || '';
+  document.getElementById('slot-email-note').value = sl.emailNote || '';
   setSlotMode(sl.mode || 'offline');
 
   // Hiện hint "Đổi ca → Online" nếu ca này có ứng viên trong kết quả sắp xếp
@@ -1650,7 +1659,8 @@ async function saveSlot() {
   if (!id) return;
   const loc  = document.getElementById('slot-location').value.trim();
   const note = document.getElementById('slot-note').value.trim();
-  const meta = { mode: S.slotMode, location: loc, note };
+  const emailNote = document.getElementById('slot-email-note').value.trim();
+  const meta = { mode: S.slotMode, location: loc, note, emailNote };
   const metaKey = sanitizeSlotKey(id);
 
   S.slotMetaRaw[metaKey] = meta;
@@ -1687,7 +1697,7 @@ async function resetSlotMeta() {
       } catch(e) { toast('Lỗi: ' + e.message, 'err'); return; }
     }
     const idx = S.slots.findIndex(s => s.id === id);
-    if (idx !== -1) S.slots[idx] = { ...S.slots[idx], mode:'offline', location:'', note:'' };
+    if (idx !== -1) S.slots[idx] = { ...S.slots[idx], mode:'offline', location:'', note:'', emailNote:'' };
     closeSlotModal();
     renderSlotsList();
     buildCalGrid();
@@ -2000,8 +2010,12 @@ async function loadCandidatesRound1() {
     const app = doc.data();
     const email = (app.email || '').toLowerCase().trim();
     if (!email) return;
-    // Vòng 1 chỉ lấy ứng viên chọn hình thức "interview" (phỏng vấn thay đơn)
-    if ((app.application_type || '') !== 'interview') return;
+    // Vòng 1 chỉ lấy ứng viên chọn hình thức "interview" (phỏng vấn thay đơn).
+    // Lưu ý: hồ sơ đã gộp (mergeApplications ở dashboard.html) lưu NHIỀU hình thức
+    // vào mảng application_types, còn field số ít application_type chỉ giữ phần tử
+    // đầu tiên (không đảm bảo là "interview") → phải check cả mảng, không chỉ field số ít.
+    const appTypes = app.application_types || (app.application_type ? [app.application_type] : []);
+    if (!appTypes.includes('interview')) return;
 
     const name = app.fullname || app.name || email;
     const dept1 = normalizeDept(app.priority_position || app.department || '');
@@ -4532,6 +4546,7 @@ function openEditRowModal(idx) {
   document.getElementById('edit-row-location').value = row.location || '';
   document.getElementById('edit-row-interviewers').value = (row.interviewers||[]).map(iv=>iv.name).join(', ');
   document.getElementById('edit-row-note').value = row.note || '';
+  document.getElementById('edit-row-email-note').value = row.emailNote || '';
   setEditRowMode(row.mode || 'offline');
 
   // Vòng 2: PV gán theo từng ứng viên (kéo-thả), field text tự do không áp dụng — ẩn đi, hiện ghi chú thay thế
@@ -4564,13 +4579,14 @@ async function saveEditRow() {
   const mode = _editRowMode;
   const location = document.getElementById('edit-row-location').value.trim();
   const note = document.getElementById('edit-row-note').value.trim();
+  const emailNote = document.getElementById('edit-row-email-note').value.trim();
 
   if (isRound2) {
     // Hình thức/địa điểm/ghi chú là thuộc tính của CẢ CA — áp dụng cho mọi nhóm cùng slotId,
     // không chỉ nhóm đang mở modal (tránh Nhóm 1/Nhóm 2 lệch dữ liệu như trước).
     S.schedule.forEach(r => {
       if (r.slotId === row.slotId && r.round === 'round2') {
-        r.mode = mode; r.location = location; r.note = note;
+        r.mode = mode; r.location = location; r.note = note; r.emailNote = emailNote;
       }
     });
   } else {
@@ -4582,6 +4598,7 @@ async function saveEditRow() {
     row.mode = mode;
     row.location = location;
     row.note = note;
+    row.emailNote = emailNote;
     row.interviewers = interviewers;
     // Sync row.roles.interviewer để renderTable() đọc đúng
     if (!row.roles) row.roles = {};
@@ -5260,7 +5277,10 @@ async function buildInterviewerNotificationData(round) {
         if (!slots[row.slotId]) {
           slots[row.slotId] = {
             slotName: row.slotName, day: row.day, time: row.time,
-            mode: row.mode, location: row.location, note: row.note || '',
+            mode: row.mode, location: row.location,
+            // emailNote: ghi chú riêng dành cho email báo lịch nhân sự, KHÁC với "note"
+            // (note là ghi chú hiển thị cho ứng viên, không nên trộn 2 nội dung này).
+            emailNote: row.emailNote || '',
             roles: {}, // { host:true, interviewer: { [dept]: Set<candidateName> } }
           };
         }
@@ -5293,10 +5313,18 @@ function buildSlotCardsHtml(slots) {
 
   const cards = slotIds.map(slotId => {
     const s = slots[slotId];
-    const modeLabel = s.mode === 'online' ? 'Online' : 'Offline';
-    const locLine = s.mode === 'online' ? '' : (s.location ? notifyEscape(s.location) : '');
-    const metaLine = [modeLabel, locLine].filter(Boolean).join(' &middot; ');
-    const noteHtml = s.note ? `<div style="margin-top:8px;padding:7px 10px;background:#FFF3CD;border-radius:8px;font-size:11.5px;color:#8A6100;line-height:1.5;">&#128204; <b>Ghi chú:</b> ${notifyEscape(s.note)}</div>` : '';
+    const isOnline = s.mode === 'online';
+    const modeBadge = isOnline
+      ? `<span style="display:inline-block;background:#DBEAFE;color:#1D4ED8;font-size:9.5px;font-weight:800;letter-spacing:.4px;padding:2px 8px;border-radius:999px;vertical-align:middle;">&#128225; ONLINE</span>`
+      : `<span style="display:inline-block;background:#DCFCE7;color:#166534;font-size:9.5px;font-weight:800;letter-spacing:.4px;padding:2px 8px;border-radius:999px;vertical-align:middle;">&#127970; OFFLINE</span>`;
+    // Luôn ghi rõ địa điểm/link — trước đây khi online thì bỏ trống dòng này, khiến nhân sự
+    // không biết link Meet/Zoom ở đâu.
+    const locLine = s.location
+      ? `${isOnline ? 'Link: ' : 'Địa điểm: '}${notifyEscape(s.location)}`
+      : (isOnline ? 'Chưa có link phỏng vấn' : 'Chưa có địa điểm');
+    const metaLine = `${modeBadge} <span style="margin-left:6px;">${locLine}</span>`;
+    // emailNote: ghi chú do admin tự viết riêng cho email này — không lấy "note" của ứng viên.
+    const noteHtml = s.emailNote ? `<div style="margin-top:8px;padding:7px 10px;background:#FFF3CD;border-radius:8px;font-size:11.5px;color:#8A6100;line-height:1.5;">&#128204; <b>Ghi chú:</b> ${notifyEscape(s.emailNote)}</div>` : '';
     const roleKeys = Object.keys(s.roles);
 
     return roleKeys.map(roleKey => {
@@ -5397,7 +5425,10 @@ function buildNotifyEmailHtml(t, data) {
         ${data.rounds_block}
       </td></tr>
       <tr><td style="padding:10px 28px 28px;">
-        <a href="${t.link}" style="display:inline-block;background:${t.color};color:#14161F;text-decoration:none;font-weight:700;font-size:13.5px;padding:11px 20px;border-radius:10px;">${t.cta}</a>
+        ${(t.buttons && t.buttons.length ? t.buttons : [{ label: t.cta, link: t.link, color: t.color, textColor: '#14161F' }])
+          .filter(b => b && b.label)
+          .map((b, i) => `<a href="${notifyFillPlaceholders(b.link, data)}" style="display:inline-block;background:${b.color || t.color};color:${b.textColor || '#14161F'};text-decoration:none;font-weight:700;font-size:13.5px;padding:11px 20px;border-radius:10px;${i > 0 ? 'margin-left:10px;' : ''}">${notifyFillPlaceholders(b.label, data)}</a>`)
+          .join('')}
       </td></tr>
       <tr><td style="padding:18px 28px;border-top:1px solid #E6E8F0;">
         <p style="font-size:11.5px;color:#A8AABC;line-height:1.5;margin:0;">${footer}</p>

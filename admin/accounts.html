@@ -8,10 +8,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #f8f3ce;
-            --primary-light: #ffd54f;
-            --gray-50: #fafafa;
-            --gray-100: #f5f5f5;
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --primary-light: #eef2ff;
+            --primary-soft: #e0e7ff;
+            --accent: #d4a017;
+            --gray-50: #f8f9fb;
+            --gray-100: #f1f2f5;
             --gray-200: #e5e7eb;
             --gray-300: #d1d5db;
             --gray-400: #9ca3af;
@@ -30,16 +33,17 @@
             --info: #3b82f6;
             --info-light: #dbeafe;
             --border-radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
-            --transition: all 0.3s ease;
+            --shadow: 0 1px 2px rgba(17,24,39,0.04), 0 1px 3px rgba(17,24,39,0.06);
+            --shadow-md: 0 4px 6px -2px rgba(17,24,39,0.05), 0 10px 15px -3px rgba(17,24,39,0.08);
+            --shadow-lg: 0 10px 25px -5px rgba(17,24,39,0.12), 0 8px 10px -6px rgba(17,24,39,0.08);
+            --transition: all 0.2s ease;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: "Plus Jakarta Sans", sans-serif;
-            background: var(--gray-50);
+            background: linear-gradient(180deg, var(--gray-50) 0%, #eef0f5 100%);
             color: var(--gray-800);
             min-height: 100vh;
             display: flex;
@@ -50,7 +54,9 @@
 
         /* ======================== TOPBAR ======================== */
         .topbar {
-            background: var(--white);
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--gray-200);
             padding: 0 24px;
             height: 64px;
@@ -62,7 +68,6 @@
             left: 0;
             right: 0;
             z-index: 100;
-            box-shadow: var(--shadow);
         }
 
         .topbar-left {
@@ -105,32 +110,36 @@
             align-items: center;
             gap: 6px;
             padding: 8px 16px;
-            border-radius: 8px;
+            border-radius: 9px;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
-            border: none;
+            border: 1px solid transparent;
             transition: var(--transition);
             font-family: inherit;
         }
+        .btn:active { transform: translateY(1px); }
 
         .btn-ghost {
-            background: var(--gray-100);
+            background: var(--white);
             color: var(--gray-700);
+            border-color: var(--gray-200);
         }
-        .btn-ghost:hover { background: var(--gray-200); }
+        .btn-ghost:hover { background: var(--gray-100); border-color: var(--gray-300); }
 
         .btn-primary {
             background: var(--primary);
-            color: var(--gray-900);
+            color: var(--white);
+            box-shadow: 0 1px 2px rgba(79,70,229,0.35);
         }
-        .btn-primary:hover { background: var(--primary-light); }
+        .btn-primary:hover { background: var(--primary-dark); }
 
         .btn-danger {
-            background: var(--error);
-            color: var(--white);
+            background: var(--white);
+            color: var(--error);
+            border-color: var(--error-light);
         }
-        .btn-danger:hover { background: #dc2626; }
+        .btn-danger:hover { background: var(--error); color: var(--white); border-color: var(--error); }
 
         .btn-sm {
             padding: 5px 10px;
@@ -237,7 +246,8 @@
         /* ======================== CARD ======================== */
         .card {
             background: var(--white);
-            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
             padding: 24px;
             box-shadow: var(--shadow);
             margin-bottom: 24px;
@@ -255,33 +265,53 @@
         }
 
         th {
-            background: var(--gray-100);
+            background: var(--gray-50);
             padding: 12px 16px;
             text-align: left;
-            font-weight: 600;
-            color: var(--gray-700);
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: var(--gray-500);
             border-bottom: 1px solid var(--gray-200);
+            white-space: nowrap;
         }
 
         td {
-            padding: 12px 16px;
+            padding: 14px 16px;
             border-bottom: 1px solid var(--gray-100);
             color: var(--gray-700);
         }
 
+        tbody tr:last-child td { border-bottom: none; }
+
+        tr {
+            transition: var(--transition);
+        }
+
         tr:hover td {
-            background: var(--gray-50);
+            background: var(--primary-light);
         }
 
         /* ======================== BADGE ======================== */
         .badge {
-            padding: 3px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 11px;
             border-radius: 20px;
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 600;
         }
-        .badge-superadmin { background: var(--warning-light); color: var(--warning); }
-        .badge-admin { background: var(--info-light); color: var(--info); }
+        .badge::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        .badge-superadmin { background: var(--warning-light); color: #b45309; }
+        .badge-admin { background: var(--info-light); color: #1d4ed8; }
         .badge-member { background: var(--gray-100); color: var(--gray-600); }
 
         /* ======================== MODAL ======================== */
@@ -298,13 +328,130 @@
 
         .modal {
             background: var(--white);
-            border-radius: var(--border-radius);
+            border-radius: 16px;
             width: 90%;
             max-width: 560px;
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: var(--shadow-lg);
+            animation: modal-pop 0.18s ease;
         }
+
+        @keyframes modal-pop {
+            from { opacity: 0; transform: translateY(8px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ======================== TOAST ======================== */
+        .toast-stack {
+            position: fixed;
+            top: 80px;
+            right: 24px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 340px;
+        }
+
+        .toast {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-left: 4px solid var(--info);
+            border-radius: 10px;
+            padding: 12px 14px;
+            box-shadow: var(--shadow-lg);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gray-800);
+            animation: toast-in 0.25s ease;
+        }
+
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--error); }
+        .toast.warning { border-left-color: var(--warning); }
+
+        .toast i.toast-icon { font-size: 15px; margin-top: 1px; }
+        .toast.success i.toast-icon { color: var(--success); }
+        .toast.error i.toast-icon { color: var(--error); }
+        .toast.warning i.toast-icon { color: var(--warning); }
+        .toast.info i.toast-icon { color: var(--info); }
+
+        .toast-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: var(--gray-400);
+            cursor: pointer;
+            font-size: 13px;
+            padding: 2px;
+            line-height: 1;
+        }
+        .toast-close:hover { color: var(--gray-700); }
+
+        .toast.leaving { animation: toast-out 0.2s ease forwards; }
+
+        @keyframes toast-in {
+            from { opacity: 0; transform: translateX(16px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes toast-out {
+            to { opacity: 0; transform: translateX(16px); }
+        }
+
+        /* ======================== CONFIRM DIALOG ======================== */
+        .confirm-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(17,24,39,0.5);
+            z-index: 2100;
+            align-items: center;
+            justify-content: center;
+        }
+        .confirm-overlay.active { display: flex; }
+
+        .confirm-box {
+            background: var(--white);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 380px;
+            padding: 24px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            animation: modal-pop 0.18s ease;
+        }
+
+        .confirm-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 14px;
+            font-size: 20px;
+            background: var(--error-light);
+            color: var(--error);
+        }
+        .confirm-icon.neutral { background: var(--primary-light); color: var(--primary); }
+
+        .confirm-message {
+            font-size: 14px;
+            color: var(--gray-700);
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .confirm-actions .btn { flex: 1; justify-content: center; }
 
         .modal-header {
             padding: 20px 24px;
@@ -583,8 +730,88 @@
     </div>
 </div>
 
+
+<!-- TOAST STACK (thay cho alert của trình duyệt) -->
+<div class="toast-stack" id="toast-stack"></div>
+
+<!-- CONFIRM DIALOG (thay cho confirm của trình duyệt) -->
+<div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-box">
+        <div class="confirm-icon" id="confirm-icon"><i class="fas fa-triangle-exclamation"></i></div>
+        <div class="confirm-message" id="confirm-message"></div>
+        <div class="confirm-actions">
+            <button type="button" class="btn btn-ghost" id="confirm-cancel-btn">Hủy</button>
+            <button type="button" class="btn btn-danger" id="confirm-ok-btn" style="background:var(--error);color:var(--white);">Xác nhận</button>
+        </div>
+    </div>
+</div>
+
 <script src="/script/config.js"></script>
 <script>
+// ===== Toast (thay cho alert) =====
+function showToast(message, type = "info", duration = 3500) {
+  const stack = document.getElementById("toast-stack");
+  if (!stack) { console.log(message); return; }
+
+  const icons = {
+    success: "fa-circle-check",
+    error: "fa-circle-exclamation",
+    warning: "fa-triangle-exclamation",
+    info: "fa-circle-info"
+  };
+
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <i class="fas ${icons[type] || icons.info} toast-icon"></i>
+    <span>${message}</span>
+    <button class="toast-close" aria-label="Đóng">&times;</button>
+  `;
+
+  const remove = () => {
+    toast.classList.add("leaving");
+    setTimeout(() => toast.remove(), 200);
+  };
+
+  toast.querySelector(".toast-close").addEventListener("click", remove);
+  stack.appendChild(toast);
+  setTimeout(remove, duration);
+}
+
+// ===== Confirm dialog (thay cho confirm) =====
+function confirmDialog(message, { danger = true } = {}) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById("confirm-overlay");
+    const msgEl = document.getElementById("confirm-message");
+    const iconEl = document.getElementById("confirm-icon");
+    const okBtn = document.getElementById("confirm-ok-btn");
+    const cancelBtn = document.getElementById("confirm-cancel-btn");
+
+    msgEl.textContent = message;
+    iconEl.className = danger ? "confirm-icon" : "confirm-icon neutral";
+    iconEl.innerHTML = danger ? '<i class="fas fa-triangle-exclamation"></i>' : '<i class="fas fa-circle-question"></i>';
+    okBtn.style.background = danger ? "var(--error)" : "var(--primary)";
+    okBtn.style.color = "var(--white)";
+
+    overlay.classList.add("active");
+
+    const cleanup = (result) => {
+      overlay.classList.remove("active");
+      okBtn.removeEventListener("click", onOk);
+      cancelBtn.removeEventListener("click", onCancel);
+      overlay.removeEventListener("click", onOverlay);
+      resolve(result);
+    };
+    const onOk = () => cleanup(true);
+    const onCancel = () => cleanup(false);
+    const onOverlay = (e) => { if (e.target === overlay) cleanup(false); };
+
+    okBtn.addEventListener("click", onOk);
+    cancelBtn.addEventListener("click", onCancel);
+    overlay.addEventListener("click", onOverlay);
+  });
+}
+
 // ===== State =====
 let allAccounts = [];
 let selectedIds = new Set();
@@ -771,13 +998,13 @@ function updateBulkBar() {
 
 async function bulkDeleteAccounts() {
   if (selectedIds.size === 0) return;
-  if (!confirm(`Bạn có chắc muốn xóa ${selectedIds.size} tài khoản đã chọn?`)) return;
+  if (!(await confirmDialog(`Bạn có chắc muốn xóa ${selectedIds.size} tài khoản đã chọn?`))) return;
 
   try {
     await Promise.all(Array.from(selectedIds).map(id => db.collection("account").doc(id).delete()));
   } catch (err) {
     console.error("Lỗi khi xóa hàng loạt:", err);
-    alert("Không thể xóa một số tài khoản!");
+    showToast("Không thể xóa một số tài khoản!", "error");
   } finally {
     selectedIds.clear();
     loadAccounts();
@@ -787,9 +1014,9 @@ async function bulkDeleteAccounts() {
 // ===== Bulk: đổi role =====
 async function bulkChangeRole() {
   const role = document.getElementById("bulk-role-select").value;
-  if (!role) { alert("Vui lòng chọn role muốn áp dụng!"); return; }
+  if (!role) { showToast("Vui lòng chọn role muốn áp dụng!", "warning"); return; }
   if (selectedIds.size === 0) return;
-  if (!confirm(`Đổi role thành "${role}" cho ${selectedIds.size} tài khoản đã chọn?`)) return;
+  if (!(await confirmDialog(`Đổi role thành "${role}" cho ${selectedIds.size} tài khoản đã chọn?`, { danger: false }))) return;
 
   try {
     const batch = db.batch();
@@ -803,7 +1030,7 @@ async function bulkChangeRole() {
     applyFilters();
   } catch (err) {
     console.error("Lỗi đổi role hàng loạt:", err);
-    alert("Không thể đổi role cho một số tài khoản!");
+    showToast("Không thể đổi role cho một số tài khoản!", "error");
     loadAccounts();
   }
 }
@@ -811,9 +1038,9 @@ async function bulkChangeRole() {
 // ===== Bulk: đổi ban =====
 async function bulkChangeDepartment() {
   const department = document.getElementById("bulk-department-select").value;
-  if (!department) { alert("Vui lòng chọn ban muốn áp dụng!"); return; }
+  if (!department) { showToast("Vui lòng chọn ban muốn áp dụng!", "warning"); return; }
   if (selectedIds.size === 0) return;
-  if (!confirm(`Đổi ban thành "${department}" cho ${selectedIds.size} tài khoản đã chọn?`)) return;
+  if (!(await confirmDialog(`Đổi ban thành "${department}" cho ${selectedIds.size} tài khoản đã chọn?`, { danger: false }))) return;
 
   try {
     const batch = db.batch();
@@ -827,7 +1054,7 @@ async function bulkChangeDepartment() {
     applyFilters();
   } catch (err) {
     console.error("Lỗi đổi ban hàng loạt:", err);
-    alert("Không thể đổi ban cho một số tài khoản!");
+    showToast("Không thể đổi ban cho một số tài khoản!", "error");
     loadAccounts();
   }
 }
@@ -835,7 +1062,7 @@ async function bulkChangeDepartment() {
 // ===== Bulk: bật/tắt thông báo =====
 async function bulkToggleNotification(enabled) {
   if (selectedIds.size === 0) return;
-  if (!confirm(`${enabled ? 'Bật' : 'Tắt'} thông báo cho ${selectedIds.size} tài khoản đã chọn?`)) return;
+  if (!(await confirmDialog(`${enabled ? 'Bật' : 'Tắt'} thông báo cho ${selectedIds.size} tài khoản đã chọn?`, { danger: false }))) return;
 
   try {
     const batch = db.batch();
@@ -848,7 +1075,7 @@ async function bulkToggleNotification(enabled) {
     applyFilters();
   } catch (err) {
     console.error("Lỗi cập nhật thông báo hàng loạt:", err);
-    alert("Không thể cập nhật thông báo cho một số tài khoản!");
+    showToast("Không thể cập nhật thông báo cho một số tài khoản!", "error");
     loadAccounts();
   }
 }
@@ -872,7 +1099,7 @@ async function toggleNotification(id, checked) {
     console.log(`✅ Đã cập nhật nhận thông báo cho ${id}: ${checked}`);
   } catch (err) {
     console.error("Lỗi cập nhật nhận thông báo:", err);
-    alert("Không thể cập nhật!");
+    showToast("Không thể cập nhật trạng thái nhận thông báo!", "error");
     // Revert checkbox
     const checkbox = document.querySelector(`input.notification-toggle[data-id="${id}"]`);
     checkbox.checked = !checked;
@@ -898,7 +1125,7 @@ document.getElementById("account-form").addEventListener("submit", async (e) => 
   const id = document.getElementById("account-id").value || document.getElementById("account-name").value.trim();
 
   if (!id) {
-    alert("Tên tài khoản (ID) không được để trống!");
+    showToast("Tên tài khoản (ID) không được để trống!", "warning");
     return;
   }
 
@@ -916,7 +1143,7 @@ document.getElementById("account-form").addEventListener("submit", async (e) => 
     loadAccounts();
   } catch (err) {
     console.error("Lỗi khi lưu account:", err);
-    alert("Không thể lưu account!");
+    showToast("Không thể lưu tài khoản!", "error");
   }
 });
 
@@ -945,19 +1172,19 @@ async function editAccount(id) {
 
 // ===== Delete =====
 async function deleteAccount(id) {
-  if (!confirm("Bạn có chắc muốn xóa tài khoản này?")) return;
+  if (!(await confirmDialog("Bạn có chắc muốn xóa tài khoản này?"))) return;
   try {
     await db.collection("account").doc(id).delete();
     loadAccounts();
   } catch (err) {
     console.error("Lỗi khi xóa account:", err);
-    alert("Không thể xóa account!");
+    showToast("Không thể xóa tài khoản!", "error");
   }
 }
 
 // ===== Logout =====
-function logout() {
-  if (!confirm("Bạn có chắc muốn đăng xuất?")) return;
+async function logout() {
+  if (!(await confirmDialog("Bạn có chắc muốn đăng xuất?", { danger: false }))) return;
   auth.signOut().then(() => {
     sessionStorage.clear();
     window.location.href = "login.html";
@@ -973,7 +1200,7 @@ auth.onAuthStateChanged(user => {
   }
   const role = sessionStorage.getItem("role");
   if (role !== "superadmin") {
-    alert("Bạn không có quyền truy cập trang này!");
+    showToast("Bạn không có quyền truy cập trang này!", "error");
     window.location.href = "dashboard.html";
     return;
   }

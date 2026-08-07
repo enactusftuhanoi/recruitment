@@ -431,6 +431,63 @@ iframe#preview-frame { flex: 1; min-height: 640px; border: none; width: 100%; ba
 <script src="../script/config.js"></script>
 <script>
 /* ════════════════════════════════════════════════════════════════
+   BẢO VỆ TRUY CẬP — CHỈ SUPERADMIN
+   Trang này đọc/ghi settings/email_templates, trước đây KHÔNG có bất kỳ
+   kiểm tra đăng nhập/quyền nào (chỉ ẩn link trên sidebar Dashboard) —
+   nghĩa là ai có URL này đều sửa được mẫu email gửi cho toàn bộ ứng viên
+   & nhân sự. Chặn ngay tại đây theo đúng pattern auth của dashboard.html.
+   ════════════════════════════════════════════════════════════════ */
+(function guardSuperAdminOnly() {
+  document.body.style.visibility = "hidden"; // tránh lộ nội dung 1 nhịp trước khi check xong
+
+  const email = sessionStorage.getItem("email");
+  const cachedRole = sessionStorage.getItem("role");
+
+  function deny(msg) {
+    Swal.fire({ icon: "error", title: "Không có quyền truy cập", text: msg, allowOutsideClick: false, confirmButtonText: "Về Dashboard" })
+      .then(() => { window.location.href = "../dashboard.html"; });
+  }
+
+  if (!email) {
+    sessionStorage.setItem("postLoginRedirect", location.pathname + location.search);
+    window.location.href = "../login.html";
+    return;
+  }
+
+  // Nếu đã có role cache sẵn và không phải superadmin → chặn ngay, khỏi chờ Firestore
+  if (cachedRole && cachedRole !== "superadmin") {
+    deny("Chỉ SuperAdmin mới được quản lý mẫu email.");
+    return;
+  }
+
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+      sessionStorage.setItem("postLoginRedirect", location.pathname + location.search);
+      window.location.href = "../login.html";
+      return;
+    }
+    try {
+      const snap = await db.collection("account").where("email", "==", user.email).limit(1).get();
+      if (snap.empty) {
+        await auth.signOut();
+        window.location.href = "../login.html";
+        return;
+      }
+      const role = snap.docs[0].data().role;
+      sessionStorage.setItem("role", role);
+      if (role !== "superadmin") {
+        deny("Chỉ SuperAdmin mới được quản lý mẫu email.");
+        return;
+      }
+      document.body.style.visibility = "visible";
+    } catch (err) {
+      console.error("Lỗi kiểm tra quyền:", err);
+      deny("Không xác thực được quyền truy cập, vui lòng thử lại.");
+    }
+  });
+})();
+
+/* ════════════════════════════════════════════════════════════════
    HỆ THỐNG TEMPLATE TỔNG QUÁT
    Muốn thêm 1 loại mail mới: chỉ cần thêm 1 entry vào TEMPLATE_TYPES.
    Không cần sửa gì khác trong file này.

@@ -620,6 +620,11 @@ function deptName(code) {
   switch (code) { case "MD": return "Truyền thông"; case "HR": return "Nhân sự"; case "PD": return "Dự án"; case "ER": return "Đối ngoại"; default: return code || ""; }
 }
 function isSuperOrAdmin() { return userRole === "superadmin" || userRole === "admin"; }
+/* Chỉ superadmin mới được thực hiện các thao tác nguy hiểm / mang tính hệ thống
+   (xoá team, đồng bộ hàng loạt, reset toàn bộ). Admin gần như superadmin ở việc
+   quản lý hằng ngày (đổi tên team, gắn advisor/supporter, thêm/bớt thành viên...)
+   nhưng KHÔNG được đụng vào các thao tác nguy hiểm này. */
+function isSuper() { return userRole === "superadmin"; }
 function isStaffOfAnyTeam(email) { return teams.some((t) => teamStaffEmails(t).includes(email)); }
 function teamStaffEmails(t) {
   const arr = [];
@@ -627,7 +632,17 @@ function teamStaffEmails(t) {
   (t.supporters || []).forEach((s) => s.email && arr.push(s.email));
   return arr;
 }
+/* canManageTeam: được "vào" quản lý team này ở mức cơ bản (xem đầy đủ, set role
+   thành viên, nộp bài hộ...). Bao gồm superadmin/admin và advisor/supporter của
+   chính team đó. */
 function canManageTeam(t) { return isSuperOrAdmin() || teamStaffEmails(t).includes(userEmail); }
+/* canEditRoster: được thay đổi "nhân sự" của team — thêm/bớt/di chuyển thành viên,
+   gắn/gỡ advisor & supporter, đổi tên team. CHỈ superadmin/admin — advisor/supporter
+   không được đổi nhân sự (chỉ được set role Leader/Sub Leader/Member cho member sẵn có). */
+function canEditRoster(t) { return isSuperOrAdmin(); }
+/* Chỉ team mà user có quyền quản lý mới được hiển thị cho advisor/supporter (không phải
+   superadmin/admin) — họ chỉ được truy cập/thao tác team mình phụ trách. */
+function visibleTeamsForCurrentUser() { return isSuperOrAdmin() ? teams : teams.filter((t) => canManageTeam(t)); }
 function isLeaderOrSubOf(t) {
   const m = (t.members || []).find((m) => m.email === userEmail);
   return m && (m.role === "leader" || m.role === "subleader");
@@ -770,9 +785,10 @@ async function loadAll() {
 function applyRoleUI() {
   const canCreate = isSuperOrAdmin();
   document.getElementById("add-team-btn").style.display = canCreate ? "inline-flex" : "none";
-  document.getElementById("sync-btn").style.display = canCreate ? "inline-flex" : "none";
-  document.getElementById("fix-team-field-btn").style.display = canCreate ? "inline-flex" : "none";
-  document.getElementById("reset-teams-btn").style.display = canCreate ? "inline-flex" : "none";
+  // Đồng bộ / vá dữ liệu / reset toàn bộ team là thao tác hệ thống nguy hiểm — chỉ superadmin
+  document.getElementById("sync-btn").style.display = isSuper() ? "inline-flex" : "none";
+  document.getElementById("fix-team-field-btn").style.display = isSuper() ? "inline-flex" : "none";
+  document.getElementById("reset-teams-btn").style.display = isSuper() ? "inline-flex" : "none";
 }
 
 function renderEverything() {
@@ -825,6 +841,11 @@ function renderStats() {
 /* ============================= TAB: TEAMS ============================= */
 function renderPool() {
   const el = document.getElementById("pool-list");
+  // Chỉ superadmin/admin được kéo ứng viên vào team (đổi nhân sự); advisor/supporter không cần thấy pool này
+  if (!isSuperOrAdmin()) {
+    el.innerHTML = `<div class="empty-state" style="padding:20px;"><i class="fas fa-lock"></i>Chỉ superadmin/admin quản lý danh sách ứng viên chưa chia team.</div>`;
+    return;
+  }
   el.innerHTML = candidates.length ? candidates.map((c) => `
     <div class="candidate-chip" draggable="true" data-id="${c.id}"><i class="fas fa-grip-vertical"></i>${c.name}<span class="dept-tag">${c.dept || "—"}</span></div>
   `).join("") : `<div class="empty-state" style="padding:20px;"><i class="fas fa-user-check"></i>Hết ứng viên</div>`;
@@ -833,23 +854,26 @@ function renderPool() {
 
 function renderTeamsGrid() {
   const grid = document.getElementById("teams-grid");
+  const visibleTeams = visibleTeamsForCurrentUser();
   if (!teams.length) { grid.innerHTML = `<div class="empty-state"><i class="fas fa-people-group"></i>Chưa có team nào. Bấm "Đồng bộ" hoặc "Tạo team".</div>`; return; }
-  grid.innerHTML = teams.map((t) => {
-    const manage = canManageTeam(t);
+  if (!visibleTeams.length) { grid.innerHTML = `<div class="empty-state"><i class="fas fa-lock"></i>Bạn không phải advisor/supporter của team nào.</div>`; return; }
+  grid.innerHTML = visibleTeams.map((t) => {
+    const manage = canManageTeam(t); // được set role thành viên, nộp bài hộ...
+    const editRoster = canEditRoster(t); // được đổi nhân sự: thêm/bớt member, advisor, supporter, đổi tên, xoá team
     return `
     <div class="team-card">
       <div class="team-card-head">
-        <div class="team-name">${manage ? `<input value="${t.name || ""}" onchange="renameTeam('${t.id}', this.value)" />` : (t.name || "Team")}</div>
+        <div class="team-name">${editRoster ? `<input value="${t.name || ""}" onchange="renameTeam('${t.id}', this.value)" />` : (t.name || "Team")}</div>
         ${t.pitchingOrder ? `<div class="team-order-badge">#${t.pitchingOrder}</div>` : ""}
-        ${manage ? `<button class="btn sm danger" onclick="deleteTeam('${t.id}')"><i class="fas fa-trash"></i></button>` : ""}
+        ${isSuper() ? `<button class="btn sm danger" onclick="deleteTeam('${t.id}')"><i class="fas fa-trash"></i></button>` : ""}
       </div>
 
       <div class="mention-wrap">
         <div class="staff-slot" data-team="${t.id}" data-role="advisor">
           <span class="slot-label">Advisor</span>
-          ${t.advisor ? `<span class="staff-chip"><i class="fas fa-user-tie"></i>${t.advisor.id}${manage ? `<i class="fas fa-xmark remove" onclick="removeStaff('${t.id}','advisor')"></i>` : ""}</span>` : `<span class="slot-empty">Kéo thả hoặc gõ @ để gắn advisor</span>`}
+          ${t.advisor ? `<span class="staff-chip"><i class="fas fa-user-tie"></i>${t.advisor.id}${editRoster ? `<i class="fas fa-xmark remove" onclick="removeStaff('${t.id}','advisor')"></i>` : ""}</span>` : `<span class="slot-empty">Kéo thả hoặc gõ @ để gắn advisor</span>`}
         </div>
-        ${manage ? `<input class="mention-input" placeholder="Gõ @ để tìm nhân sự làm advisor..." data-team="${t.id}" data-role="advisor" />
+        ${editRoster ? `<input class="mention-input" placeholder="Gõ @ để tìm nhân sự làm advisor..." data-team="${t.id}" data-role="advisor" />
         <div class="mention-dropdown" data-team="${t.id}" data-role="advisor"></div>` : ""}
       </div>
 
@@ -857,10 +881,10 @@ function renderTeamsGrid() {
         <div class="staff-slot" data-team="${t.id}" data-role="supporters">
           <span class="slot-label">Supporter</span>
           <div style="display:flex;flex-wrap:wrap;gap:5px;">
-          ${(t.supporters || []).length ? t.supporters.map((s) => `<span class="staff-chip"><i class="fas fa-hands-helping"></i>${s.id}${manage ? `<i class="fas fa-xmark remove" onclick="removeSupporter('${t.id}','${s.id}')"></i>` : ""}</span>`).join("") : `<span class="slot-empty">Kéo thả hoặc gõ @ để gắn supporter</span>`}
+          ${(t.supporters || []).length ? t.supporters.map((s) => `<span class="staff-chip"><i class="fas fa-hands-helping"></i>${s.id}${editRoster ? `<i class="fas fa-xmark remove" onclick="removeSupporter('${t.id}','${s.id}')"></i>` : ""}</span>`).join("") : `<span class="slot-empty">Kéo thả hoặc gõ @ để gắn supporter</span>`}
           </div>
         </div>
-        ${manage ? `<input class="mention-input" placeholder="Gõ @ để tìm nhân sự làm supporter..." data-team="${t.id}" data-role="supporters" />
+        ${editRoster ? `<input class="mention-input" placeholder="Gõ @ để tìm nhân sự làm supporter..." data-team="${t.id}" data-role="supporters" />
         <div class="mention-dropdown" data-team="${t.id}" data-role="supporters"></div>` : ""}
       </div>
 
@@ -879,7 +903,7 @@ function renderTeamsGrid() {
         `).join("") || '<div class="slot-empty" style="padding:6px 0;">Kéo ứng viên vào đây</div>'}
       </div>
 
-      ${manage ? `
+      ${editRoster ? `
       <div class="mention-wrap" style="margin-top:8px;">
         <input class="mention-input" placeholder="Gõ @ để tìm ứng viên thêm vào team..." data-team="${t.id}" data-role="member" />
         <div class="mention-dropdown" data-team="${t.id}" data-role="member"></div>
@@ -897,15 +921,19 @@ function renderTeamsGrid() {
     </div>`;
   }).join("");
 
-  teams.forEach((t) => initSortable(grid.querySelector(`.members-list[data-team="${t.id}"]`), t.id));
+  visibleTeams.forEach((t) => initSortable(grid.querySelector(`.members-list[data-team="${t.id}"]`), t.id));
   setupMentionInputs();
 }
 
 function initSortable(el, teamId) {
   if (!el) return;
+  // Chỉ superadmin/admin được kéo thả để đổi nhân sự (thêm/bớt/di chuyển thành viên giữa các team).
+  // Advisor/supporter chỉ xem danh sách, không kéo thả được.
+  const canDrag = isSuperOrAdmin();
   new Sortable(el, {
-    group: "members",
+    group: { name: "members", pull: canDrag, put: canDrag },
     animation: 150,
+    disabled: !canDrag,
     onAdd: async (evt) => {
       const candId = evt.item.dataset.id;
       await moveCandidateToTeam(candId, teamId);
@@ -964,8 +992,21 @@ async function syncMemberRoleField(memberId, role) {
   } catch (e) { console.warn("Không sync được round3.role cho", memberId, e); }
 }
 
-async function moveCandidateToTeam(candId, targetTeamId) {
+async function moveCandidateToTeam(candId, targetTeamId, opts = {}) {
+  if (!isSuperOrAdmin()) return notifyError("Bạn không có quyền thay đổi nhân sự team.");
   try {
+    // Rule: 1 ứng viên chỉ được ở 1 team. Nếu ứng viên đang ở 1 team khác (khác team đích),
+    // hỏi xác nhận trước khi chuyển (chỉ superadmin/admin mới kéo-thả được tới đây).
+    const currentTeam = teams.find((t) => (t.members || []).some((m) => m.id === candId));
+    if (currentTeam && currentTeam.id !== targetTeamId && !opts.confirmed) {
+      const targetLabel = targetTeamId === "pool" ? "danh sách chưa chia team" : `team "${(teams.find((t) => t.id === targetTeamId) || {}).name || ""}"`;
+      const ok = await confirmDialog(
+        `Ứng viên này đang ở team "${currentTeam.name}". Bạn có muốn chuyển sang ${targetLabel} không?`,
+        { title: "Ứng viên đã có trong team khác", confirmText: "Chuyển" }
+      );
+      if (!ok) { renderTeamsGrid(); renderPool(); return; } // huỷ: vẽ lại để trả về vị trí cũ
+    }
+
     // Xoá khỏi team hiện tại (nếu có)
     for (const t of teams) {
       if ((t.members || []).some((m) => m.id === candId)) {
@@ -1003,6 +1044,7 @@ async function moveCandidateToTeam(candId, targetTeamId) {
 
 window.setMemberRole = async (teamId, memberId, role) => {
   const t = teams.find((t) => t.id === teamId);
+  if (!t || !canManageTeam(t)) return notifyError("Bạn không có quyền set role cho team này.");
   const members = (t.members || []).map((m) => (m.id === memberId ? { ...m, role } : m));
   await db.collection(TEAMS_COL).doc(teamId).update({ members });
   await syncMemberRoleField(memberId, role);
@@ -1014,6 +1056,7 @@ window.renameTeam = async (teamId, name) => {
   const trimmed = name.trim();
   if (!trimmed) return;
   const t = teams.find((t) => t.id === teamId);
+  if (!t || !canEditRoster(t)) return notifyError("Bạn không có quyền đổi tên team này.");
   await db.collection(TEAMS_COL).doc(teamId).update({ name: trimmed });
   if (t) {
     const batch = db.batch();
@@ -1026,6 +1069,7 @@ window.renameTeam = async (teamId, name) => {
 };
 
 window.deleteTeam = async (teamId) => {
+  if (!isSuper()) return notifyError("Chỉ superadmin được xoá team.");
   const ok = await confirmDialog("Xoá team này? Thành viên sẽ về lại danh sách chưa chia team.", { confirmText: "Xoá" });
   if (!ok) return;
   const t = teams.find((t) => t.id === teamId);
@@ -1558,6 +1602,7 @@ function setupMentionInputs() {
 }
 async function assignStaff(teamId, role, staff) {
   const t = teams.find((t) => t.id === teamId);
+  if (!t || !canEditRoster(t)) return notifyError("Bạn không có quyền gắn advisor/supporter cho team này.");
   try {
     if (role === "advisor") {
       await db.collection(TEAMS_COL).doc(teamId).update({ advisor: staff });
@@ -1573,6 +1618,8 @@ async function assignStaff(teamId, role, staff) {
   } catch (e) { notifyError("Lỗi: " + e.message); }
 }
 window.removeStaff = async (teamId, role) => {
+  const t = teams.find((t) => t.id === teamId);
+  if (!t || !canEditRoster(t)) return notifyError("Bạn không có quyền gỡ advisor của team này.");
   await db.collection(TEAMS_COL).doc(teamId).update({ advisor: null });
   await loadAll();
   await syncTeamStaffFields(teamId);
@@ -1580,6 +1627,7 @@ window.removeStaff = async (teamId, role) => {
 };
 window.removeSupporter = async (teamId, staffId) => {
   const t = teams.find((t) => t.id === teamId);
+  if (!t || !canEditRoster(t)) return notifyError("Bạn không có quyền gỡ supporter của team này.");
   const list = (t.supporters || []).filter((s) => s.id !== staffId);
   await db.collection(TEAMS_COL).doc(teamId).update({ supporters: list });
   await loadAll();

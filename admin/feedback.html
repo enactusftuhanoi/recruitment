@@ -214,6 +214,7 @@ label.f-label{font-weight:700;font-size:11.5px;color:var(--ink-60);text-transfor
     <div class="controls" style="margin-bottom:16px;padding:14px 16px;">
       <input id="fb-search" placeholder="Tìm theo tên hoặc team..." style="max-width:240px;" oninput="filterFbResponses()" />
       <select id="fb-filter-team" style="max-width:200px;" onchange="filterFbResponses()"><option value="">Tất cả team</option></select>
+      <button id="fb-reset-team-btn" class="btn sm danger" style="display:none;" onclick="resetSelectedTeamFeedback()"><i class="fas fa-trash"></i> Reset feedback team này</button>
       <button class="btn sm" style="margin-left:auto;" onclick="exportFbData()"><i class="fas fa-download"></i> Xuất Excel</button>
     </div>
     <div id="fb-responses-list"></div>
@@ -557,7 +558,37 @@ window.filterFbResponses = () => {
     const matchSearch = !search || (f.applicantName || "").toLowerCase().includes(search) || (f.team || "").toLowerCase().includes(search);
     return matchTeam && matchSearch;
   });
+  updateResetTeamBtnVisibility(team);
   displayFbResponses();
+};
+
+/* Nút "Reset feedback team này": chỉ hiện khi đã lọc theo 1 team cụ thể, và người dùng
+   có quyền quản lý team đó (superadmin/admin luôn có quyền; advisor/supporter chỉ với
+   (các) team mình phụ trách). */
+function updateResetTeamBtnVisibility(teamName) {
+  const btn = document.getElementById("fb-reset-team-btn");
+  if (!btn) return;
+  if (!teamName) { btn.style.display = "none"; return; }
+  const t = teams.find((tm) => tm.name === teamName);
+  const allowed = isSuperOrAdmin() || (t && canManageTeam(t));
+  btn.style.display = allowed ? "inline-flex" : "none";
+}
+window.resetSelectedTeamFeedback = async () => {
+  const teamName = document.getElementById("fb-filter-team").value;
+  if (!teamName) return notifyError("Vui lòng chọn 1 team cụ thể để reset.");
+  const t = teams.find((tm) => tm.name === teamName);
+  if (!(isSuperOrAdmin() || (t && canManageTeam(t)))) return notifyError("Bạn không có quyền reset feedback của team này.");
+  const target = allFeedback.filter((f) => f.team === teamName);
+  if (!target.length) return notifyInfo("Team này chưa có feedback nào.");
+  const ok = await confirmDialog(`Xoá toàn bộ ${target.length} feedback của team "${teamName}"? Hành động không thể hoàn tác!`, { confirmText: "Xoá" });
+  if (!ok) return;
+  const batch = db.batch();
+  target.forEach((f) => batch.delete(db.collection("feedback").doc(f.id)));
+  await batch.commit();
+  allFeedback = allFeedback.filter((f) => f.team !== teamName);
+  notifySuccess(`Đã xoá feedback của team "${teamName}"`);
+  renderFbOverview();
+  renderFbResponses();
 };
 function displayFbResponses() {
   const container = document.getElementById("fb-responses-list");
