@@ -2473,32 +2473,32 @@
                 // Stop if beyond current round
                 if (roundIndex[round.id] > maxIndex) break;
 
-                // Check if both departments are eliminated
-                const pri = applicationData[round.id + '_priority_status'];
-                const sec = applicationData[round.id + '_secondary_status'];
-                if (pri === 'not-pass' && sec === 'not-pass') break;
-
                 const bothOutBefore = isEliminatedBefore('priority', i + 1) && isEliminatedBefore('secondary', i + 1);
                 if (bothOutBefore) break;
 
                 // Calculate round status
+                // FIX: round2/3/4 trước đây đọc thẳng field raw (round{N}_priority/secondary_status),
+                // hiện kết quả pass/not-pass NGAY khi admin nhập liệu — chưa qua bước "Công bố" của
+                // superadmin (khác hẳn badge NV1/NV2 ở đầu trang vốn đã gate qua getPublishedRoundStatus).
+                // Nay đồng bộ: chỉ hiện kết quả thật sau khi round{N}_published === true, tương tự badge.
                 let roundStatus = 'pending';
+                let pri, sec;
                 if (round.id === 'round1') {
-                    const p = getRound1Status('priority');
-                    const s = getRound1Status('secondary');
-                    roundStatus = mergeStatus(p, s);
+                    pri = getRound1Status('priority');
+                    sec = getRound1Status('secondary');
+                    roundStatus = mergeStatus(pri, sec);
                 } else if (round.id === 'success') {
                     if (applicationData.current_round === 'success') {
-                        const p = applicationData.round4_priority_status;
-                        const s = applicationData.secondary_position ? applicationData.round4_secondary_status : null;
-                        roundStatus = s ? mergeStatus(p, s) : (p || 'pending');
+                        pri = applicationData.round4_priority_status;
+                        sec = applicationData.secondary_position ? applicationData.round4_secondary_status : null;
+                        roundStatus = sec ? mergeStatus(pri, sec) : (pri || 'pending');
                     } else {
                         roundStatus = 'pending';
                     }
                 } else {
-                    const p = applicationData[round.id + '_priority_status'];
-                    const s = applicationData[round.id + '_secondary_status'];
-                    roundStatus = mergeStatus(p, s);
+                    pri = getPublishedRoundStatus(applicationData, round.id, 'priority');
+                    sec = getPublishedRoundStatus(applicationData, round.id, 'secondary');
+                    roundStatus = mergeStatus(pri, sec);
                 }
 
                 // Create timeline item
@@ -2540,6 +2540,12 @@
                         details.classList.add('active');
                     }, 100);
                 }
+
+                // FIX: dừng hiển thị các vòng SAU khi ứng viên đã bị loại (not-pass cả 2 ban) —
+                // nhưng phải sau khi item của vòng bị loại đã được append ở trên, để ứng viên vẫn
+                // thấy rõ họ dừng ở vòng nào với kết quả "Not pass", thay vì dòng đó biến mất
+                // khỏi timeline (bug cũ khiến "thiếu vòng 3" khi bị loại đúng ở vòng 3).
+                if (round.id !== 'round1' && round.id !== 'success' && pri === 'not-pass' && sec === 'not-pass') break;
             }
         }
 
