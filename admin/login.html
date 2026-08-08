@@ -6,6 +6,7 @@
   <title>Login | Enactus FTU Hanoi</title>
   <link rel="icon" href="/assets/icon.png" type="image/png">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Clash+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
 
@@ -271,6 +272,12 @@
         </svg>
         <span class="btn-text">Đăng nhập với Google</span>
       </button>
+      <div class="cf-turnstile"
+           id="turnstileWidget"
+           data-sitekey="0x4AAAAAAEKNdS1SiT4-_Emt"
+           data-action="turnstile-spin-v2"
+           style="margin-top:14px; display:flex; justify-content:center;">
+      </div>
       <p class="login-error" id="loginError"></p>
     </div>
   </div>
@@ -739,7 +746,38 @@ async function showAlumniPopup(user, accountData) {
 async function doLogin() {
   const loginError = document.getElementById('loginError');
   loginError.style.display = 'none';
+
+  // ── Turnstile gate ──────────────────────────────
+  const turnstileToken = document.querySelector('#turnstileWidget textarea[name="cf-turnstile-response"]')?.value
+    || document.querySelector('input[name="cf-turnstile-response"]')?.value;
+
+  if (!turnstileToken) {
+    showError('Vui lòng hoàn thành xác minh bảo mật trước khi đăng nhập.');
+    return;
+  }
+
   setLoginLoading(true);
+
+  try {
+    const verifyRes = await fetch('/api/verify-turnstile', { // rewritten to Cloud Function verifyTurnstile via firebase.json
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: turnstileToken })
+    });
+    const verifyData = await verifyRes.json().catch(() => ({}));
+
+    if (!verifyRes.ok || !verifyData.success) {
+      window.turnstile?.reset('#turnstileWidget');
+      setLoginLoading(false);
+      showError('Xác minh bảo mật thất bại. Vui lòng thử lại.');
+      return;
+    }
+  } catch (err) {
+    window.turnstile?.reset('#turnstileWidget');
+    setLoginLoading(false);
+    showError('Không thể xác minh bảo mật. Vui lòng thử lại.');
+    return;
+  }
 
   try {
     await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
@@ -833,6 +871,7 @@ async function doLogin() {
 
   } catch (err) {
     setLoginLoading(false);
+    window.turnstile?.reset('#turnstileWidget');
     if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
     showError(err.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
   }

@@ -7,6 +7,7 @@
   <link rel="icon" href="/assets/icon.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Clash+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
     * {
       margin: 0;
@@ -365,6 +366,12 @@
           <i class="fab fa-google"></i>
           <span class="btn-text">Login with Google</span>
         </button>
+        <div class="cf-turnstile"
+             id="turnstileWidget"
+             data-sitekey="0x4AAAAAAEKNdS1SiT4-_Emt"
+             data-action="turnstile-spin-v2"
+             style="margin-top:14px; display:flex; justify-content:center;">
+        </div>
         <p class="login-error" id="loginError"></p>
       </div>
       
@@ -439,16 +446,57 @@
         });
     }
 
+    function showError(msg) {
+      const loginError = document.getElementById('loginError');
+      loginError.textContent = msg;
+      loginError.style.display = 'block';
+    }
+
+    async function verifyTurnstileToken(token) {
+      const res = await fetch('/api/verify-turnstile', { // handled by Cloudflare Worker route on this domain
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      const data = await res.json().catch(() => ({}));
+      return res.ok && data.success === true;
+    }
+
     // Login with Google
-    document.getElementById('loginBtn').addEventListener('click', () => {
+    document.getElementById('loginBtn').addEventListener('click', async () => {
       const loginBtn = document.getElementById('loginBtn');
       const loginError = document.getElementById('loginError');
       const btnText = loginBtn.querySelector('.btn-text');
-      
+
       loginError.style.display = 'none';
+
+      // ── Turnstile gate ──────────────────────────────
+      const turnstileToken = document.querySelector('#turnstileWidget textarea[name="cf-turnstile-response"]')?.value
+        || document.querySelector('input[name="cf-turnstile-response"]')?.value;
+
+      if (!turnstileToken) {
+        showError('Vui lòng hoàn thành xác minh bảo mật trước khi đăng nhập.');
+        return;
+      }
+
       btnText.innerHTML = '<div class="loading"></div>';
       loginBtn.disabled = true;
-      
+
+      let verified = false;
+      try {
+        verified = await verifyTurnstileToken(turnstileToken);
+      } catch (err) {
+        verified = false;
+      }
+
+      if (!verified) {
+        window.turnstile?.reset('#turnstileWidget');
+        btnText.textContent = 'Login with Google';
+        loginBtn.disabled = false;
+        showError('Xác minh bảo mật thất bại. Vui lòng thử lại.');
+        return;
+      }
+
       firebase.auth()
       .signInWithPopup(provider)
       .then((result) => {
@@ -458,7 +506,10 @@
       })
       .catch((error) => {
         console.error("Login failed:", error);
-        alert("Login failed: " + error.message);
+        window.turnstile?.reset('#turnstileWidget');
+        btnText.textContent = 'Login with Google';
+        loginBtn.disabled = false;
+        showError("Đăng nhập thất bại: " + error.message);
       });
     });
 
