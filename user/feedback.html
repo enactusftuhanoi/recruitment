@@ -641,7 +641,7 @@
         // ============================================================
         if (typeof firebase === 'undefined' || !firebase.app) {
             console.error('Firebase chưa được khởi tạo! Đang chuyển hướng đến login...');
-            window.location.href = "../login.html";
+            window.location.href = "../login.html?redirect=" + encodeURIComponent(window.location.pathname);
         }
 
         // ============================================================
@@ -660,7 +660,7 @@
             // Nếu chưa đăng nhập -> chuyển về login
             if (!user) {
                 console.log('❌ Chưa đăng nhập, chuyển về login');
-                window.location.href = "../login.html";
+                window.location.href = "../login.html?redirect=" + encodeURIComponent(window.location.pathname);
                 return;
             }
 

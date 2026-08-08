@@ -395,6 +395,50 @@
     // Google Auth Provider
     const provider = new firebase.auth.GoogleAuthProvider();
 
+    // ============================================================
+    // ĐỌC ?redirect= TỪ URL — quay lại đúng trang người dùng muốn vào
+    // trước khi bị đá sang login (thay vì luôn cứng về profile/form).
+    // Có whitelist để chống Open Redirect: chỉ chấp nhận đường dẫn NỘI BỘ
+    // (bắt đầu bằng 1 dấu "/" hoặc tên file tương đối), không cho phép
+    // "//host/...", "http(s)://...", "javascript:...", v.v.
+    // ============================================================
+    function isSafeRedirectTarget(url) {
+      if (!url) return false;
+      if (/^https?:\/\//i.test(url)) return false; // chặn absolute URL ra domain khác
+      if (url.startsWith('//')) return false;       // chặn protocol-relative URL
+      if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(url)) return false; // chặn javascript:, data:, ...
+      return true;
+    }
+
+    const redirectParamRaw = new URLSearchParams(window.location.search).get('redirect');
+    const redirectTarget = isSafeRedirectTarget(redirectParamRaw) ? redirectParamRaw : null;
+
+    // Sau khi biết chắc user đã đăng nhập (login thành công / continueBtn),
+    // gọi hàm này để quyết định đi đâu: ưu tiên redirectTarget nếu có và hợp lệ,
+    // nếu không mới rơi về logic mặc định (đã nộp đơn -> profile, chưa -> form).
+    function goAfterLogin(user) {
+      if (redirectTarget) {
+        window.location.href = redirectTarget;
+        return;
+      }
+      db.collection("applications")
+        .where("email", "==", user.email)
+        .get()
+        .then((snap) => {
+          if (!snap.empty) {
+            // đã nộp đơn → profile
+            window.location.href = "/user/profile.html";
+          } else {
+            // chưa nộp đơn → form
+            window.location.href = "/user/form.html";
+          }
+        })
+        .catch((err) => {
+          console.error("Error checking applications:", err);
+          alert("Lỗi khi kiểm tra thông tin ứng viên");
+        });
+    }
+
     // Login with Google
     document.getElementById('loginBtn').addEventListener('click', () => {
       const loginBtn = document.getElementById('loginBtn');
@@ -410,24 +454,7 @@
       .then((result) => {
         const user = result.user;
         showUserProfile(user);
-
-        // 🔽 thêm đoạn check ứng viên
-        db.collection("applications")
-          .where("email", "==", user.email)
-          .get()
-          .then((snap) => {
-            if (!snap.empty) {
-              // đã nộp đơn → profile
-              window.location.href = "/user/profile.html";
-            } else {
-              // chưa nộp đơn → form
-              window.location.href = "/user/form.html";
-            }
-          })
-          .catch((err) => {
-            console.error("Error checking applications:", err);
-            alert("Lỗi khi kiểm tra thông tin ứng viên");
-          });
+        goAfterLogin(user);
       })
       .catch((error) => {
         console.error("Login failed:", error);
@@ -449,7 +476,7 @@
       continueBtn.disabled = true;
       
       setTimeout(() => {
-        window.location.href = '/user/profile.html';
+        window.location.href = redirectTarget || '/user/profile.html';
       }, 800);
     });
 

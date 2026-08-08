@@ -1102,7 +1102,7 @@
                     showError('Có lỗi xảy ra. Vui lòng thử lại sau.');
                 }
             } else {
-                window.location.href = 'login.html';
+                window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
             }
         });
 

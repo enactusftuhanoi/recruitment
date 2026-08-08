@@ -2018,8 +2018,18 @@ async function loadCandidatesRound1() {
     if (!appTypes.includes('interview')) return;
 
     const name = app.fullname || app.name || email;
-    const dept1 = normalizeDept(app.priority_position || app.department || '');
-    const dept2 = normalizeDept(app.secondary_position || app.department2 || '');
+    // FIX: Ưu tiên đọc `interview_departments` (ban CHÍNH XÁC đã đăng ký PVTĐ, form.js ghi
+    // riêng field này mỗi khi applicationType === 'interview') thay vì đọc thẳng
+    // priority_position/secondary_position chung của hồ sơ. Lý do: hồ sơ merge (VD gốc đã
+    // "Điền đơn" 2 ban, sau đó bổ sung PVTĐ chỉ 1 ban) vẫn giữ nguyên priority_position/
+    // secondary_position gốc (2 ban) để không mất dữ liệu đơn gốc — nếu đọc thẳng 2 field đó
+    // ở đây thì sẽ xếp lịch nhầm phỏng vấn cho cả ban ứng viên KHÔNG đăng ký PVTĐ.
+    // Hồ sơ cũ / hồ sơ chưa từng merge (chỉ đăng ký "interview" ngay từ đầu) sẽ không có
+    // field này -> fallback về cách đọc cũ (priority_position/secondary_position), không đổi
+    // hành vi cho các hồ sơ đó.
+    const ivDepts = Array.isArray(app.interview_departments) ? app.interview_departments.filter(Boolean) : null;
+    const dept1 = normalizeDept((ivDepts ? ivDepts[0] : (app.priority_position || app.department)) || '');
+    const dept2 = normalizeDept((ivDepts ? (ivDepts[1] || '') : (app.secondary_position || app.department2)) || '');
 
     // form.js lưu ca ứng viên đã vote vào field application_interview_slots (array of labels)
     // VD: ["Ca 1 (08:00 - 09:00) - Thứ 6, 19/06/2026", ...]

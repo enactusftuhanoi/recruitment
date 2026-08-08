@@ -1772,7 +1772,7 @@
                 }
             } else {
                 // User is not signed in, redirect to login
-                window.location.href = 'login.html';
+                window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
             }
         });
 
@@ -3415,7 +3415,7 @@
             try {
                 const user = auth.currentUser;
                 if (!user) {
-                    window.location.href = 'login.html';
+                    window.location.href = 'login.html?redirect=' + encodeURIComponent(new URL('calendar.html', window.location.href).pathname);
                     return;
                 }
 
@@ -3451,7 +3451,7 @@
             try {
                 const user = auth.currentUser;
                 if (!user) {
-                    window.location.href = 'login.html';
+                    window.location.href = 'login.html?redirect=' + encodeURIComponent(new URL('feedback.html', window.location.href).pathname);
                     return;
                 }
 

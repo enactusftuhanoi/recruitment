@@ -2232,8 +2232,6 @@
                 <option value="pending">Pending</option>
                 <option value="pass">Pass</option>
                 <option value="not-pass">Not pass</option>
-                <option value="interviewed">Interviewed</option>
-                <option value="voted">Voted</option>
                 <option value="success">Success</option>
               </select>
             </div>
@@ -2840,6 +2838,158 @@
       let round3TeamsIndex = {};
       let emailSendingInProgress = new Set(); // Theo dõi các email đang được gửi
 
+      // === VOTED / INTERVIEWED (tự động lấy từ calendar.html & interview.html) ===
+      // interviewDayStatusByRound: { round2: { [emailLower]: {status, note} }, round4: {...} }
+      // status lấy từ collection 'iday_sessions' (interview.html): wait/checkin/room/interview/done/drop
+      let interviewDayStatusByRound = { round2: {}, round4: {} };
+
+      // Field vote (calendar.html) tương ứng theo vòng — trùng với logic của calendar.html:
+      // round2 dùng 'interview_schedule_round2', round4 dùng 'interview_schedule' (tên cũ, giữ tương thích).
+      function voteFieldFor(round) {
+        return round === "round2" ? "interview_schedule_round2" : "interview_schedule";
+      }
+
+      // Ứng viên coi là "đã vote" nếu mảng ca đã chọn (từ calendar.html) không rỗng
+      function getVotedStatusBool(app, round) {
+        const arr = app[voteFieldFor(round)];
+        return Array.isArray(arr) && arr.length > 0;
+      }
+
+      // Lấy trạng thái ngày phỏng vấn (interview.html) đã đồng bộ cho 1 ứng viên/vòng
+      function getInterviewDayInfo(app, round) {
+        const email = (app.email || "").toLowerCase().trim();
+        if (!email) return null;
+        return (interviewDayStatusByRound[round] && interviewDayStatusByRound[round][email]) || null;
+      }
+
+      function isInterviewedInfo(info) {
+        return !!info && (info.status === "interview" || info.status === "done");
+      }
+
+      function isDroppedInfo(info) {
+        return !!info && info.status === "drop";
+      }
+
+      // Tải toàn bộ trạng thái check-in/PV/drop từ các phiên (session) của interview.html
+      // (collection 'iday_sessions', mỗi document là 1 ca, chứa mảng candidates nhúng bên trong).
+      // Khớp ứng viên bằng email (không có applicationId trực tiếp bên interview.html).
+      async function loadInterviewDayStatuses() {
+        const result = { round2: {}, round4: {} };
+        try {
+          const snapshot = await db
+            .collection("iday_sessions")
+            .where("round", "in", ["round2", "round4"])
+            .get();
+
+          // Ưu tiên trạng thái "tiến xa hơn" nếu ứng viên xuất hiện ở nhiều session
+          const rank = { wait: 0, checkin: 1, room: 2, interview: 3, done: 4, drop: 5 };
+
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            const round = data.round;
+            if (!result[round]) return;
+
+            (data.candidates || []).forEach((c) => {
+              const email = (c.email || "").toLowerCase().trim();
+              if (!email) return;
+              const existing = result[round][email];
+              const newRank = rank[c.status] ?? 0;
+              const oldRank = existing ? (rank[existing.status] ?? 0) : -1;
+              if (!existing || newRank >= oldRank) {
+                result[round][email] = {
+                  status: c.status || "wait",
+                  note: c.note || "",
+                };
+              }
+            });
+          });
+        } catch (e) {
+          console.warn("Không thể tải trạng thái ngày phỏng vấn (iday_sessions):", e);
+        }
+        interviewDayStatusByRound = result;
+      }
+
+      // Nếu ứng viên bị Drop ở interview.html (vòng 2 hoặc vòng 4), tự động chuyển
+      // trạng thái ban tương ứng bên dashboard thành "not-pass" và ghi chú "Drop".
+      // Chỉ áp dụng cho ban ĐÃ pass vòng trước đó (đang thực sự thi ở vòng này).
+      async function syncInterviewDropStatuses() {
+        let batch = db.batch();
+        let count = 0;
+
+        for (const app of applications) {
+          for (const round of ["round2", "round4"]) {
+            const info = getInterviewDayInfo(app, round);
+            if (!isDroppedInfo(info)) continue;
+
+            for (const bandType of ["priority", "secondary"]) {
+              const dept = bandType === "priority" ? app.priority_position : app.secondary_position;
+              if (!dept || dept === "None") continue;
+
+              // Ban phải đã pass vòng ngay trước đó thì mới đang "sống" ở vòng này
+              const prevPassed =
+                round === "round2"
+                  ? app[`${bandType}_status`] === "pass"
+                  : app[`round3_${bandType}_status`] === "pass";
+              if (!prevPassed) continue;
+
+              const statusField = `${round}_${bandType}_status`;
+              const existingNote =
+                (app[round] && app[round][bandType] && app[round][bandType].note) || "";
+
+              // Đã đồng bộ rồi thì bỏ qua (tránh ghi lặp lại)
+              if (app[statusField] === "not-pass" && existingNote === "Drop") continue;
+
+              const ref = db.collection("applications").doc(app.id);
+              batch.update(ref, {
+                [statusField]: "not-pass",
+                [`${round}.${bandType}.note`]: "Drop",
+              });
+
+              // Cập nhật local ngay để UI phản ánh mà không cần đợi tải lại
+              app[statusField] = "not-pass";
+              app[round] = app[round] || {};
+              app[round][bandType] = app[round][bandType] || {};
+              app[round][bandType].note = "Drop";
+
+              count++;
+              if (count >= 450) {
+                await batch.commit();
+                batch = db.batch();
+                count = 0;
+              }
+            }
+          }
+        }
+
+        if (count > 0) {
+          try {
+            await batch.commit();
+          } catch (e) {
+            console.warn("Lỗi đồng bộ trạng thái Drop từ interview.html:", e);
+          }
+        }
+      }
+
+      // Render 1 badge phụ (Voted / Interviewed) — chỉ hiển thị thông tin, không chỉnh sửa được
+      function renderAutoStatusBadge(label, active, statusKeyIfActive) {
+        const cls = active ? getStatusClass(statusKeyIfActive) : "status-pending";
+        const text = active ? getStatusText(statusKeyIfActive) : label;
+        return `<span class="status-badge ${cls}" style="font-size: 10px; padding: 3px 8px; opacity: ${active ? "1" : "0.55"};" title="${label}">${text}</span>`;
+      }
+
+      // Render 2 badge Voted + Interviewed cho 1 ban (band) ở vòng 2 hoặc vòng 4
+      function renderVotedInterviewedBadges(app, round) {
+        const voted = getVotedStatusBool(app, round);
+        const info = getInterviewDayInfo(app, round);
+        const interviewed = isInterviewedInfo(info);
+        return `
+            <div style="display:flex; gap:6px; margin-top:4px; flex-wrap:wrap;">
+                ${renderAutoStatusBadge("Voted", voted, "voted")}
+                ${renderAutoStatusBadge("Interviewed", interviewed, "interviewed")}
+            </div>
+        `;
+      }
+
 
       // Service ID và Template ID
       const SERVICE_ID = "service_oxo8n38";
@@ -3257,6 +3407,11 @@ async function loadApplications() {
         } else {
             applications = allApps;
         }
+
+        // === TẢI TRẠNG THÁI VOTED/INTERVIEWED (calendar.html / interview.html) ===
+        // rồi tự động chuyển "not-pass" + ghi chú "Drop" nếu ứng viên bị Drop bên interview.html
+        await loadInterviewDayStatuses();
+        await syncInterviewDropStatuses();
 
         // === RENDER UI ===
         renderApplications();
@@ -6209,27 +6364,34 @@ function renderRound2StatusSection(app, hasMovedOn = false) {
     }
 
     positions.forEach((pos, index) => {
+        // Nếu ứng viên bị Drop bên interview.html (vòng 2), coi như not-pass để hiển thị đồng bộ
+        // (dữ liệu Firestore cũng đã được đồng bộ tự động qua syncInterviewDropStatuses)
+        const dropInfo = getInterviewDayInfo(app, "round2");
+        const displayStatus = pos.isPassedPrevRound && isDroppedInfo(dropInfo) ? "not-pass" : pos.status;
+
         html += `
             <div style="margin-bottom: ${index < positions.length - 1 ? "8px" : "0"};">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                     <span style="font-size: 12px; color: var(--gray-600);">${getDepartmentName(pos.dept)}:</span>
-                    <span class="status-badge ${getStatusClass(pos.status)}" style="font-size: 11px;">
-                        ${getStatusText(pos.status)}
+                    <span class="status-badge ${getStatusClass(displayStatus)}" style="font-size: 11px;">
+                        ${getStatusText(displayStatus)}
                     </span>
                     ${!pos.isPassedPrevRound ? '<span style="font-size: 10px; color: var(--error); margin-left: 4px;">(Đã loại từ vòng 1)</span>' : ''}
+                    ${pos.isPassedPrevRound && isDroppedInfo(dropInfo) ? '<span style="font-size: 10px; color: var(--error); margin-left: 4px;">(Drop tại PV)</span>' : ''}
                 </div>
                 ${pos.isPassedPrevRound ? `
                 <select class="app-select ban-status-select" 
                         data-ban-type="${pos.type}" 
                         ${!pos.canEdit || hasMovedOn ? "disabled" : ""}
                         style="width: 100%; font-size: 12px; padding: 4px 8px;">
-                    <option value="pending" ${pos.status === "pending" ? "selected" : ""}>Pending</option>
-                    <option value="pass" ${pos.status === "pass" ? "selected" : ""}>Pass</option>
-                    <option value="not-pass" ${pos.status === "not-pass" ? "selected" : ""}>Not pass</option>
+                    <option value="pending" ${displayStatus === "pending" ? "selected" : ""}>Pending</option>
+                    <option value="pass" ${displayStatus === "pass" ? "selected" : ""}>Pass</option>
+                    <option value="not-pass" ${displayStatus === "not-pass" ? "selected" : ""}>Not pass</option>
                 </select>
                 ` : `
                 <span style="font-size: 11px; color: var(--gray-500);">Không thể chỉnh sửa (đã loại từ vòng 1)</span>
                 `}
+                ${pos.isPassedPrevRound ? renderVotedInterviewedBadges(app, "round2") : ""}
             </div>
         `;
     });
@@ -6752,6 +6914,7 @@ function renderRound4() {
             </td>
             <td>
                 ${allDepartments.map((pos, idx) => {
+                    const dropInfoR4 = getInterviewDayInfo(app, "round4");
                     if (!pos.isPassedPrevRound) {
                         return `<div style="margin-bottom: ${idx < allDepartments.length - 1 ? "8px" : "0"};">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
@@ -6760,20 +6923,22 @@ function renderRound4() {
                             </div>
                         </div>`;
                     }
+                    const displayStatusR4 = isDroppedInfo(dropInfoR4) ? "not-pass" : pos.status;
                     return `<div style="margin-bottom: ${idx < allDepartments.length - 1 ? "8px" : "0"};">
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                             <span style="font-size: 12px; color: var(--gray-600);">${getDepartmentName(pos.dept)}:</span>
-                            <span class="status-badge ${getStatusClass(pos.status)}" style="font-size: 11px;">
-                                ${getStatusText(pos.status)}
+                            <span class="status-badge ${getStatusClass(displayStatusR4)}" style="font-size: 11px;">
+                                ${getStatusText(displayStatusR4)}
                             </span>
+                            ${isDroppedInfo(dropInfoR4) ? '<span style="font-size: 10px; color: var(--error); margin-left: 4px;">(Drop tại PV)</span>' : ''}
                         </div>
                         <select class="app-select" ${!pos.canEdit || hasMovedOn ? "disabled" : ""} 
                             data-field="${pos.type}.status" style="width: 100%; font-size: 12px; padding: 4px 8px;">
-                            <option value="pending" ${pos.status === "pending" ? "selected" : ""}>Pending</option>
-                            <option value="interviewed" ${pos.status === "interviewed" ? "selected" : ""}>Interviewed</option>
-                            <option value="pass" ${pos.status === "pass" ? "selected" : ""}>Pass</option>
-                            <option value="not-pass" ${pos.status === "not-pass" ? "selected" : ""}>Not pass</option>
+                            <option value="pending" ${displayStatusR4 === "pending" ? "selected" : ""}>Pending</option>
+                            <option value="pass" ${displayStatusR4 === "pass" ? "selected" : ""}>Pass</option>
+                            <option value="not-pass" ${displayStatusR4 === "not-pass" ? "selected" : ""}>Not pass</option>
                         </select>
+                        ${renderVotedInterviewedBadges(app, "round4")}
                     </div>`;
                 }).join("")}
             </td>
@@ -8880,11 +9045,11 @@ document.getElementById('export-modal').innerHTML += `
             <h3 style="margin-bottom: 10px;">Reset dữ liệu vòng nào?</h3>
             <p style="margin-bottom: 16px; color: var(--gray-600); font-size: 13px;">Chỉ áp dụng cho ứng viên đã tới vòng được chọn trở lên. Xoá kết quả/trạng thái đã công bố, lịch phỏng vấn nháp, VÀ ghi chú đánh giá của các ứng viên này.</p>
             <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px;">
-              <button class="action-btn" data-round="round1" style="text-align:left;">Vòng 1</button>
-              <button class="action-btn" data-round="round2" style="text-align:left;">Vòng 2 (và các vòng sau)</button>
-              <button class="action-btn" data-round="round3" style="text-align:left;">Vòng 3 - Teamwork (và các vòng sau)</button>
-              <button class="action-btn" data-round="round4" style="text-align:left;">Vòng 4</button>
-              <button class="action-btn" data-round="all" style="text-align:left; background: var(--error-light, #FDECEC); color: var(--error, #EF4444);">Tất cả các vòng (như trước đây)</button>
+              <button class="action-btn" data-round="round1" style="text-align:left;">Vòng 1 - Đơn</button>
+              <button class="action-btn" data-round="round2" style="text-align:left;">Vòng 2 - Phỏng vấn nhóm</button>
+              <button class="action-btn" data-round="round3" style="text-align:left;">Vòng 3 - Teamwork</button>
+              <button class="action-btn" data-round="round4" style="text-align:left;">Vòng 4 - Phỏng vấn cá nhân</button>
+              <button class="action-btn" data-round="all" style="text-align:left; background: var(--error-light, #FDECEC); color: var(--error, #EF4444);">Tất cả các vòng</button>
             </div>
             <div style="display: flex; justify-content: flex-end;">
               <button class="action-btn" id="pick-round-cancel" style="background: var(--gray-200);">Huỷ</button>
@@ -8907,7 +9072,7 @@ document.getElementById('export-modal').innerHTML += `
       //  cập nhật trạng thái, không qua bước công bố nào. Giờ profile.html cũng đã gate
       //  round2/3/4 sau field round{N}_published, y hệt round1.
       // ══════════════════════════════════════════════════
-      const PUBLISH_ROUND_LABELS = { round1: "Vòng 1", round2: "Vòng 2", round3: "Vòng 3 (Teamwork)", round4: "Vòng 4" };
+      const PUBLISH_ROUND_LABELS = { round1: "Vòng 1 - Đơn", round2: "Vòng 2 - Phỏng vấn nhóm", round3: "Vòng 3 - Teamwork", round4: "Vòng 4 - Phỏng vấn cá nhân" };
 
       function getRoundFinalStatus(app, round) {
         const hasPriority = app.priority_position && app.priority_position !== "None";

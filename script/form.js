@@ -1,44 +1,19 @@
 // ============================================================
-// KHỞI TẠO FIREBASE - TỰ ĐỘNG TRONG FORM.JS
+// KHỞI TẠO FIREBASE - DÙNG CHUNG window.auth / window.db TỪ config.js
+// (config.js phải được load TRƯỚC form.js trong file HTML, vd:
+//  <script src="config.js"></script>
+//  <script src="form.js"></script>
+//
+// LƯU Ý: KHÔNG khai báo lại `let/const db, auth` ở đây — config.js đã khai báo
+// `const db`/`const auth` ở global scope, và let/const top-level của các thẻ
+// <script> (non-module) DÙNG CHUNG một lexical scope trên cùng 1 trang, nên khai
+// báo lại sẽ gây "SyntaxError: Identifier 'db' has already been declared" và làm
+// TOÀN BỘ form.js dừng chạy ngay từ dòng đầu (form trống, không có gì hiện lên).
 // ============================================================
 
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyBrHfc2ERn3oxu6va8RkAckxiBoo6GocgM",
-  authDomain: "enactusftuhanoi.firebaseapp.com",
-  projectId: "enactusftuhanoi",
-  storageBucket: "enactusftuhanoi.firebasestorage.app",
-  messagingSenderId: "281439714678",
-  appId: "1:281439714678:web:c310c2836e4ca7ad38ce57",
-  measurementId: "G-4V8B3GJ38D"
-};
-
-// Khai báo biến global trong file
-let db, auth;
-
-// Kiểm tra và khởi tạo Firebase nếu chưa có
-if (typeof firebase !== 'undefined') {
-    try {
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        // Khởi tạo services
-        auth = firebase.auth();
-        db = firebase.firestore();
-        
-        // Gán vào window để dùng toàn cục
-        window.auth = auth;
-        window.db = db;
-        
-        console.log('[Form] Firebase initialized successfully');
-        console.log('[Form] db:', db ? 'OK' : 'FAILED');
-        console.log('[Form] auth:', auth ? 'OK' : 'FAILED');
-    } catch (e) {
-        console.error('[Form] Error initializing Firebase services:', e);
+if (typeof firebase !== 'undefined' && firebase.apps.length && window.db && window.auth) {
+            } else {
     }
-} else {
-    console.error('[Form] Firebase SDK not loaded!');
-}
 
 // ============================================================
 // BIẾN TOÀN CỤC
@@ -65,14 +40,58 @@ let interviewSettings = {};
 let notifySettings = {};
 
 // ============================================================
+// DANH SÁCH TRƯỜNG ĐH/HV NỔI TIẾNG Ở HÀ NỘI (cho dropdown #school)
+// Trước đây #school là input text tự do -> dữ liệu bị gõ sai chính tả/viết tắt
+// khác nhau ("ĐH Bách Khoa", "BKHN", "Bach Khoa HN"...), khó thống kê ở dashboard.
+// Chuyển sang dropdown để chuẩn hoá; vẫn có "Khác" để không chặn ứng viên
+// ngoài danh sách hoặc học ở tỉnh khác.
+// ============================================================
+const HANOI_SCHOOL_OPTIONS = [
+    "Trường Đại học Ngoại thương (FTU) - Cơ sở Hà Nội",
+    "Học viện Ngoại giao (DAV)",
+    "Đại học Quốc gia Hà Nội (VNU)",
+    "Trường Đại học Bách khoa Hà Nội (HUST)",
+    "Trường Đại học Kinh tế Quốc dân (NEU)",
+    "Học viện Ngân hàng",
+    "Học viện Tài chính",
+    "Học viện Công nghệ Bưu chính Viễn thông (PTIT)",
+    "Học viện Báo chí và Tuyên truyền",
+    "Học viện Nông nghiệp Việt Nam",
+    "Học viện Chính sách và Phát triển",
+    "Trường Đại học Thương mại (TMU)",
+    "Trường Đại học Xây dựng Hà Nội (HUCE)",
+    "Trường Đại học Giao thông Vận tải",
+    "Trường Đại học Thủy lợi",
+    "Trường Đại học Luật Hà Nội",
+    "Trường Đại học Sư phạm Hà Nội (HNUE)",
+    "Trường Đại học Y Hà Nội (HMU)",
+    "Trường Đại học Dược Hà Nội",
+    "Trường Đại học Công nghiệp Hà Nội (HaUI)",
+    "Trường Đại học Mỏ - Địa chất",
+    "Trường Đại học Thủ đô Hà Nội",
+    "Trường Đại học Kinh doanh và Công nghệ Hà Nội",
+    "Trường Đại học Hà Nội (HANU)",
+    "Trường Đại học Văn hóa Hà Nội",
+    "Trường Đại học Mở Hà Nội",
+    "Trường Đại học Điện lực (EPU)",
+    "Trường Đại học Lao động - Xã hội",
+    "Trường Đại học FPT - Cơ sở Hà Nội",
+    "Học viện Tòa án",
+    "Học viện Phụ nữ Việt Nam",
+    "Học viện Cảnh sát nhân dân",
+    "Học viện An ninh nhân dân",
+    "Học viện Kỹ thuật Quân sự"
+];
+const SCHOOL_OTHER_VALUE = "__other__";
+
+// ============================================================
 // KHỞI TẠO - TẢI DỮ LIỆU TỪ FIREBASE
 // ============================================================
 async function initFormData() {
     try {
         // KIỂM TRA DB TRƯỚC KHI DÙNG
         if (typeof db === 'undefined' || db === null) {
-            console.error('[Form] db is undefined! Cannot fetch data.');
-            return;
+                        return;
         }
 
         const [questionsDoc, formSettingsDoc, interviewSettingsDoc, notifyDoc] = await Promise.all([
@@ -121,15 +140,7 @@ async function initFormData() {
             notifySettings = notifyDoc.data();
         }
 
-        console.log('[Form] Đã tải dữ liệu từ Firebase:', {
-            generalQuestions: generalQuestions.length,
-            banQuestions: Object.keys(banQuestions),
-            interviewSlots: (interviewSettings.slots || []).length,
-            notifyEnabled: notifySettings.enabled
-        });
-
     } catch (error) {
-        console.error('[Form] Lỗi tải dữ liệu:', error);
         // Fallback: không có câu hỏi nào
         generalQuestions = [];
         banQuestions = {};
@@ -139,8 +150,7 @@ async function initFormData() {
 
 function buildInterviewFromSlots(slots) {
     if (!slots || !Array.isArray(slots) || slots.length === 0) {
-        console.warn('[Form] No interview slots found');
-        return [];
+                return [];
     }
 
     // Tạo options từ slots - KHÔNG ĐÁNH SỐ TOÀN CỤC
@@ -219,8 +229,7 @@ function buildInterviewFromSlots(slots) {
         options: options
     };
 
-    console.log('[Form] Built interview slots:', options.length);
-    return [interviewQuestion];
+        return [interviewQuestion];
 }
 
 // ============================================================
@@ -229,6 +238,7 @@ function buildInterviewFromSlots(slots) {
 function checkFormAvailability() {
     const now = new Date();
     const formEl = document.getElementById("recruitmentForm");
+    if (!formEl) return; // DOM chưa render kịp #recruitmentForm -> tránh crash toàn hàm
 
     // Kiểm tra bật thủ công
     if (formSettings.enabled) return; // form mở
@@ -279,7 +289,8 @@ function checkInterviewAvailability() {
                 title: "Phỏng vấn thay đơn đã đóng",
                 html: endTime
                     ? `Thời hạn đăng ký đã kết thúc vào lúc <strong>${endTime.toLocaleString("vi-VN")}</strong>. Vui lòng chọn hình thức điền đơn.`
-                    : "Hình thức phỏng vấn thay đơn hiện chưa được mở. Vui lòng chọn hình thức điền đơn."
+                    : "Hình thức phỏng vấn thay đơn hiện chưa được mở. Vui lòng chọn hình thức điền đơn.",
+                confirmButtonColor: '#FBBF24'
             });
         };
     }
@@ -316,8 +327,7 @@ async function showNotification() {
     try {
         // KIỂM TRA DB TRƯỚC KHI DÙNG
         if (typeof db === 'undefined' || db === null) {
-            console.warn('[Form] db not available, skipping notification');
-            return;
+                        return;
         }
 
         const doc = await db.collection("system").doc("notify_settings").get();
@@ -365,8 +375,7 @@ async function showNotification() {
             container.insertBefore(notif, container.firstChild);
         }
     } catch (e) {
-        console.warn("[Form] Không tải được thông báo:", e);
-    }
+            }
 }
 
 // ============================================================
@@ -399,8 +408,7 @@ async function logActivity(applicationId, action, detail) {
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
     } catch (err) {
-        console.warn('[Form] Không ghi được activity log:', err);
-    }
+            }
 }
 
 // ============================================================
@@ -447,6 +455,7 @@ async function checkEmailDuplicateGate() {
                 title: 'Email đã tồn tại',
                 html: 'Email này đã có đơn ứng tuyển trong hệ thống.<br>Để bảo vệ dữ liệu ứng tuyển, vui lòng <b>đăng nhập</b> bằng đúng email đó để tiếp tục.',
                 confirmButtonText: 'Đăng nhập ngay',
+                confirmButtonColor: '#FBBF24',
                 showCancelButton: true,
                 cancelButtonText: 'Để sau'
             }).then((res) => {
@@ -463,7 +472,8 @@ async function checkEmailDuplicateGate() {
                 icon: 'error',
                 title: 'Email không khớp tài khoản',
                 text: 'Email bạn nhập không trùng với tài khoản Google đang đăng nhập. Vui lòng nhập đúng email đã đăng ký hoặc đăng nhập đúng tài khoản.',
-                confirmButtonText: 'Đã hiểu'
+                confirmButtonText: 'Đã hiểu',
+                confirmButtonColor: '#FBBF24'
             });
             return false;
         }
@@ -474,7 +484,8 @@ async function checkEmailDuplicateGate() {
                 icon: 'info',
                 title: 'Hồ sơ đã hoàn tất',
                 text: 'Bạn đã hoàn tất cả "Điền đơn" lẫn "Phỏng vấn thay đơn" cho hồ sơ này. Không thể nộp thêm.',
-                confirmButtonText: 'Xem hồ sơ của tôi'
+                confirmButtonText: 'Xem hồ sơ của tôi',
+                confirmButtonColor: '#FBBF24'
             });
             window.location.href = '/user/profile.html';
             return false;
@@ -492,13 +503,13 @@ async function checkEmailDuplicateGate() {
             icon: 'info',
             title: 'Bổ sung hồ sơ ứng tuyển',
             html: `Bạn đã có hồ sơ với hình thức <b>${types.includes('form') ? 'Điền đơn' : 'Phỏng vấn thay đơn'}</b>.<br>Lần này hệ thống sẽ gộp thêm hình thức còn lại vào <b>cùng một hồ sơ</b> của bạn.`,
-            confirmButtonText: 'Đã hiểu'
+            confirmButtonText: 'Đã hiểu',
+            confirmButtonColor: '#FBBF24'
         });
 
         return true;
     } catch (err) {
-        console.error('[Form] Lỗi kiểm tra email trùng:', err);
-        Swal.fire({ icon: 'error', title: 'Lỗi hệ thống', text: 'Không thể kiểm tra email lúc này. Vui lòng thử lại.', confirmButtonText: 'OK' });
+                Swal.fire({ icon: 'error', title: 'Lỗi hệ thống', text: 'Không thể kiểm tra email lúc này. Vui lòng thử lại.', confirmButtonText: 'OK', confirmButtonColor: '#FBBF24' });
         return false;
     }
 }
@@ -526,7 +537,7 @@ function applyMergeModeRestrictions() {
     }
 
     // Prefill + khoá thông tin cá nhân đã có, tránh sửa lệch với hồ sơ gốc
-    ['fullname', 'birthdate', 'gender', 'phone', 'school', 'major', 'facebook'].forEach(id => {
+    ['fullname', 'birthdate', 'gender', 'phone', 'major', 'facebook'].forEach(id => {
         const el = document.getElementById(id);
         if (el && existingApplicationData[id]) {
             el.value = existingApplicationData[id];
@@ -536,8 +547,28 @@ function applyMergeModeRestrictions() {
         }
     });
 
-    // Nếu hồ sơ gốc đã có "Điền đơn" -> ban phải khớp đúng 2 ban đó
-    if (existingApplicationTypes.includes('form')) {
+    // #school là dropdown (select + ô "Khác") nên xử lý riêng, không gán el.value
+    // trực tiếp như input thường (xem setupSchoolDropdown()/setSchoolValue()).
+    if (existingApplicationData.school) {
+        setSchoolValue(existingApplicationData.school);
+        const schoolSelect = document.getElementById('school');
+        const schoolOther = document.getElementById('school_other');
+        [schoolSelect, schoolOther].forEach(el => {
+            if (!el) return;
+            el.setAttribute('readonly', 'readonly');
+            if (el.tagName === 'SELECT') el.setAttribute('disabled', 'disabled');
+            el.style.background = '#F3F4F6';
+        });
+    }
+
+    // Nếu hồ sơ gốc đã có sẵn priority_position/secondary_position (dù đến từ
+    // "Điền đơn" hay "Phỏng vấn thay đơn") -> khoá ban theo đúng dữ liệu gốc.
+    // Trước đây chỉ khoá khi existingApplicationTypes có 'form', nên trường hợp
+    // bổ sung "Điền đơn" vào hồ sơ đã có PVTĐ không bị khoá ban, cho phép chọn
+    // ban khác — nhưng updatePayload lại luôn xoá priority_position/secondary_position
+    // nên lựa chọn mới không được lưu, trong khi câu hỏi riêng-ban vẫn lưu theo ban
+    // mới chọn -> lệch dữ liệu. Khoá 2 chiều để tránh tình huống này.
+    if (existingApplicationData.priority_position || existingApplicationData.secondary_position) {
         lockBanSelectionToExisting();
     }
 }
@@ -602,8 +633,7 @@ function lockBanSelectionToExisting() {
 async function loadIntroFromMarkdown() {
     try {
         if (typeof db === 'undefined' || db === null) {
-            console.warn('[Form] db not available, skipping intro load');
-            return;
+                        return;
         }
 
         const doc = await db.collection("system").doc("intro_settings").get();
@@ -640,12 +670,10 @@ async function loadIntroFromMarkdown() {
                 }
             }
         } catch (mdErr) {
-            console.warn("[Form] Không tải được intro.md:", mdErr);
-        }
+                    }
 
     } catch (e) {
-        console.warn("[Form] Lỗi tải intro từ Firebase:", e);
-        // Fallback về intro.md
+                // Fallback về intro.md
         try {
             const response = await fetch('/content/intro.md');
             if (response.ok) {
@@ -656,8 +684,7 @@ async function loadIntroFromMarkdown() {
                 }
             }
         } catch (mdErr) {
-            console.warn("[Form] Không tải được intro.md:", mdErr);
-        }
+                    }
     }
 }
 
@@ -697,8 +724,7 @@ function restoreInterviewSchedule() {
             updateInterviewSelectionCount();
         }
     } catch (e) {
-        console.warn('[Form] Lỗi khôi phục lịch phỏng vấn:', e);
-    }
+            }
 }
 
 // ============================================================
@@ -1221,7 +1247,7 @@ function validateAllQuestions() {
                 icon: 'warning',
                 title: 'Chưa đủ lịch phỏng vấn',
                 html: `Bạn đã chọn <strong>${checkedBoxes.length}</strong> ca. Vui lòng chọn ít nhất <strong>3 ca phỏng vấn</strong> trước khi gửi.`,
-                confirmButtonColor: '#3085d6'
+                confirmButtonColor: '#FBBF24'
             });
             return false;
         }
@@ -1249,7 +1275,7 @@ function validateAllQuestions() {
                         icon: 'warning',
                         title: 'Vui lòng trả lời câu hỏi',
                         text: 'Bạn cần trả lời tất cả câu hỏi bắt buộc trong phần "Câu hỏi chung"',
-                        confirmButtonColor: '#3085d6'
+                        confirmButtonColor: '#FBBF24'
                     });
                     return false;
                 }
@@ -1262,7 +1288,7 @@ function validateAllQuestions() {
                     icon: 'warning',
                     title: 'Vui lòng trả lời câu hỏi',
                     text: 'Bạn cần trả lời tất cả câu hỏi bắt buộc trong phần "Câu hỏi chung"',
-                    confirmButtonColor: '#3085d6'
+                    confirmButtonColor: '#FBBF24'
                 });
                 return false;
             }
@@ -1300,7 +1326,7 @@ function validateAllQuestions() {
                         icon: 'warning',
                         title: 'Vui lòng trả lời câu hỏi',
                         text: `Bạn cần trả lời tất cả câu hỏi bắt buộc của ban ${banName}`,
-                        confirmButtonColor: '#3085d6'
+                        confirmButtonColor: '#FBBF24'
                     });
                     return false;
                 }
@@ -1314,7 +1340,7 @@ function validateAllQuestions() {
                     icon: 'warning',
                     title: 'Vui lòng trả lời câu hỏi',
                     text: `Bạn cần trả lời tất cả câu hỏi bắt buộc của ban ${banName}`,
-                    confirmButtonColor: '#3085d6'
+                    confirmButtonColor: '#FBBF24'
                 });
                 return false;
             }
@@ -1354,7 +1380,7 @@ function validateAllQuestions() {
                             icon: 'warning',
                             title: 'Vui lòng trả lời câu hỏi',
                             text: `Bạn cần trả lời tất cả câu hỏi bắt buộc của ban ${banName}`,
-                            confirmButtonColor: '#3085d6'
+                            confirmButtonColor: '#FBBF24'
                         });
                         return false;
                     }
@@ -1368,7 +1394,7 @@ function validateAllQuestions() {
                         icon: 'warning',
                         title: 'Vui lòng trả lời câu hỏi',
                         text: `Bạn cần trả lời tất cả câu hỏi bắt buộc của ban ${banName}`,
-                        confirmButtonColor: '#3085d6'
+                        confirmButtonColor: '#FBBF24'
                     });
                     return false;
                 }
@@ -1394,7 +1420,7 @@ function validateAllQuestions() {
                 icon: 'warning',
                 title: 'Chưa đủ lịch phỏng vấn',
                 html: `Bạn đã chọn <strong>${checkedBoxes.length}</strong> ca. Vui lòng chọn ít nhất <strong>3 ca phỏng vấn</strong> trước khi gửi.`,
-                confirmButtonColor: '#3085d6'
+                confirmButtonColor: '#FBBF24'
             });
             return false;
         }
@@ -1681,7 +1707,7 @@ function showTab(tabName) {
 // ============================================================
 async function nextSection(current) {
     if (current === 0 && !applicationType) {
-        Swal.fire({ icon: 'warning', title: 'Chưa chọn hình thức', text: 'Vui lòng chọn hình thức ứng tuyển.', confirmButtonText: 'OK' });
+        Swal.fire({ icon: 'warning', title: 'Chưa chọn hình thức', text: 'Vui lòng chọn hình thức ứng tuyển.', confirmButtonText: 'OK', confirmButtonColor: '#FBBF24' });
         return;
     }
 
@@ -1698,7 +1724,8 @@ async function nextSection(current) {
                     icon: 'warning',
                     title: 'Chưa đủ lịch phỏng vấn',
                     html: `Bạn đã chọn <strong>${checkedBoxes.length}</strong> ca. Vui lòng chọn ít nhất <strong>3 ca phỏng vấn</strong> trước khi tiếp tục.`,
-                    confirmButtonText: 'Đã hiểu'
+                    confirmButtonText: 'Đã hiểu',
+                    confirmButtonColor: '#FBBF24'
                 });
                 return;
             }
@@ -1741,7 +1768,26 @@ async function nextSection(current) {
     }
 
     if (!valid) {
-        Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng điền đầy đủ các thông tin bắt buộc.', confirmButtonText: 'OK' });
+        Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng điền đầy đủ các thông tin bắt buộc.', confirmButtonText: 'OK', confirmButtonColor: '#FBBF24' });
+        return;
+    }
+
+    // Kiểm tra ngày sinh / email / số điện thoại đúng quy tắc (không chỉ "có nhập"
+    // như required-check ở trên) trước khi cho sang section kế
+    const birthdateEl = currentSectionEl?.querySelector('#birthdate');
+    if (birthdateEl && !validateBirthdateInput(birthdateEl)) {
+        return;
+    }
+    const emailElNext = currentSectionEl?.querySelector('#email');
+    if (emailElNext && !validateEmailInput(emailElNext)) {
+        return;
+    }
+    const phoneElNext = currentSectionEl?.querySelector('#phone');
+    if (phoneElNext && !validatePhoneInput(phoneElNext)) {
+        return;
+    }
+    const schoolElNext = currentSectionEl?.querySelector('#school');
+    if (schoolElNext && !validateSchoolInput()) {
         return;
     }
 
@@ -1787,7 +1833,7 @@ function generateSummary() {
         <p><strong>Họ và tên:</strong> ${form.fullname?.value || ''}</p>
         <p><strong>Ngày/tháng/năm sinh:</strong> ${formatDateToVN(form.birthdate?.value || '')}</p>
         <p><strong>Giới tính:</strong> ${form.gender?.value || ''}</p>
-        <p><strong>Trường:</strong> ${form.school?.value || ''}</p>
+        <p><strong>Trường:</strong> ${getSchoolValue()}</p>
         <p><strong>Chuyên ngành:</strong> ${form.major?.value || ''}</p>
         <p><strong>Email:</strong> ${form.email?.value || ''}</p>
         <p><strong>Số điện thoại:</strong> ${form.phone?.value || ''}</p>
@@ -1858,6 +1904,243 @@ function formatDateToVN(dateString) {
 }
 
 // ============================================================
+// KIỂM TRA NGÀY SINH HỢP LỆ
+// Trước đây chỉ regex /^\d{2}\/\d{2}\/\d{4}$/ (đúng ĐỊNH DẠNG), nên các ngày
+// như 31/02/2003, 00/13/2000 vẫn "hợp lệ" và được lưu vào hồ sơ. Hàm này kiểm
+// tra thêm: ngày có thật trên lịch không, không ở tương lai, và tuổi nằm trong
+// khoảng hợp lý (15-100) để bắt các lỗi gõ nhầm rõ ràng.
+// ============================================================
+function parseVNBirthdate(str) {
+    const m = (str || '').trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!m) return null;
+    const day = parseInt(m[1], 10);
+    const month = parseInt(m[2], 10);
+    const year = parseInt(m[3], 10);
+    const date = new Date(year, month - 1, day);
+    // Roundtrip check: nếu Date "tự sửa" ngày (VD 31/02 -> 03/03) thì ngày gốc không có thật
+    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+        return null;
+    }
+    return date;
+}
+
+function validateBirthdateInput(input, { silent = false } = {}) {
+    if (!input) return true;
+    const raw = input.value.trim();
+    if (!raw) return true; // để required-check khác xử lý trường hợp bỏ trống
+
+    const date = parseVNBirthdate(raw);
+    let errorMsg = '';
+    if (!date) {
+        errorMsg = 'Ngày sinh không hợp lệ. Vui lòng kiểm tra lại (định dạng dd/mm/yyyy).';
+    } else {
+        const now = new Date();
+        if (date > now) {
+            errorMsg = 'Ngày sinh không thể ở tương lai.';
+        } else {
+            const age = (now - date) / (365.25 * 24 * 60 * 60 * 1000);
+            if (age < 15 || age > 100) {
+                errorMsg = 'Ngày sinh không hợp lệ. Vui lòng kiểm tra lại.';
+            }
+        }
+    }
+
+    if (errorMsg) {
+        input.style.borderColor = '#EF4444';
+        input.title = errorMsg;
+        if (!silent) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Ngày sinh không hợp lệ',
+                html: `${errorMsg}<br><span style="color:#9CA3AF;font-size:13px;">Định dạng đúng: <b>dd/mm/yyyy</b> (VD: 15/03/2003)</span>`,
+                confirmButtonText: 'Đã hiểu',
+                confirmButtonColor: '#FBBF24'
+            });
+        }
+        return false;
+    }
+
+    input.style.borderColor = '';
+    input.title = '';
+    return true;
+}
+
+// ============================================================
+// KIỂM TRA EMAIL HỢP LỆ
+// Trước đây #email không có validate định dạng nào ở form.js (chỉ dựa vào
+// type="email" của trình duyệt, có thể bị bỏ qua/khác nhau tuỳ trình duyệt,
+// và không chặn được các lỗi như thiếu "@", thiếu domain, khoảng trắng...).
+// ============================================================
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validateEmailInput(input, { silent = false } = {}) {
+    if (!input) return true;
+    const raw = input.value.trim();
+    if (!raw) return true; // để required-check khác xử lý trường hợp bỏ trống
+
+    if (!EMAIL_REGEX.test(raw)) {
+        input.style.borderColor = '#EF4444';
+        input.title = 'Email không hợp lệ. Vui lòng nhập đúng định dạng (VD: ten@example.com).';
+        if (!silent) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Email không hợp lệ',
+                html: `Địa chỉ email bạn nhập chưa đúng định dạng.<br><span style="color:#9CA3AF;font-size:13px;">VD hợp lệ: <b>ten@example.com</b></span>`,
+                confirmButtonText: 'Đã hiểu',
+                confirmButtonColor: '#FBBF24'
+            });
+        }
+        return false;
+    }
+
+    input.style.borderColor = '';
+    input.title = '';
+    return true;
+}
+
+// ============================================================
+// KIỂM TRA SỐ ĐIỆN THOẠI HỢP LỆ (VN)
+// Trước đây #phone không có validate nào — chấp nhận cả chữ, ký tự đặc biệt,
+// độ dài bất kỳ. Quy tắc: số điện thoại VN sau khi bỏ khoảng trắng/dấu gạch
+// phải là 0xxxxxxxxx (10 số, bắt đầu bằng 0) hoặc +84xxxxxxxxx (dạng quốc tế).
+// ============================================================
+const PHONE_REGEX = /^(0\d{9}|\+84\d{9})$/;
+
+function validatePhoneInput(input, { silent = false } = {}) {
+    if (!input) return true;
+    const raw = input.value.replace(/[\s.-]/g, '').trim();
+    if (!raw) return true; // để required-check khác xử lý trường hợp bỏ trống
+
+    if (!PHONE_REGEX.test(raw)) {
+        input.style.borderColor = '#EF4444';
+        input.title = 'Số điện thoại không hợp lệ. Định dạng đúng: 0xxxxxxxxx (10 số) hoặc +84xxxxxxxxx.';
+        if (!silent) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Số điện thoại không hợp lệ',
+                html: `Vui lòng kiểm tra lại số điện thoại.<br><span style="color:#9CA3AF;font-size:13px;">Định dạng đúng: <b>0xxxxxxxxx</b> (10 số) hoặc <b>+84xxxxxxxxx</b></span>`,
+                confirmButtonText: 'Đã hiểu',
+                confirmButtonColor: '#FBBF24'
+            });
+        }
+        return false;
+    }
+
+    input.style.borderColor = '';
+    input.title = '';
+    return true;
+}
+
+// ============================================================
+// DROPDOWN TRƯỜNG ĐH/HV (#school) + Ô "Khác" TỰ DO
+// Biến input#school (text tự do) thành select#school (giữ nguyên id/name để
+// không phá code khác đang gọi document.getElementById('school')) + thêm ô
+// text #school_other chỉ hiện khi chọn "Khác". getSchoolValue()/setSchoolValue()
+// là điểm chung để đọc/ghi giá trị "trường" thực tế (không phải giá trị select thô).
+// ============================================================
+function setupSchoolDropdown() {
+    const oldInput = document.getElementById('school');
+    if (!oldInput || oldInput.tagName === 'SELECT') return; // đã là select rồi, hoặc không tìm thấy field
+
+    const select = document.createElement('select');
+    select.id = 'school';
+    select.name = oldInput.name || 'school';
+    if (oldInput.hasAttribute('required')) select.setAttribute('required', 'required');
+    select.className = oldInput.className;
+
+    const placeholderOpt = document.createElement('option');
+    placeholderOpt.value = '';
+    placeholderOpt.textContent = '-- Chọn trường --';
+    select.appendChild(placeholderOpt);
+
+    HANOI_SCHOOL_OPTIONS.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+    });
+
+    const otherOpt = document.createElement('option');
+    otherOpt.value = SCHOOL_OTHER_VALUE;
+    otherOpt.textContent = 'Khác (trường không có trong danh sách)';
+    select.appendChild(otherOpt);
+
+    const otherInput = document.createElement('input');
+    otherInput.type = 'text';
+    otherInput.id = 'school_other';
+    otherInput.name = 'school_other';
+    otherInput.placeholder = 'Nhập tên trường của bạn';
+    otherInput.className = oldInput.className;
+    otherInput.style.marginTop = '8px';
+    otherInput.style.display = 'none';
+
+    oldInput.replaceWith(select);
+    select.insertAdjacentElement('afterend', otherInput);
+
+    select.addEventListener('change', () => {
+        otherInput.style.display = select.value === SCHOOL_OTHER_VALUE ? '' : 'none';
+        simpleSaveFormData();
+    });
+    otherInput.addEventListener('input', simpleSaveFormData);
+}
+
+// Gán giá trị "trường" (chuỗi bất kỳ, kể cả không có trong danh sách) vào
+// select#school + input#school_other. Dùng khi khôi phục localStorage hoặc
+// prefill dữ liệu hồ sơ gốc (mergeMode) — dữ liệu cũ trước khi có dropdown
+// này có thể là chuỗi tự do bất kỳ, không nằm trong HANOI_SCHOOL_OPTIONS.
+function setSchoolValue(value) {
+    const select = document.getElementById('school');
+    const otherInput = document.getElementById('school_other');
+    if (!select) return;
+    if (!value) return;
+
+    if (HANOI_SCHOOL_OPTIONS.includes(value)) {
+        select.value = value;
+        if (otherInput) otherInput.style.display = 'none';
+    } else {
+        select.value = SCHOOL_OTHER_VALUE;
+        if (otherInput) {
+            otherInput.value = value;
+            otherInput.style.display = '';
+        }
+    }
+}
+
+// Đọc giá trị "trường" thực tế: nếu chọn "Khác" thì lấy từ ô nhập tự do
+function getSchoolValue() {
+    const select = document.getElementById('school');
+    if (!select) return '';
+    if (select.value === SCHOOL_OTHER_VALUE) {
+        return (document.getElementById('school_other')?.value || '').trim();
+    }
+    return select.value || '';
+}
+
+// Kiểm tra: nếu chọn "Khác" thì ô nhập tên trường không được để trống
+function validateSchoolInput({ silent = false } = {}) {
+    const select = document.getElementById('school');
+    if (!select) return true;
+    if (select.value !== SCHOOL_OTHER_VALUE) return true;
+
+    const otherInput = document.getElementById('school_other');
+    if (otherInput && !otherInput.value.trim()) {
+        otherInput.style.borderColor = '#EF4444';
+        if (!silent) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Thiếu tên trường',
+                html: `Bạn đã chọn "Khác" nhưng chưa nhập tên trường.<br><span style="color:#9CA3AF;font-size:13px;">Vui lòng nhập đầy đủ tên trường bạn đang theo học.</span>`,
+                confirmButtonText: 'Đã hiểu',
+                confirmButtonColor: '#FBBF24'
+            });
+        }
+        return false;
+    }
+    if (otherInput) otherInput.style.borderColor = '';
+    return true;
+}
+
+// ============================================================
 // THU THẬP DỮ LIỆU FORM
 // ============================================================
 function collectFormData() {
@@ -1869,7 +2152,7 @@ function collectFormData() {
         email: (document.getElementById('email')?.value || '').trim(),
         email_lower: (document.getElementById('email')?.value || '').trim().toLowerCase(),
         phone: document.getElementById('phone')?.value || '',
-        school: document.getElementById('school')?.value || '',
+        school: getSchoolValue(),
         major: document.getElementById('major')?.value || '',
         facebook: document.getElementById('facebook')?.value || '',
         priority_position: document.getElementById('priority_position')?.value || '',
@@ -1927,6 +2210,17 @@ function collectFormData() {
         }
     }
 
+    // FIX: Ghi lại CHÍNH XÁC (những) ban mà ứng viên đăng ký "Phỏng vấn thay đơn"
+    // (application_type === 'interview'), tách biệt khỏi priority_position/secondary_position
+    // chung của hồ sơ. Lý do: khi merge (VD hồ sơ gốc đã "Điền đơn" 2 ban, giờ bổ sung PVTĐ
+    // chỉ 1 ban), form.js đang loại priority_position/secondary_position khỏi updatePayload
+    // để tránh ghi đè đơn gốc -> nếu không lưu riêng field này, interview-arrangement.html
+    // sẽ không biết ứng viên chỉ đăng ký PVTĐ 1 ban, và xếp lịch nhầm cho cả 2 ban.
+    if (applicationType === 'interview') {
+        formData.interview_departments = [formData.priority_position, formData.secondary_position]
+            .filter(p => p && p !== 'None');
+    }
+
     return formData;
 }
 
@@ -1938,8 +2232,7 @@ function simpleSaveFormData() {
         const formData = collectFormData();
         localStorage.setItem('enactus_form_data', JSON.stringify(formData));
     } catch (error) {
-        console.warn('[Form] Lỗi lưu tạm:', error);
-    }
+            }
 }
 
 // ============================================================
@@ -1957,7 +2250,7 @@ function loadFormData() {
         if (data.gender) document.getElementById('gender').value = data.gender;
         if (data.email) document.getElementById('email').value = data.email;
         if (data.phone) document.getElementById('phone').value = data.phone;
-        if (data.school) document.getElementById('school').value = data.school;
+        if (data.school) setSchoolValue(data.school);
         if (data.major) document.getElementById('major').value = data.major;
         if (data.facebook) document.getElementById('facebook').value = data.facebook;
 
@@ -2020,8 +2313,7 @@ function loadFormData() {
         }, 500);
 
     } catch (error) {
-        console.warn('[Form] Lỗi khôi phục:', error);
-    }
+            }
 }
 
 function restoreBanQuestionsDirectly() {
@@ -2074,8 +2366,24 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Kiểm tra lại ngày sinh / email / số điện thoại lần cuối trước khi gửi
+        // (phòng trường hợp field được điền qua localStorage restore hoặc
+        // mergeMode readonly mà chưa từng đi qua nextSection() để validate)
+        if (!validateBirthdateInput(document.getElementById('birthdate'))) {
+            return;
+        }
+        if (!validateEmailInput(document.getElementById('email'))) {
+            return;
+        }
+        if (!validatePhoneInput(document.getElementById('phone'))) {
+            return;
+        }
+        if (!validateSchoolInput()) {
+            return;
+        }
+
         if (!document.getElementById('agree')?.checked) {
-            Swal.fire({ icon: 'warning', title: 'Chưa xác nhận', text: 'Vui lòng xác nhận rằng tất cả thông tin bạn cung cấp là chính xác.', confirmButtonText: 'OK' });
+            Swal.fire({ icon: 'warning', title: 'Chưa xác nhận', text: 'Vui lòng xác nhận rằng tất cả thông tin bạn cung cấp là chính xác.', confirmButtonText: 'OK', confirmButtonColor: '#FBBF24' });
             return;
         }
 
@@ -2122,16 +2430,32 @@ document.addEventListener('DOMContentLoaded', () => {
                  'phone', 'school', 'major', 'facebook', 'priority_position', 'secondary_position']
                     .forEach(k => delete updatePayload[k]);
 
+                // all_departments cũng phải được GỘP với dữ liệu gốc, không ghi đè.
+                // Lý do: all_departments vừa tính ở trên chỉ phản ánh priority/secondary_position
+                // của LẦN SUBMIT NÀY (VD ở case lock "chỉ khoá NV1, NV2 tự do" trong
+                // lockBanSelectionToExisting(), ứng viên PVTĐ có thể chọn thêm 1 ban mới cho
+                // NV2). Nếu ghi đè trực tiếp, all_departments của hồ sơ sẽ MẤT ban đã ghi nhận
+                // ở lần submit trước đó (dashboard lọc theo ban sẽ bị sai).
+                const existingDepartments = Array.isArray(freshData.all_departments) ? freshData.all_departments : [];
+                updatePayload.all_departments = Array.from(new Set([...existingDepartments, ...updatePayload.all_departments]));
+
                 updatePayload.application_types = firebase.firestore.FieldValue.arrayUnion(applicationType);
                 updatePayload.updated_at = firebase.firestore.FieldValue.serverTimestamp();
 
                 await db.collection('applications').doc(existingApplicationId).update(updatePayload);
                 savedAppId = existingApplicationId;
 
-                await logActivity(savedAppId, 'merge_application_type', {
+                const mergeLogDetail = {
                     added_type: applicationType,
                     note: `Ứng viên bổ sung hình thức "${applicationType === 'interview' ? 'Phỏng vấn thay đơn' : 'Điền đơn'}" vào hồ sơ hiện có.`
-                });
+                };
+                // Ghi rõ (những) ban đăng ký PVTĐ vào log, để tab "Lịch sử" bên Dashboard xem được
+                // chính xác ứng viên đăng ký ban nào (không chỉ biết "có bổ sung PVTĐ").
+                // Lưu ý: Firestore không cho phép field `undefined`, nên chỉ gán khi có giá trị.
+                if (applicationType === 'interview') {
+                    mergeLogDetail.interview_departments = formObject.interview_departments || [];
+                }
+                await logActivity(savedAppId, 'merge_application_type', mergeLogDetail);
             } else {
                 // ---- TẠO HỒ SƠ MỚI: kiểm tra trùng lần cuối để tránh race-condition ----
                 const dupCheck = await db.collection('applications')
@@ -2176,8 +2500,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
         } catch (error) {
-            console.error('[Form] Lỗi gửi đơn:', error);
-            Swal.fire({ icon: 'error', title: 'Có lỗi xảy ra', text: 'Không thể gửi đơn ứng tuyển. Vui lòng thử lại. Chi tiết: ' + error.message, confirmButtonText: 'OK' });
+                        Swal.fire({ icon: 'error', title: 'Có lỗi xảy ra', text: 'Không thể gửi đơn ứng tuyển. Vui lòng thử lại. Chi tiết: ' + error.message, confirmButtonText: 'OK', confirmButtonColor: '#FBBF24' });
             if (submitBtn) {
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
@@ -2210,15 +2533,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     updateSecondaryOptions();
     updateProgressBar();
 
+    // Chuyển #school thành dropdown trường ĐH/HV (phải chạy TRƯỚC loadFormData()
+    // vì loadFormData() gọi setSchoolValue() dựa vào select đã tồn tại)
+    setupSchoolDropdown();
+
     // Khôi phục dữ liệu tạm
     loadFormData();
 
-    // Thiết lập auto-save
-    document.addEventListener('input', () => setTimeout(simpleSaveFormData, 300));
-    document.addEventListener('change', () => setTimeout(simpleSaveFormData, 300));
+    // Thiết lập auto-save (debounce đúng cách: mỗi lần gõ/đổi giá trị chỉ giữ
+    // lại 1 timer duy nhất bằng cách clearTimeout cái cũ trước khi set cái mới,
+    // tránh gõ nhanh tạo hàng chục timer chồng nhau -> ghi localStorage thừa)
+    let autoSaveTimer = null;
+    const scheduleAutoSave = (delay) => {
+        if (autoSaveTimer) clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(simpleSaveFormData, delay);
+    };
+    document.addEventListener('input', () => scheduleAutoSave(300));
+    document.addEventListener('change', () => scheduleAutoSave(300));
     document.addEventListener('click', e => {
         if (e.target.type === 'radio' || e.target.type === 'checkbox') {
-            setTimeout(simpleSaveFormData, 200);
+            scheduleAutoSave(200);
         }
     });
     window.addEventListener('beforeunload', simpleSaveFormData);
@@ -2235,16 +2569,21 @@ document.addEventListener("DOMContentLoaded", async () => {
             e.target.value = v;
         });
         birthdateInput.addEventListener('blur', function(e) {
-            const v = e.target.value.trim();
-            if (!v) return;
-            const m = v.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-            if (!m) {
-                e.target.style.borderColor = '#EF4444';
-                e.target.title = 'Vui lòng nhập đúng định dạng dd/mm/yyyy';
-            } else {
-                e.target.style.borderColor = '';
-                e.target.title = '';
-            }
+            validateBirthdateInput(e.target, { silent: true });
+        });
+    }
+
+    // Validate realtime khi rời khỏi ô email / số điện thoại
+    const emailInputEl = document.getElementById('email');
+    if (emailInputEl) {
+        emailInputEl.addEventListener('blur', function(e) {
+            validateEmailInput(e.target, { silent: true });
+        });
+    }
+    const phoneInputEl = document.getElementById('phone');
+    if (phoneInputEl) {
+        phoneInputEl.addEventListener('blur', function(e) {
+            validatePhoneInput(e.target, { silent: true });
         });
     }
 
@@ -2288,7 +2627,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Override alert
     window.alert = function(message) {
-        Swal.fire({ icon: 'warning', title: 'Cảnh báo', text: message, confirmButtonText: 'OK' });
+        Swal.fire({ icon: 'warning', title: 'Cảnh báo', text: message, confirmButtonText: 'OK', confirmButtonColor: '#FBBF24' });
     };
 
     // Retry khôi phục cuối
