@@ -2004,9 +2004,29 @@
           <i class="fas fa-layer-group"></i>
           <span>Vòng tuyển chọn</span>
         </div>
+
+        <div class="nav-section-label">Phỏng vấn</div>
         <div class="nav-item" onclick="window.location.href='interview.html'">
           <i class="fas fa-comments"></i>
           <span>Interview Day</span>
+        </div>
+        <div
+          class="nav-item"
+          id="interview-arrangement-nav-item"
+          style="display: none"
+          onclick="window.location.href='interview-arrangement.html'"
+        >
+          <i class="fas fa-calendar-check"></i>
+          <span>Sắp xếp phỏng vấn</span>
+        </div>
+        <div
+          class="nav-item"
+          id="vote-nav-item"
+          style="display: none"
+          onclick="window.location.href='vote.html'"
+        >
+          <i class="fas fa-square-poll-vertical"></i>
+          <span>Vote</span>
         </div>
         <div
           class="nav-item system-settings-menu"
@@ -2022,6 +2042,11 @@
           <i class="fas fa-people-group"></i>
           <span>Teamwork</span>
         </div>
+        <div class="nav-item" id="feedback-nav-item" style="display: none" onclick="window.location.href='feedback.html'">
+          <i class="fas fa-comment-dots"></i>
+          <span>Feedback</span>
+        </div>
+
 
         <div class="nav-section-label" id="nav-label-system" style="display: none">Hệ thống</div>
         <div
@@ -3162,6 +3187,17 @@
           publishRoundBtn.style.display =
             userRole === "superadmin" ? "inline-flex" : "none";
 
+        // Cập nhật vòng & Lưu trữ: chỉ superadmin nhìn thấy
+        const updateRoundBtn = document.getElementById("update-round-btn");
+        if (updateRoundBtn)
+          updateRoundBtn.style.display =
+            userRole === "superadmin" ? "inline-flex" : "none";
+
+        const archiveBtn = document.getElementById("archive-apps-btn");
+        if (archiveBtn)
+          archiveBtn.style.display =
+            userRole === "superadmin" ? "flex" : "none";
+
         // Mail nav (quản lý template email) — CHỈ SuperAdmin được thấy/truy cập
         const superadminMenus = document.querySelectorAll(".superadmin-only-menu");
         superadminMenus.forEach((menu) => {
@@ -3175,8 +3211,17 @@
             userRole === "superadmin" || userRole === "admin" ? "block" : "none";
         }
 
-        // Teamwork nav: chỉ hiện cho superadmin/admin, hoặc advisor/supporter của ít nhất 1 team
+        // Teamwork & Feedback nav: chỉ hiện cho superadmin/admin, hoặc advisor/supporter của ít nhất 1 team
         updateTeamworkNavVisibility();
+
+        // Sắp xếp phỏng vấn: chỉ hiện cho admin (và superadmin)
+        const interviewArrangementNav = document.getElementById("interview-arrangement-nav-item");
+        if (interviewArrangementNav)
+          interviewArrangementNav.style.display =
+            userRole === "admin" || userRole === "superadmin" ? "flex" : "none";
+
+        // Vote: chỉ hiện khi superadmin đang mở ít nhất 1 vòng vote
+        updateVoteNavVisibility();
 
         // Member: chỉ được thấy Dashboard, Response, Interview Day, Teamwork trên sidebar —
         // ẩn hết các mục tuyển dụng nội bộ khác (Form, Thông tin ứng viên, Vòng tuyển chọn).
@@ -3194,13 +3239,15 @@
         }
       }
 
-      // Chỉ hiện nav Teamwork cho superadmin/admin, hoặc advisor/supporter của ít nhất 1 team
+      // Chỉ hiện nav Teamwork & Feedback cho superadmin/admin, hoặc advisor/supporter của ít nhất 1 team
       async function updateTeamworkNavVisibility() {
         const navEl = document.getElementById("teamwork-nav-item");
+        const feedbackEl = document.getElementById("feedback-nav-item");
         const labelEl = document.getElementById("nav-label-team");
-        if (!navEl) return;
+        if (!navEl && !feedbackEl) return;
         const setVisible = (visible) => {
-          navEl.style.display = visible ? "flex" : "none";
+          if (navEl) navEl.style.display = visible ? "flex" : "none";
+          if (feedbackEl) feedbackEl.style.display = visible ? "flex" : "none";
           if (labelEl) labelEl.style.display = visible ? "block" : "none";
         };
 
@@ -3219,7 +3266,38 @@
           });
           setVisible(isStaff);
         } catch (e) {
-          console.error("Không thể kiểm tra quyền Teamwork:", e);
+          console.error("Không thể kiểm tra quyền Teamwork/Feedback:", e);
+          setVisible(false);
+        }
+      }
+
+      // Vote nav: hiện khi superadmin đang mở ít nhất 1 vòng vote
+      // Cờ voteOpen_roundX được lưu trong 2 doc Calendar riêng (giống vote.html):
+      // - system/interview_schedule        → voteOpen_round1, voteOpen_round4, memberVoteOpen (fallback)
+      // - system/interview_schedule_round2 → voteOpen_round2
+      async function updateVoteNavVisibility() {
+        const navEl = document.getElementById("vote-nav-item");
+        if (!navEl) return;
+        const setVisible = (visible) => {
+          navEl.style.display = visible ? "flex" : "none";
+        };
+
+        try {
+          const [round4Doc, round2Doc] = await Promise.all([
+            db.collection("system").doc("interview_schedule").get(),
+            db.collection("system").doc("interview_schedule_round2").get(),
+          ]);
+          const d4 = round4Doc.exists ? round4Doc.data() : null;
+          const d2 = round2Doc.exists ? round2Doc.data() : null;
+
+          const memberVoteOpen = !!(d4 && d4.memberVoteOpen);
+          const voteOpenRound1 = d4 && ("voteOpen_round1" in d4) ? !!d4.voteOpen_round1 : memberVoteOpen;
+          const voteOpenRound4 = d4 && ("voteOpen_round4" in d4) ? !!d4.voteOpen_round4 : memberVoteOpen;
+          const voteOpenRound2 = d2 && ("voteOpen_round2" in d2) ? !!d2.voteOpen_round2 : memberVoteOpen;
+
+          setVisible(voteOpenRound1 || voteOpenRound2 || voteOpenRound4);
+        } catch (e) {
+          console.error("Không thể kiểm tra trạng thái Vote:", e);
           setVisible(false);
         }
       }
