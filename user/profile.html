@@ -923,8 +923,8 @@
         }
 
         .timeline-header h2 {
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
             color: var(--neutral-800);
             letter-spacing: -0.01em;
         }
@@ -2054,7 +2054,7 @@
             const card = document.getElementById('result-card');
             if (!card || !applicationData) return;
 
-            if (applicationData.result_published !== true) {
+            if (applicationData.current_round !== 'success') {
                 card.style.display = 'none';
                 return;
             }
@@ -2405,7 +2405,7 @@
             }
 
             if (roundId === 'success') {
-                if (applicationData.result_published !== true) {
+                if (applicationData.current_round !== 'success') {
                     const waitingRow = createDetailRow('Kết quả', 'Đang chờ BTC công bố');
                     frag.appendChild(waitingRow);
                     return frag;
@@ -2488,7 +2488,7 @@
                     const s = getRound1Status('secondary');
                     roundStatus = mergeStatus(p, s);
                 } else if (round.id === 'success') {
-                    if (applicationData.result_published === true) {
+                    if (applicationData.current_round === 'success') {
                         const p = applicationData.round4_priority_status;
                         const s = applicationData.secondary_position ? applicationData.round4_secondary_status : null;
                         roundStatus = s ? mergeStatus(p, s) : (p || 'pending');
