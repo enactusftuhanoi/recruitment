@@ -429,15 +429,15 @@
             const accountData = accountSnapshot.docs[0].data();
             const userRole = accountData.role;
             if (userRole !== 'admin' && userRole !== 'superadmin') {
-              window.location.href = '../user/profile.html'; return;
+              window.location.href = 'dashboard.html'; return;
             }
           } else {
-            window.location.href = '../user/profile.html'; return;
+            window.location.href = 'dashboard.html'; return;
           }
         } else {
           const userData = userDoc.data();
           if (userData.role !== 'admin' && userData.role !== 'superadmin') {
-            window.location.href = '../user/profile.html'; return;
+            window.location.href = 'dashboard.html'; return;
           }
         }
 

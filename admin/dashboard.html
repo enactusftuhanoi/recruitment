@@ -437,6 +437,12 @@
         box-shadow: var(--shadow);
       }
 
+      #interview-day-header-btn:hover {
+        background-color: #2563eb !important;
+        border-color: #2563eb !important;
+        color: var(--white) !important;
+      }
+
       .refresh-btn i,
       .export-btn i {
         margin-right: 8px;
@@ -2006,7 +2012,7 @@
         </div>
 
         <div class="nav-section-label">Phỏng vấn</div>
-        <div class="nav-item" onclick="window.location.href='interview.html'">
+        <div class="nav-item" id="interview-day-nav-item" onclick="window.location.href='interview.html'">
           <i class="fas fa-comments"></i>
           <span>Interview Day</span>
         </div>
@@ -2088,6 +2094,15 @@
       <div class="header">
         <h1 class="page-title" id="page-title">Dashboard</h1>
         <div class="header-actions">
+          <button
+            class="refresh-btn"
+            id="interview-day-header-btn"
+            style="display: none; background-color: var(--info); border-color: var(--info); color: var(--white);"
+            onclick="window.open('interview.html', '_blank')"
+          >
+            <i class="fas fa-comments"></i>
+            Interview Day
+          </button>
           <button class="reset-btn" id="reset-rounds-btn">
             <i class="fas fa-undo"></i>
             Reset dữ liệu vòng
@@ -3192,6 +3207,18 @@
         if (updateRoundBtn)
           updateRoundBtn.style.display =
             userRole === "superadmin" ? "inline-flex" : "none";
+
+        // Interview Day (nút header): chỉ superadmin nhìn thấy
+        const interviewDayBtn = document.getElementById("interview-day-header-btn");
+        if (interviewDayBtn)
+          interviewDayBtn.style.display =
+            userRole === "superadmin" ? "flex" : "none";
+
+        // Interview Day (mục sidebar): hiện cho member/admin, ẩn với superadmin (đã có nút riêng trên header)
+        const interviewDayNav = document.getElementById("interview-day-nav-item");
+        if (interviewDayNav)
+          interviewDayNav.style.display =
+            userRole === "superadmin" ? "none" : "flex";
 
         const archiveBtn = document.getElementById("archive-apps-btn");
         if (archiveBtn)
