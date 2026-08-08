@@ -819,16 +819,17 @@ async function doLogin() {
     // ══════════════════════════════════════════════
     //  STAFF FLOW — check account collection như cũ
     // ══════════════════════════════════════════════
-    const querySnapshot = await db.collection('account').where('email', '==', email).get();
+    const accountDocId = email.toLowerCase();
+    const accountDocSnap = await db.collection('account').doc(accountDocId).get();
 
-    if (querySnapshot.empty) {
+    if (!accountDocSnap.exists) {
       await auth.signOut();
       setLoginLoading(false);
       showError('Email này chưa được cấp quyền trong hệ thống.');
       return;
     }
 
-    const accountData = querySnapshot.docs[0].data();
+    const accountData = accountDocSnap.data();
     const role = (accountData.role || 'member').toLowerCase();
 
     // Nếu nhân sự vô tình chọn tab Alumni → chặn
