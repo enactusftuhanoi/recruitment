@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Interview Day | Enactus FTU Hanoi</title>
+<link rel="icon" id="favicon-link" href="/favicon.ico">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
@@ -283,6 +284,12 @@ html.kiosk-mode #app.visible{display:none}
 /* TABLE CARD */
 .table-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color var(--t),box-shadow var(--t)}
 .table-card.active-table{border-color:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,.12)}
+.tb-ot-item{padding:8px 10px;border-radius:6px;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.tb-ot-item:hover{background:var(--ink-10)}
+.tb-ot-name{font-size:12px;font-weight:700}
+.tb-ot-sub{font-size:10px;color:var(--ink-60)}
+@keyframes jumpFlash{0%,100%{box-shadow:0 0 0 2px var(--red)}50%{box-shadow:0 0 0 6px rgba(220,38,38,.25)}}
+.jump-flash{animation:jumpFlash .5s ease-in-out 3}
 .table-card.table-overflow{border-color:var(--red);background:var(--red-soft);animation:pulseRed 1.5s ease-in-out infinite;}
 @keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(229,62,62,.3)}50%{box-shadow:0 0 0 4px rgba(229,62,62,.1)}}
 .table-overflow-badge{background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:4px;letter-spacing:.3px;flex-shrink:0;display:inline-flex;align-items:center;gap:3px}
@@ -618,6 +625,13 @@ html.kiosk-mode #app.visible{display:none}
     <img class="topbar-logo" src="/assets/logo_den.webp" alt="Enactus FTU"/>
     <div class="topbar-round" id="tb-round">—</div>
     <div class="topbar-right">
+      <div id="tb-overtime-wrap" style="display:none;position:relative">
+        <button id="tb-overtime-badge" onclick="toggleOvertimePanel()" style="display:flex;align-items:center;gap:5px;background:var(--red-soft);color:var(--red);border:1.5px solid var(--red);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">
+          <svg class="svg-icon" style="width:12px;height:12px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span id="tb-overtime-count">0</span> quá giờ
+        </button>
+        <div id="tb-overtime-panel" style="display:none;position:absolute;top:calc(100% + 6px);right:0;min-width:260px;max-width:320px;max-height:320px;overflow-y:auto;background:var(--white);border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--shadow-lg);z-index:300;padding:6px"></div>
+      </div>
       <select id="tb-viewas" style="display:none;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;border:1.5px solid var(--orange);background:var(--orange-soft);color:var(--orange);font-family:inherit;cursor:pointer" onchange="setViewAsRole(this.value)"></select>
       <div class="topbar-clock" id="tb-clock">00:00:00</div>
       <div class="topbar-user" id="tb-user">—</div>
@@ -746,19 +760,19 @@ html.kiosk-mode #app.visible{display:none}
         <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         Phân quyền
       </button>
-      <button class="btn btn-ghost btn-sm" onclick="exportExcel()" style="margin-left:auto">
+      <button class="btn btn-ghost btn-sm" id="btn-export" onclick="exportExcel()" style="margin-left:auto;display:none">
         <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Xuất Excel
       </button>
-      <button class="btn btn-ghost btn-sm" onclick="setDefaultTimerMinutes()" title="Đặt thời gian phỏng vấn mặc định cho cả ca (từng bàn có thể tự chỉnh riêng)">
+      <button class="btn btn-ghost btn-sm" id="btn-timer" onclick="setDefaultTimerMinutes()" title="Đặt thời gian phỏng vấn mặc định cho cả ca (từng bàn có thể tự chỉnh riêng)" style="display:none">
         <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         Thời lượng PV
       </button>
-      <button class="btn btn-ghost btn-sm" onclick="openKioskTab()" title="Mở màn hình Kiosk ở tab riêng, toàn màn hình — chỉ hiện ai đang được gọi vào bàn nào">
+      <button class="btn btn-ghost btn-sm" id="btn-kiosk" onclick="openKioskTab()" title="Mở màn hình Kiosk ở tab riêng, toàn màn hình — chỉ hiện ai đang được gọi vào bàn nào" style="display:none">
         <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         Kiosk
       </button>
-      <button class="btn btn-ghost btn-sm" onclick="syncNow()">
+      <button class="btn btn-ghost btn-sm" id="btn-sync" onclick="syncNow()" style="display:none">
         <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
         Đồng bộ
       </button>
@@ -850,7 +864,7 @@ html.kiosk-mode #app.visible{display:none}
         </div>
 
         <!-- ACTIVITY LOG -->
-        <div class="panel-card">
+        <div class="panel-card" id="log-panel-card">
           <div class="panel-header">
             <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="12 20 12 10"/><polyline points="18 20 18 4"/><polyline points="6 20 6 16"/></svg>
             Nhật ký
@@ -1178,6 +1192,22 @@ html.kiosk-mode #app.visible{display:none}
   </div>
 </div>
 
+<!-- MODAL: NHẮC KHI QUAY LẠI TAB (rời tab lúc đang PV) -->
+<div class="modal-bg" id="modal-away-reminder">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">👋 Chào mừng quay lại</div>
+      <button class="modal-close" onclick="closeModal('modal-away-reminder')">
+        <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-away-reminder-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-away-reminder')">Để sau</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: CHAT (dùng chung cho chat theo Phòng và chat theo Bàn) -->
 <div class="modal-bg" id="modal-chat">
   <div class="modal" style="max-width:440px">
@@ -1449,10 +1479,19 @@ function canKickCandidate(){
   if(canManageRooms())return true;
   return checkPerm('kick_candidate');
 }
+// Bộ quyền mặc định khi Firestore chưa có document phân quyền (lần đầu deploy).
+// QUAN TRỌNG: fail-closed — role không có trong danh sách hoặc quyền không được liệt kê => KHÔNG có quyền.
+// SuperAdmin/Admin không đi qua checkPerm() (đã được canManageRooms()/isAdmin() xử lý riêng ở trên),
+// nên bộ mặc định này chỉ cần phủ các role vận hành: host, checkin, pic.
+const DEFAULT_PERMISSIONS={
+  host:{manage_rooms:true,checkin:true,broadcast:true,view_all:true,pause_room:true,kick_candidate:true},
+  checkin:{checkin:true},
+  pic:{act_table:true,pause_room:true},
+};
 function checkPerm(key){
-  if(!S.permissions||Object.keys(S.permissions).length===0)return true;
   const role=S.sessionRole||S.role;
-  return !!(S.permissions[role]&&S.permissions[role][key]);
+  const table=(S.permissions&&Object.keys(S.permissions).length>0)?S.permissions:DEFAULT_PERMISSIONS;
+  return !!(table[role]&&table[role][key]);
 }
 
 // ══════════════════════════════════════════════════
@@ -1505,6 +1544,281 @@ function sendBrowserNotif(title,body,forceShow=false){
   if(!('Notification' in window)||Notification.permission!=='granted')return;
   if(!forceShow&&document.visibilityState==='visible')return; // Chỉ gửi khi user rời trang (trừ force)
   try{new Notification('Enactus FTU · '+title,{body,icon:'/assets/icon.png'});}catch(e){}
+}
+
+// ══════════════════════════════════════════════════
+//  NHẮC KHI RỜI TAB LÚC ĐANG PHỎNG VẤN (chủ yếu cho PIC bàn)
+//  Ý tưởng: PIC hay chuyển sang tab khác lúc đang PV rồi quên quay lại đúng lúc.
+//  → Lúc rời tab: bắn 1 thông báo trình duyệt kèm thời gian còn lại của bàn mình.
+//  → Lúc quay lại tab: hiện popup tóm tắt đã đi bao lâu + trạng thái giờ giấc của
+//    từng bàn đang PV, cho phép cập nhật trạng thái ngay từ popup.
+// ══════════════════════════════════════════════════
+let _awayHiddenAt=null;
+function getMyActiveInterviewTables(){
+  // Những bàn mà user hiện tại là PIC/interviewer VÀ đang có ứng viên ở trạng thái 'interview'.
+  const out=[];
+  (S.rooms||[]).forEach(room=>{
+    (room.tables||[]).forEach(table=>{
+      const isMine=(table.picEmails||[]).includes(S.userEmail)||
+        (getTableInterviewersForSlot?.(room,table)||[]).includes(S.userName);
+      if(!isMine)return;
+      const cand=S.candidates.find(c=>c.tableId===table.id&&c.status==='interview'&&c.interviewAt);
+      if(cand)out.push({room,table,cand});
+    });
+  });
+  return out;
+}
+function handleVisibilityForAwayReminder(){
+  if(document.hidden){
+    const active=getMyActiveInterviewTables();
+    if(active.length){
+      _awayHiddenAt=Date.now();
+      const first=active[0];
+      const minutes=first.table.timerMinutes||S.defaultTimerMinutes||DEFAULT_INTERVIEW_MINUTES;
+      const remainMs=(toMs(first.cand.interviewAt)+minutes*60000)-Date.now();
+      const remainTxt=remainMs>=0?`còn ~${Math.max(1,Math.round(remainMs/60000))} phút`:'đã QUÁ giờ';
+      sendBrowserNotif(
+        `${first.table.name} đang phỏng vấn`,
+        `${first.cand.name} — ${remainTxt}. Nhớ quay lại cập nhật trạng thái khi xong nhé.`
+      );
+    }else{
+      _awayHiddenAt=null;
+    }
+  }else{
+    if(_awayHiddenAt){
+      const awayMs=Date.now()-_awayHiddenAt;
+      _awayHiddenAt=null;
+      if(awayMs>20000)showAwayReminderPopup(awayMs); // chỉ phiền nếu đi thật sự (>20s), tránh spam khi đổi cửa sổ nhanh
+    }
+  }
+}
+function showAwayReminderPopup(awayMs){
+  const active=getMyActiveInterviewTables();
+  const awayMin=Math.max(1,Math.round(awayMs/60000));
+  const body=document.getElementById('modal-away-reminder-body');
+  if(!active.length){
+    body.innerHTML=`<div style="font-size:13px;color:var(--ink-60)">Bạn vừa rời tab khoảng <b>${awayMin} phút</b>. Hiện bàn của bạn không có ứng viên đang phỏng vấn.</div>`;
+    openModal('modal-away-reminder');return;
+  }
+  body.innerHTML=`
+    <div style="font-size:13px;color:var(--ink-60);margin-bottom:10px">Bạn vừa rời tab khoảng <b>${awayMin} phút</b>. Cập nhật nhanh trạng thái các ứng viên đang PV:</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${active.map(({table,cand})=>{
+        const minutes=table.timerMinutes||S.defaultTimerMinutes||DEFAULT_INTERVIEW_MINUTES;
+        const remainMs=(toMs(cand.interviewAt)+minutes*60000)-Date.now();
+        const over=remainMs<0;
+        const absMs=Math.abs(remainMs);
+        const mm=String(Math.floor(absMs/60000)).padStart(2,'0');
+        const ss=String(Math.floor((absMs%60000)/1000)).padStart(2,'0');
+        return `<div style="border:1px solid var(--border);border-radius:var(--r-md);padding:10px 12px;display:flex;align-items:center;gap:10px">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:13px">${cand.name}</div>
+            <div style="font-size:11px;color:var(--ink-60)">${table.name} · ${over?'⏰ quá giờ':'⏳ còn lại'} ${over?'+':''}${mm}:${ss}</div>
+          </div>
+          <button class="btn btn-sm btn-primary" onclick="setCandidateStatus('${cand.id}','done','');closeModal('modal-away-reminder')">Hoàn thành</button>
+        </div>`;
+      }).join('')}
+    </div>`;
+  openModal('modal-away-reminder');
+}
+document.addEventListener('visibilitychange',handleVisibilityForAwayReminder);
+
+// ══════════════════════════════════════════════════
+//  NHẤP NHÁY TIÊU ĐỀ TAB + FAVICON KHI RỜI TAB MÀ CÓ BÀN QUÁ GIỜ
+//  Không dùng emoji (theo yêu cầu) — favicon cảnh báo được vẽ bằng canvas (dấu !),
+//  favicon thường cũng vẽ bằng canvas để đảm bảo đổi qua đổi lại được ổn định
+//  (nếu bỏ hẳn thẻ <link rel="icon"> thì một số trình duyệt không tự khôi phục lại).
+// ══════════════════════════════════════════════════
+const ORIGINAL_TITLE=document.title;
+const ALERT_TITLE_BASE='(!) quá giờ — quay lại tab';
+const FAVICON_PATH='/favicon.ico';
+let _titleBlinkOn=false;
+let _faviconNormalUrl=null;
+let _faviconImg=null,_faviconImgReady=false;
+let _faviconAlertCache={}; // count -> data url, tránh vẽ lại canvas mỗi giây (chỉ cache khi đã có ảnh gốc thật)
+function initFavicons(){
+  if(_faviconNormalUrl)return;
+  // Dùng đúng favicon.ico thật của site (ở thư mục gốc) làm favicon bình thường —
+  // không cần vẽ gì cả, gán thẳng luôn.
+  _faviconNormalUrl=FAVICON_PATH;
+  document.getElementById('favicon-link').href=_faviconNormalUrl;
+  // Preload sẵn ảnh này để lúc cần overlay badge số (trạng thái cảnh báo) thì vẽ đè lên
+  // trên chính favicon.ico, thay vì phải vẽ 1 icon giả từ đầu.
+  _faviconImg=new Image();
+  _faviconImg.onload=()=>{_faviconImgReady=true;};
+  _faviconImg.onerror=()=>{_faviconImgReady=false;};
+  _faviconImg.src=FAVICON_PATH;
+}
+// Favicon cảnh báo = favicon.ico gốc + badge tròn đỏ ghi số bàn quá giờ đè góc dưới phải
+// (không phải icon riêng, không emoji — chỉ overlay số lên chính logo thật của site).
+function getAlertFaviconURL(count){
+  const key=count>9?'9plus':String(count);
+  if(_faviconAlertCache[key])return _faviconAlertCache[key];
+  const c=document.createElement('canvas');c.width=64;c.height=64;
+  const ctx=c.getContext('2d');
+  try{
+    if(_faviconImgReady){
+      ctx.drawImage(_faviconImg,0,0,64,64);
+    }else{
+      // Ảnh gốc chưa kịp load — vẽ tạm nền cam để vẫn có cảm giác cảnh báo, không cache lại
+      // (lần tick sau ảnh load xong sẽ tự vẽ đúng bằng favicon.ico thật).
+      ctx.beginPath();ctx.arc(32,32,30,0,Math.PI*2);ctx.fillStyle='#D97706';ctx.fill();
+    }
+    if(count>0){
+      const label=count>9?'9+':String(count);
+      ctx.beginPath();ctx.arc(49,49,15,0,Math.PI*2);ctx.fillStyle='#DC2626';ctx.fill();
+      ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle='#fff';ctx.font='bold 18px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(label,49,50);
+    }
+    const url=c.toDataURL('image/png');
+    if(_faviconImgReady)_faviconAlertCache[key]=url; // chỉ cache khi đã vẽ đúng ảnh thật
+    return url;
+  }catch(e){
+    // Hiếm khi xảy ra (canvas bị taint) → fallback dùng nguyên favicon.ico, không badge
+    return FAVICON_PATH;
+  }
+}
+function computeOvertimeTables(){
+  // Quét TOÀN BỘ bàn trong ca (slot) đang mở hiện tại — không chỉ bàn của riêng mình,
+  // để phục vụ thanh tổng hợp cho Host Tổng.
+  const out=[];
+  (S.rooms||[]).forEach(room=>{
+    (room.tables||[]).forEach(table=>{
+      const cand=S.candidates.find(c=>c.tableId===table.id&&c.status==='interview'&&c.interviewAt);
+      if(!cand)return;
+      const minutes=table.timerMinutes||S.defaultTimerMinutes||DEFAULT_INTERVIEW_MINUTES;
+      const overMs=Date.now()-(toMs(cand.interviewAt)+minutes*60000);
+      if(overMs>0)out.push({room,table,cand,overMs});
+    });
+  });
+  return out.sort((a,b)=>b.overMs-a.overMs);
+}
+function myOvertimeTables(){
+  return computeOvertimeTables().filter(({room,table})=>
+    (table.picEmails||[]).includes(S.userEmail)||
+    (getTableInterviewersForSlot?.(room,table)||[]).includes(S.userName)
+  );
+}
+function tickAwayTitleBlink(){
+  initFavicons();
+  const mine=myOvertimeTables();
+  const shouldBlink=document.hidden&&mine.length>0;
+  const link=document.getElementById('favicon-link');
+  if(!shouldBlink){
+    if(_titleBlinkOn){
+      document.title=ORIGINAL_TITLE;
+      link.href=_faviconNormalUrl;
+      _titleBlinkOn=false;
+    }
+    return;
+  }
+  _titleBlinkOn=!_titleBlinkOn;
+  document.title=_titleBlinkOn?`(${mine.length}) ${ALERT_TITLE_BASE}`:ORIGINAL_TITLE;
+  link.href=_titleBlinkOn?getAlertFaviconURL(mine.length):_faviconNormalUrl;
+}
+
+// ── Âm báo khi 1 bàn CHUYỂN sang trạng thái quá giờ (chỉ báo đúng lúc chuyển, không lặp lại) ──
+let _appAudioCtx=null;
+function unlockAppAudio(){
+  try{
+    _appAudioCtx=_appAudioCtx||new(window.AudioContext||window.webkitAudioContext)();
+    if(_appAudioCtx.state==='suspended')_appAudioCtx.resume();
+  }catch(e){}
+}
+document.addEventListener('click',unlockAppAudio,{once:true});
+function playOvertimeChime(){
+  if(!_appAudioCtx)return;
+  try{
+    const ctx=_appAudioCtx;
+    [660,440].forEach((freq,i)=>{ // 2 nốt đi xuống — khác chime "gọi ứng viên mới" của Kiosk (đi lên)
+      const o=ctx.createOscillator();const g=ctx.createGain();
+      o.type='square';o.frequency.value=freq;
+      o.connect(g);g.connect(ctx.destination);
+      const t=ctx.currentTime+i*0.16;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(.15,t+.02);
+      g.gain.exponentialRampToValueAtTime(.001,t+.3);
+      o.start(t);o.stop(t+.32);
+    });
+  }catch(e){}
+}
+let _prevOvertimeIds=new Set();
+function checkOvertimeTransitions(){
+  // Host/Admin: theo dõi tất cả bàn (để dùng chung với thanh tổng hợp). Role khác (PIC...): chỉ bàn của mình.
+  const relevant=canManageRooms()?computeOvertimeTables():myOvertimeTables();
+  const currentIds=new Set(relevant.map(r=>r.table.id));
+  relevant.forEach(({table,cand})=>{
+    if(!_prevOvertimeIds.has(table.id)){
+      playOvertimeChime();
+      sendBrowserNotif(`${table.name} quá giờ`,`${cand.name} đã quá thời gian phỏng vấn dự kiến, nhớ kiểm tra lại.`);
+    }
+  });
+  _prevOvertimeIds=currentIds;
+}
+
+// ── Thanh tổng hợp "quá giờ" trên topbar cho Host Tổng/Admin — bấm vào để nhảy tới bàn ──
+function renderOvertimeBadge(){
+  const wrap=document.getElementById('tb-overtime-wrap');
+  if(!wrap)return;
+  if(!canManageRooms()){wrap.style.display='none';return;}
+  const list=computeOvertimeTables();
+  if(!list.length){
+    wrap.style.display='none';
+    document.getElementById('tb-overtime-panel').style.display='none';
+    return;
+  }
+  wrap.style.display='';
+  document.getElementById('tb-overtime-count').textContent=list.length;
+  document.getElementById('tb-overtime-panel').innerHTML=list.map(({room,table,cand,overMs})=>{
+    const mm=String(Math.floor(overMs/60000)).padStart(2,'0');
+    const ss=String(Math.floor((overMs%60000)/1000)).padStart(2,'0');
+    return `<div class="tb-ot-item" onclick="jumpToTable('${table.id}')">
+      <div class="tb-ot-name">${escHtml(table.name)}</div>
+      <div class="tb-ot-sub">${escHtml(room.name||'')} · ${escHtml(cand.name)} · +${mm}:${ss}</div>
+    </div>`;
+  }).join('');
+}
+function toggleOvertimePanel(){
+  const p=document.getElementById('tb-overtime-panel');
+  p.style.display=(p.style.display==='none'||!p.style.display)?'':'none';
+}
+document.addEventListener('click',e=>{
+  const wrap=document.getElementById('tb-overtime-wrap');
+  if(wrap&&!wrap.contains(e.target))document.getElementById('tb-overtime-panel').style.display='none';
+});
+function jumpToTable(tableId){
+  document.getElementById('tb-overtime-panel').style.display='none';
+  const el=document.querySelector(`.table-card[data-table-id="${tableId}"]`);
+  if(!el){toast('Không thấy bàn này trong danh sách đang hiển thị (có thể đang lọc/khác ca)','warn');return;}
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+  el.classList.add('jump-flash');
+  setTimeout(()=>el.classList.remove('jump-flash'),1600);
+}
+
+// ── Tự nhắc vào chat phòng nếu 1 bàn quá giờ liên tục quá X phút mà chưa xử lý ──
+// Lưu ý: chat hiện tại chỉ lưu tạm trên trình duyệt (S._chatMsgs, không sync Firestore),
+// nên tin nhắn nhắc này chỉ hiện ra ở đúng máy đang chạy tick này, không tự đồng bộ sang máy khác.
+const OVERTIME_REMINDER_MIN=10;
+let _overtimeReminderSent={};
+function checkOvertimeAutoReminder(){
+  const list=computeOvertimeTables();
+  const ids=new Set();
+  list.forEach(({room,table,cand,overMs})=>{
+    ids.add(table.id);
+    if(overMs>=OVERTIME_REMINDER_MIN*60000&&!_overtimeReminderSent[table.id]){
+      _overtimeReminderSent[table.id]=true;
+      const key=chatKey('room',room.id);
+      if(!S._chatMsgs[key])S._chatMsgs[key]=[];
+      S._chatMsgs[key].push({
+        text:`[Nhắc tự động] Bàn ${table.name} đã quá giờ phỏng vấn hơn ${OVERTIME_REMINDER_MIN} phút (ứng viên: ${cand.name}). Nhờ mọi người trong phòng hỗ trợ nhắc PIC bàn.`,
+        senderName:'Hệ thống',senderEmail:'system',ts:Date.now()
+      });
+      if(_chatState.scope==='room'&&_chatState.id===room.id)renderChatMsgs(S._chatMsgs[key]);
+      addNotif('warn',`Bàn ${table.name} quá giờ >${OVERTIME_REMINDER_MIN} phút — đã nhắc trong chat phòng`);
+    }
+  });
+  Object.keys(_overtimeReminderSent).forEach(tid=>{if(!ids.has(tid))delete _overtimeReminderSent[tid];});
 }
 
 // ══════════════════════════════════════════════════
@@ -1712,23 +2026,40 @@ function buildUI(){
   rb.textContent=roleDisplayName(displayRole).toUpperCase();
   rb.className='topbar-role-badge role-'+displayRole;
   buildRoundTabs();
-  if(canManageRooms()||canBroadcast()){
+  // admin-controls chỉ là cái khung chứa — hiện khung khi có ÍT NHẤT 1 nút con được phép hiện.
+  // Từng nút bên trong phải tự kiểm tra đúng quyền của riêng nó, không dùng chung 1 điều kiện gộp,
+  // nếu không sẽ bị lộ nút của chức năng mà role đó không có quyền dùng.
+  const showSetup=canManageRooms();
+  const showPause=canManageRooms();
+  const showAnnounceBtn=canBroadcast();
+  const showAddRoom=canManageRooms();
+  const showPerm=isSuperAdmin();
+  const showReset=isSuperAdmin();
+  const showExport=canManageRooms();
+  const showTimer=canManageRooms();
+  const showKiosk=canManageRooms();
+  const showSync=canManageRooms()||canBroadcast();
+  if(showSetup||showPause||showAnnounceBtn||showAddRoom||showPerm||showReset||showExport||showTimer||showKiosk||showSync){
     document.getElementById('admin-controls').style.display='flex';
   }
   if(canCheckinCandidates()){
     document.getElementById('checkin-area').style.display='';
   }
-  if(canManageRooms()){
-    document.getElementById('btn-setup').style.display='';
-    document.getElementById('btn-pause').style.display='';
-    document.getElementById('add-room-btn').style.display='';
-  }
-  if(canBroadcast()){
+  document.getElementById('btn-setup').style.display=showSetup?'':'none';
+  document.getElementById('btn-pause').style.display=showPause?'':'none';
+  document.getElementById('add-room-btn').style.display=showAddRoom?'':'none';
+  document.getElementById('btn-export').style.display=showExport?'':'none';
+  document.getElementById('btn-timer').style.display=showTimer?'':'none';
+  document.getElementById('btn-kiosk').style.display=showKiosk?'':'none';
+  document.getElementById('btn-sync').style.display=showSync?'':'none';
+  if(showAnnounceBtn){
     document.getElementById('btn-announce').style.display='';
     document.getElementById('announce-bar').style.display='';
   }
-  if(isSuperAdmin()){
+  if(showPerm){
     document.getElementById('btn-perm').style.display='';
+  }
+  if(showReset){
     document.getElementById('btn-reset').style.display='';
   }
   const firstActive=ROUNDS.find(r=>S.roundStatus[r.key]==='active');
@@ -1755,7 +2086,10 @@ function applyRoleLayout(){
   if(role==='checkin'){
     Object.assign(order,{'checkin-area':-2,'slot-nav-bar':-1});
   }else if(role==='pic'){
-    Object.assign(order,{'main-layout':-2,'slot-banner':-1});
+    // PIC bàn cần thấy thanh chọn ca / điều hướng ca lên TRƯỚC danh sách bàn —
+    // trước đây main-layout(-2) < slot-banner(-1) < slot-nav-bar(mặc định 0) nên 2 thanh
+    // điều hướng lại rơi xuống DƯỚI nội dung, gây khó hiểu (xem ảnh báo lỗi).
+    Object.assign(order,{'slot-nav-bar':-3,'slot-banner':-2,'main-layout':-1});
   }else if(canManageRooms()){
     Object.assign(order,{'admin-controls':-2,'round-tabs':-1});
   }
@@ -1763,6 +2097,16 @@ function applyRoleLayout(){
     const el=document.getElementById(id);
     if(el)el.style.order=ord;
   });
+  // PIC bàn chỉ cần thấy bàn/ứng viên của mình — không cần xem thống kê tổng toàn ca
+  // hay tự chuyển vòng (không có quyền quản lý vòng), nên ẩn 2 khối này.
+  const statsRow=document.getElementById('stats-row');
+  if(statsRow)statsRow.style.display=(role==='pic')?'none':'';
+  const roundTabs=document.getElementById('round-tabs');
+  if(roundTabs)roundTabs.style.display=(role==='pic')?'none':'';
+  // Nhật ký hệ thống là log toàn ca (mọi phòng/mọi PIC) — không liên quan trực tiếp tới PIC,
+  // nên ẩn với role PIC, chỉ giữ Thông báo.
+  const logPanel=document.getElementById('log-panel-card');
+  if(logPanel)logPanel.style.display=(role==='pic')?'none':'';
 }
 function roleDisplayName(r){
   return ROLE_DISPLAY[r]||r;
@@ -1777,7 +2121,10 @@ function resetRoleControlledUI(){
   ['admin-controls','checkin-area','announce-bar'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.style.display='none';
   });
-  ['btn-perm','btn-reset','add-room-btn'].forEach(id=>{
+  // Toàn bộ nút bên trong admin-controls phải được liệt kê đủ ở đây — nếu không,
+  // nút hiện cho role trước sẽ dính lại khi buildUI() chạy lại cho role khác
+  // (ví dụ SuperAdmin bật "Xem thử giao diện role khác").
+  ['btn-perm','btn-reset','add-room-btn','btn-setup','btn-pause','btn-announce','btn-export','btn-timer','btn-kiosk','btn-sync'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.style.display='none';
   });
 }
@@ -3018,12 +3365,18 @@ function renderRooms(){
       :'<div class="empty-state"><p>Chưa có phòng nào được thiết lập.</p></div>';
     return;
   }
+  const isMyCandidateAtTable=(table)=>S.candidates.some(c=>c.tableId===table.id&&!['done','drop'].includes(c.status)&&(c.interviewers||[]).some(iv=>
+    (iv.email&&S.userEmail&&iv.email.toLowerCase()===S.userEmail.toLowerCase())||(!iv.email&&S.userName&&iv.name===S.userName)
+  ));
   const visible=(canSeeAll()||S.viewAsRole)?S.rooms:S.rooms.filter(room=>{
+    // PIC bàn: CHỈ thấy đúng bàn/phòng họ được gán làm PIC (hoặc đang có ứng viên của họ) —
+    // không thấy cả phòng theo ban nữa, tránh lộ thông tin bàn/ứng viên của PIC khác.
+    if(S.sessionRole==='pic'){
+      return room.tables.some(t=>(t.picEmails||[]).includes(S.userEmail)||isMyCandidateAtTable(t));
+    }
     if(room.dept==='ALL')return true;
     if(room.dept===S.userDept)return true;
     if(room.tables.some(t=>(t.picEmails||[]).includes(S.userEmail)))return true;
-    // pic role: thấy phòng có ban trùng với ban được phân công (dù chưa có trong picEmails bàn)
-    if(S.sessionRole==='pic'&&S.userDept&&room.dept===S.userDept)return true;
     return false;
   });
   grid.innerHTML='';
@@ -3069,7 +3422,12 @@ function buildRoomCard(room){
     </button></div>`:''}
   `;
   const wrap=div.querySelector(`#twrap-${room.id}`);
-  room.tables.forEach(table=>wrap.appendChild(buildTableCard(room,table)));
+  const tablesToShow=(S.sessionRole==='pic'&&!S.viewAsRole)
+    ?room.tables.filter(t=>(t.picEmails||[]).includes(S.userEmail)||S.candidates.some(c=>c.tableId===t.id&&!['done','drop'].includes(c.status)&&(c.interviewers||[]).some(iv=>
+        (iv.email&&S.userEmail&&iv.email.toLowerCase()===S.userEmail.toLowerCase())||(!iv.email&&S.userName&&iv.name===S.userName)
+      )))
+    :room.tables;
+  tablesToShow.forEach(table=>wrap.appendChild(buildTableCard(room,table)));
   return div;
 }
 function buildTableCard(room,table){
@@ -3570,6 +3928,7 @@ async function onTableNameChange(input){
 // THỜI GIAN PHỎNG VẤN — mặc định 15 phút/lượt, có thể chỉnh chung cho cả ca hoặc riêng từng bàn.
 // Ưu tiên: table.timerMinutes (riêng bàn) > S.defaultTimerMinutes (chung cả ca) > DEFAULT_INTERVIEW_MINUTES.
 async function setDefaultTimerMinutes(){
+  if(!canManageRooms()){toast('Bạn không có quyền đặt thời lượng phỏng vấn','err');return;}
   const cur=S.defaultTimerMinutes||DEFAULT_INTERVIEW_MINUTES;
   const input=prompt('Thời gian phỏng vấn mặc định cho CẢ CA này (phút):',cur);
   if(input===null)return;
@@ -4416,6 +4775,7 @@ function confirmResetAll(){
 //  SETUP WIZARD
 // ══════════════════════════════════════════════════
 function openSetupWizard(){
+  if(!canManageRooms()){toast('Bạn không có quyền cài đặt phòng','err');return;}
   const container=document.getElementById('wizard-rooms');
   container.innerHTML='';
   if(S.rooms.length){
@@ -4567,6 +4927,7 @@ async function applySetup(){
 
 // ADD ROOM MODAL
 function openAddRoomModal(){
+  if(!canManageRooms()){toast('Bạn không có quyền thêm phòng','err');return;}
   document.getElementById('new-room-name').value='';
   document.getElementById('new-room-tables').value='2';
   document.getElementById('new-room-table-names-wrap').style.display='none';
@@ -4620,7 +4981,10 @@ function confirmRemoveRoom(roomId){
 // ══════════════════════════════════════════════════
 //  PAUSE / RESUME
 // ══════════════════════════════════════════════════
-function openPauseModal(){openModal('modal-pause');}
+function openPauseModal(){
+  if(!canManageRooms()){toast('Bạn không có quyền tạm dừng vòng','err');return;}
+  openModal('modal-pause');
+}
 async function applyPause(){
   const reason=document.getElementById('pause-reason-input').value.trim();
   S.paused=true;S.pauseReason=reason||'Buổi phỏng vấn tạm dừng';
@@ -4643,6 +5007,7 @@ async function resumeSession(){
 //  FLOATING ANNOUNCEMENT
 // ══════════════════════════════════════════════════
 function openAnnounceModal(){
+  if(!canBroadcast()){toast('Bạn không có quyền gửi thông báo','err');return;}
   document.getElementById('ann-title').value='';
   document.getElementById('ann-body').value='';
   openModal('modal-announce');
@@ -4670,6 +5035,7 @@ function closeFloatAnnounce(){
   document.getElementById('float-announce-overlay').classList.remove('open');
 }
 async function sendAnnounce(){
+  if(!canBroadcast()){toast('Bạn không có quyền gửi thông báo','err');return;}
   const input=document.getElementById('announce-input');
   const text=input.value.trim();
   if(!text)return;
@@ -4931,6 +5297,10 @@ function startClock(){
     if(now.getSeconds()%20===0)renderAll();
     if(now.getSeconds()%60===0)autoFlagNoShows();
     tickInterviewTimers();
+    tickAwayTitleBlink();
+    renderOvertimeBadge();
+    checkOvertimeTransitions();
+    checkOvertimeAutoReminder();
     if(S.kioskOpen){updateKioskClock();tickKioskCountups();}
   },1000);
 }
