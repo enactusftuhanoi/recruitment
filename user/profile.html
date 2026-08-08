@@ -2241,7 +2241,7 @@
                     if (!dept) return;
                     
                     const data = roundObj[type] || {};
-                    const status = applicationData['round2_' + type + '_status'] || 'pending';
+                    const status = getPublishedRoundStatus(applicationData, 'round2', type);
                     
                     const statusRow = createDetailRow(
                         `Ban ${getDepartmentName(dept)}`,
@@ -2297,7 +2297,7 @@
                     if (!dept) return;
                     
                     const data = roundObj[type] || {};
-                    const status = applicationData['round3_' + type + '_status'] || 'pending';
+                    const status = getPublishedRoundStatus(applicationData, 'round3', type);
                     
                     const statusRow = createDetailRow(
                         `Ban ${getDepartmentName(dept)}`,
@@ -2371,7 +2371,7 @@
                     if (!dept) return;
                     
                     const data = roundObj[type] || {};
-                    const status = applicationData['round4_' + type + '_status'] || 'pending';
+                    const status = getPublishedRoundStatus(applicationData, 'round4', type);
                     
                     const statusRow = createDetailRow(
                         `Ban ${getDepartmentName(dept)}`,
