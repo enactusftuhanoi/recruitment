@@ -9338,7 +9338,11 @@ async function processRoundUpdate(newRound) {
                 const canEditPriority = tempApp._canEditPriority;
                 const canEditSecondary = tempApp._canEditSecondary;
 
-                if (newRound === 2) {
+                // FIX: chỉ cho phép chuyển round1 -> round2. Trước đây không kiểm tra
+                // tempApp.current_round, nên nếu admin bấm "Vòng 2" trong khi có ứng viên
+                // đã pass ở vòng khác (round2/round3...), họ cũng bị dính vào và bị đẩy
+                // NGƯỢC/nhảy cóc sai vòng. Nay bắt buộc ứng viên phải đang ở đúng round1.
+                if (newRound === 2 && tempApp.current_round === "round1") {
                     updates["current_round"] = "round2";
                     updates["status"] = "in-progress";
                     
@@ -9351,7 +9355,11 @@ async function processRoundUpdate(newRound) {
                     }
                 }
 
-                if (newRound === 3) {
+                // FIX: bug chính — trước đây không kiểm tra tempApp.current_round nên
+                // ứng viên vừa pass round1 (đang current_round = "round1") bị gom chung
+                // và bị đẩy THẲNG lên round3 khi admin bấm nút "Vòng 3" (đáng lẽ phải
+                // qua round2 trước). Nay bắt buộc ứng viên phải đang ở đúng round2.
+                if (newRound === 3 && tempApp.current_round === "round2") {
                     updates["current_round"] = "round3";
                     updates["status"] = "in-progress";
                     
@@ -9364,7 +9372,8 @@ async function processRoundUpdate(newRound) {
                     }
                 }
 
-                if (newRound === 4) {
+                // FIX: tương tự trên — chỉ cho phép chuyển round3 -> round4.
+                if (newRound === 4 && tempApp.current_round === "round3") {
                     updates["current_round"] = "round4";
                     updates["status"] = "in-progress";
                     
@@ -9377,7 +9386,10 @@ async function processRoundUpdate(newRound) {
                     }
                 }
 
-                if (newRound === "success") {
+                // FIX: chỉ cho phép chốt "success" khi ứng viên đang ở round4
+                // (tránh trường hợp ứng viên mới pass round1/round2/round3 bị chốt
+                // thành viên chính thức ngay lập tức khi admin bấm nhầm nút "Success").
+                if (newRound === "success" && tempApp.current_round === "round4") {
                     let finalDept = null;
                     
                     // Chọn ban cuối cùng pass (ưu tiên round4, fallback về round3 nếu skip)
