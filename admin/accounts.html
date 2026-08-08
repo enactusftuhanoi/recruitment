@@ -1111,6 +1111,7 @@ function showAddAccountForm() {
   document.getElementById("account-form").reset();
   document.getElementById("account-id").value = "";
   document.getElementById("account-name").disabled = false;
+  document.getElementById("account-email").disabled = false;
   document.getElementById("form-modal-title").textContent = "Thêm tài khoản mới";
   document.getElementById("account-form-modal").classList.add("active");
 }
@@ -1122,15 +1123,17 @@ function closeForm() {
 // ===== Save (thêm/sửa) =====
 document.getElementById("account-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const id = document.getElementById("account-id").value || document.getElementById("account-name").value.trim();
+  const emailInput = document.getElementById("account-email").value.trim().toLowerCase();
+  const id = document.getElementById("account-id").value || emailInput;
 
   if (!id) {
-    showToast("Tên tài khoản (ID) không được để trống!", "warning");
+    showToast("Email tài khoản không được để trống!", "warning");
     return;
   }
 
   const data = {
-    email: document.getElementById("account-email").value.trim(),
+    fullname: document.getElementById("account-name").value.trim(),
+    email: emailInput,
     role: document.getElementById("account-role").value,
     department: document.getElementById("account-department").value,
     note: document.getElementById("account-note").value.trim(),
@@ -1155,9 +1158,10 @@ async function editAccount(id) {
 
     const data = docSnap.data();
     document.getElementById("account-id").value = id;
-    document.getElementById("account-name").value = id;
-    document.getElementById("account-name").disabled = true;
+    document.getElementById("account-name").value = data.fullname || "";
+    document.getElementById("account-name").disabled = false;
     document.getElementById("account-email").value = data.email;
+    document.getElementById("account-email").disabled = true; // email giờ là ID, không cho đổi khi sửa
     document.getElementById("account-role").value = data.role;
     document.getElementById("account-department").value = data.department || "";
     document.getElementById("account-note").value = data.note || "";
